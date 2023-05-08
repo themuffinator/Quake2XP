@@ -2593,22 +2593,22 @@ void R_DrawLightFlare () {
 	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[0]);
 	VectorMA (vert_array[0], 1 + dist, vright, vert_array[0]);
 	VA_SetElem2 (tex_array[0], 0, 1);
-	VA_SetElem4 (color_array[0], tmp[0], tmp[1], tmp[2], 1);
+	VA_SetElem4 (color_array[0], tmp[0], tmp[1], tmp[2], 0.5);
 
 	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[1]);
 	VectorMA (vert_array[1], -1 - dist, vright, vert_array[1]);
 	VA_SetElem2 (tex_array[1], 0, 0);
-	VA_SetElem4 (color_array[1], tmp[0], tmp[1], tmp[2], 1);
+	VA_SetElem4 (color_array[1], tmp[0], tmp[1], tmp[2], 0.5);
 
 	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[2]);
 	VectorMA (vert_array[2], -1 - dist, vright, vert_array[2]);
 	VA_SetElem2 (tex_array[2], 1, 0);
-	VA_SetElem4 (color_array[2], tmp[0], tmp[1], tmp[2], 1);
+	VA_SetElem4 (color_array[2], tmp[0], tmp[1], tmp[2], 0.5);
 
 	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[3]);
 	VectorMA (vert_array[3], 1 + dist, vright, vert_array[3]);
 	VA_SetElem2 (tex_array[3], 1, 1);
-	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
+	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 0.5);
 
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 

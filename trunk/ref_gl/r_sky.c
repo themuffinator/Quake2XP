@@ -365,6 +365,23 @@ void R_DrawSkyBox(qboolean color) {
 	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numSkyVerts * 3 * sizeof(uint), skyIndex);
 
 	GL_DrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
+	
+	if (color && r_showTris->integer) {
+
+		GL_Enable(GL_LINE_SMOOTH);
+		qglLineWidth(2.0);
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		GL_BindProgram(showTrisProgram);
+		qglUniform3f(U_COLOR, 1.0, 1.0, 1.0);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
+
+		GL_DrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
+
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		GL_Disable(GL_LINE_SMOOTH);
+
+		GL_BindProgram(skyProgram);
+	}
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);

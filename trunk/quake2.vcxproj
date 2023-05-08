@@ -198,7 +198,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <OpenMPSupport>false</OpenMPSupport>
+      <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -355,6 +355,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -783,10 +784,10 @@
     <None Include="..\baseq2\glsl\ambientMd2.vert" />
     <None Include="..\baseq2\glsl\ambientWorld.frag" />
     <None Include="..\baseq2\glsl\ambientWorld.vert" />
-    <None Include="..\baseq2\glsl\bloomds.frag" />
-    <None Include="..\baseq2\glsl\bloomds.vert" />
-    <None Include="..\baseq2\glsl\bloomfp.frag" />
-    <None Include="..\baseq2\glsl\bloomfp.vert" />
+    <None Include="..\baseq2\glsl\bloomBright.frag" />
+    <None Include="..\baseq2\glsl\bloomBright.vert" />
+    <None Include="..\baseq2\glsl\bloomFinal.frag" />
+    <None Include="..\baseq2\glsl\bloomFinal.vert" />
     <None Include="..\baseq2\glsl\cin.frag" />
     <None Include="..\baseq2\glsl\cin.vert" />
     <None Include="..\baseq2\glsl\dof.frag" />
@@ -826,6 +827,8 @@
     <None Include="..\baseq2\glsl\screenFlash.vert" />
     <None Include="..\baseq2\glsl\shadow.frag" />
     <None Include="..\baseq2\glsl\shadow.vert" />
+    <None Include="..\baseq2\glsl\showTris.frag" />
+    <None Include="..\baseq2\glsl\showTris.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />
     <None Include="..\baseq2\glsl\sky.vert" />
     <None Include="..\baseq2\glsl\sprite.frag" />

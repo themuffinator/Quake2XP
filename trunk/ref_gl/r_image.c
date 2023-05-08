@@ -94,25 +94,26 @@ static const byte r_originalPalette[] = {
 199, 171, 155, 167, 139, 119, 135, 107,  87, 159,  91,  83
 };
 
+qboolean GL_Upload8(byte* data, int width, int height, qboolean mipmap, qboolean is_sky);
+qboolean GL_Upload32(unsigned* data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode);
+image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits, uint _hash);
+
 static byte intensitytable[256];
-static unsigned char gammatable[256];
-
-unsigned d_8to24table[256];
+static uchar gammatable[256];
+uint d_8to24table[256];
 float d_8to24tablef[256][3];
-
-qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap, qboolean is_sky);
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode);
-
 int upload_width, upload_height;
 qboolean uploaded_paletted;
 
-image_t *GL_LoadPic(char *name, byte * pic, int width, int height, imagetype_t type, int bits, uint _hash);
-
-int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	
-int gl_filter_max = GL_LINEAR;
-
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_PNG
+#define STBI_NO_BMP
+#define STBI_NO_PSD
+#define STBI_NO_GIF
+#define STBI_NO_PIC
+#define STBI_NO_PNM
+
 #include "stb/stb_image.h"
 
 qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
@@ -178,45 +179,48 @@ qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
 	return qtrue;
 }
 
-int CalcMipmapCount(int w, int h)
-{
-	int width, height, mipcount;
-
-	// mip-maps can't exceeds 16
-	for (mipcount = 0; mipcount < 16; mipcount++)
-	{
-		width = max(1, (w >> mipcount));
-		height = max(1, (h >> mipcount));
-		if (width == 1 && height == 1)
-			break;
-	}
-
-	return mipcount + 1;
-}
-
 image_t* R_LoadDDS(char* texName, uint type) {
 
-	unsigned		i, uw, uh, uploadWidth, uploadHeight, format, intFormat, bw;
-	int				length;
-	qboolean		compressed;
-	byte* buf;
-	byte* imagedata;
-	image_t* image;
 	ddsFileHeader_t* header;
-	textureCompression_t	texComp;
+	ddsFileHeaderDXT10_t* headerDXT10;
+	uint					len, i, uw, uh, uploadWidth, uploadHeight;
+	uint					format, intFormat, blockWidth = 16, level = 0;
+	image_t					*image;
+	qboolean				compressed, hdr;
+	byte					*buf, *imagedata;
+	float					*imageDataHdr;
+	uint hash				= Com_HashKey(texName);
 
-	length = FS_LoadFile(texName, (void**)&buf);
+	if (!texName)
+		return NULL;
+	len = strlen(texName);
+	if (len < 5)
+		return NULL;
+
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
+	{
+		if (image->hash == hash)
+		{
+			if (!b_stricmp(image->name, texName)) {
+
+				image->registration_sequence = registration_sequence;
+				return image;
+			}
+		}
+	}
+
+	len = FS_LoadFile(texName, (void**)&buf);
+
 	if (!buf)
 		return NULL;
 
-	if (length <= sizeof(ddsFileHeader_t) + 4)
+	if (len <= sizeof(ddsFileHeader_t) + 4)
 	{
 		FS_FreeFile(buf);
 		Com_Printf("R_LoadDDS: file too short (%s)\n", texName);
 		return NULL;
 	}
 
-	// verify the type of file
 	if (strncmp(buf, "DDS ", 4) != 0)
 	{
 		FS_FreeFile(buf);
@@ -228,22 +232,54 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	uploadWidth = header->dwWidth;
 	uploadHeight = header->dwHeight;
 
-	texComp = TC_NONE;
 	compressed = qfalse;
+	hdr = qfalse;
 	if (header->ddspf.dwFlags & DDSF_FOURCC)
 	{
 		compressed = qtrue;
 		switch (header->ddspf.dwFourCC)
 		{
-		case DDS_MAKEFOURCC('D', 'X', 'T', '5'):
-			texComp = TC_DXT;
-			format = GL_RGBA;
-			intFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			Com_Printf("R_LoadDDS: DXT5 (%s)\n", texName);
+		case DDS_MAKEFOURCC('D', 'X', 'T', '3'):
+
+			intFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			break;
+
+		case DDS_MAKEFOURCC('D', 'X', 'T', '5'):
+
+			intFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			break;
+
+		case DDS_MAKEFOURCC('D', 'X', '1', '0'):
+
+			headerDXT10 = (ddsFileHeaderDXT10_t*)(buf + 4 + sizeof(ddsFileHeader_t));
+
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC7_UNORM)
+				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_UF16) {
+				intFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
+				hdr = qtrue;
+			}
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_SF16) {
+				intFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
+				hdr = qtrue;
+			}
+ 
+			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16))
+			{
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 98 'BC7_UNORM', 95 'BC6H_UF16', 96 'DXGI_FORMAT_BC6H_SF16') (%s)\n", headerDXT10->dxgiFormat, texName);
+				return NULL;
+			}
+			if (headerDXT10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D)
+			{
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->resourceDimension' = %i (supported 3 'Texture2D') (%s)\n", headerDXT10->resourceDimension, texName);
+				return NULL;
+			}
+			break;
+
 		default:
 			FS_FreeFile(buf);
-			Com_Printf("R_LoadDDS: invalid compressed internal format (supported DXT5) (%s)\n", texName);
+			Com_Printf("R_LoadDDS: invalid compressed internal format (supported DXT3, DXT5, BPTC) (%s)\n", texName);
 			return NULL;
 		}
 	}
@@ -287,6 +323,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->upload_height = uh;
 	image->type = type;
 	image->hash = Com_HashKey(image->name);
+	image->compressed = compressed;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
 
@@ -301,39 +338,38 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 	if (header->dwFlags & DDSF_MIPMAPCOUNT) {
 		image->numMips = header->dwMipMapCount;
-		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+		glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
 	}
 	else {
 		image->numMips = 1;
 		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
-	Com_Printf("R_LoadDDS: num mips %i\n", image->numMips);
 
 	imagedata = buf + sizeof(ddsFileHeader_t) + 4;
 
+	if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
+		imagedata += sizeof(ddsFileHeaderDXT10_t);
+
 	if (!compressed)
-		bw = header->ddspf.dwRGBBitCount / 8;
-	else
-		bw = 16;
+		blockWidth = header->ddspf.dwRGBBitCount / 8;
 
-	int level = 0;
-
-	glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh); // call before glCompressedTextureSubImage2D !!!
+	glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh);
 
 	for (i = 0; i < image->numMips; i++) {
 		int size = 0;
 
 		if (compressed) {
-			size = ((uw + 3) / 4) * ((uh + 3) / 4) * bw;
-			qglCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
+			size = ((uw + 3) / 4) * ((uh + 3) / 4) * blockWidth;
+			glCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
 			level++;
 		}
 		else {
-			size = uw * uh * bw;
+			size = uw * uh * blockWidth;
 			glTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, format, GL_UNSIGNED_BYTE, imagedata);
 			level++;
 		}
@@ -349,8 +385,26 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
 
+	FS_FreeFile(buf);
+
 	return image;
 
+}
+
+int CalcMipmapCount(int w, int h)
+{
+	int width, height, mipcount;
+
+	// mip-maps can't exceeds 16
+	for (mipcount = 0; mipcount < 16; mipcount++)
+	{
+		width = max(1, (w >> mipcount));
+		height = max(1, (h >> mipcount));
+		if (width == 1 && height == 1)
+			break;
+	}
+
+	return mipcount + 1;
 }
 
 void R_CaptureColorBuffer(){
@@ -370,7 +424,7 @@ GL_ImageList_f
 
 void GL_ImageList_f(void)
 {
-	int i;
+	int i, comptexSize = 0, level, itex;
 	uint totalTexturesSize = 0;
 	image_t *image;
 
@@ -384,9 +438,22 @@ void GL_ImageList_f(void)
 		
 		if (image->texnum <= 0)
 			continue;
-		
-		totalTexturesSize += (image->upload_width * image->upload_height)*4;
 
+		if (image->compressed) {
+
+			for (level = 0; level < image->numMips; level++) {
+				glGetTextureLevelParameteriv(image->texnum, level, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &comptexSize);
+				totalTexturesSize += comptexSize;
+			}
+
+		}
+		else {
+			itex = image->upload_width * image->upload_height;
+			if ((image->type != it_pic) && (image->type != it_screen)) {
+				itex = itex + itex / 3; // + mipmaps size
+			}
+			totalTexturesSize += itex * 4;
+		}
 		switch (image->type) {
 		case it_skin:
 			Com_Printf("Skin");
@@ -528,66 +595,12 @@ Returns has_alpha
 ===============
 */
 
-#define	MAX_DIMENSION	4096
-byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth, int outheight) { // from doom3bfg
-	int		i, j;
-	const	byte	*inrow, *inrow2;
-	uint			frac, fracstep;
-	static	uint	p1[MAX_DIMENSION], p2[MAX_DIMENSION];
-	const	byte	*pix1, *pix2, *pix3, *pix4;
-	byte*	out,	*out_p;
-
-	if (outwidth > MAX_DIMENSION) {
-		outwidth = MAX_DIMENSION;
-	}
-	if (outheight > MAX_DIMENSION) {
-		outheight = MAX_DIMENSION;
-	}
-
-	out = (byte*)malloc(outwidth * outheight * 4);
-	out_p = out;
-
-	fracstep = inwidth * 0x10000 / outwidth;
-
-	frac = fracstep >> 2;
-	for (i = 0; i < outwidth; i++) {
-		p1[i] = 4 * (frac >> 16);
-		frac += fracstep;
-	}
-
-	frac = 3 * (fracstep >> 2);
-	for (i = 0; i < outwidth; i++) {
-		p2[i] = 4 * (frac >> 16);
-		frac += fracstep;
-	}
-
-	for (i = 0; i < outheight; i++, out_p += outwidth * 4) {
-		inrow = in + 4 * inwidth * (int)((i + 0.25f) * inheight / outheight);
-		inrow2 = in + 4 * inwidth * (int)((i + 0.75f) * inheight / outheight);
-		frac = fracstep >> 1;
-		for (j = 0; j < outwidth; j++) {
-			pix1 = inrow + p1[j];
-			pix2 = inrow + p2[j];
-			pix3 = inrow2 + p1[j];
-			pix4 = inrow2 + p2[j];
-			out_p[j * 4 + 0] = (pix1[0] + pix2[0] + pix3[0] + pix4[0]) >> 2;
-			out_p[j * 4 + 1] = (pix1[1] + pix2[1] + pix3[1] + pix4[1]) >> 2;
-			out_p[j * 4 + 2] = (pix1[2] + pix2[2] + pix3[2] + pix4[2]) >> 2;
-			out_p[j * 4 + 3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3]) >> 2;
-		}
-	}
-
-	return out;
-}
 static uint imageIdx;
 
 qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode)
 {
 	int			samples, intFormat, c, i;
 	byte		*scan;
-	int			scaled_width, scaled_height;
-	uint		*scaled;
-	uint		comprFormat = r_textureCompressionHQ->integer ? GL_COMPRESSED_RGBA_BPTC_UNORM : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 
 	// scan the texture for any non-255 alpha
 	c = width * height;
@@ -601,57 +614,16 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		}
 	}
 	if (samples == 3) {
-
-		if (gl_state.texture_compression_bptc && mipmap)
-			intFormat = comprFormat;
-		else
 			intFormat = GL_RGBA8;
 	}
 
 	if (samples == 4) {
-
-		if (gl_state.texture_compression_bptc && mipmap)
-			intFormat = comprFormat;
-		else
 			intFormat = GL_RGBA8;
 	}
 
-	if(r_maxTextureSize->integer && mipmap && !unScaled){
-		int max_size;
-
-		qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
-
-		scaled_width = width;
-		scaled_height = height;
-
-		if (r_maxTextureSize->integer >= max_size)
-			Cvar_SetInteger("r_maxTextureSize", max_size);
-
-		if (r_maxTextureSize->integer <= 256 && r_maxTextureSize->integer > 0)
-			Cvar_SetInteger("r_maxTextureSize", 256);
-
-		if (r_maxTextureSize->integer)
-			max_size = r_maxTextureSize->integer;
-
-		if (scaled_width > max_size)
-			scaled_width = max_size;
-		if (scaled_height > max_size)
-			scaled_height = max_size;	
-
-		scaled = R_ResampleTexture(data, width, height, scaled_width, scaled_height);
-	}
-	else {
-		scaled_width = width;
-		scaled_height = height;
-		scaled = data;
-	}
-
-	int numMips = CalcMipmapCount(scaled_width, scaled_height);
-	glTextureStorage2D(imageIdx, numMips, intFormat, scaled_width, scaled_height);
-	glTextureSubImage2D(imageIdx, 0, 0, 0, scaled_width, scaled_height, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
-
-	if (scaled_width != width || scaled_height != height)
-		free(scaled);
+	int numMips = CalcMipmapCount(width, height);
+	glTextureStorage2D(imageIdx, numMips, intFormat, width, height);
+	glTextureSubImage2D(imageIdx, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	glTextureParameteri(imageIdx, GL_TEXTURE_WRAP_S, ClampMode);
 	glTextureParameteri(imageIdx, GL_TEXTURE_WRAP_T, ClampMode);
@@ -661,15 +633,15 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		glGenerateTextureMipmap(imageIdx);
 		glTextureParameterf(imageIdx, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
 		glTextureParameterf(imageIdx, GL_TEXTURE_LOD_BIAS,			r_textureLodBias->value);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER,		GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER,		GL_LINEAR);
 		glTextureParameteri(imageIdx, GL_TEXTURE_BASE_LEVEL,		0);
 		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,			numMips-1);
 	}
 	else
 	{
-		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	imageIdx = 0;
 	return (samples == 4);
@@ -756,7 +728,7 @@ void R_FreePic(char* name)
 ================
 GL_LoadPic
 
-This is also used as an entry point for the generated r_notexture
+This is also used as an entry point for the generated r_blackTexture1x1
 ================
 */
 
@@ -799,22 +771,6 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 
 	len = strlen(name);
 	strcpy(s, name);
-
-	if (!strcmp(s + len - 4, ".tga") || !strcmp(s + len - 4, ".png") || !strcmp(s + len - 4, ".jpg"))
-	{
-		miptex_t* mt;
-		strcpy(s, name);
-		s[strlen(s) - 4] = 0;
-		strcat(s, ".wal");
-		FS_LoadFile(s, (void**)&mt); 
-
-		if (mt) {
-			image->width = LittleLong(mt->width);	// grab size from wal
-			image->height = LittleLong(mt->height);
-			FS_FreeFile((void*)mt);	// free the wal
-		}
-
-	}
 
 	if (image->type == it_pic && bits >= 24) //Scale hi-res pics
 	{
@@ -888,7 +844,7 @@ image_t *GL_LoadWal(char *name)
 
 	if (!mt) {
 		Com_Printf("GL_FindImage: can't load %s\n", name);
-		return r_notexture;
+		return r_missingTexture;
 	}
 
 	width = LittleLong(mt->width);
@@ -944,7 +900,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	pic = NULL;
 	palette = NULL;
 		
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && !override) {
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".tga") && !override) {
 
 		char s[128];
 		override = 1;
@@ -958,42 +914,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 			return image;
 		}
 	}
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && !override) {
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".tga") && !override) {
 
 		char s[128];
 		override = 1;
 		strcpy(s, name);
 		s[strlen(s) - 4] = 0;
 		strcat(s, ".jpg");
-
-		image = GL_FindImage(s, type);
-		if (image) {
-			override = 0;
-			return image;
-		}
-	}
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && !override) {
-																															
-		char s[128];
-		override = 1;
-		strcpy(s, name);
-		s[strlen(s) - 4] = 0;
-		strcat(s, ".png");
-
-		image = GL_FindImage(s, type);
-		if (image) {
-			override = 0;
-			return image;
-		}
-	}
-
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {
-
-		char s[128];
-		override = 1;
-		strcpy(s, name);
-		s[strlen(s) - 4] = 0;
-		strcat(s, ".dds");
 
 		image = GL_FindImage(s, type);
 		if (image) {
@@ -1031,23 +958,17 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 		image = GL_LoadPic(name, pic, width, height, it_pic, 24, Com_HashKey(name));
 	} 
-	else if (!strcmp(name + len - 4, ".png")) {
-		STB_LoadLdr(name, &pic, &width, &height);
-		if (!pic)
-			return NULL;
+	else 
+		return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}
-	else if (!strcmp(name + len - 4, ".dds")) {
-		image = R_LoadDDS(name, type);
-
-	}
 
 	if (pic)
-		free(pic);	
+		free(pic);
+	
 
 	if (palette)
-		free(palette);	
+		free(palette);
+	
 
 	return image;
 }
@@ -1091,14 +1012,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 
 		image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
 	}
-	else if (!strcmp(name + len - 4, ".png")) {
-		STB_LoadLdr(name, &pic, &width, &height);
-		if (!pic)
-			return NULL;
-
-		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}
-	else
+	else 
 		return NULL;
 
 
@@ -1119,7 +1033,19 @@ R_RegisterSkin
 
 struct image_s *R_RegisterSkin(char *name)
 {
-	return GL_FindImage(name, it_skin);
+	image_t *img;
+	char gl[128];
+
+	strcpy(gl, name);
+	gl[strlen(gl) - 4] = 0;
+	strcat(gl, ".dds");
+	img = R_LoadDDS(gl, it_skin);
+	if (!img)
+		img = r_missingTexture;
+	
+	return img;
+
+//	return GL_FindImage(name, it_skin);
 }
 
 struct image_s *R_RegisterPlayerBump (char *name)
@@ -1129,16 +1055,9 @@ struct image_s *R_RegisterPlayerBump (char *name)
 	
 	strcpy(gl, name);
 	gl[strlen(gl) - 4] = 0;
-	strcat(gl, "_bump.tga");
-	img = GL_FindImage (gl, it_skin);
+	strcat(gl, "_bump.dds");
+	img = R_LoadDDS(gl, it_skin);
 
-	if (!img)
-	{
-		strcpy(gl, name);
-		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_bump.dds");
-		img = GL_FindImage (gl, it_skin);
-	}
 	if(!img)
 		img = r_defBump;
 
@@ -1161,7 +1080,8 @@ void GL_FreeUnusedImages(void)
 
 	// image cache
 	//=========================
-	r_notexture->registration_sequence = registration_sequence;
+	r_blackTexture1x1->registration_sequence = registration_sequence;
+	r_missingTexture->registration_sequence = registration_sequence;
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
 		r_caustic[i]->registration_sequence = registration_sequence;

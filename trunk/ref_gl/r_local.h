@@ -164,17 +164,15 @@ image_t* r_lightCubeMap[MAX_FILTERS];
 image_t gltextures[MAX_IDX];
 int numgltextures;
 
-image_t *r_notexture;
+image_t *r_blackTexture1x1;
+image_t	*r_missingTexture;
 image_t *r_distort;
-//image_t *r_depthTex;
 image_t	*cinMap;
 
 image_t *r_particleTexture[PT_MAX];
 image_t *r_decalTexture[DECAL_MAX];
-image_t	* r_rail_normal;
-image_t* r_laser_normal;
-
-image_t *r_flare;
+image_t	*r_rail_normal;
+image_t	*r_laser_normal;
 
 image_t *draw_chars, *draw_charsRu, *draw_charsInt;
 image_t *r_DSTTex;
@@ -190,38 +188,33 @@ image_t *skinBump;
 image_t *r_miniDepthTex;
 image_t *r_ssaoColorTex[2];
 
-image_t* r_hdrScreen;
-image_t* r_hdrScreenCopy;
-image_t* r_depthStencilTexture;
-image_t* r_hdrScreenCopy2d;
-image_t* r_finalScreen;
-image_t* r_linearDepth;
-image_t* r_hdr64image;
-image_t* r_hdr1image;
-image_t* r_hdrLuminance[9];
+image_t	*r_hdrScreen;
+image_t	*r_hdrScreenCopy;
+image_t	*r_depthStencilTexture;
+image_t	*r_hdrScreenCopy2d;
+image_t	*r_finalScreen;
+image_t	*r_linearDepth;
+image_t	*r_hdr64image;
+image_t *r_hdrLuminance[9];
 
 image_t	*r_cinImage;
 image_t	*r_hdrBloomImage;
 image_t	*r_thermalImage;
-image_t* r_lensDirt;
+image_t	*r_lensDirt;
 
-int i_stencilView;
-uint64_t i_stencilView_handle;
+int			i_stencilView;
+uint64_t	i_stencilView_handle;
 
 int			skyCube;
 uint64_t	skyCube_handle;
 
-uint fboId;
 byte r_ssaoColorTexIndex;
-uint fboDps;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
 extern int r_framecount;
 extern cplane_t frustum[6];
-
-extern	int gl_filter_min, gl_filter_max;
 
 //
 // view origin
@@ -284,12 +277,9 @@ cvar_t	*r_displayRefresh;
 
 cvar_t	*r_screenShot;
 
-cvar_t	*r_textureCompression;
-cvar_t* r_textureCompressionHQ;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
 cvar_t	*r_textureLodBias;
-cvar_t	*r_maxTextureSize;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
@@ -348,6 +338,7 @@ cvar_t	*r_fogEditor;
 cvar_t	*r_debugTbn;
 cvar_t	*r_debugTbnLen;
 cvar_t	*r_bspSmoothTbn;
+cvar_t	*r_showTris;
 
 cvar_t	*r_glDebugOutput;
 cvar_t	*r_glMinorVersion;
@@ -362,8 +353,8 @@ cvar_t	*r_fontsShadow;
 cvar_t	*r_hudLighting;
 cvar_t	*r_bump2D;
 
-cvar_t	*r_filmFilter;
-cvar_t	*r_filmFilterVignetSize;
+cvar_t	*r_filmicFx;
+cvar_t	*r_filmicFxVignetSize;
 
 cvar_t	*r_fixFovStrength; // 0.0 = no hi-fov perspective correction
 cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = spherical
@@ -399,16 +390,17 @@ qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height);
 void R_CreateScreenFbo();
 void CreateHDR64Buffer(void);
 void R_FboFinal();
-void R_FxaaFbo();
+void R_Tex2dFbo();
 void CreateBloomBuffer(void);
 void CreateThermalBuffer(void);
 void CreateLinearDepthBuffer(void);
 void R_LinearDepth(void);
-void R_HdrLumFbo();
 void R_DrawLightWorldRA(void);
 void GL_SetBindlessTexture(int loc, uint64 handle);
 void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray);
 void GL_DrawArrays(int mode, int first, int count);
+void R_HdrLumFbo();
+void R_PboInit();
 
 void R_LightPoint (vec3_t p, vec3_t color);
 
@@ -801,7 +793,10 @@ void GL_UpdateLightColor(vec3_t color);
 
 typedef struct {
 
+GLuint	vbo_fullScreenQuadF;
 GLuint	vbo_fullScreenQuad;
+GLuint	vbo_halfScreenQuad;
+GLuint	vbo_quarterScreenQuad;
 GLuint	ibo_quadString;
 GLuint	ibo_quad;
 
@@ -835,7 +830,10 @@ typedef struct {
 	GLuint	dynamic;
 	GLuint	md2Shadow;
 	GLuint	md3Shadow;
+	GLuint	fullscreenQuadF;
 	GLuint	fullscreenQuad;
+	GLuint	halfScreenQuad;
+	GLuint	quaterScreenQuad;
 	GLuint	draw2d;
 	GLuint	draw2dString;
 }vao_t;
@@ -1000,8 +998,8 @@ glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*md3AmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*glareProgram;
-glslProgram_t		*bloomdsProgram;
-glslProgram_t		*bloomfpProgram;
+glslProgram_t		*bloomBrightProgram;
+glslProgram_t		*bloomFinalProgram;
 glslProgram_t		*bloomBlurProgram;
 glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
@@ -1038,12 +1036,15 @@ glslProgram_t		*tbnDebugProgram;
 glslProgram_t		*tonemapProgram;
 glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
-glslProgram_t		*hdrLumProgram;
+glslProgram_t		*showTrisProgram;
+
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
+
+void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
 
 typedef enum {
 	ATT_POSITION = 0,
@@ -1214,7 +1215,6 @@ typedef struct img_s {
 	int		height;
 } img_t;
 void R_FlipImage(int idx, img_t* pix, byte* dst);
-
 
 ///  DDS Support
 #define DDS_MAKEFOURCC(a, b, c, d) ((a) | ((b) << 8) | ((c) << 16) | ((d) << 24))
@@ -1411,11 +1411,7 @@ typedef struct {
 	UINT                     miscFlags2;
 } ddsFileHeaderDXT10_t;
 
-typedef enum {
-	TC_NONE,
-	TC_DXT,
-	TC_BPTC
-} textureCompression_t;
+image_t* R_LoadDDS(char* texName, uint type);
 
 /*
 ====================================================================

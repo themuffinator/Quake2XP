@@ -34,7 +34,7 @@ R_LoadFont
 
 void R_Init2D(void)
 {
-	draw_chars = GL_FindImage("gfx/fonts/engfont.tga", it_pic);
+	draw_chars = R_LoadDDS("gfx/fonts/engfont.dds", it_pic);
 
 	if (!draw_chars)
 		draw_chars = GL_FindImage("pics/conchars.pcx", it_pic);
@@ -42,9 +42,9 @@ void R_Init2D(void)
 	if (!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	draw_charsInt = GL_FindImage("gfx/fonts/intfont.tga", it_pic);
+	draw_charsInt = R_LoadDDS("gfx/fonts/intfont.dds", it_pic);
 	if (!draw_charsInt)
-		draw_charsInt = r_notexture;
+		draw_charsInt = r_missingTexture;
 }
 
 void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num)
@@ -359,7 +359,7 @@ image_t* Draw_FindPic(char* name)
 		gl = GL_FindImage(name + 1, it_pic);
 
 	if (gl)
-		if (gl != r_notexture)
+		if (gl != r_missingTexture)
 			strcpy(gl->bare_name, name);
 
 	return gl;
@@ -568,7 +568,7 @@ image_t* GL_FindPic(char* name)
 	gl = GL_FindImage2(name + 1, it_mipmap);
 
 	if (gl) {
-		if (gl != r_notexture)
+		if (gl != r_missingTexture)
 			strcpy(gl->bare_name, name);
 	}
 	return gl;
@@ -953,13 +953,11 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 {
 	static uint	image32[256 * 256];
 	int			i, j, trows, tex = 0;
-	byte* source;
+	byte		*source;
 	int			frac, fracstep;
 	float		hscale;
 	int			row;
-	unsigned* dest;
-
-//	qglEnable(GL_FRAMEBUFFER_SRGB);
+	unsigned	*dest;
 
 	qglClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -1016,5 +1014,4 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-//	qglDisable(GL_FRAMEBUFFER_SRGB);
 }

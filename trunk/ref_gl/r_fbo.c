@@ -112,13 +112,13 @@ void CreateBloomBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 
-	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen, 
-									vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
-									GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen,
+	vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 
 	qglGenFramebuffers(1, &fbo._bloom);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._bloom);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrBloomImage->texnum, 0);
+
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
@@ -149,7 +149,8 @@ void CreateHDR64Buffer(void) {
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
 
-//==================
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }
 
 void CreateThermalBuffer(void) {
@@ -241,7 +242,7 @@ void R_FboFinal() {
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void R_FxaaFbo() {
+void R_Tex2dFbo() {
 	qboolean statusOK;
 
 	Com_Printf("Load "S_COLOR_YELLOW "FXAA FBO ");
@@ -251,8 +252,7 @@ void R_FxaaFbo() {
 
 	r_hdrScreenCopy2d = R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
 		it_screen, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-		GL_FLOAT, qfalse, NULL);
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrScreenCopy2d->texnum, 0);
 
@@ -280,7 +280,7 @@ void R_HdrLumFbo() {
 			it_screen, max(1, texSize), max(1, texSize),
 			GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
 			GL_FLOAT, qfalse, NULL);
-	//	Com_Printf("%i: %i\n", i, max(1, texSize));
+		//	Com_Printf("%i: %i\n", i, max(1, texSize));
 		texSize >>= 1;
 
 		qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrLuminance[i]->texnum, 0);
@@ -295,16 +295,25 @@ void R_HdrLumFbo() {
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void R_PboInit(){
-	
+void R_PboInit() {
+
 	Com_Printf("Initializing Pixel Buffers: " S_COLOR_GREEN "ok\n");
 	// read from gpu
 	qglGenBuffers(2, pbo._64);
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[0]);
-	qglBufferData(GL_PIXEL_PACK_BUFFER, 1 * 1 * 3 * sizeof(float), 0, GL_STREAM_READ);
-	
+	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_READ);
+
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[1]);
-	qglBufferData(GL_PIXEL_PACK_BUFFER, 1 * 1 * 3 * sizeof(float), 0, GL_STREAM_READ);
-	
+	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_READ);
+
+	qglGenBuffers(1, &pbo._fullScreen);
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);
+	qglBufferData(GL_PIXEL_PACK_BUFFER, vid.width * vid.height * 3 * sizeof(byte), 0, GL_STREAM_READ);
+
+	qglGenBuffers(1, &pbo._fullScreenF);
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreenF);
+	qglBufferData(GL_PIXEL_PACK_BUFFER, vid.width * vid.height * 3 * sizeof(float), 0, GL_STREAM_READ);
+
+
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }

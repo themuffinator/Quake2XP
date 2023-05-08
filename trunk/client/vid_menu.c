@@ -64,7 +64,6 @@ static menulist_s  		s_fs_box;
 
 static menuslider_s	    s_reliefScale_slider;
 static menulist_s	    s_flare_box;
-static menulist_s	    s_tc_box;
 static menulist_s	    s_refresh_box;
 static menulist_s	    s_parallax_box;
 static menulist_s	    s_parallax_shadow;
@@ -104,7 +103,7 @@ static void ambientLevelCallback (void *s) {
 static void filmCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_filmFilter", box->curInteger * 1);
+	Cvar_SetValue ("r_filmicFx", box->curInteger * 1);
 }
 
 static void ParallaxCallback (void *s) {
@@ -233,7 +232,6 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_anisotropic", s_aniso_list.curInteger);
 	Cvar_SetValue ("r_fullScreen", s_fs_box.curInteger);
 	Cvar_SetValue ("r_drawFlares", s_flare_box.curInteger);
-	Cvar_SetValue ("r_textureCompression", s_tc_box.curInteger);
 	Cvar_SetValue ("r_mode", s_mode_list.curInteger);
 	Cvar_SetValue ("r_parallaxScale", s_reliefScale_slider.curvalue);
 	Cvar_SetValue ("r_parallaxMapping", s_parallax_box.curInteger);
@@ -246,7 +244,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_ssao", s_ssao.curInteger);
 	Cvar_SetValue ("r_fxaa", s_fxaa_box.curInteger);
 	Cvar_SetValue ("r_vsync", s_finish_box.curInteger);
-	Cvar_SetValue ("r_filmFilter", s_film_grain.curInteger);
+	Cvar_SetValue ("r_filmicFx", s_film_grain.curInteger);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curInteger);
 	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curvalue);
 
@@ -313,9 +311,6 @@ static void ApplyChanges (void *unused) {
 		vid_ref->modified = qtrue;
 
 	if (r_parallaxMapping->modified)
-		vid_ref->modified = qtrue;
-
-	if (r_textureCompression->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_vsync->modified)
@@ -645,9 +640,6 @@ void VID_MenuInit (void) {
 	if (!r_anisotropic)
 		r_anisotropic = Cvar_Get ("r_anisotropic", "1", CVAR_ARCHIVE);
 
-	if (!r_textureCompression)
-		r_textureCompression = Cvar_Get ("r_textureCompression", "0", CVAR_ARCHIVE);
-
 	if (!r_drawFlares)
 		r_drawFlares = Cvar_Get ("r_drawFlares", "0", CVAR_ARCHIVE);
 
@@ -757,20 +749,12 @@ void VID_MenuInit (void) {
 		else
 			s_aniso_list.curInteger = 0;
 
-	s_tc_box.generic.type = MTYPE_SPINCONTROL;
-	s_tc_box.generic.x = 0;
-	s_tc_box.generic.y = 50 * ui_fontScale->value;
-	s_tc_box.generic.name = "Texture Compression";
-	s_tc_box.itemnames = yesno_names;
-	s_tc_box.curInteger = r_textureCompression->integer;
-	s_tc_box.generic.statusbar = "Use Compressed Textures <Requires Restart Video Sub-System>";
-
 	// -----------------------------------------------------------------------
 
 	s_autoBump_list.generic.type = MTYPE_SPINCONTROL;
 	s_autoBump_list.generic.name = "Generate Normal Maps";
 	s_autoBump_list.generic.x = 0;
-	s_autoBump_list.generic.y = 70 * ui_fontScale->value;
+	s_autoBump_list.generic.y = 50 * ui_fontScale->value;
 	s_autoBump_list.itemnames = yesno_names;
 	s_autoBump_list.curInteger = r_imageAutoBump->integer;
 	s_autoBump_list.generic.callback = autoBumpCallBack;
@@ -778,7 +762,7 @@ void VID_MenuInit (void) {
 
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
-	s_parallax_box.generic.y = 80 * ui_fontScale->value;
+	s_parallax_box.generic.y = 60 * ui_fontScale->value;
 	s_parallax_box.generic.name = "Parallax Mapping";
 	s_parallax_box.itemnames = parallax_names;
 	s_parallax_box.curInteger = clamp(r_parallaxMapping->integer, 0, 2);
@@ -787,7 +771,7 @@ void VID_MenuInit (void) {
 
 	s_parallax_shadow.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_shadow.generic.x = 0;
-	s_parallax_shadow.generic.y = 90 * ui_fontScale->value;
+	s_parallax_shadow.generic.y = 70 * ui_fontScale->value;
 	s_parallax_shadow.generic.name = "Self Shadowing Parallax";
 	s_parallax_shadow.itemnames = yesno_names;
 	s_parallax_shadow.curInteger = r_selfShadowingParallax->integer;
@@ -796,7 +780,7 @@ void VID_MenuInit (void) {
 
 	s_reliefScale_slider.generic.type = MTYPE_SLIDER;
 	s_reliefScale_slider.generic.x = 0;
-	s_reliefScale_slider.generic.y = 100 * ui_fontScale->value;
+	s_reliefScale_slider.generic.y = 80 * ui_fontScale->value;
 	s_reliefScale_slider.generic.name = "Relief Scale";
 	s_reliefScale_slider.minvalue = 1;
 	s_reliefScale_slider.maxvalue = 6;
@@ -807,7 +791,7 @@ void VID_MenuInit (void) {
 
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
-	s_ambientLevel_slider.generic.y = 110 * ui_fontScale->value;
+	s_ambientLevel_slider.generic.y = 90 * ui_fontScale->value;
 	s_ambientLevel_slider.generic.name = "Lightmap Brightness";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
@@ -817,7 +801,7 @@ void VID_MenuInit (void) {
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
-	s_flare_box.generic.y = 130 * ui_fontScale->value;
+	s_flare_box.generic.y = 110 * ui_fontScale->value;
 	s_flare_box.generic.name = "Light Flares";
 	s_flare_box.itemnames = yesno_names;
 	s_flare_box.curInteger = r_drawFlares->integer;
@@ -826,7 +810,7 @@ void VID_MenuInit (void) {
 
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
-	s_bloom_box.generic.y = 140 * ui_fontScale->value;
+	s_bloom_box.generic.y = 120 * ui_fontScale->value;
 	s_bloom_box.generic.name = "Bloom";
 	s_bloom_box.itemnames = yesno_names;
 	s_bloom_box.curInteger = r_hdrBloom->integer;
@@ -835,7 +819,7 @@ void VID_MenuInit (void) {
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;
-	s_dof_box.generic.y = 150 * ui_fontScale->value;
+	s_dof_box.generic.y = 130 * ui_fontScale->value;
 	s_dof_box.generic.name = "Depth of Field";
 	s_dof_box.itemnames = yesno_names;
 	s_dof_box.curInteger = r_dof->integer;
@@ -844,7 +828,7 @@ void VID_MenuInit (void) {
 
 	s_radBlur_box.generic.type = MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x = 0;
-	s_radBlur_box.generic.y = 160 * ui_fontScale->value;
+	s_radBlur_box.generic.y = 140 * ui_fontScale->value;
 	s_radBlur_box.generic.name = "Radial Blur";
 	s_radBlur_box.itemnames = yesno_names;
 	s_radBlur_box.curInteger = r_radialBlur->integer;
@@ -853,7 +837,7 @@ void VID_MenuInit (void) {
 
 	s_mb_box.generic.type = MTYPE_SPINCONTROL;
 	s_mb_box.generic.x = 0;
-	s_mb_box.generic.y = 170 * ui_fontScale->value;
+	s_mb_box.generic.y = 150 * ui_fontScale->value;
 	s_mb_box.generic.name = "Motion Blur";
 	s_mb_box.itemnames = yesno_names;
 	s_mb_box.curInteger = r_motionBlur->integer;
@@ -862,7 +846,7 @@ void VID_MenuInit (void) {
 
 	s_ssao.generic.type = MTYPE_SPINCONTROL;
 	s_ssao.generic.x = 0;
-	s_ssao.generic.y = 180 * ui_fontScale->value;
+	s_ssao.generic.y = 160 * ui_fontScale->value;
 	s_ssao.generic.name = "SSAO";
 	s_ssao.itemnames = yesno_names;
 	s_ssao.curInteger = r_ssao->integer;
@@ -871,16 +855,16 @@ void VID_MenuInit (void) {
 
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
-	s_film_grain.generic.y = 190 * ui_fontScale->value;
+	s_film_grain.generic.y = 170 * ui_fontScale->value;
 	s_film_grain.generic.name = "Filmic FX";
 	s_film_grain.itemnames = yesno_names;
-	s_film_grain.curInteger = r_filmFilter->integer;
+	s_film_grain.curInteger = r_filmicFx->integer;
 	s_film_grain.generic.callback = filmCallback;
 	s_film_grain.generic.statusbar = "Chromatic Abberation, Lens Distortion Add Vignet Filters";
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;
-	s_fxaa_box.generic.y = 200 * ui_fontScale->value;
+	s_fxaa_box.generic.y = 180 * ui_fontScale->value;
 	s_fxaa_box.generic.name = "FXAA";
 	s_fxaa_box.itemnames = yesno_names;
 	s_fxaa_box.curInteger = r_fxaa->integer;
@@ -889,7 +873,7 @@ void VID_MenuInit (void) {
 
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x = 0;
-	s_finish_box.generic.y = 210 * ui_fontScale->value;
+	s_finish_box.generic.y = 190 * ui_fontScale->value;
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curInteger = r_vsync->integer;
@@ -901,7 +885,7 @@ if (r_vsync->integer >= 3)
 
 	s_menuAction_color.generic.type = MTYPE_ACTION;
 	s_menuAction_color.generic.x = 0;
-	s_menuAction_color.generic.y = 230 * ui_fontScale->value;
+	s_menuAction_color.generic.y = 210 * ui_fontScale->value;
 	s_menuAction_color.generic.name = "Post-Process Settings...";
 	s_menuAction_color.generic.callback = ColorSettingsFunc;
 	s_menuAction_color.generic.statusbar = "Color Balance and Bloom Settings";
@@ -909,23 +893,21 @@ if (r_vsync->integer >= 3)
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x = 0;
-	s_defaults_action.generic.y = 250 * ui_fontScale->value;
+	s_defaults_action.generic.y = 230 * ui_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x = 0;
-	s_apply_action.generic.y = 260 * ui_fontScale->value;
+	s_apply_action.generic.y = 240 * ui_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 
-	menuSize = 270;
+	menuSize = 240;
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mode_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_fs_box);
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_aniso_list);
-
-	Menu_AddItem (&s_opengl_menu, (void *)&s_tc_box);
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_autoBump_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_parallax_box);

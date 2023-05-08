@@ -1741,6 +1741,8 @@ void Qcommon_Init (int argc, char **argv) {
 	Cbuf_Execute ();
 
 	Con_Init ();
+	Com_Printf("Client: " S_COLOR_YELLOW "%s %s %s\n\n", VERSION, BUILDSTRING, __DATE__);
+
 	FS_InitFilesystem ();
 	Com_Printf ("\n");
 

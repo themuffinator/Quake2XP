@@ -271,27 +271,32 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			{
 				outMesh->skinsAlbedo[j] = 
 				outMesh->skinsNormal[j] = outMesh->skinsLight[j] =
-				outMesh->skinsEnv[j]	= outMesh->skinsRgh[j] = r_notexture;
+				outMesh->skinsEnv[j]	= outMesh->skinsRgh[j] = r_missingTexture;
 				continue;
 			}
 
 			char tex[128];
 			memcpy(name, inSkin->name, MD3_MAX_PATH);
-			outMesh->skinsAlbedo[j] = GL_FindImage(name, it_skin);
+			strcpy(tex, name);
+			tex[strlen(tex) - 4] = 0;
+			strcat(tex, ".dds");
+			outMesh->skinsAlbedo[j] = R_LoadDDS(tex, it_skin);
+			if (!outMesh->skinsAlbedo[j])
+				outMesh->skinsAlbedo[j] = r_missingTexture;
 
 			// GlowMaps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_light.tga");
-			outMesh->skinsLight[j] = GL_FindImage(tex, it_skin);
+			strcat(tex, "_light.dds");
+			outMesh->skinsLight[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->skinsLight[j])
-				outMesh->skinsLight[j] = r_notexture;
+				outMesh->skinsLight[j] = r_blackTexture1x1;
 
 			// Normal maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_bump.tga");
-			outMesh->skinsNormal[j] = GL_FindImage(tex, it_normal);
+			strcat(tex, "_bump.dds");
+			outMesh->skinsNormal[j] = R_LoadDDS(tex, it_normal);
 
 		//	if (!outMesh->skinsNormal[j]) {
 		//		tex[strlen(tex) - 4] = 0;
@@ -304,30 +309,30 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			// Roughness maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_rgh.tga");
-			outMesh->skinsRgh[j] = GL_FindImage(tex, it_skin);
+			strcat(tex, "_rgh.dds");
+			outMesh->skinsRgh[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->skinsRgh[j])
-				outMesh->skinsRgh[j] = r_notexture;
+				outMesh->skinsRgh[j] = r_blackTexture1x1;
 
 			// Env maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_env.tga");
-			outMesh->skinsEnv[j] = GL_FindImage(tex, it_skin);
+			strcat(tex, "_env.dds");
+			outMesh->skinsEnv[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->skinsEnv[j])
-				outMesh->skinsEnv[j] = r_notexture;
+				outMesh->skinsEnv[j] = r_blackTexture1x1;
 
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_ao.tga");
-			outMesh->skinsAO[j] = GL_FindImage(tex, it_skin);
+			strcat(tex, "_ao.dds");
+			outMesh->skinsAO[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->skinsAO[j])
 				outMesh->skinsAO[j] = r_whiteMap;
 
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_local.tga");
-			outMesh->skinsSkinLocal[j] = GL_FindImage(tex, it_normal);
+			strcat(tex, "_local.dds");
+			outMesh->skinsSkinLocal[j] = R_LoadDDS(tex, it_normal);
 			if (!outMesh->skinsSkinLocal[j])
 				outMesh->skinsSkinLocal[j] = r_defBump;
 		}
@@ -766,19 +771,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
 
-	//	if (mesh->skinAlphatest) {
-	//		qglUniform1i(U_PARAM_INT_0, 1);
-	//		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-	//		if (!rgh)
-	//			rgh = r_notexture;
-
-	//		GL_SetBindlessTexture(U_TMU5, rgh->handle);
-	//	}
-	//	else 
-	//		qglUniform1i(U_PARAM_INT_0, 0);
-
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!skin || skin == r_notexture)
+		if (!skin || skin == r_missingTexture)
 		{
 			if (currententity->skin)
 			{
@@ -786,11 +780,11 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			}
 		}
 		if (!skin)
-			skin = r_notexture;
+			skin = r_missingTexture;
 
 		light = mesh->skinsLight[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!light)
-			light = r_notexture;
+			light = r_blackTexture1x1;
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
@@ -855,6 +849,22 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_BindProgram(md3AmbientProgram);
 		}
 
+		if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+
+			GL_Enable(GL_LINE_SMOOTH);
+			qglLineWidth(3.0);
+			qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			GL_BindProgram(showTrisProgram);
+			qglUniform3f(U_COLOR, 1.0, 1.0, 0.0);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+
+			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+			GL_BindProgram(md3AmbientProgram);
+
+			qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			GL_Disable(GL_LINE_SMOOTH);
+		}
+
 		if (mesh->muzzle) {
 			GL_Disable(GL_BLEND);
 			GL_DepthMask(1);
@@ -893,7 +903,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				continue;
 
 			skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-			if (!skin || skin == r_notexture)
+			if (!skin || skin == r_missingTexture)
 			{
 				if (currententity->skin)
 				{
@@ -901,7 +911,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				}
 			}
 			if (!skin)
-				skin = r_notexture;
+				skin = r_missingTexture;
 
 			normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 			if (!normal)
@@ -940,7 +950,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 			
 			GL_SetBindlessTexture(U_TMU0, skin->handle);
-			GL_SetBindlessTexture(U_TMU1, r_notexture->handle);
+			GL_SetBindlessTexture(U_TMU1, r_blackTexture1x1->handle);
 			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
 
@@ -956,6 +966,22 @@ void R_DrawMD3Mesh(qboolean weapon) {
 					qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
 				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 				GL_BindProgram(md3AmbientProgram);
+			}
+
+			if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+
+				GL_Enable(GL_LINE_SMOOTH);
+				qglLineWidth(3.0);
+				qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				GL_BindProgram(showTrisProgram);
+				qglUniform3f(U_COLOR, 1.0, 1.0, 0.5);
+				qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+
+				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+				GL_BindProgram(md3AmbientProgram);
+
+				qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				GL_Disable(GL_LINE_SMOOTH);
 			}
 		}
 		GL_Disable(GL_BLEND);
@@ -1207,7 +1233,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
 
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!skin || skin == r_notexture)
+		if (!skin || skin == r_missingTexture)
 		{
 			if (currententity->skin)
 			{
@@ -1215,7 +1241,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			}
 		}
 		if (!skin)
-			skin = r_notexture;
+			skin = r_missingTexture;
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
@@ -1223,7 +1249,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!rgh)
-			rgh = r_notexture;
+			rgh = r_blackTexture1x1;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
@@ -1270,7 +1296,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
-		if (rgh == r_notexture)
+		if (rgh == r_blackTexture1x1)
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);

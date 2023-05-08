@@ -214,6 +214,58 @@ int SurfSort( const msurface_t **a, const msurface_t **b )
 	return	( ((*a)->texInfo->image->texnum) ) - ( ((*b)->texInfo->image->texnum) );
 }
 
+void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program) {
+
+	if (!r_showTris->integer)
+		return;
+		
+		GL_Enable(GL_BLEND);
+		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		GL_Enable(GL_POLYGON_OFFSET_FILL);
+		GL_PolygonOffset(-3.0, -3.0);
+		GL_Enable(GL_LINE_SMOOTH);
+		qglLineWidth(3.0);
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		GL_BindProgram(showTrisProgram);
+		
+		if (bmodel) {
+			r = 0.5;
+			g = 1.0;
+			b = 0.5;
+		}
+		qglUniform3f(U_COLOR, r, g, b);
+
+		if (!bmodel)
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		else
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+		
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		GL_Disable(GL_LINE_SMOOTH);
+		GL_Disable(GL_BLEND);
+		GL_BindProgram(program);
+		GL_Disable(GL_POLYGON_OFFSET_FILL);
+		GL_PolygonOffset(0.0, 0.0);
+}
+
+void R_ShowBspTBN(qboolean bmodel, uint numIndices, glslProgram_t *program) {
+
+	if (!r_debugTbn->integer)
+		return;
+
+		GL_BindProgram(tbnDebugProgram);
+		if (!bmodel)
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		else
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+
+		qglUniform1f(U_PARAM_FLOAT_0, 10.0);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_BindProgram(program);
+
+}
 
 int			numSceneSurfaces;
 msurface_t	*sceneSurfaces[MAX_MAP_FACES];
@@ -269,6 +321,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			if (numIndices != 0xFFFFFFFF){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
+
+				R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
+				R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
 				numIndices = 0xFFFFFFFF;
 			}
 
@@ -284,6 +339,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			if (numIndices != 0xFFFFFFFF){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
+
+				R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
+				R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
 				numIndices = 0xFFFFFFFF;
 				}
 		}
@@ -292,7 +350,12 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	// draw the rest
 	if (numIndices != 0xFFFFFFFF) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+
+		R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
+		R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
 		c_brush_polys += numIndices / 3;
+
+
 	}
 }
 
@@ -315,7 +378,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
 		rghMap		= R_TextureAnimationRgh		(surf->texInfo);
 
-		if (rghMap == r_notexture) {
+		if (rghMap == r_blackTexture1x1) {
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		}
 		else {

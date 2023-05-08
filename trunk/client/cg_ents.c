@@ -1710,6 +1710,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 		VectorMA(gun_real_pos, gun_length, view_dir, gun_tip);
 
 		trace = CL_PMTraceWorld(gun_real_pos, mins, maxs, gun_tip, MASK_SOLID, alias);
+	//	trace = CM_BoxTrace(gun_real_pos, gun_tip, mins, maxs, 0, MASK_SOLID);
 
 		if (trace.fraction != 1.0f)
 		{

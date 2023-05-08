@@ -558,19 +558,19 @@
     <None Include="..\baseq2\glsl\ambientWorld.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\bloomds.frag">
+    <None Include="..\baseq2\glsl\bloomBright.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\ambientMd2.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\bloomds.vert">
+    <None Include="..\baseq2\glsl\bloomBright.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\bloomfp.frag">
+    <None Include="..\baseq2\glsl\bloomFinal.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\bloomfp.vert">
+    <None Include="..\baseq2\glsl\bloomFinal.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\cin.frag">
@@ -816,10 +816,10 @@
     <None Include="..\baseq2\glsl\heatHaze.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\calcHdrLuma.frag">
+    <None Include="..\baseq2\glsl\showTris.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\calcHdrLuma.vert">
+    <None Include="..\baseq2\glsl\showTris.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

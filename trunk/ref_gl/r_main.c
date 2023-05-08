@@ -237,7 +237,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(U_REFR_THICKNESS1, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE) {
-		GL_SetBindlessTexture(U_TMU1, r_notexture->handle);
+		GL_SetBindlessTexture(U_TMU1, r_blackTexture1x1->handle);
 		scaled = 2;
 	}
 	else		
@@ -574,7 +574,7 @@ void R_DrawLightScene (void)
 
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(qtrue);	// player shadow
-	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
+
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
 		currententity = &r_newrefdef.entities[i];
@@ -601,7 +601,7 @@ void R_DrawLightScene (void)
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawMD3MeshLight(qfalse);
 	}
-
+	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
 	R_DrawLightWorld();					// light world
 
 	//brush models light pass
@@ -1195,6 +1195,7 @@ void Dump_EntityString(void){
 SkipRestOfLine
 =================
 */
+/*
 void SkipRestOfLine(char **data) {
 	char    *p;
 	int     c;
@@ -1209,7 +1210,7 @@ void SkipRestOfLine(char **data) {
 
 	*data = p;
 }
-/*
+
 void Cube2Lut_f(void)
 {
 	char *buf, *buf0;
@@ -1353,10 +1354,7 @@ void R_RegisterCvars(void)
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
-	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
-	r_textureCompressionHQ =			Cvar_Get("r_textureCompressionHQ", "0", CVAR_ARCHIVE);
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
-	r_maxTextureSize =					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
 	r_imageAutoBumpScale =				Cvar_Get("r_imageAutoBumpScale", "6.0", CVAR_ARCHIVE);
 	r_imageAutoSpecularScale =			Cvar_Get("r_imageAutoSpecularScale", "1", CVAR_ARCHIVE);
@@ -1403,6 +1401,8 @@ void R_RegisterCvars(void)
 	r_debugTbnLen =						Cvar_Get("r_debugTbnLen", "1.0", 0);
 	r_bspSmoothTbn =					Cvar_Get("r_bspSmoothTbn", "1", CVAR_ARCHIVE);
 
+	r_showTris =						Cvar_Get("r_showTris", "0", 0);
+
 	r_radiositySpecularScale =			Cvar_Get("r_radiositySpecularScale", "0.3", CVAR_ARCHIVE);
 	r_radiosityNormalMapping =			Cvar_Get("r_radiosityNormalMapping", "1", CVAR_ARCHIVE);
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
@@ -1424,8 +1424,8 @@ void R_RegisterCvars(void)
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	
-	r_filmFilter = 						Cvar_Get("r_filmFilter", "0", CVAR_ARCHIVE);
-	r_filmFilterVignetSize =			Cvar_Get("r_filmFilterVignetSize", "0.4", CVAR_ARCHIVE);
+	r_filmicFx = 						Cvar_Get("r_filmicFx", "0", CVAR_ARCHIVE);
+	r_filmicFxVignetSize =			Cvar_Get("r_filmicFxVignetSize", "0.4", CVAR_ARCHIVE);
 
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);
@@ -1599,13 +1599,14 @@ void R_InitFboBuffers() {
 	Com_Printf("Initializing FBOs...\n\n");
 	R_CreateScreenFbo();
 	R_FboFinal();
-	R_FxaaFbo();
-	CreateHDR64Buffer();
+	R_Tex2dFbo();
 	R_HdrLumFbo();
 	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
 	CreateThermalBuffer();
+	Com_Printf("\n");
+	R_PboInit();
 	Com_Printf("\n");
 }
 
@@ -1810,16 +1811,14 @@ int R_Init(void *hinstance, void *hWnd)
 	glTextureSubImage3D		=		(PFNGLTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glTextureSubImage3D");
 	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
 
+	glCompressedTextureSubImage2D =(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC) qwglGetProcAddress("glCompressedTextureSubImage2D");
+
+	glGetTextureLevelParameteriv = (PFNGLGETTEXTURELEVELPARAMETERIVPROC) qwglGetProcAddress("glGetTextureLevelParameteriv");
+
 	// texture storage
-	glTexStorage2D			=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
-	glTexStorage3D			=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
-	qglTexSubImage3D		=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
-
-	qglCompressedTexImage2D			=	(PFNGLCOMPRESSEDTEXIMAGE2DPROC)			qwglGetProcAddress("glCompressedTexImage2D");
-	qglCompressedTextureSubImage2D	=	(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glCompressedTextureSubImage2D");
-
-	qglCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)qwglGetProcAddress("glCompressedTexSubImage2D"); ;
-
+	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
+	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
+	qglTexSubImage3D	=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
@@ -1837,7 +1836,8 @@ int R_Init(void *hinstance, void *hWnd)
 	qglClampColor		=	(PFNGLCLAMPCOLORPROC)		qwglGetProcAddress("glClampColor");
 	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
 
-
+	glFenceSync = (PFNGLFENCESYNCPROC) qwglGetProcAddress("glFenceSync");
+	glGetSynciv = (PFNGLGETSYNCIVPROC)qwglGetProcAddress("glGetSynciv");
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
@@ -1858,7 +1858,6 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetIntegerv(GL_MAX_VARYING_FLOATS,				&gl_config.maxVaryingFloats);
 	qglGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,	&gl_config.maxVertexTextureImageUnits);
 	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl_config.maxCombinedTextureImageUnits);
-	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,	&gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS,				&gl_config.maxVertexAttribs);
 	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,			&gl_config.maxTextureImageUnits);
 	qglGetIntegerv(GL_MAX_UNIFORM_LOCATIONS,			&gl_config.maxUniformLocations);
@@ -1876,7 +1875,6 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_YELLOW"Max Vertex TextureImageUnits: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexTextureImageUnits);
 	Com_Printf(S_COLOR_YELLOW"Max Texture ImageUnits:       "S_COLOR_GREEN"   %i\n", gl_config.maxTextureImageUnits);
 	Com_Printf(S_COLOR_YELLOW"Max Combined TextureImageUnits: "S_COLOR_GREEN" %i\n", gl_config.maxCombinedTextureImageUnits);
-	Com_Printf(S_COLOR_YELLOW"Max Fragment UniformComponents: "S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
 
 	Com_Printf(S_COLOR_YELLOW"Max Render Buffer Size:   "S_COLOR_GREEN"       %i\n", gl_state.maxRenderBufferSize);
 	Com_Printf(S_COLOR_YELLOW"Max Draw Buffers:         "S_COLOR_GREEN"       %i\n", gl_state.maxDrawBuffers);
@@ -1906,21 +1904,6 @@ int R_Init(void *hinstance, void *hWnd)
 			max_aniso, (int)aniso_level);
 	}
 
-	gl_state.texture_compression_bptc = qfalse;
-	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
-		if (!r_textureCompression->integer) {
-			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
-			gl_state.texture_compression_bptc = qfalse;
-		}
-		else {
-			Com_Printf("...using GL_ARB_texture_compression_bptc\n");
-			gl_state.texture_compression_bptc = qtrue;
-		}
-	else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");
-		gl_state.texture_compression_bptc = qfalse;
-	}
-
 	if (IsExtensionSupported("GL_ARB_seamless_cube_map")) {
 		Com_Printf("...using GL_ARB_seamless_cube_map\n");
 		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -1940,10 +1923,6 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.depthBoundsTest = qfalse;
 	}
 
-	qglObjectLabel = (PFNGLOBJECTLABELPROC)qwglGetProcAddress("glObjectLabel");
-	qglGetObjectLabel = (PFNGLGETOBJECTLABELPROC)qwglGetProcAddress("glGetObjectLabel");
-	if (qglObjectLabel && qglGetObjectLabel)
-		Com_Printf("...using GL_debug_label\n");
 
 	Com_Printf("=====================================\n");
 
@@ -2017,6 +1996,9 @@ void R_Shutdown(void)
 	qglDeleteFramebuffers(1, &fbo._linearDepth);
 	qglDeleteFramebuffers(1, &fbo._tex2d);
 	qglDeleteFramebuffers(1, &fbo._hdr64);
+	
+	for (int i = 0; i < 9; i++)
+		qglDeleteFramebuffers(1, &fbo._hdrLum[i]);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

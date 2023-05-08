@@ -715,7 +715,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-
 	Com_Printf ("Load "S_COLOR_YELLOW"radial blur program"S_COLOR_WHITE" ");
 	radialProgram = R_FindProgram ("radialBlur", S_DEFAULT);
 
@@ -774,10 +773,10 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
-	bloomdsProgram = R_FindProgram ("bloomds", S_DEFAULT);
-	bloomfpProgram = R_FindProgram ("bloomfp", S_DEFAULT);
+	bloomBrightProgram = R_FindProgram ("bloomBright", S_DEFAULT);
+	bloomFinalProgram = R_FindProgram ("bloomFinal", S_DEFAULT);
 
-	if (bloomdsProgram->valid && bloomfpProgram->valid){
+	if (bloomBrightProgram->valid && bloomFinalProgram->valid){
 		Com_Printf("succeeded\n");
 	}
 	else {
@@ -1042,6 +1041,16 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"debug TBN program"S_COLOR_WHITE" ");
 	tbnDebugProgram = R_FindProgram("tbnDebug", S_GEO);
 	if (tbnDebugProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"show tris program"S_COLOR_WHITE" ");
+	showTrisProgram = R_FindProgram("showTris", S_DEFAULT);
+	if (showTrisProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

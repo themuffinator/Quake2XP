@@ -680,6 +680,6 @@ void GL_SetDefaultState(void) {
 	hdrKey = 0.0;
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+	qglHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	GL_UpdateSwapInterval();
 }

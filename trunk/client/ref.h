@@ -285,6 +285,7 @@ typedef enum {
 	it_skin,
 	it_sprite,
 	it_wall,
+	it_wall4free,
 	it_pic,
 	it_sky,
 	it_normal,
@@ -310,6 +311,10 @@ typedef struct image_s {
 	// drawing
 	int			texnum;					// gl texture binding
 	float		sl, tl, sh, th;		// 0,0 - 1,1 unless part of the scrap
+	
+	int			numChannels;
+	qboolean	isFloat;
+	qboolean	compressed;
 
 	qboolean	has_alpha;
 	qboolean	paletted;
@@ -532,12 +537,13 @@ typedef struct {
 fbo_t fbo;
 
 typedef struct {
+
 	uint	_64[2];
-	uint	_fsq[2];
+	uint	_fullScreen;
+	uint	_fullScreenF;
 }pbo_t;
 
 pbo_t pbo;
-void R_PboInit();
 
 typedef struct {
 	int		x, y, width, height;	// in virtual screen coordinates

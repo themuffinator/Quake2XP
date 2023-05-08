@@ -327,7 +327,7 @@ void SCR_DrawBatteryLevel() {
 				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[3]);
 				break;
 			default:
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[3]);
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[0]);
 				break;
 			}
 }

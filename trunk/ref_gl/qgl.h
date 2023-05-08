@@ -805,6 +805,11 @@ extern PFNGLGENERATETEXTUREMIPMAPPROC			glGenerateTextureMipmap;
 extern PFNGLTEXTURESTORAGE3DPROC				glTextureStorage3D;
 extern PFNGLTEXTURESUBIMAGE3DPROC				glTextureSubImage3D;
 extern PFNGLGETTEXTUREIMAGEPROC					glGetTextureImage;
+extern PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC		glCompressedTextureSubImage2D;
+extern PFNGLGETTEXTURELEVELPARAMETERIVPROC		glGetTextureLevelParameteriv;
+
+extern PFNGLFENCESYNCPROC						glFenceSync;
+extern PFNGLGETSYNCIVPROC						glGetSynciv;
 
 extern PFNGLCLAMPCOLORPROC						qglClampColor;
 

@@ -169,7 +169,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 
 	if (!skin)
-		skin = r_notexture;
+		skin = r_missingTexture;
 
 	// select skin
 	if (currententity->bump)
@@ -193,10 +193,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	glowskin = currentmodel->glowtexture[currententity->skinnum];
 
 	if (!glowskin)
-		glowskin = r_notexture;
+		glowskin = r_blackTexture1x1;
 
 	if (!skin)
-		skin = r_notexture;
+		skin = r_missingTexture;
 
 	R_CalcAliasFrameLerp (paliashdr, 0);
 
@@ -305,6 +305,21 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		else
 			qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
 		GL_DrawArrays(GL_TRIANGLES, 0, jj);
+	}
+
+	if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+
+		GL_Enable(GL_LINE_SMOOTH);
+		qglLineWidth(2.0);
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		GL_BindProgram(showTrisProgram);
+		qglUniform3f(U_COLOR, 0.0, 1.0, 1.0);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+
+		GL_DrawArrays(GL_TRIANGLES, 0, jj);
+
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		GL_Disable(GL_LINE_SMOOTH);
 	}
 
 	qglDisableVertexAttribArray (ATT_POSITION);
@@ -471,7 +486,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		}
 	}
 	if (!skin)
-		skin = r_notexture;
+		skin = r_missingTexture;
 
 //	// select skin
 	if (currententity->bump)
@@ -494,7 +509,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	
 	rgh = currentmodel->skins_roughness[currententity->skinnum];
 	if (!rgh)
-		rgh = r_notexture;
+		rgh = r_blackTexture1x1;
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
@@ -566,7 +581,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_SetBindlessTexture(U_TMU5, skinBump->handle);
 	GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
-	if (rgh == r_notexture)
+	if (rgh == r_blackTexture1x1)
 		qglUniform1i(U_USE_RGH_MAP, 0);
 	else {
 		qglUniform1i(U_USE_RGH_MAP, 1);

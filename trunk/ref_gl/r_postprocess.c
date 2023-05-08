@@ -39,11 +39,18 @@ void R_DrawFullScreenQuad () {
 	glBindVertexArray(0);
 }
 
-void R_Bloom (void) 
-{
-	if (!r_filmFilter->integer)
-		if (!r_hdrBloom->integer)
-			return;
+void R_RestoreViewPortAndScissor() {
+
+	GL_Disable(GL_SCISSOR_TEST);
+	GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+}
+
+void R_Bloom (void) {
+	int i;
+	
+	if (!r_hdrBloom->integer)
+		return;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
@@ -52,48 +59,38 @@ void R_Bloom (void)
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._bloom);
 
-	qglReadBuffer(GL_COLOR_ATTACHMENT0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width*0.25, vid.height*0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
-	GL_BindProgram (bloomdsProgram);
-	if (r_filmFilter->integer)
-		qglUniform1i(U_PARAM_INT_0, 1);
-	else
-		qglUniform1i(U_PARAM_INT_0, 0);
+	GL_Enable(GL_SCISSOR_TEST);
+	GL_Scissor(0, 0, vid.width * 0.25, vid.height * 0.25);
+	GL_Viewport(0, 0, vid.width * 0.25, vid.height * 0.25);
+
+	GL_BindProgram (bloomBrightProgram);
+	qglUniform1i(U_PARAM_INT_0, 0);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
-	
-	if (r_filmFilter->integer) {
-		//glare
-		GL_BindProgram(glareProgram);
-		for (int i = 0; i < r_hdrGlarePasses->integer; i++) {
-			GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
-			qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
-			qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
-			R_DrawFullScreenQuad();
-			glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
-		}
-	}
-	//blur
-	GL_BindProgram(bloomBlurProgram);
-	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
-
-	qglUniform1i(U_PARAM_INT_0, 1); // horizontal
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
-
-	qglUniform1i(U_PARAM_INT_0, 0); // vertical
 	R_DrawFullScreenQuad();
 	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
 	
+	//blur
+	GL_BindProgram(bloomBlurProgram);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
+
+	for (i = 0; i < 2; i++) {
+		qglUniform1i(U_PARAM_INT_0, i);
+		R_DrawFullScreenQuad();
+		glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	}
+
+	R_RestoreViewPortAndScissor();
+	
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+
 	//final pass
-	GL_BindProgram (bloomfpProgram);
+	GL_BindProgram (bloomFinalProgram);
 	qglUniform1f(U_PARAM_FLOAT_0, r_hdrBloomIntens->value);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
@@ -103,10 +100,9 @@ void R_Bloom (void)
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
+void R_ThermalVision (void) {
+	int i;
 
-
-void R_ThermalVision (void) 
-{
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
@@ -116,10 +112,12 @@ void R_ThermalVision (void)
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._thermal);
 
-	qglReadBuffer(GL_COLOR_ATTACHMENT0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.5, vid.height * 0.5, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+
+	GL_Enable(GL_SCISSOR_TEST);
+	GL_Scissor(0, 0, vid.width * 0.5, vid.height * 0.5);
+	GL_Viewport(0, 0, vid.width * 0.5, vid.height * 0.5);
 
 	// process colors
 	GL_BindProgram (thermalProgram);
@@ -130,17 +128,17 @@ void R_ThermalVision (void)
 
 	//blur
 	GL_BindProgram(bloomBlurProgram);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
 
-	qglUniform1i(U_PARAM_INT_0, 1); // horizontal
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
-	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
+	for (i = 0; i < 2; i++) {
+		qglUniform1i(U_PARAM_INT_0, i);
+		R_DrawFullScreenQuad();
+		glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	}
 
-	qglUniform1i(U_PARAM_INT_0, 0); // vertical
-	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
-	
+	R_RestoreViewPortAndScissor();
+
 	//final pass
 	GL_BindProgram (thermalfpProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
@@ -151,8 +149,7 @@ void R_ThermalVision (void)
 
 
 
-void R_RadialBlur (void) 
-{
+void R_RadialBlur (void) {
 	float	blur;
 
 	if (!r_radialBlur->integer)
@@ -186,8 +183,7 @@ void R_RadialBlur (void)
 
 extern float v_blend[4];
 
-void R_ScreenBlend(void)
-{
+void R_ScreenBlend(void){
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -205,8 +201,7 @@ void R_ScreenBlend(void)
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
-void R_DofBlur (void) 
-{
+void R_DofBlur (void) {
 	float			tmpDist[5], tmpMins[3];
 	vec2_t          dofParams;
 	trace_t			trace;
@@ -286,8 +281,6 @@ void R_FXAA (void) {
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
 
-	qglReadBuffer(GL_COLOR_ATTACHMENT0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
@@ -299,22 +292,65 @@ void R_FXAA (void) {
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
-void R_FilmFx(void)
-{
+void R_FilmFx(void) {
 
-	if (!r_filmFilter->integer)
+	if (!r_filmicFx->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	 
+	
+	// hdr glares
+	int i;
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._bloom);
+
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.25, vid.height * 0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+
+	GL_Enable(GL_SCISSOR_TEST);
+	GL_Scissor(0, 0, vid.width * 0.25, vid.height * 0.25);
+	GL_Viewport(0, 0, vid.width * 0.25, vid.height * 0.25);
+
+	GL_BindProgram(bloomBrightProgram);
+	qglUniform1i(U_PARAM_INT_0, 1);
+
+	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+
+	//glare
+	GL_BindProgram(glareProgram);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
+	qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
+
+	for (i = 0; i < r_hdrGlarePasses->integer; i++) {
+		R_DrawFullScreenQuad();
+		glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	}
+
+	R_RestoreViewPortAndScissor();
+
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+
+	//mix glare with screen pass
+	GL_BindProgram(bloomFinalProgram);
+	qglUniform1f(U_PARAM_FLOAT_0, r_hdrBloomIntens->value);
+
+	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU1, r_hdrBloomImage->handle);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+
+	//-----------------
 	// setup program
 	GL_BindProgram (filmicFxProgram);
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
 
-	qglReadBuffer(GL_COLOR_ATTACHMENT0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
@@ -323,7 +359,7 @@ void R_FilmFx(void)
 	GL_SetBindlessTexture(U_TMU1,	r_lensDirt->handle);
 
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
-	qglUniform1f (U_PARAM_FLOAT_0,	r_filmFilterVignetSize->value);
+	qglUniform1f (U_PARAM_FLOAT_0,	r_filmicFxVignetSize->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -336,13 +372,103 @@ float ClampFloat(float value, float min, float max) {
 		return max;
 	return value;
 }
-void CalculateAutomaticExposure()
-{
-	
+void CalculateAutomaticExposure() {
+	int				i;
+	static float	image[64 * 64 * 3];
+	float           curTime;
+	float			deltaTime;
+	float           luminance;
+	float			avgLuminance = 0.0;
+	float			maxLuminance = 0.0;
+	double			sum;
+	const vec3_t    luma = { 0.2125f, 0.7154f, 0.0721f };
+	vec3_t			color;
+	float			newAdaptation;
+	float			newMaximum;
+
+	curTime = Sys_Milliseconds() * 0.001;
+
+	// calculate the average scene luminance
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr64);
+
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 64, 64, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	GL_Enable(GL_SCISSOR_TEST);
+	GL_Scissor(0, 0, 64, 64);
+	GL_Viewport(0, 0, 64, 64);
+
+	static int index = 0;
+	int nextIndex = 0;
+	index = (index + 1) % 2;
+	nextIndex = (index + 1) % 2;
+
+	// read back the contents
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[index]);
+	qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, 0);
+
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[nextIndex]);
+	GLfloat *src = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 64*64*3*sizeof(float), GL_MAP_READ_BIT);
+	if (src)
+	{
+
+
+		vec3_t tmp = { 0.0,0.0,0.0 };
+		sum = 0.0f;
+		maxLuminance = 0.0f;
+
+		for (i = 0; i < 4096; i += 3)
+		{
+			color[0] = src[i * 3 + 0];
+			color[1] = src[i * 3 + 1];
+			color[2] = src[i * 3 + 2];
+
+			tmp[0] = pow(color[0], 1.0 / 2.2);
+			tmp[1] = pow(color[1], 1.0 / 2.2);
+			tmp[2] = pow(color[2], 1.0 / 2.2);
+			luminance = DotProduct(luma, tmp) + 0.0001f;
+			if (luminance > maxLuminance)
+			{
+				maxLuminance = luminance;
+			}
+
+			float logLuminance = log2(luminance + 1.0f);
+			sum += logLuminance;
+		}
+
+		avgLuminance = sum / 4096.0f;
+
+		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+	}
+	// the user's adapted luminance level is simulated by closing the gap between
+	// adapted luminance and current luminance by 2% every frame, based on a
+	// 30 fps rate. This is not an accurate model of human adaptation, which can
+	// take longer than half an hour.
+	if (hdrTime > curTime){		
+		hdrTime = curTime;
+	}
+
+	deltaTime = curTime - hdrTime;
+
+	newAdaptation = hdrAverageLuminance + (avgLuminance - hdrAverageLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
+	newMaximum = hdrMaxLuminance + (maxLuminance - hdrMaxLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
+
+	if (!isnan(newAdaptation) && !isnan(newMaximum))
+	{
+		hdrAverageLuminance = newAdaptation;
+		hdrMaxLuminance = newMaximum;
+	}
+
+	hdrTime = curTime;
+
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+
+	R_RestoreViewPortAndScissor();
+
+//	Com_Printf("HDR luminance avg = %f, max = %f\n", hdrAverageLuminance, hdrMaxLuminance);
 }
 
-float Lerp(const float v1, const float v2, const float l)
-{
+float Lerp(const float v1, const float v2, const float l) {
 	float out;
 	if (l <= 0.0f) 
 		return v1;
@@ -358,13 +484,12 @@ void R_ToneMaping(void) {
 		return;
 
 	vec2_t hdrParams;
-		
-	if (r_hdrAutoExposure->integer){
+	if (r_hdrAutoExposure->integer) {
 		CalculateAutomaticExposure();
-		hdrParams[0] = hdrAverageLuminance;
+		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.01, 0.1);
 		hdrParams[1] = 0.1;
-	} 
-	else{
+	}
+	else {
 		hdrParams[0] = 1.0;
 		hdrParams[1] = r_hdrExposure->value;
 	}
@@ -380,8 +505,6 @@ void R_ToneMaping(void) {
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._final);
 
-	qglReadBuffer(GL_COLOR_ATTACHMENT0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -402,7 +525,7 @@ void R_ToneMaping(void) {
 	glCopyTextureSubImage2D(r_finalScreen->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
-void R_ColorTemperatureCorrection(void){
+void R_ColorTemperatureCorrection(void) {
 
 	if (r_colorTempK->value < 1000.0)
 		return;
@@ -421,8 +544,8 @@ void R_ColorTemperatureCorrection(void){
 }
 
 /*
-void R_lutCorrection(void)
-{
+void R_lutCorrection(void) {
+
 	if (!lutCount)
 		return;
 
@@ -451,8 +574,7 @@ void R_lutCorrection(void)
 }
 */
 
-void R_MotionBlur(void)
-{
+void R_MotionBlur(void) {
 	vec2_t	angles, delta;
 	vec3_t velocity;
 	float blur;
@@ -495,8 +617,7 @@ void R_MotionBlur(void)
 }
 
 
-void R_SSAO (void) 
-{
+void R_SSAO (void) {
 	int i, j, numSamples;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
@@ -511,6 +632,10 @@ void R_SSAO (void)
 	GL_DepthRange(0.0, 1.0);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
+
+	GL_Enable(GL_SCISSOR_TEST);
+	GL_Scissor(0, 0, vid.width * 0.5, vid.height * 0.5);
+	GL_Viewport(0, 0, vid.width * 0.5, vid.height * 0.5);
 
 	GL_BindProgram(depthDownsampleProgram);
 	GL_SetBindlessTexture(U_TMU0, r_linearDepth->handle);
@@ -558,8 +683,7 @@ void R_SSAO (void)
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
-	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
-				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	R_RestoreViewPortAndScissor();
 }
 
 /*
@@ -585,8 +709,6 @@ void R_FixFov(void) {
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
 
-	qglReadBuffer(GL_COLOR_ATTACHMENT0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
