@@ -94,8 +94,8 @@ static const byte r_originalPalette[] = {
 199, 171, 155, 167, 139, 119, 135, 107,  87, 159,  91,  83
 };
 
-qboolean GL_Upload8(byte* data, int width, int height, qboolean mipmap, qboolean is_sky);
-qboolean GL_Upload32(unsigned* data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode);
+//qboolean GL_Upload8(uint texnum, byte* data, int width, int height, qboolean mipmap);
+//qboolean GL_Upload32(uint texnum, unsigned* data, int width, int height, qboolean mipmap, uint ClampMode);
 image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits, uint _hash);
 
 static byte intensitytable[256];
@@ -181,14 +181,13 @@ qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
 
 image_t* R_LoadDDS(char* texName, uint type) {
 
-	ddsFileHeader_t* header;
-	ddsFileHeaderDXT10_t* headerDXT10;
+	ddsFileHeader_t			*header;
+	ddsFileHeaderDXT10_t	*headerDXT10;
 	uint					len, i, uw, uh, uploadWidth, uploadHeight;
 	uint					format, intFormat, blockWidth = 16, level = 0;
 	image_t					*image;
 	qboolean				compressed, hdr;
 	byte					*buf, *imagedata;
-	float					*imageDataHdr;
 	uint hash				= Com_HashKey(texName);
 
 	if (!texName)
@@ -265,9 +264,9 @@ image_t* R_LoadDDS(char* texName, uint type) {
 				hdr = qtrue;
 			}
  
-			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16))
+			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) /* && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16)*/)
 			{
-				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 98 'BC7_UNORM', 95 'BC6H_UF16', 96 'DXGI_FORMAT_BC6H_SF16') (%s)\n", headerDXT10->dxgiFormat, texName);
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 98 'BC7_UNORM') (%s)\n", headerDXT10->dxgiFormat, texName);
 				return NULL;
 			}
 			if (headerDXT10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D)
@@ -324,6 +323,37 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->type = type;
 	image->hash = Com_HashKey(image->name);
 	image->compressed = compressed;
+	image->has_alpha = qtrue;
+	image->paletted = qfalse;
+
+	if (image->type == it_pic){
+
+		byte *data, *pal;
+		char s[MAX_QPATH];
+		int pcx_w, pcx_h;
+		strcpy(s, texName);
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".pcx");
+		LoadPCX(s, &data, &pal, &pcx_w, &pcx_h);
+
+		image->picScale_w = 1.0;
+		image->picScale_h = 1.0;
+
+		if (pcx_w > 0 && pcx_h > 0) {
+
+			image->picScale_w = (float)pcx_w / image->width;
+			image->picScale_h = (float)pcx_h / image->height;
+
+			if (data)
+				free(data);
+			if (pal)
+				free(pal);
+		}
+	}
+	image->sl = 0;
+	image->sh = 1;
+	image->tl = 0;
+	image->th = 1;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
 
@@ -338,9 +368,16 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 	if (header->dwFlags & DDSF_MIPMAPCOUNT) {
 		image->numMips = header->dwMipMapCount;
+		int skipMip;
+
+		if (image->type != it_part)
+			skipMip = min(r_ddsQuality->integer, image->numMips);
+		else
+			skipMip = 0;
+
 		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
+		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
 		glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
 	}
@@ -491,8 +528,7 @@ void GL_ImageList_f(void)
 LoadPCX
 ==============
 */
-void LoadPCX(char *filename, byte ** pic, byte ** palette, int *width,
-			 int *height)
+void LoadPCX(char *filename, byte ** pic, byte ** palette, int *width, int *height)
 {
 	byte *raw;
 	pcx_t *pcx;
@@ -595,12 +631,11 @@ Returns has_alpha
 ===============
 */
 
-static uint imageIdx;
 
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode)
-{
-	int			samples, intFormat, c, i;
-	byte		*scan;
+qboolean GL_Upload32(uint texnum, unsigned *data, int width, int height, qboolean mipmap, uint ClampMode){
+
+	int		samples, c, i;
+	byte	*scan;
 
 	// scan the texture for any non-255 alpha
 	c = width * height;
@@ -613,37 +648,27 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 			break;
 		}
 	}
-	if (samples == 3) {
-			intFormat = GL_RGBA8;
-	}
-
-	if (samples == 4) {
-			intFormat = GL_RGBA8;
-	}
 
 	int numMips = CalcMipmapCount(width, height);
-	glTextureStorage2D(imageIdx, numMips, intFormat, width, height);
-	glTextureSubImage2D(imageIdx, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTextureStorage2D(texnum, numMips, GL_RGBA8, width, height);
+	glTextureSubImage2D(texnum, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	glTextureParameteri(imageIdx, GL_TEXTURE_WRAP_S, ClampMode);
-	glTextureParameteri(imageIdx, GL_TEXTURE_WRAP_T, ClampMode);
+	glTextureParameteri(texnum, GL_TEXTURE_WRAP_S, ClampMode);
+	glTextureParameteri(texnum, GL_TEXTURE_WRAP_T, ClampMode);
 
-	if (mipmap)
-	{
-		glGenerateTextureMipmap(imageIdx);
-		glTextureParameterf(imageIdx, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
-		glTextureParameterf(imageIdx, GL_TEXTURE_LOD_BIAS,			r_textureLodBias->value);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER,		GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER,		GL_LINEAR);
-		glTextureParameteri(imageIdx, GL_TEXTURE_BASE_LEVEL,		0);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,			numMips-1);
+	if (mipmap){
+		glGenerateTextureMipmap(texnum);
+		glTextureParameterf(texnum, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
+		glTextureParameterf(texnum, GL_TEXTURE_LOD_BIAS,		r_textureLodBias->value);
+		glTextureParameteri(texnum, GL_TEXTURE_MIN_FILTER,		GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(texnum, GL_TEXTURE_MAG_FILTER,		GL_LINEAR);
+		glTextureParameteri(texnum, GL_TEXTURE_BASE_LEVEL,		0);
+		glTextureParameteri(texnum, GL_TEXTURE_MAX_LEVEL,		numMips-1);
 	}
-	else
-	{
-		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	else{
+		glTextureParameteri(texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
-	imageIdx = 0;
 	return (samples == 4);
 }
 
@@ -658,8 +683,7 @@ Returns has_alpha
 ===============
 */
 
-qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
-					qboolean is_sky)
+qboolean GL_Upload8(uint texnum, byte * data, int width, int height, qboolean mipmap)
 {
 	static unsigned trans[512 * 256];
 	int i, s;
@@ -696,7 +720,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap, qtrue, GL_REPEAT);
+	return GL_Upload32(texnum, trans, width, height, mipmap, GL_REPEAT);
 }
 
 
@@ -795,23 +819,17 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 				free(palettes);
 		}
 	}
-	imageIdx = 0;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
-	imageIdx = image->texnum;
-
-	qboolean unScaled = qfalse;
-	if (image->type == it_mipmap)
-		unScaled = qtrue;
 	
 	uint ClampMode = GL_REPEAT;
 	if (image->type == it_part)
 		ClampMode = GL_CLAMP_TO_EDGE;
 
 		if (bits == 8)
-			image->has_alpha = GL_Upload8(pic, width, height, image->type != it_pic, image->type == it_sky);
+			image->has_alpha = GL_Upload8(image->texnum, pic, width, height, image->type != it_pic);
 		else 									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, image->type != it_pic, unScaled, ClampMode);
+			image->has_alpha = GL_Upload32(image->texnum,(unsigned *) pic, width, height, image->type != it_pic, ClampMode);
 					
 		image->upload_width = width;	
 		image->upload_height = height;
@@ -964,11 +982,9 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 	if (pic)
 		free(pic);
-	
 
 	if (palette)
 		free(palette);
-	
 
 	return image;
 }
@@ -997,15 +1013,15 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 	}
 
  if (!strcmp(name + len - 4, ".tga")) {
+
 		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
 		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-
 	}
-
 	else if (!strcmp(name + len - 4, ".jpg")) {
+
 	 STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -1014,7 +1030,6 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 	}
 	else 
 		return NULL;
-
 
 	if (pic)
 		free(pic);
@@ -1031,8 +1046,8 @@ R_RegisterSkin
 ===============
 */
 
-struct image_s *R_RegisterSkin(char *name)
-{
+struct image_s *R_RegisterSkin(char *name){
+
 	image_t *img;
 	char gl[128];
 
@@ -1040,16 +1055,15 @@ struct image_s *R_RegisterSkin(char *name)
 	gl[strlen(gl) - 4] = 0;
 	strcat(gl, ".dds");
 	img = R_LoadDDS(gl, it_skin);
+
 	if (!img)
 		img = r_missingTexture;
 	
 	return img;
-
-//	return GL_FindImage(name, it_skin);
 }
 
-struct image_s *R_RegisterPlayerBump (char *name)
-{
+struct image_s *R_RegisterPlayerBump (char *name){
+
 	image_t	*img;
 	char	gl[48];
 	

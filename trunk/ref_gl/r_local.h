@@ -232,38 +232,38 @@ extern refdef_t r_newrefdef;
 extern int r_viewcluster, r_viewcluster2, r_oldviewcluster,
 r_oldviewcluster2;
 
-cvar_t *r_noRefresh;
-cvar_t *r_drawEntities;
-cvar_t *r_drawWorld;
-cvar_t *r_speeds;
-cvar_t *r_noVis;
-cvar_t *r_noCull;
-cvar_t *r_leftHand;
-cvar_t *r_lightLevel;
-cvar_t *r_mode;
-cvar_t *r_noBind;
-cvar_t *r_cull;
-cvar_t *r_vsync;
+cvar_t	*r_noRefresh;
+cvar_t	*r_drawEntities;
+cvar_t	*r_drawWorld;
+cvar_t	*r_speeds;
+cvar_t	*r_noVis;
+cvar_t	*r_noCull;
+cvar_t	*r_leftHand;
+cvar_t	*r_lightLevel;
+cvar_t	*r_mode;
+cvar_t	*r_noBind;
+cvar_t	*r_cull;
+cvar_t	*r_vsync;
 
-cvar_t *r_imageAutoBump;
-cvar_t *r_imageAutoBumpScale;
-cvar_t *r_imageAutoSpecularScale;
+cvar_t	*r_imageAutoBump;
+cvar_t	*r_imageAutoBumpScale;
+cvar_t	*r_imageAutoSpecularScale;
 
-cvar_t *r_lockPvs;
-cvar_t *r_fullScreen;
+cvar_t	*r_lockPvs;
+cvar_t	*r_fullScreen;
 
 cvar_t	*r_brightness;
 cvar_t	*r_contrast;
 cvar_t	*r_saturation;
 cvar_t	*r_gamma;
 
-cvar_t* r_hdrAutoExposure;
+cvar_t	*r_hdrAutoExposure;
 cvar_t	*r_hdrExposure;
 cvar_t	*r_hdrLightScale;
 cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
-cvar_t* r_hdrBloomIntens;
+cvar_t	*r_hdrBloomIntens;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -280,6 +280,7 @@ cvar_t	*r_screenShot;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
 cvar_t	*r_textureLodBias;
+cvar_t	*r_ddsQuality;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
@@ -601,6 +602,7 @@ void R_DrawSpriteModel (entity_t * e);
 void R_DrawBSP (void);
 void R_InitEngineTextures (void);
 void R_Init2D (void);
+void LoadPCX(char *filename, byte **pic, byte **palette, int *width, int *height);
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);

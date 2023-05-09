@@ -352,12 +352,20 @@ image_t* Draw_FindPic(char* name)
 	char fullname[MAX_QPATH];
 
 	if (name[0] != '/' && name[0] != '\\') {
-		Com_sprintf(fullname, sizeof(fullname), "pics/%s.pcx", name);
-		gl = GL_FindImage(fullname, it_pic);
-	}
-	else
-		gl = GL_FindImage(name + 1, it_pic);
 
+		Com_sprintf(fullname, sizeof(fullname), "pics/%s.dds", name);
+		gl = R_LoadDDS(fullname, it_pic);
+		
+		if (!gl) {
+			Com_sprintf(fullname, sizeof(fullname), "pics/%s.pcx", name);
+			gl = GL_FindImage(fullname, it_pic);
+		
+		}
+	}
+	else {
+
+		gl = GL_FindImage(name + 1, it_pic);
+	}
 	if (gl)
 		if (gl != r_missingTexture)
 			strcpy(gl->bare_name, name);
@@ -372,7 +380,7 @@ Draw_GetPicSize
 */
 void Draw_GetPicSize(int* w, int* h, char* pic)
 {
-	image_t* gl;
+	image_t *gl;
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
@@ -727,6 +735,9 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	if (!r_bump2D->integer)
 		return;
 
+	if (!gl2)
+		gl2 = r_defBump;
+
 	if (strstr(gl->name, "chx"))
 		return;
 
@@ -788,8 +799,9 @@ void Draw_Pic(int x, int y, char* pic)
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-		Com_Printf("Can't find pic: %s\n", pic);
-		return;
+	//	Com_Printf("Can't find pic: %s\n", pic);
+	//	return;
+		gl = r_missingTexture;
 	}
 	Draw_Pic2(x, y, gl);
 
@@ -801,8 +813,9 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char* pic)
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-		Com_Printf("Can't find pic: %s\n", pic);
-		return;
+	//Com_Printf("Can't find pic: %s\n", pic);
+	//	return;
+		gl = r_missingTexture;
 	}
 	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
 }
@@ -817,16 +830,17 @@ void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, c
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-		Com_Printf("Can't find pic: %s\n", pic);
-		return;
+	//	Com_Printf("Can't find pic: %s\n", pic);
+	//	return;
+		gl = r_missingTexture;
 	}
 
 	gl2 = Draw_FindPic(pic2);
 	if (!gl2) {
-		Com_Printf("Can't find pic: %s\n", pic2);
-		return;
+		gl2 = r_defBump;
+	//	Com_Printf("Can't find pic: %s\n", pic2);
+	//	return;
 	}
-
 	Draw_ScaledBumpPic(x, y, scale_x, scale_y, gl, gl2);
 }
 
