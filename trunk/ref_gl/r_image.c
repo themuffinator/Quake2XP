@@ -618,10 +618,37 @@ void LoadPCX(char *filename, byte ** pic, byte ** palette, int *width, int *heig
 	}
 
 	FS_FreeFile(pcx);
-
 }
 
+/*
+================
+GL_LoadWal
+================
+*/
+image_t *GL_LoadWal(char *name)
+{
+	miptex_t *mt;
+	int width, height, ofs;
+	image_t *image;
 
+	FS_LoadFile(name, (void **)&mt);
+
+	if (!mt) {
+		Com_Printf("GL_FindImage: can't load %s\n", name);
+		return r_missingTexture;
+	}
+
+	width = LittleLong(mt->width);
+	height = LittleLong(mt->height);
+	ofs = LittleLong(mt->offsets[0]);
+
+
+	image = GL_LoadPic(name, (byte *)mt + ofs, width, height, it_wall, 8, 0);
+
+	FS_FreeFile((void *)mt);
+
+	return image;
+}
 
 /*
 ===============
@@ -630,8 +657,6 @@ GL_Upload32
 Returns has_alpha
 ===============
 */
-
-
 qboolean GL_Upload32(uint texnum, unsigned *data, int width, int height, qboolean mipmap, uint ClampMode){
 
 	int		samples, c, i;
@@ -671,8 +696,6 @@ qboolean GL_Upload32(uint texnum, unsigned *data, int width, int height, qboolea
 	}
 	return (samples == 4);
 }
-
-
 
 
 /*
@@ -845,38 +868,6 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 		
 	return image;
 }
-
-
-/*
-================
-GL_LoadWal
-================
-*/
-image_t *GL_LoadWal(char *name)
-{
-	miptex_t *mt;
-	int width, height, ofs;
-	image_t *image;
-	
-	FS_LoadFile(name, (void **) &mt);
-
-	if (!mt) {
-		Com_Printf("GL_FindImage: can't load %s\n", name);
-		return r_missingTexture;
-	}
-
-	width = LittleLong(mt->width);
-	height = LittleLong(mt->height);
-	ofs = LittleLong(mt->offsets[0]);
-
-
-	image = GL_LoadPic(name, (byte *) mt + ofs, width, height, it_wall, 8, 0);
-
-	FS_FreeFile((void *) mt);
-
-	return image;
-}
-
 
 
 /*

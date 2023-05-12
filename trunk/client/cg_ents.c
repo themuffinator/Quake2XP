@@ -816,7 +816,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			p->colorVel[2] = 0;
 
 			p->type = PT_BEAM;
-			p->size = 4.0;
+			p->size = 1.0;
 			p->sizeVel = 0.0;
 			VectorCopy (s1->origin, p->org);
 			VectorSubtract (s1->old_origin, s1->origin, p->length);
@@ -973,7 +973,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 					flashlightDirection[i] = cl.refdef.viewangles[i] + LerpAngle(ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
 				}
 			
-				V_AddLight (flashLightOrigin, 512.0, 1.0, 1.0, 0.5, flashlightDirection, 0.5, 33);
+				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 0.5, flashlightDirection, 0.5, 33);
 			}
 			else if(!modName("rogue")){
 
@@ -984,7 +984,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				VectorMA (flashLightOrigin,		1,	right,		flashLightOrigin);
 				VectorMA (flashLightOrigin,		25, up,			flashLightOrigin);
 
-				V_AddLight (flashLightOrigin, 512.0, 1.0, 1.0, 1.0, tmpAngles, 0.55, 36); // monsters flashlight
+				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 1.0, tmpAngles, 0.55, 36); // monsters flashlight
 
 			}
 		}

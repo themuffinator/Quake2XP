@@ -367,7 +367,7 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		else
 			light->castCaustics = qtrue;
 
-		if (CL_PMpointcontents(light->origin) & MASK_WATER) // underwater light cusc caustics to non water surfaces
+		if (CL_PMpointcontents(light->origin) & MASK_WATER) // underwater light cast caustics to non water surfaces
 			light->castCaustics2 = qtrue;
 		else
 			light->castCaustics2 = qfalse;
@@ -656,12 +656,12 @@ void R_Paste_Light_Properties_f (void) {
 }
 
 // from https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
-void kelvinToRGB(float kelvin, float intens, vec3_t outColor) {
+void kelvinToRGB(int kelvin, float intens, vec3_t outColor) {
 	
 	float r, g, b, tmp, tempK;
 
 	intens = clamp(intens, 0.01, 1.0);
-	tempK = kelvin / 100.0;
+	tempK = kelvin * 0.01;
 
 	if (tempK <= 66.0) {
 		r = 1.0;
@@ -684,6 +684,8 @@ void kelvinToRGB(float kelvin, float intens, vec3_t outColor) {
 
 		b = 1.0;
 	}
+
+	VectorSet(outColor, r, g, b);
 	VectorScale(outColor, intens, outColor);	
 }
 
