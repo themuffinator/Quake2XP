@@ -1019,7 +1019,7 @@ qboolean R_Md3InLightBound() {
 		VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 
-	if (currentShadowLight->_cone) {
+	if (currentShadowLight->projector) {
 
 		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
 			return qfalse;
@@ -1189,46 +1189,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			qglUniform1i(U_PARAM_INT_5, 1);
 		else
 			qglUniform1i(U_PARAM_INT_5, 0);
-
-	/*	if (weapon) {
-			trace_t trace;
-			vec3_t ray;
-			VectorCopy(r_newrefdef.vieworg, ray);
-			ray[2] = r_origin[2] + 4096.0;
-			trace = CL_PMTraceWorld(r_newrefdef.vieworg, vec3_origin, vec3_origin, ray, MASK_SOLID, qfalse);
-
-			if (trace.fraction != 1.0) {
-
-				if (trace.surface->flags & SURF_SKY) {
-					qglUniform1i(U_PARAM_INT_3, 1);
-					mat4_t tmpMatrix, m;
-
-					Mat4_Identity(m);
-					Mat4_Copy(r_newrefdef.skyMatrix, tmpMatrix);
-
-					Mat4_Identity(m);
-					
-					if (skyrotate)
-						Mat4_Rotate(m, r_newrefdef.time* -skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
-
-					if (currententity->angles[1])
-						Mat4_Rotate(m, currententity->angles[1], 0, 0, 1);
-					if (currententity->angles[0])
-						Mat4_Rotate(m, currententity->angles[0], 0, 1, 0);
-					if (currententity->angles[2])
-						Mat4_Rotate(m, currententity->angles[2], 1, 0, 0);
-
-					Mat4_Translate(m, -currententity->origin[0], -currententity->origin[1], -currententity->origin[2]);
-					Mat4_Copy(m, tmpMatrix);
-
-					qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float*)tmpMatrix);
-				}
-				else
-					qglUniform1i(U_PARAM_INT_3, 0);
-			}
-		}
-		else*/
-		//	qglUniform1i(U_PARAM_INT_3, 0);
 
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
 

@@ -57,7 +57,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[2] <= 0.01 && !r_lightEditor->integer)
 		return qfalse;
 
-	if (light->isCone) {
+	if (light->projector) {
 		if (R_CullConeLight(light->mins, light->maxs, light->frust))
 			return qfalse;
 	}
@@ -91,8 +91,9 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	mat4_t tmpMatrix, mvMatrix;
 	vec3_t tmp;
 
-	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
+	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2]) {
 		light->spherical = qtrue;
+	}
 	else
 		light->spherical = qfalse;
 
@@ -106,12 +107,9 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	else 
 		light->maxRad = max(max(light->radius[0], light->radius[1]), light->radius[2]);
 	
-	if (light->_cone) {
-		light->isCone = 1;
+	if (light->projector) {
 		light->spherical = qfalse;
 	}
-
-	light->distance = light->maxRad;
 
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
@@ -128,9 +126,9 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
 	// setup unit space conversion matrix
-	if (light->isCone) {
+	if (light->projector) {
 
-		light->fov[0] = light->fov[1] = light->_cone * 0.5;
+	//	light->fov[0] = light->fov[1] = light->_cone * 0.5;
 
 		x = tanf(light->fov[0] * 0.5f);
 		y = tanf(light->fov[1] * 0.5f);
@@ -212,10 +210,10 @@ void R_AddDynamicLight (dlight_t *dl) {
 	light->style = 0;
 	light->filter = dl->filter;
 	light->isStatic = 0;
-	light->_cone = dl->_cone;
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
 	light->spherical = qtrue;
+	light->projector = qfalse;
 	light->maxRad = dl->intensity;
 
 	for (i = 0; i < 8; i++) {
@@ -273,7 +271,6 @@ void R_AddNoWorldModelLight () {
 	VectorSet (light->angles, 0, 0, 0);
 	VectorSet (light->radius, 512, 512, 512);
 
-
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - 512.0;
 		light->maxs[i] = light->origin[i] + 512.0;
@@ -283,12 +280,11 @@ void R_AddNoWorldModelLight () {
 	light->filter = 0;
 	light->isStatic = 1;
 	light->isShadow = 0;
-	light->_cone = 0;
 	light->isNoWorldModel = 1;
 	light->flare = 0;
 	light->isAmbient = 0;
-	light->isCone = 0;
 	light->spherical = qtrue;
+	light->projector = qfalse;
 	light->maxRad = light->radius[0];
 
 	AnglesToMat3(light->angles, light->axis);
@@ -430,7 +426,11 @@ void R_SaveLights_f (void) {
 		fprintf (f, "\"speed\" \"%.3f %.3f %.3f\"\n", currentShadowLight->speed[0], currentShadowLight->speed[1], currentShadowLight->speed[2]);
 		fprintf (f, "\"shadow\" \"%i\"\n", currentShadowLight->isShadow);
 		fprintf (f, "\"ambient\" \"%i\"\n", currentShadowLight->isAmbient);
-		fprintf (f, "\"_cone\" \"%.1f\"\n", currentShadowLight->_cone);
+
+		fprintf (f, "\"proj\" \"%i\"\n", currentShadowLight->projector);
+		fprintf (f, "\"fov\" \"%.1f %.1f\"\n", currentShadowLight->fov[0], currentShadowLight->fov[1]);
+		fprintf (f, "\"dist\" \"%.1f\"\n", currentShadowLight->distance);
+
 		if (currentShadowLight->targetname[0])
 			fprintf (f, "\"targetname\" \"%s\"\n", currentShadowLight->targetname);
 		fprintf (f, "\"spawnflags\" \"%i\"\n", currentShadowLight->start_off);
@@ -486,7 +486,7 @@ void R_Light_Spawn_f (void) {
 
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight (spawn, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, spawn, 10.0, target, 0, 0, 0.0, spawn, radius);
+		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, qtrue, 1, spawn, 10.0, target, 0, 0, 0.0, spawn, radius, 0, 0.0, 0.0, 0.0);
 	}
 }
 
@@ -499,15 +499,15 @@ void R_Light_SpawnToCamera_f (void) {
 		return;
 	}
 	memset (target, 0, sizeof(target));
-	R_AddNewWorldLight (player_org, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, player_org, 10.0, target, 0, 0, 0.0, player_org, radius);
+	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, qtrue, 1, player_org, 10.0, target, 0, 0, 0.0, player_org, radius, 0, 0.0, 0.0, 0.0);
 }
 
 void R_Light_Clone_f (void) {
 	vec3_t	color, spawn, origin, angles,
 			speed, radius, flareOrg, end;
-	float	_cone, flareSize, fogDensity;
+	float	flareSize, fogDensity, fovX, fovY, dist;
 	int		style, filter, shadow, ambient,
-			flare, flag, fogLight;
+			flare, flag, fogLight, proj;
 	char	target[MAX_QPATH];
 	trace_t trace;
 
@@ -536,7 +536,12 @@ void R_Light_Clone_f (void) {
 	filter = selectedShadowLight->filter;
 	shadow = selectedShadowLight->isShadow;
 	ambient = selectedShadowLight->isAmbient;
-	_cone = selectedShadowLight->_cone;
+	
+	proj = selectedShadowLight->projector;
+	fovX = selectedShadowLight->fov[0];
+	fovY = selectedShadowLight->fov[1];
+	dist = selectedShadowLight->distance;
+
 	flare = selectedShadowLight->flare;
 	flareSize = selectedShadowLight->flareSize;
 	flag = selectedShadowLight->start_off;
@@ -547,7 +552,7 @@ void R_Light_Clone_f (void) {
 	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, _cone, qtrue, flare, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius);
+		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, qtrue, flare, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius, proj, fovX, fovY, dist);
 	}
 }
 
@@ -564,7 +569,9 @@ typedef struct {
 	float	flareSize;
 	int		flare;
 	int		style;
-	float	cone;
+	float	proj;
+	vec2_t	fov;
+	float	dist;
 	int		filter;
 	int		isShadow;
 	int		isAmbient;
@@ -602,7 +609,7 @@ void R_Copy_Light_Properties_f (void) {
 	lightClipBoard.filter = selectedShadowLight->filter;
 	lightClipBoard.isShadow = selectedShadowLight->isShadow;
 	lightClipBoard.isAmbient = selectedShadowLight->isAmbient;
-	lightClipBoard.cone = selectedShadowLight->_cone;
+	lightClipBoard.proj = selectedShadowLight->projector;
 	lightClipBoard.flare = selectedShadowLight->flare;
 	lightClipBoard.flareSize = selectedShadowLight->flareSize;
 	lightClipBoard.start_off = selectedShadowLight->start_off;
@@ -640,7 +647,11 @@ void R_Paste_Light_Properties_f (void) {
 	selectedShadowLight->filter = lightClipBoard.filter;
 	selectedShadowLight->isShadow = lightClipBoard.isShadow;
 	selectedShadowLight->isAmbient = lightClipBoard.isAmbient;
-	selectedShadowLight->_cone = lightClipBoard.cone;
+	selectedShadowLight->projector = lightClipBoard.proj;
+	selectedShadowLight->fov[0] = lightClipBoard.fov[0];
+	selectedShadowLight->fov[1] = lightClipBoard.fov[1];
+	selectedShadowLight->distance = lightClipBoard.dist;
+
 	selectedShadowLight->flare = lightClipBoard.flare;
 	selectedShadowLight->flareSize = lightClipBoard.flareSize;
 	selectedShadowLight->start_off = lightClipBoard.start_off;
@@ -693,9 +704,8 @@ void R_EditSelectedLight_f (void) {
 
 	vec3_t	color, origin, angles,
 			speed, radius, fOrg, occOrigin, occRadius;
-	float	_cone, fSize, fogDensity;
-	int		style, filter, shadow,
-		ambient, flare, start_off, fogLight;
+	float	fSize, fogDensity, fovX, fovY;
+	int		style, filter, shadow, ambient, flare, start_off, fogLight, proj, projDist;
 	char	target[MAX_QPATH];
 
 	if (!r_lightEditor->integer) {
@@ -726,12 +736,17 @@ void R_EditSelectedLight_f (void) {
 	filter = selectedShadowLight->filter;
 	shadow = selectedShadowLight->isShadow;
 	ambient = selectedShadowLight->isAmbient;
-	_cone = selectedShadowLight->_cone;
+
 	flare = selectedShadowLight->flare;
 	fSize = selectedShadowLight->flareSize;
 	start_off = selectedShadowLight->start_off;
 	fogLight = selectedShadowLight->isFog;
 	fogDensity = selectedShadowLight->fogDensity;
+	
+	proj = selectedShadowLight->projector;
+	fovX = selectedShadowLight->fov[0];
+	fovY = selectedShadowLight->fov[1];
+	projDist = currentShadowLight->distance;
 
 	if (!strcmp (Cmd_Argv (1), "origin")) {
 		if (Cmd_Argc () != 5) {
@@ -836,19 +851,55 @@ void R_EditSelectedLight_f (void) {
 			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
 		}
 		else
-	if (!strcmp (Cmd_Argv (1), "cone")) {
+	if (!strcmp (Cmd_Argv (1), "projector")) {
 		if (Cmd_Argc () != 3) {
-			Com_Printf ("usage: editLight: %s value\nCurrent Light Cone: %.1f\n", Cmd_Argv (0),
-				selectedShadowLight->_cone);
+			Com_Printf ("usage: editLight: %s 0 or 1\nCurrent Light Projector: %i\n", Cmd_Argv (0),
+				selectedShadowLight->projector);
 			return;
 		}
-		_cone = atof (Cmd_Argv (2));
-		selectedShadowLight->_cone = _cone;
+		proj = atoi (Cmd_Argv (2));
+		selectedShadowLight->projector = proj;
+		
+		// set default values
+		selectedShadowLight->fov[0] = 90.0;
+		selectedShadowLight->fov[1] = 90.0;
+		selectedShadowLight->distance = 512.0;
+		selectedShadowLight->angles[0] = 90.0; // direction	down	
+		selectedShadowLight->angles[1] = 0.0;
+		selectedShadowLight->angles[2] = 0.0;
+
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
+	else
+		if (!strcmp(Cmd_Argv(1), "dist")) {
+			if (Cmd_Argc() != 3) {
+				Com_Printf("usage: editLight: %s value\nCurrent Light Projector Distance: %f\n", Cmd_Argv(0), selectedShadowLight->distance);
+				return;
+			}
+			projDist = atof(Cmd_Argv(2));
+			selectedShadowLight->distance = projDist;
+
+			UpdateLightBounds(selectedShadowLight);
+			R_MarkLightLeaves(selectedShadowLight);
+			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight);
+		}
+		else
+		if (!strcmp(Cmd_Argv(1), "fov")) {
+			if (Cmd_Argc() != 4) {
+				Com_Printf("usage: editLight: %s value\nCurrent Light fov: %.1f %.1f\n", Cmd_Argv(0), selectedShadowLight->fov[0], selectedShadowLight->fov[1]);
+				return;
+			}
+			selectedShadowLight->fov[0] = atof(Cmd_Argv(2));
+			selectedShadowLight->fov[1] = atof(Cmd_Argv(3));
+			UpdateLightBounds(selectedShadowLight);
+			R_MarkLightLeaves(selectedShadowLight);
+			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight);
+		}
 	else
 	if (!strcmp (Cmd_Argv (1), "style")) {
 		if (Cmd_Argc () != 3) {
@@ -1302,6 +1353,7 @@ void R_ScaleLightColor_f(void) {
 	selectedShadowLight->startColor[2] += scale;
 }
 
+/*
 void R_ChangeLightCone_f (void) {
 
 	float cone, offset;
@@ -1338,7 +1390,7 @@ void R_ChangeLightCone_f (void) {
 	UpdateLightBounds (selectedShadowLight);
 	R_AddLightInteraction (selectedShadowLight);
 }
-
+*/
 
 
 void R_Light_Delete_f (void) {
@@ -1513,7 +1565,7 @@ void UpdateLightEditor(void) {
 			selectedShadowLight->speed[2]);
 		sprintf(buff7, "Shadow: %i", selectedShadowLight->isShadow);
 		sprintf(buff8, "Ambient: %i", selectedShadowLight->isAmbient);
-		sprintf(buff9, "Cone: %.2f", selectedShadowLight->_cone);
+		sprintf(buff9, "Fov: %.1f %.1f", selectedShadowLight->fov[0], selectedShadowLight->fov[1]);
 		sprintf(buff10, "Flare: %i; Flare Editing is %i",
 			selectedShadowLight->flare, (int)flareEdit);
 		sprintf(buff11, "Flare Size: %i", (int)selectedShadowLight->flareSize);
@@ -1603,7 +1655,7 @@ void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
 	vec3_t		forward, right, up;
 	vec3_t		angles, rspeed;
 
-	if (!light->_cone)
+	if (!light->projector)
 		return;	// ”йдем, если фрустум не надо рассчитывать (не задан параметр _cone)
 
 	if (ingame)
@@ -1617,8 +1669,8 @@ void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
 
 	AngleVectors (angles, forward, right, up);
 
-	VectorScale (right, light->_cone, right);
-	VectorScale (up, light->_cone, up);
+	VectorScale (right, light->fov[0], right);
+	VectorScale (up, light->fov[1], up);
 	VectorCopy (light->origin, v0);
 
 	v1[0] = v0[0] + (forward[0] - right[0] - up[0]);
@@ -1686,11 +1738,90 @@ void R_DrawOcclusionBbox(worldShadowLight_t *light, qboolean update) {
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void Q_SinCos(float a, float *s, float *c) {
+
+	*s = sinf(a);
+	*c = cosf(a);
+}
+
+/*
+===============
+Plane_SetSignBits
+
+For fast box on plane side test.
+===============
+*/
+
+
+void Frustum_SetupPerspective(frustum_t *frustum, vec3_t origin,  mat3_t axis, float fovX, float fovY, float zNear, float zFar) {
+	cplane_t *plane;
+	mat3_t		tmpAxis[2];
+	float		x, y;
+	float		s, c;
+	int			i;
+
+	x = DEG2RAD(fovX * 0.5f);
+	y = DEG2RAD(fovY * 0.5f);
+
+	// setup planes
+	Q_SinCos(x, &s, &c);
+
+	VectorScale(axis[0], s, frustum->planes[0].normal);	// right
+	VectorMA(frustum->planes[0].normal, c, axis[1], frustum->planes[0].normal);
+	VectorScale(axis[0], s, frustum->planes[1].normal);	// left
+	VectorMA(frustum->planes[1].normal, -c, axis[1], frustum->planes[1].normal);
+
+	Q_SinCos(y, &s, &c);
+
+	VectorScale(axis[0], s, frustum->planes[2].normal);	// bottom
+	VectorMA(frustum->planes[2].normal, c, axis[2], frustum->planes[2].normal);
+	VectorScale(axis[0], s, frustum->planes[3].normal);	// top
+	VectorMA(frustum->planes[3].normal, -c, axis[2], frustum->planes[3].normal);
+
+	VectorCopy(axis[0], frustum->planes[4].normal);		// near
+	VectorNegate(axis[0], frustum->planes[5].normal);	// far
+
+	for (i = 0, plane = frustum->planes; i < 6; i++, plane++) {
+		VectorNormalize(plane->normal);
+		plane->dist = DotProduct(origin, plane->normal);
+
+		SetPlaneType(plane);
+		SetPlaneSignBits(plane);
+	}
+
+	frustum->planes[4].dist += zNear;
+	frustum->planes[5].dist -= zFar < zNear ? Q_INFINITY : zFar;
+
+	// setup corner points
+	s = tan(x);
+	c = tan(y);
+
+	for (i = 0; i < 3; i++) {
+		tmpAxis[0][0][i] = axis[1][i] * zNear * s;
+		tmpAxis[0][1][i] = axis[2][i] * zNear * c;
+		tmpAxis[0][2][i] = axis[0][i] * zNear;
+
+		tmpAxis[1][0][i] = axis[1][i] * zFar * s;
+		tmpAxis[1][1][i] = axis[2][i] * zFar * c;
+		tmpAxis[1][2][i] = axis[0][i] * zFar;
+
+		frustum->corners[0][i] = origin[i] + tmpAxis[1][0][i] + tmpAxis[1][1][i] + tmpAxis[1][2][i];
+		frustum->corners[1][i] = origin[i] - tmpAxis[1][0][i] + tmpAxis[1][1][i] + tmpAxis[1][2][i];
+		frustum->corners[2][i] = origin[i] + tmpAxis[1][0][i] - tmpAxis[1][1][i] + tmpAxis[1][2][i];
+		frustum->corners[3][i] = origin[i] - tmpAxis[1][0][i] - tmpAxis[1][1][i] + tmpAxis[1][2][i];
+		frustum->corners[4][i] = origin[i] + tmpAxis[0][0][i] + tmpAxis[0][1][i] + tmpAxis[0][2][i];
+		frustum->corners[5][i] = origin[i] - tmpAxis[0][0][i] + tmpAxis[0][1][i] + tmpAxis[0][2][i];
+		frustum->corners[6][i] = origin[i] + tmpAxis[0][0][i] - tmpAxis[0][1][i] + tmpAxis[0][2][i];
+		frustum->corners[7][i] = origin[i] - tmpAxis[0][0][i] - tmpAxis[0][1][i] + tmpAxis[0][2][i];
+	}
+}
+
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style,
 	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
-	int isShadow, int isAmbient, float cone, qboolean ingame,
+	int isShadow, int isAmbient, qboolean ingame,
 	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
-	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad) {
+	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad, 
+	qboolean proj, float fovX, float fovY, float distance) {
 
 	worldShadowLight_t	*light;
 	int					i;
@@ -1739,7 +1870,11 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	else
 		light->spherical = qfalse;
 
-	light->_cone = cone;
+	light->projector = proj;
+	light->distance = distance;
+	light->fov[0] = fovX;
+	light->fov[1] = fovY;
+
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
@@ -1793,21 +1928,66 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
-	if (light->_cone) {
-		light->isCone = 1;
-		light->spherical = qfalse;
-	}
-	else
-		light->isCone = 0;
-
-	light->hotSpot = 0.8f;
-	light->coneExp = 1.f;
-	light->distance = light->maxRad;
-
 	// setup unit space conversion matrix
-	if (light->isCone) {
+	if (light->projector) {
+		float scale;
 
-		light->fov[0] = light->fov[1] = light->_cone * 0.5;
+		light->spherical = qfalse;
+		light->hotSpot = 0.8f;
+		light->coneExp = 1.f;
+
+		// setup orientation matrix
+		Mat4_SetupTransform(light->orMatrix, light->axis, origin); //for entity
+
+		// setup modelview matrix
+		light->mvMatrix[0][0] = -light->axis[1][0];
+		light->mvMatrix[0][1] = light->axis[2][0];
+		light->mvMatrix[0][2] = -light->axis[0][0];
+		light->mvMatrix[0][3] = 0.f;
+		light->mvMatrix[1][0] = -light->axis[1][1];
+		light->mvMatrix[1][1] = light->axis[2][1];
+		light->mvMatrix[1][2] = -light->axis[0][1];
+		light->mvMatrix[1][3] = 0.f;
+		light->mvMatrix[2][0] = -light->axis[1][2];
+		light->mvMatrix[2][1] = light->axis[2][2];
+		light->mvMatrix[2][2] = -light->axis[0][2];
+		light->mvMatrix[2][3] = 0.f;
+		light->mvMatrix[3][0] = DotProduct(origin, light->axis[1]);
+		light->mvMatrix[3][1] = -DotProduct(origin, light->axis[2]);
+		light->mvMatrix[3][2] = DotProduct(origin, light->axis[0]);
+		light->mvMatrix[3][3] = 1.f;
+
+		// setup projection matrix
+		// used for shadow map rendering
+		x = tan(DEG2RAD(90 * 0.5f));
+		y = tan(DEG2RAD(90 * 0.5f));
+
+		scale = 1.f / (light->distance - LIGHT_ZNEAR);
+
+		light->projMatrix[0][0] = 1.f / x;
+		light->projMatrix[0][1] = 0.f;
+		light->projMatrix[0][2] = 0.f;
+		light->projMatrix[0][3] = 0.f;
+		light->projMatrix[1][0] = 0.f;
+		light->projMatrix[1][1] = 1.f / y;
+		light->projMatrix[1][2] = 0.f;
+		light->projMatrix[1][3] = 0.f;
+		light->projMatrix[2][0] = 0.f;
+		light->projMatrix[2][1] = 0.f;
+		light->projMatrix[2][2] = -(light->distance + LIGHT_ZNEAR) * scale;
+		light->projMatrix[2][3] = -1.f;
+		light->projMatrix[3][0] = 0.f;
+		light->projMatrix[3][1] = 0.f;
+		light->projMatrix[3][2] = -2.f * light->distance * LIGHT_ZNEAR * scale;
+		light->projMatrix[3][3] = 0.f;
+		
+		Mat4_Multiply(light->mvMatrix, light->projMatrix, light->tpMatrix);
+
+		// setup frustum
+		Frustum_SetupPerspective(&light->frustum, origin, light->axis, fovX, fovY, 0.000001f, light->distance);
+
+		//------------
+//		light->fov[0] = light->fov[1] = 90.0;//light->_cone * 0.5;
 
 		x = tanf(light->fov[0] * 0.5f);
 		y = tanf(light->fov[1] * 0.5f);
@@ -1830,7 +2010,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		tmpMatrix[3][3] = 1.f;
 
 		Mat4_Multiply(mvMatrix, tmpMatrix, light->spotMatrix);
-
 	}
 
 	if (light->isFog)
@@ -1878,6 +2057,7 @@ void Load_BspLights () {
 	int addLight, style, numlights, flag;
 	char *c, *token, key[256], *value = {0}, target[MAX_QPATH];
 	float color[3], origin[3], radius[3], cone;
+	qboolean proj = qfalse;
 
 	if (!loadmodel) {
 		Com_Printf ("No map loaded.\n");
@@ -1920,7 +2100,6 @@ void Load_BspLights () {
 					addLight = qtrue;
 				}
 			}
-
 			if (!Q_stricmp (key, "light"))
 				radius[0] = atoi (value);
 			if (!Q_stricmp (key, "origin"))
@@ -1941,8 +2120,12 @@ void Load_BspLights () {
 			VectorSet (radius, radius[0], radius[0], radius[0]);
 			vec3_t occRad;
 			VectorScale(radius, 0.75, occRad);
+			if (cone)
+				proj = qtrue;
+			vec3_t angles;
+			VectorSet(angles, 90.0, 0.0, 0.0); //down
 
-			R_AddNewWorldLight (origin, color, radius, style, 0, vec3_origin, vec3_origin, qtrue, 1, 0, cone, qfalse, 0, origin, 10.0, target, flag, 0, 0.0, origin, occRad);
+			R_AddNewWorldLight (origin, color, radius, style, 0, angles, vec3_origin, qtrue, 1, 0, qfalse, 0, origin, 10.0, target, flag, 0, 0.0, origin, occRad, proj, 45.0, 45.0, 1024.0);
 			numlights++;
 		}
 	}
@@ -1953,10 +2136,11 @@ extern qboolean cleanAmbientMap;
 
 void Load_LightFile () {
 
-	int		style, numLights = 0, filter, shadow, ambient, flare, flag, fogLight;
+	int		style, numLights = 0, filter, shadow, ambient, flare, flag, fogLight, projector;
 	vec3_t	angles, speed, color, origin, lOrigin, fOrg, occRad, occOrg;
+	vec2_t	fov;
 	char	*c, *token, key[256], *value, target[MAX_QPATH];
-	float	radius[3], cone, fSize, fogDensity;
+	float	radius[3], fSize, fogDensity, dist;
 	char	name[MAX_QPATH], path[MAX_QPATH] = {0};
 
 	if (!r_worldmodel) {
@@ -1986,12 +2170,15 @@ void Load_LightFile () {
 		filter = 0;
 		shadow = 1;
 		ambient = 0;
-		cone = 0;
+		projector = 0;
 		fSize = 0;
 		flare = 0;
 		flag = 0;
 		fogLight = 0;
 		fogDensity = 0.0;
+		fov[0] = 0.0;
+		fov[1] = 0.0;
+		dist = 0.0;
 
 		memset (target, 0, sizeof(target));
 		VectorClear (radius);
@@ -2035,8 +2222,12 @@ void Load_LightFile () {
 				shadow = atoi (value);
 			else if (!Q_stricmp (key, "ambient"))
 				ambient = atoi (value);
-			else if (!Q_stricmp (key, "_cone"))
-				cone = atof (value);
+			else if (!Q_stricmp (key, "proj"))
+				projector = atoi (value);
+			else if (!Q_stricmp(key, "dist"))
+				dist = atof(value);
+			else if (!Q_stricmp(key, "fov"))
+				sscanf(value, "%f %f", &fov[0], &fov[1]);
 			else if (!Q_stricmp (key, "flare"))
 				flare = atoi (value);
 			else if (!Q_stricmp (key, "flareOrigin"))
@@ -2062,7 +2253,7 @@ void Load_LightFile () {
 		if (cleanAmbientMap && ambient == 1)
 			continue;
 		
-		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fogLight, fogDensity, occOrg, occRad);
+		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, qfalse, flare, fOrg, fSize, target, flag, fogLight, fogDensity, occOrg, occRad, projector, fov[0], fov[1], dist);
 		numLights++;
 	}
 	Com_Printf (""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -2765,7 +2956,7 @@ qboolean R_AliasInLightBound() {
 		VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 
-	if (currentShadowLight->_cone) {
+	if (currentShadowLight->projector) {
 
 		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
 			return qfalse;
@@ -2819,7 +3010,7 @@ void R_UpdateLightAliasUniforms()
 	else
 		qglUniform1i(U_PARAM_INT_0, 0);
 
-	if (currentShadowLight->isCone)
+	if (currentShadowLight->projector)
 		qglUniform1i(U_SPOT_LIGHT, 1);
 	else
 		qglUniform1i(U_SPOT_LIGHT, 0);

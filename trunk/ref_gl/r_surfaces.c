@@ -497,7 +497,7 @@ void R_UpdateLightUniforms(qboolean bModel)
 	 
 	 qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
 
-	 if (currentShadowLight->isCone) 
+	 if (currentShadowLight->projector) 
 		 qglUniform1i(U_SPOT_LIGHT, 1);
 	 else
 		 qglUniform1i(U_SPOT_LIGHT, 0);
@@ -817,7 +817,7 @@ next:
 		pbbox[4] = surf->maxs[1];
 		pbbox[5] = surf->maxs[2];
 
-		if (light->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
+		if (light->projector && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
 			return qfalse;
 
 		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))

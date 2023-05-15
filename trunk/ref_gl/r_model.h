@@ -39,6 +39,13 @@ int			numInteractionSurfs;
 
 int	r_lightTimestamp, r_lightTimestampRA;
 
+#define LIGHT_ZNEAR			1.f
+
+typedef struct frustum_s {
+	cplane_t	planes[6];		// right, left, top, bottom, near, far
+	vec3_t		corners[8];
+}frustum_t;
+
 typedef struct worldShadowLight_s {
 	vec3_t		origin;
 	vec3_t		angles;
@@ -46,10 +53,16 @@ typedef struct worldShadowLight_s {
 	vec3_t		color, startColor;
 	vec3_t		mins, maxs;
 	vec3_t		corners[8];
-	vec2_t		fov;
+
 	mat3_t		axis;
-	mat4_t		attenMatrix;
+	mat4_t		orMatrix;		// same as in entity_t
+	mat4_t		mvMatrix;		// world space -> projector space
+	mat4_t		projMatrix;
+	mat4_t		tpMatrix;		// world space -> 2D texture space in (0; 1) + depth in (-1; 1)
 	mat4_t		spotMatrix;
+	frustum_t	frustum;		// for interaction culling
+
+	mat4_t		attenMatrix;
 	mat4_t		cubeMapMatrix;
 
 	vec3_t		flareOrigin;
@@ -57,10 +70,13 @@ typedef struct worldShadowLight_s {
 	int			flare;
 
 	float		radius[3];
-	float		_cone;
+
+	qboolean	projector;
 	float		coneExp;
 	float		hotSpot;
 	float		distance;
+	vec2_t		fov;
+
 	float		depthBounds[2];
 	float		maxRad;
 	float		fogDensity;
@@ -71,7 +87,6 @@ typedef struct worldShadowLight_s {
 	int			isNoWorldModel;
 	int			isAmbient;
 	int			isFog;
-	int			isCone;
 	int			scissor[4];
 	int			start_off;
 

@@ -237,7 +237,7 @@ qboolean R_EntityCastShadow() {
 		VectorAdd (currententity->origin, currententity->model->mins, mins);
 	}
 
-	if (currentShadowLight->_cone) {
+	if (currentShadowLight->projector) {
 
 		if(R_CullConeLight(mins, maxs, currentShadowLight->frust))
 			return qfalse;
@@ -687,7 +687,7 @@ hack:
 	pbbox[4] = surf->maxs[1];
 	pbbox[5] = surf->maxs[2];
 
-	if (currentShadowLight->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+	if (currentShadowLight->projector && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
 		return qfalse;
 
 	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))

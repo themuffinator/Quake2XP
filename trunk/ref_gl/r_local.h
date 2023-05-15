@@ -201,6 +201,7 @@ image_t	*r_cinImage;
 image_t	*r_hdrBloomImage;
 image_t	*r_thermalImage;
 image_t	*r_lensDirt;
+image_t *r_ddscube;
 
 int			i_stencilView;
 uint64_t	i_stencilView_handle;
@@ -214,8 +215,10 @@ extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
 extern int r_framecount;
-extern cplane_t frustum[6];
+cplane_t frustum[6];
 
+void SetPlaneType(cplane_t *plane);
+void SetPlaneSignBits(cplane_t *plane);
 //
 // view origin
 //
@@ -407,9 +410,13 @@ void R_LightPoint (vec3_t p, vec3_t color);
 
 void R_InitLightgrid (void);
 
-worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style, int filter, vec3_t angles, vec3_t speed,
-	qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg,
-	float flareSize, char target[MAX_QPATH], int start_off, int fog, float fogDensity, vec3_t occOrg, vec3_t occRad);
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3], int style,
+	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
+	int isShadow, int isAmbient, qboolean ingame,
+	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
+	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad,
+	qboolean proj, float fovX, float fovY, float distance);
+
 void R_DrawParticles (void);
 void R_RenderDecals (qboolean twoside);
 void R_LightColor (vec3_t org, vec3_t color);
@@ -1412,6 +1419,7 @@ typedef struct {
 	uint                     arraySize;
 	uint                     miscFlags2;
 } ddsFileHeaderDXT10_t;
+
 
 image_t* R_LoadDDS(char* texName, uint type);
 

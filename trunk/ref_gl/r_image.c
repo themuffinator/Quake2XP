@@ -238,6 +238,12 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		compressed = qtrue;
 		switch (header->ddspf.dwFourCC)
 		{
+		case DDS_MAKEFOURCC('D', 'X', 'T', '1'):
+		{
+			intFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			blockWidth = 8;
+			break;
+		}
 		case DDS_MAKEFOURCC('D', 'X', 'T', '3'):
 
 			intFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
@@ -299,9 +305,6 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		return NULL;
 	}
 
-	uw = uploadWidth;
-	uh = uploadHeight;
-
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->texnum)
@@ -312,8 +315,11 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
 		numgltextures++;
 	}
-	image = &gltextures[i];
 
+	uw = uploadWidth;
+	uh = uploadHeight;
+	
+	image = &gltextures[i];
 	strcpy(image->name, texName);
 
 	image->width = uw;
@@ -355,72 +361,150 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->tl = 0;
 	image->th = 1;
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+#define DDSCAPS2_CUBEMAP 0x00000200
 
-	if (type == it_part) {
-		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
-	else {
-		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	}
+	if (header->dwCaps2 & DDSCAPS2_CUBEMAP) {
 
-	if (header->dwFlags & DDSF_MIPMAPCOUNT) {
-		image->numMips = header->dwMipMapCount;
-		int skipMip;
+		glCreateTextures(GL_TEXTURE_CUBE_MAP_ARRAY, 1, &image->texnum);
 
-		if (image->type != it_part)
-			skipMip = min(r_ddsQuality->integer, image->numMips);
-		else
-			skipMip = 0;
-
-		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
-		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
-		glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-	}
-	else {
-		image->numMips = 1;
-		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-
-	imagedata = buf + sizeof(ddsFileHeader_t) + 4;
-
-	if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
-		imagedata += sizeof(ddsFileHeaderDXT10_t);
-
-	if (!compressed)
-		blockWidth = header->ddspf.dwRGBBitCount / 8;
-
-	glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh);
-
-	for (i = 0; i < image->numMips; i++) {
-		int size = 0;
-
-		if (compressed) {
-			size = ((uw + 3) / 4) * ((uh + 3) / 4) * blockWidth;
-			glCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
-			level++;
+		if (type == it_part) {
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 		else {
-			size = uw * uh * blockWidth;
-			glTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, format, GL_UNSIGNED_BYTE, imagedata);
-			level++;
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
-		imagedata += size;
-		uw >>= 1;
-		uh >>= 1;
-		if (uw < 1)
-			uw = 1;
-		if (uh < 1)
-			uh = 1;
-	}
 
-	image->handle = glGetTextureHandleARB(image->texnum);
-	glMakeTextureHandleResidentARB(image->handle);
+		if (header->dwFlags & DDSF_MIPMAPCOUNT) {
+			image->numMips = header->dwMipMapCount;
+			int skipMip;
+
+			if (image->type != it_part)
+				skipMip = min(r_ddsQuality->integer, image->numMips);
+			else
+				skipMip = 0;
+
+			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
+			glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+			glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
+		}
+		else {
+			image->numMips = 1;
+			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+
+		imagedata = buf + sizeof(ddsFileHeader_t) + 4;
+
+		if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
+			imagedata += sizeof(ddsFileHeaderDXT10_t);
+
+		if (!compressed)
+			blockWidth = header->ddspf.dwRGBBitCount / 8;
+
+		glTextureStorage3D(image->texnum, image->numMips, intFormat, uw, uh, 6);
+	
+		int face;
+
+		for (i = 0; i < image->numMips; i++) {
+			int size = 0;
+
+			if (compressed) {
+				size = ((uw + 3) / 4) * ((uh + 3) / 4) * blockWidth;
+				for (face = 0; face < 6; face++)
+					glCompressedTextureSubImage3D(image->texnum, level, 0, 0, face, uw, uh, 1, intFormat, size, imagedata);
+				level++;
+			}
+			else {
+				size = uw * uh * blockWidth;
+				for (face = 0; face < 6; face++)
+					glTextureSubImage3D(image->texnum, level, 0, 0, face, uw, uh, 1, format, GL_UNSIGNED_BYTE, imagedata);
+				level++;
+			}
+			imagedata += size;
+			uw >>= 1;
+			uh >>= 1;
+			if (uw < 1)
+				uw = 1;
+			if (uh < 1)
+				uh = 1;
+		}
+
+		image->handle = glGetTextureHandleARB(image->texnum);
+		glMakeTextureHandleResidentARB(image->handle);
+	}
+	else {
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+
+		if (type == it_part) {
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+		else {
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
+
+		if (header->dwFlags & DDSF_MIPMAPCOUNT) {
+			image->numMips = header->dwMipMapCount;
+			int skipMip;
+
+			if (image->type != it_part)
+				skipMip = min(r_ddsQuality->integer, image->numMips);
+			else
+				skipMip = 0;
+
+			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
+			glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+			glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
+		}
+		else {
+			image->numMips = 1;
+			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+
+		imagedata = buf + sizeof(ddsFileHeader_t) + 4;
+
+		if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
+			imagedata += sizeof(ddsFileHeaderDXT10_t);
+
+		if (!compressed)
+			blockWidth = header->ddspf.dwRGBBitCount / 8;
+
+		glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh);
+
+		for (i = 0; i < image->numMips; i++) {
+			int size = 0;
+
+			if (compressed) {
+				size = ((uw + 3) / 4) * ((uh + 3) / 4) * blockWidth;
+				glCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
+				level++;
+			}
+			else {
+				size = uw * uh * blockWidth;
+				glTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, format, GL_UNSIGNED_BYTE, imagedata);
+				level++;
+			}
+			imagedata += size;
+			uw >>= 1;
+			uh >>= 1;
+			if (uw < 1)
+				uw = 1;
+			if (uh < 1)
+				uh = 1;
+		}
+
+		image->handle = glGetTextureHandleARB(image->texnum);
+		glMakeTextureHandleResidentARB(image->handle);
+	}
 
 	FS_FreeFile(buf);
 

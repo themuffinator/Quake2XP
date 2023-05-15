@@ -1514,7 +1514,7 @@ bind v			"paste"
 	Cmd_AddCommand("moveLight_z",				R_MoveLightUpDown_f);
 	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
 	Cmd_AddCommand("cloneLight",				R_Light_Clone_f);
-	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
+//	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
 	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
 	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
 	Cmd_AddCommand("editFlare",					R_FlareEdit_f);
@@ -1814,6 +1814,10 @@ int R_Init(void *hinstance, void *hWnd)
 	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
 
 	glCompressedTextureSubImage2D =(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC) qwglGetProcAddress("glCompressedTextureSubImage2D");
+	glCompressedTextureSubImage3D = (PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC)qwglGetProcAddress("glCompressedTextureSubImage3D");
+	
+	glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)qwglGetProcAddress("glCompressedTexSubImage2D");
+	glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)qwglGetProcAddress("glTexSubImage2D");
 
 	glGetTextureLevelParameteriv = (PFNGLGETTEXTURELEVELPARAMETERIVPROC) qwglGetProcAddress("glGetTextureLevelParameteriv");
 
@@ -1925,6 +1929,179 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.depthBoundsTest = qfalse;
 	}
 
+	GLint NumCompressedTextureFormats = 0;
+	qglGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &NumCompressedTextureFormats);
+	GLint *CompressedTextureFormats = (GLint *)malloc(NumCompressedTextureFormats * sizeof(GLint));
+	qglGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, CompressedTextureFormats);
+	
+	Com_Printf("Found %i COMPRESSED TEXTURE FORMATS\n", NumCompressedTextureFormats);
+
+	for (GLint i = 0; i < NumCompressedTextureFormats; ++i)
+	{
+		switch (CompressedTextureFormats[i])
+		{
+		case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+			Com_Printf("GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n");
+			break;
+		case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+			Com_Printf("GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n");
+			break;
+		case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+			Com_Printf("GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n");
+			break;
+		case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+			Com_Printf("GL_COMPRESSED_RGBA_S3TC_DXT5_EXT\n");
+			break;
+
+		case GL_COMPRESSED_RED_RGTC1:
+			Com_Printf("GL_COMPRESSED_RED_RGTC1\n");
+			break;
+		case GL_COMPRESSED_SIGNED_RED_RGTC1:
+			Com_Printf("GL_COMPRESSED_SIGNED_RED_RGTC1\n");
+			break;
+		case GL_COMPRESSED_RG_RGTC2:
+			Com_Printf("GL_COMPRESSED_RG_RGTC2\n");
+			break;
+		case GL_COMPRESSED_SIGNED_RG_RGTC2:
+			Com_Printf("GL_COMPRESSED_SIGNED_RG_RGTC2\n");
+			break;
+
+		case GL_COMPRESSED_RGBA_BPTC_UNORM:
+			Com_Printf("GL_COMPRESSED_RGBA_BPTC_UNORM\n");
+			break;
+		case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+			Com_Printf("GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM\n");
+			break;
+		case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+			Com_Printf("GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT\n");
+			break;
+		case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+			Com_Printf("GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT\n");
+			break;
+
+		case GL_COMPRESSED_R11_EAC:
+			Com_Printf("GL_COMPRESSED_R11_EAC\n");
+			break;
+		case GL_COMPRESSED_SIGNED_R11_EAC:
+			Com_Printf("GL_COMPRESSED_SIGNED_R11_EAC\n");
+			break;
+		case GL_COMPRESSED_RG11_EAC:
+			Com_Printf("GL_COMPRESSED_RG11_EAC\n");
+			break;
+		case GL_COMPRESSED_SIGNED_RG11_EAC:
+			Com_Printf("GL_COMPRESSED_SIGNED_RG11_EAC\n");
+			break;
+		case GL_COMPRESSED_RGB8_ETC2:
+			Com_Printf("GL_COMPRESSED_RGB8_ETC2\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ETC2:
+			Com_Printf("GL_COMPRESSED_SRGB8_ETC2\n");
+			break;
+		case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+			Com_Printf("GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2\n");
+			break;
+		case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+			Com_Printf("GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2\n");
+			break;
+		case GL_COMPRESSED_RGBA8_ETC2_EAC:
+			Com_Printf("GL_COMPRESSED_RGBA8_ETC2_EAC\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC\n");
+			break;
+
+		case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_4x4_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_5x4_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_5x5_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_6x5_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_6x6_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_8x5_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_8x6_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_8x8_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_10x5_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_10x6_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_10x8_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_10x10_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_12x10_KHR\n");
+			break;
+		case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
+			Com_Printf("GL_COMPRESSED_RGBA_ASTC_12x12_KHR\n");
+			break;
+
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR\n");
+			break;
+		case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
+			Com_Printf("GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR\n");
+			break;
+
+		default:
+			// Unknown formats
+			break;
+		}
+	}
+		free(CompressedTextureFormats);
 
 	Com_Printf("=====================================\n");
 
@@ -1964,7 +2141,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("spawnLightToCamera");
 	Cmd_RemoveCommand("changeLightRadius");
 	Cmd_RemoveCommand("cloneLight");
-	Cmd_RemoveCommand("changeLightCone");
+//	Cmd_RemoveCommand("changeLightCone");
 	Cmd_RemoveCommand("clearWorldLights");
 	Cmd_RemoveCommand("unselectLight");
 	Cmd_RemoveCommand("editFlare");
