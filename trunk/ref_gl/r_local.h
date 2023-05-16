@@ -1253,6 +1253,8 @@ void R_FlipImage(int idx, img_t* pix, byte* dst);
 #define DDSF_TEXTURE		0x00001000l
 #define DDSF_MIPMAP			0x00400000l
 
+#define DDSCAPS2_CUBEMAP	0x00000200
+
 typedef struct {
 	unsigned long dwSize;
 	unsigned long dwFlags;

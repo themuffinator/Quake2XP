@@ -361,7 +361,13 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->tl = 0;
 	image->th = 1;
 
-#define DDSCAPS2_CUBEMAP 0x00000200
+	imagedata = buf + sizeof(ddsFileHeader_t) + 4;
+
+	if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
+		imagedata += sizeof(ddsFileHeaderDXT10_t);
+
+	if (!compressed)
+		blockWidth = header->ddspf.dwRGBBitCount / 8;
 
 	if (header->dwCaps2 & DDSCAPS2_CUBEMAP) {
 
@@ -397,14 +403,6 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 
-		imagedata = buf + sizeof(ddsFileHeader_t) + 4;
-
-		if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
-			imagedata += sizeof(ddsFileHeaderDXT10_t);
-
-		if (!compressed)
-			blockWidth = header->ddspf.dwRGBBitCount / 8;
-
 		glTextureStorage3D(image->texnum, image->numMips, intFormat, uw, uh, 6);
 	
 		int face;
@@ -432,9 +430,6 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			if (uh < 1)
 				uh = 1;
 		}
-
-		image->handle = glGetTextureHandleARB(image->texnum);
-		glMakeTextureHandleResidentARB(image->handle);
 	}
 	else {
 
@@ -470,14 +465,6 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 
-		imagedata = buf + sizeof(ddsFileHeader_t) + 4;
-
-		if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
-			imagedata += sizeof(ddsFileHeaderDXT10_t);
-
-		if (!compressed)
-			blockWidth = header->ddspf.dwRGBBitCount / 8;
-
 		glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh);
 
 		for (i = 0; i < image->numMips; i++) {
@@ -501,10 +488,10 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			if (uh < 1)
 				uh = 1;
 		}
-
-		image->handle = glGetTextureHandleARB(image->texnum);
-		glMakeTextureHandleResidentARB(image->handle);
 	}
+
+	image->handle = glGetTextureHandleARB(image->texnum);
+	glMakeTextureHandleResidentARB(image->handle);
 
 	FS_FreeFile(buf);
 
