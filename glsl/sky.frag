@@ -4,7 +4,6 @@ layout (bindless_sampler, location  = U_TMU0) uniform samplerCube	u_map;
 layout(location = U_PARAM_INT_0)	uniform int	    u_colorPass;
 layout(location = U_PARAM_INT_1)	uniform int	    u_earthSky;
 layout(location = U_PARAM_VEC4_0)   uniform vec4    u_sunParams;
-layout(location = U_VIEW_POS)       uniform vec3    u_viewOrg;
 
 in vec3	v_texCoord; 
 in vec3 v_Position;
@@ -146,5 +145,5 @@ void main(void)
         return;
     }
   
-  fragData = texture(u_map, v_texCoord.xyz - u_viewOrg);
+  fragData = texture(u_map, v_texCoord.xyz);
 }
