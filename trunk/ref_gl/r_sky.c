@@ -318,7 +318,6 @@ void R_DrawSkyBox(qboolean color) {
 	qglUniform4f(U_PARAM_VEC4_0, 0, x, hipos, r_earthSunIntens->value);
 
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
-	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
 	numSkyVerts = numSkyIdx = 0;
 
@@ -340,14 +339,14 @@ void R_DrawSkyBox(qboolean color) {
 	for (i = 0; i < 6; i++) {
 
 		if (skyrotate) {		// hack, forces full sky to draw when rotating
+
 			skymins[0][i] = -1;
 			skymins[1][i] = -1;
 			skymaxs[0][i] = 1;
 			skymaxs[1][i] = 1;
 		}
 
-		if (skymins[0][i] >= skymaxs[0][i] 
-			|| skymins[1][i] >= skymaxs[1][i])
+		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
 		skyIndex[numSkyIdx++] = numSkyVerts + 0;
