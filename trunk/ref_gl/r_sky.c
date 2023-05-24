@@ -4,7 +4,7 @@
 */
 /*
 Copyright (C) 1997-2001 Id Software, Inc.
-Copyright (C) 2004-2015 Quake2xp Team.
+Copyright (C) 2004-2023 Quake2xp Team.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,269 +22,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// gl_warp.c -- sky surfaces
 
 #include "r_local.h"
-extern model_t* loadmodel;
+
 char skyname[MAX_QPATH];
 float skyrotate;
 vec3_t skyaxis;
-vec3_t		SkyVertexArray[MAX_TRIANGLES];
-index_t		skyIndex[MAX_INDICES];
-static int	numSkyVerts, numSkyIdx;
-
-vec3_t skyclip[6] = {
-	{ 1, 1, 0 }
-	,
-	{ 1, -1, 0 }
-	,
-	{ 0, -1, 1 }
-	,
-	{ 0, 1, 1 }
-	,
-	{ 1, 0, 1 }
-	,
-	{ -1, 0, 1 }
-};
-int c_sky;
-
-// 1 = s, 2 = t, 3 = 2048
-int st_to_vec[6][3] = {
-	{ 3, -1, 2 },
-	{ -3, 1, 2 },
-
-	{ 1, 3, 2 },
-	{ -1, -3, 2 },
-
-	{ -2, -1, 3 },				// 0 degrees yaw, look straight up
-	{ 2, -1, -3 }					// look straight down
-
-	//  {-1,2,3},
-	//  {1,2,-3}
-};
-
-// s = [0]/[2], t = [1]/[2]
-int vec_to_st[6][3] = {
-	{ -2, 3, 1 },
-	{ 2, 3, -1 },
-
-	{ 1, 3, 2 },
-	{ -1, 3, -2 },
-
-	{ -2, -1, 3 },
-	{ -2, 1, -3 }
-
-	//  {-1,2,3},
-	//  {1,2,-3}
-};
-
-float skymins[2][6], skymaxs[2][6];
-float sky_min, sky_max;
-
-void DrawSkyPolygon(int nump, vec3_t vecs) {
-	int i, j;
-	vec3_t v, av;
-	float s, t, dv;
-	int axis;
-	float* vp;
-
-	c_sky++;
-
-	// decide which face it maps to
-	VectorCopy(vec3_origin, v);
-	for (i = 0, vp = vecs; i < nump; i++, vp += 3) {
-		VectorAdd(vp, v, v);
-	}
-	av[0] = fabs(v[0]);
-	av[1] = fabs(v[1]);
-	av[2] = fabs(v[2]);
-	if (av[0] > av[1] && av[0] > av[2]) {
-		if (v[0] < 0)
-			axis = 1;
-		else
-			axis = 0;
-	}
-	else if (av[1] > av[2] && av[1] > av[0]) {
-		if (v[1] < 0)
-			axis = 3;
-		else
-			axis = 2;
-	}
-	else {
-		if (v[2] < 0)
-			axis = 5;
-		else
-			axis = 4;
-	}
-
-	// project new texture coords
-	for (i = 0; i < nump; i++, vecs += 3) {
-		j = vec_to_st[axis][2];
-		if (j > 0)
-			dv = vecs[j - 1];
-		else
-			dv = -vecs[-j - 1];
-		if (dv < 0.001)
-			continue;			// don't divide by zero
-		j = vec_to_st[axis][0];
-		if (j < 0)
-			s = -vecs[-j - 1] / dv;
-		else
-			s = vecs[j - 1] / dv;
-		j = vec_to_st[axis][1];
-		if (j < 0)
-			t = -vecs[-j - 1] / dv;
-		else
-			t = vecs[j - 1] / dv;
-
-		if (s < skymins[0][axis])
-			skymins[0][axis] = s;
-		if (t < skymins[1][axis])
-			skymins[1][axis] = t;
-		if (s > skymaxs[0][axis])
-			skymaxs[0][axis] = s;
-		if (t > skymaxs[1][axis])
-			skymaxs[1][axis] = t;
-	}
-}
-
-#define	ON_EPSILON		0.1		// point on plane side epsilon
-#define	MAX_CLIP_VERTS	64
-void ClipSkyPolygon(int nump, vec3_t vecs, int stage) {
-	float* norm;
-	float* v;
-	qboolean front, back;
-	float d, e;
-	float dists[MAX_CLIP_VERTS];
-	int sides[MAX_CLIP_VERTS];
-	vec3_t newv[2][MAX_CLIP_VERTS];
-	int newc[2];
-	int i, j;
-
-	if (nump > MAX_CLIP_VERTS - 2)
-		VID_Error(ERR_DROP, "ClipSkyPolygon: MAX_CLIP_VERTS");
-	if (stage == 6) {			// fully clipped, so draw it
-		DrawSkyPolygon(nump, vecs);
-		return;
-	}
-
-	front = back = qfalse;
-	norm = skyclip[stage];
-	for (i = 0, v = vecs; i < nump; i++, v += 3) {
-		d = DotProduct(v, norm);
-		if (d > ON_EPSILON) {
-			front = qtrue;
-			sides[i] = SIDE_FRONT;
-		}
-		else if (d < -ON_EPSILON) {
-			back = qtrue;
-			sides[i] = SIDE_BACK;
-		}
-		else
-			sides[i] = SIDE_ON;
-		dists[i] = d;
-	}
-
-	if (!front || !back) {		// not clipped
-		ClipSkyPolygon(nump, vecs, stage + 1);
-		return;
-	}
-	// clip it
-	sides[i] = sides[0];
-	dists[i] = dists[0];
-	VectorCopy(vecs, (vecs + (i * 3)));
-	newc[0] = newc[1] = 0;
-
-	for (i = 0, v = vecs; i < nump; i++, v += 3) {
-		switch (sides[i]) {
-		case SIDE_FRONT:
-			VectorCopy(v, newv[0][newc[0]]);
-			newc[0]++;
-			break;
-		case SIDE_BACK:
-			VectorCopy(v, newv[1][newc[1]]);
-			newc[1]++;
-			break;
-		case SIDE_ON:
-			VectorCopy(v, newv[0][newc[0]]);
-			newc[0]++;
-			VectorCopy(v, newv[1][newc[1]]);
-			newc[1]++;
-			break;
-		}
-
-		if (sides[i] == SIDE_ON || sides[i + 1] == SIDE_ON
-			|| sides[i + 1] == sides[i])
-			continue;
-
-		d = dists[i] / (dists[i] - dists[i + 1]);
-		for (j = 0; j < 3; j++) {
-			e = v[j] + d * (v[j + 3] - v[j]);
-			newv[0][newc[0]][j] = e;
-			newv[1][newc[1]][j] = e;
-		}
-		newc[0]++;
-		newc[1]++;
-	}
-
-	// continue
-	ClipSkyPolygon(newc[0], newv[0][0], stage + 1);
-	ClipSkyPolygon(newc[1], newv[1][0], stage + 1);
-}
 
 /*
-=================
-R_AddSkySurface
-=================
+============
+R_SetSky
+============
 */
-void R_AddSkySurface(msurface_t* fa) {
-	int i;
-	vec3_t verts[MAX_CLIP_VERTS];
-	glpoly_t* p;
+void R_SetSky(char *name, float rotate, vec3_t axis) {
 
-	// calculate vertex values for sky box
-	for (p = fa->polys; p; p = p->next) {
-		for (i = 0; i < p->numVerts; i++) {
-			VectorSubtract(p->verts[i], r_origin, verts[i]);
-		}
-		ClipSkyPolygon(p->numVerts, verts[0], 0);
-	}
-}
-
-
-/*
-==============
-R_ClearSkyBox
-==============
-*/
-void R_ClearSkyBox(void) {
-	int i;
-
-	for (i = 0; i < 6; i++) {
-		skymins[0][i] = skymins[1][i] = 9999;
-		skymaxs[0][i] = skymaxs[1][i] = -9999;
-	}
-}
-
-
-void GenSkyVertices(float x, float y, int axis) {
-	vec3_t v, b;
-	int j, k;
-
-	b[0] = x * 8192;
-	b[1] = y * 8192;
-	b[2] = 8192;
-
-	for (j = 0; j < 3; j++) {
-		k = st_to_vec[axis][j];
-		if (k < 0)
-			v[j] = -b[-k - 1];
-		else
-			v[j] = b[k - 1];
-	}
-	VA_SetElem3(SkyVertexArray[numSkyVerts], v[0], v[1], v[2]);
-	numSkyVerts++;
-
+	skyrotate = rotate;
+	VectorCopy(axis, skyaxis);
 }
 
 /*
@@ -292,118 +45,57 @@ void GenSkyVertices(float x, float y, int axis) {
 R_DrawSkyBox
 ==============
 */
-void R_DrawSkyBox(qboolean color) {
-	int i;
 
-	glBindVertexArray(vao.dynamic);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+void R_AddSkyPolys(msurface_t *surf, unsigned *indeces) {
+	unsigned	numIndices;
+	int			i, nv = surf->numEdges;
 
-	GL_BindProgram(skyProgram);
+	numIndices = *indeces;
 
-	if (color)
-		qglUniform1i(U_PARAM_INT_0, 1);
-	else
-		qglUniform1i(U_PARAM_INT_0, 0); // depth pass
-
-	if(r_earthSky->integer && color)
-		qglUniform1i(U_PARAM_INT_1, 1);
-	else
-		qglUniform1i(U_PARAM_INT_1, 0);
-	
-	float rad = 10471e3;
-	float angle = 1.0 + r_newrefdef.time * 0.125;
-	float x = rad * cos(angle); 
-	float hipos = rad * sin(angle);
-
-	qglUniform4f(U_PARAM_VEC4_0, 0, x, hipos, r_earthSunIntens->value);
-
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
-
-	numSkyVerts = numSkyIdx = 0;
-
-	if (skyrotate) {			// check for no sky at all
-		for (i = 0; i < 6; i++)
-			if (skymins[0][i] < skymaxs[0][i] && skymins[1][i] < skymaxs[1][i])
-				break;
-
-		if (i == 6) {
-			glBindVertexArray(0);
-			qglBindBuffer(GL_ARRAY_BUFFER, 0);
-			return;	// nothing visible
-		}
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = surf->baseIndex;
+		indexArray[numIndices++] = surf->baseIndex + i + 1;
+		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
-	
-	if (color)
-		GL_SetBindlessTexture(U_TMU0, skyCube_handle);
-
-	for (i = 0; i < 6; i++) {
-
-		if (skyrotate) {		// hack, forces full sky to draw when rotating
-
-			skymins[0][i] = -1;
-			skymins[1][i] = -1;
-			skymaxs[0][i] = 1;
-			skymaxs[1][i] = 1;
-		}
-
-		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
-			continue;
-
-		skyIndex[numSkyIdx++] = numSkyVerts + 0;
-		skyIndex[numSkyIdx++] = numSkyVerts + 1;
-		skyIndex[numSkyIdx++] = numSkyVerts + 3;
-		skyIndex[numSkyIdx++] = numSkyVerts + 3;
-		skyIndex[numSkyIdx++] = numSkyVerts + 1;
-		skyIndex[numSkyIdx++] = numSkyVerts + 2;
-
-		GenSkyVertices(skymins[0][i], skymins[1][i], i);
-		GenSkyVertices(skymins[0][i], skymaxs[1][i], i);
-		GenSkyVertices(skymaxs[0][i], skymaxs[1][i], i);
-		GenSkyVertices(skymaxs[0][i], skymins[1][i], i);	
-	}
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, numSkyVerts * sizeof(vec3_t), SkyVertexArray);
-	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numSkyVerts * 3 * sizeof(uint), skyIndex);
-
-	GL_DrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
-	
-	if (color && r_showTris->integer) {
-
-		GL_Enable(GL_LINE_SMOOTH);
-		qglLineWidth(2.0);
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		GL_BindProgram(showTrisProgram);
-		qglUniform3f(U_COLOR, 1.0, 1.0, 1.0);
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
-
-		GL_DrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
-
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		GL_Disable(GL_LINE_SMOOTH);
-
-		GL_BindProgram(skyProgram);
-	}
-
-	glBindVertexArray(0);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	*indeces = numIndices;
 }
 
+#define MAX_SKY_IDX 12288 // 4096*3
 
-/*
-============
-R_SetSky
-============
-*/
-// 3dstudio environment map names
-// fix q2 skybox faces - flip back and left sides 
-char* cubeSufGL[6] = { "rt", "lf", "bk", "ft", "up", "dn" };
+void R_DrawSkyBox(){
+	msurface_t *s;
+	int			i;
+	uint		numIndices = 0;
 
-void R_SetSky(char* name, float rotate, vec3_t axis) {
+	// setup program
+	GL_BindProgram(skyProgram);
 
-	skyrotate = rotate;
-	VectorCopy(axis, skyaxis);
-	sky_min = 0.001953125f;
-	sky_max = 0.998046875f;
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 
+	GL_SetBindlessTexture(U_TMU0, skyCube_handle);
+
+	for (i = 0; i < numSkySurfaces; i++) {
+		s = skySurfaces[i];
+
+		R_AddSkyPolys(s, &numIndices);
+
+		if (numIndices >= MAX_SKY_IDX) {
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			c_brush_polys += numIndices / 3;
+
+			R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.7, 0.0, skyProgram);
+			numIndices = 0;
+		}
+	}
+	if (numIndices) {
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		c_brush_polys += numIndices / 3;
+
+		R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.7, 0.0, skyProgram);
+		numIndices = 0;
+	}
+	numSkySurfaces = 0;
 }
 
 uint	transi[4096 * 4096];
@@ -470,6 +162,9 @@ void R_FlipImageFloat(int i, hdri_t* hdri, float* dst) {
 	}
 }
 
+// q2 skybox sides to ogl cubemap faces - flip back and left sides 
+char *cubeSide[6] = { "rt", "lf", "bk", "ft", "up", "dn" };
+
 void R_GenSkyCubeMap(char* name) {
 	int			i, numMips;
 	char		ldrName[MAX_QPATH], hdrName[MAX_QPATH];
@@ -492,7 +187,7 @@ void R_GenSkyCubeMap(char* name) {
 		hdri[i].width = hdri[i].height = 0;
 		hdri[i].data = NULL;
 		
-		Com_sprintf(hdrName, sizeof(hdrName), "env/hdr/%s%s.hdr", skyname, cubeSufGL[i]);
+		Com_sprintf(hdrName, sizeof(hdrName), "env/hdr/%s%s.hdr", skyname, cubeSide[i]);
 
 		if (STB_LoadHdr(hdrName, &hdri[i].data, &hdri[i].width, &hdri[i].height)) {
 			numMips = CalcMipmapCount(hdri[0].width, hdri[0].height);
@@ -500,7 +195,7 @@ void R_GenSkyCubeMap(char* name) {
 			hdr = qtrue;
 		}
 		else {
-			Com_sprintf(ldrName, sizeof(ldrName), "env/%s%s.tga", skyname, cubeSufGL[i]);
+			Com_sprintf(ldrName, sizeof(ldrName), "env/%s%s.tga", skyname, cubeSide[i]);
 			STB_LoadLdr(ldrName, &pix[i].pixels, &pix[i].width, &pix[i].height);
 
 			numMips = CalcMipmapCount(pix[0].width, pix[0].height);

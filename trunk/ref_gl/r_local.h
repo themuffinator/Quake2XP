@@ -371,8 +371,6 @@ cvar_t	*r_particlesOverdraw;
 
 cvar_t	*r_colorTempK;
 
-cvar_t *r_earthSky, *r_earthSunAzimuth, *r_earthSunIntens;
-
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
 
@@ -564,6 +562,9 @@ image_t* R_CreateTexture(char* texName, uint targetTex,
 //====================================================================
 mleaf_t* Mod_PointInLeaf(vec3_t p, model_t* model);
 
+int			numSkySurfaces;
+msurface_t *skySurfaces[4096];
+
 #define MAX_POLY_VERT		128
 #define	MAX_BATCH_SURFS		21845
 
@@ -613,9 +614,7 @@ void LoadPCX(char *filename, byte **pic, byte **palette, int *width, int *height
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
-void R_AddSkySurface (msurface_t * fa);
-void R_ClearSkyBox (void);
-void R_DrawSkyBox (qboolean color);
+void R_DrawSkyBox ();
 
 void COM_StripExtension (char *in, char *out);
 

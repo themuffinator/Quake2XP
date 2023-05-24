@@ -390,12 +390,11 @@ static void R_SetupViewMatrices (void) {
 	Mat4_Transpose	(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
 
 	// set sky matrix
-	Mat4_Copy(r_newrefdef.modelViewMatrix, tmpMatrix);
-	Mat4_Translate(tmpMatrix, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
-	if (skyrotate)
+	Mat4_Identity(tmpMatrix);
+	if(skyrotate)
 		Mat4_Rotate(tmpMatrix, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
-
-	Mat4_Multiply(tmpMatrix, r_newrefdef.projectionMatrix, r_newrefdef.skyMatrix);
+	Mat4_Translate(tmpMatrix, -r_origin[0], -r_origin[1], -r_origin[2]);
+	Mat4_Copy(tmpMatrix, r_newrefdef.skyMatrix);
 
 	float tx, ty;
 	mat3_t axis;
@@ -1462,10 +1461,6 @@ void R_RegisterCvars(void)
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
 	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);
-
-	r_earthSky = 						Cvar_Get("r_earthSky", "0", 0);
-	r_earthSunIntens =					Cvar_Get("r_earthSunIntens", "12.0", 0);
-//	r_earthSunAzimuth =					Cvar_Get("r_earthSunAzimuth", "0.0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);

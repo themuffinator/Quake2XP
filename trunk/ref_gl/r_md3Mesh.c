@@ -851,9 +851,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-			GL_Enable(GL_LINE_SMOOTH);
-			qglLineWidth(3.0);
-			qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			GL_Disable(GL_DEPTH_TEST);
+			qglLineWidth(1.5);
+			qglPolygonMode(GL_FRONT, GL_LINE);
 			GL_BindProgram(showTrisProgram);
 			qglUniform3f(U_COLOR, 1.0, 1.0, 0.0);
 			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
@@ -862,7 +862,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_BindProgram(md3AmbientProgram);
 
 			qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			GL_Disable(GL_LINE_SMOOTH);
+			GL_Enable(GL_DEPTH_TEST);
 		}
 
 		if (mesh->muzzle) {
@@ -970,9 +970,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-				GL_Enable(GL_LINE_SMOOTH);
-				qglLineWidth(3.0);
-				qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				GL_Disable(GL_DEPTH_TEST);
+				qglLineWidth(1.5);
+				qglPolygonMode(GL_FRONT, GL_LINE);
 				GL_BindProgram(showTrisProgram);
 				qglUniform3f(U_COLOR, 1.0, 1.0, 0.5);
 				qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
@@ -981,7 +981,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				GL_BindProgram(md3AmbientProgram);
 
 				qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				GL_Disable(GL_LINE_SMOOTH);
+				GL_Enable(GL_DEPTH_TEST);
 			}
 		}
 		GL_Disable(GL_BLEND);

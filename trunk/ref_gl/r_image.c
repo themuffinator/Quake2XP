@@ -412,9 +412,9 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 
-		uint numLayers = 1;
+		uint numLayers = header->dwDepth;
 
-		glTextureStorage3D(image->texnum, image->numMips, intFormat, width, height, 6 * numLayers);
+		glTextureStorage3D(image->texnum, image->numMips, intFormat, width, height, 6);
 	
 		int faceOffset = 0;
 
@@ -429,10 +429,12 @@ image_t* R_LoadDDS(char* texName, uint type) {
 				texSize = 0;
 				
 				if (compressed){
+
 					texSize = ((width + 3) >> 2) * ((height + 3) >> 2) * blockSize;
 					glCompressedTextureSubImage3D(image->texnum, mipLevel, 0, 0, face, width, height, 1, intFormat, texSize, imagedata + faceOffset);
 				}
 				else{
+
 					texSize = width * height * blockSize;
 					glTextureSubImage3D(image->texnum, mipLevel, 0, 0, face, width, height, 1, format, GL_UNSIGNED_BYTE, imagedata + faceOffset);
 				}
@@ -491,10 +493,12 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			texSize = 0;
 
 			if (compressed) {
+
 				texSize = ((width + 3) / 4) * ((height + 3) / 4) * blockSize;
 				glCompressedTextureSubImage2D(image->texnum, mipLevel, 0, 0, width, height, intFormat, texSize, imagedata);
 			}
 			else{
+
 				texSize = width * height * blockSize;
 				glTextureSubImage2D(image->texnum, mipLevel, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imagedata);
 			}

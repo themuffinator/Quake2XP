@@ -118,7 +118,6 @@ void R_DrawAlphaSurfaces() {
 				c_brush_polys += numIndices / 3;
 
 				R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.0, 1.0, glassProgram);
-
 				numIndices = 0;
 			}
 			oldTex = s->texInfo->image->texnum;

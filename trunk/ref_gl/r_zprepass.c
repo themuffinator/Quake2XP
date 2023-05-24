@@ -166,10 +166,7 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 		if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
 
-		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
-			R_AddSkySurface(surf);
-		}
-		else if (surf->texInfo->flags & SURF_NODRAW)
+		if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 			continue;
@@ -424,15 +421,11 @@ void R_DrawDepthScene (void) {
 	currentmodel = r_worldmodel;
 
 	VectorCopy (r_newrefdef.vieworg, modelorg);
-	
-	R_ClearSkyBox ();
 
 	GL_DepthFunc(GL_LESS);
 	GL_DepthMask(1);
 
 	GL_BindProgram (nullProgram);
-
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
@@ -454,10 +447,6 @@ void R_DrawDepthScene (void) {
 				R_DrawDepthBrushModel();
 		}
 		glBindVertexArray(0);
-
-		GL_DepthRange(1.0, 1.0); // mark sky for fog mask
-		R_DrawSkyBox(qfalse);
-		GL_DepthRange(0.0, 1.0);
 	}
 
 	glBindVertexArray(vao.dynamic);
@@ -491,6 +480,4 @@ void R_DrawDepthScene (void) {
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthMask(0);
 	SetFarClip();
-
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

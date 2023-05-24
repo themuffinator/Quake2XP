@@ -219,13 +219,12 @@ void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, 
 	if (!r_showTris->integer)
 		return;
 		
+		GL_Disable(GL_DEPTH_TEST);
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		GL_Enable(GL_POLYGON_OFFSET_FILL);
-		GL_PolygonOffset(-3.0, -3.0);
-		GL_Enable(GL_LINE_SMOOTH);
-		qglLineWidth(3.0);
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		qglLineWidth(1.5);
+
+		qglPolygonMode(GL_FRONT, GL_LINE);
 		GL_BindProgram(showTrisProgram);
 		
 		if (bmodel) {
@@ -243,11 +242,9 @@ void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, 
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		GL_Disable(GL_LINE_SMOOTH);
 		GL_Disable(GL_BLEND);
 		GL_BindProgram(program);
-		GL_Disable(GL_POLYGON_OFFSET_FILL);
-		GL_PolygonOffset(0.0, 0.0);
+		GL_Enable(GL_DEPTH_TEST);
 }
 
 void R_ShowBspTBN(qboolean bmodel, uint numIndices, glslProgram_t *program) {
@@ -721,13 +718,16 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
+		
 		if (surf->visframe != r_framecount)
 			continue;
+
 		if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
 
-		if (surf->texInfo->flags & SURF_SKY)	// just adds to visible sky bounds
-			R_AddSkySurface(surf);
+		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
+			skySurfaces[numSkySurfaces++] = surf;
+		}
 		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66) && !(surf->flags & MSURF_LAVA) && !(surf->flags & MSURF_DRAWTURB) ) {
@@ -937,18 +937,17 @@ void R_DrawBSP (void) {
 	ent.frame = (int) (r_newrefdef.time * 2);
 	Mat3_Identity(ent.axis);
 	currententity = &ent;
-		
-	R_ClearSkyBox();	
 
 	glBindVertexArray(vao.bsp);
 
 	numSceneSurfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
+	R_DrawSkyBox();
 	GL_DrawLightmappedPoly(qfalse);
 
 	glBindVertexArray(0);
 
-	R_DrawSkyBox(qtrue);
+
 }
 
 /*

@@ -309,9 +309,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-		GL_Enable(GL_LINE_SMOOTH);
-		qglLineWidth(2.0);
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		GL_Disable(GL_DEPTH_TEST);
+		qglLineWidth(1.5);
+		qglPolygonMode(GL_FRONT, GL_LINE);
 		GL_BindProgram(showTrisProgram);
 		qglUniform3f(U_COLOR, 0.0, 1.0, 1.0);
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
@@ -319,7 +319,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		GL_DrawArrays(GL_TRIANGLES, 0, jj);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		GL_Disable(GL_LINE_SMOOTH);
+		GL_Enable(GL_DEPTH_TEST);
 	}
 
 	qglDisableVertexAttribArray (ATT_POSITION);

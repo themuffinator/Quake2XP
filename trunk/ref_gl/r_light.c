@@ -1543,7 +1543,6 @@ void UpdateLightEditor(void) {
 		qglUniform4f(U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		GL_Enable(GL_LINE_SMOOTH);
 		qglLineWidth(3.0);
 
 		sprintf(buff0, "Origin: %i %i %i", (int)selectedShadowLight->origin[0],
@@ -1595,7 +1594,6 @@ void UpdateLightEditor(void) {
 		}
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		GL_Disable(GL_LINE_SMOOTH);
 		
 		if (!flareEdit || !selectedShadowLight->flare || !occEdit) { // skip filled box in flare or occ bbox editing mode
 
