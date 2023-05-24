@@ -19,8 +19,8 @@ in vec3		v_positionVS;
 in mat3		v_tangentToView;
 in vec4		v_color;
 
-#define MAX_STEPS			20
-#define MAX_STEPS_BINARY	10
+#define MAX_STEPS			120
+#define MAX_STEPS_BINARY	100
 
 #define STEP_SIZE			10.0
 #define STEP_SIZE_MUL		1.35
