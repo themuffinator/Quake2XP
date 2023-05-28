@@ -186,7 +186,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	uint					len, i, width, height, skipMip;
 	uint					format, intFormat, blockSize = 16, mipLevel, texSize;
 	image_t					*image;
-	qboolean				compressed, hdr;
+	qboolean				compressed;
 	byte					*buf, *imagedata;
 	uint					hash = Com_HashKey(texName);
 
@@ -232,7 +232,6 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	header = (ddsFileHeader_t*)(buf + 4);
 
 	compressed = qfalse;
-	hdr = qfalse;
 
 	if (header->ddspf.dwFlags & DDSF_FOURCC){
 
@@ -263,20 +262,15 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC7_UNORM)
 				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 			
-			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_UF16){
-
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_UF16)
 				intFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
-				hdr = qtrue;
-			}
-			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_SF16){
 
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_SF16)
 				intFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
-				hdr = qtrue;
-			}
  
-			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) /* && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16)*/){
+			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16)){
 
-				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 98 'BC7_UNORM') (%s)\n", headerDXT10->dxgiFormat, texName);
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 95-96 'BC6U-BC6S' and 98 'BC7_UNORM') (%s)\n", headerDXT10->dxgiFormat, texName);
 				return NULL;
 			}
 			if (headerDXT10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D){
@@ -288,7 +282,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 		default:
 			FS_FreeFile(buf);
-			Com_Printf("R_LoadDDS: invalid compressed internal format (supported DXT3, DXT5, BPTC) (%s)\n", texName);
+			Com_Printf("R_LoadDDS: invalid compressed internal format (supported DXT1, DXT3, DXT5, BPTC) (%s)\n", texName);
 			return NULL;
 		}
 	}
@@ -382,19 +376,15 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 	if (header->dwCaps2 & DDSCAPS2_CUBEMAP){
 
+		// fix tex size for uncompressed cubemaps
+		image->width = width * 6;
+		image->upload_width = width * 6;
+
 		glCreateTextures(GL_TEXTURE_CUBE_MAP_ARRAY, 1, &image->texnum);
 
-		if (type == it_part){
-
-			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		else{
-
-			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-
+		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		
 		if (header->dwFlags & DDSF_MIPMAPCOUNT){
 
 			image->numMips = header->dwMipMapCount;
@@ -404,6 +394,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
 			glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
 			glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
+			glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
 		}
 		else{
 
@@ -429,12 +420,10 @@ image_t* R_LoadDDS(char* texName, uint type) {
 				texSize = 0;
 				
 				if (compressed){
-
 					texSize = ((width + 3) >> 2) * ((height + 3) >> 2) * blockSize;
 					glCompressedTextureSubImage3D(image->texnum, mipLevel, 0, 0, face, width, height, 1, intFormat, texSize, imagedata + faceOffset);
 				}
 				else{
-
 					texSize = width * height * blockSize;
 					glTextureSubImage3D(image->texnum, mipLevel, 0, 0, face, width, height, 1, format, GL_UNSIGNED_BYTE, imagedata + faceOffset);
 				}
@@ -477,6 +466,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
 			glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
 			glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
+			glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
 		}
 		else {
 
@@ -1341,9 +1331,4 @@ void GL_ShutdownImages(void) {
 	qglDeleteTextures(1, &gl_lms.texnum[1]);
 	qglDeleteTextures(1, &gl_lms.texnum[2]);
 
-
-	if (skyCube) {
-		glMakeTextureHandleNonResidentARB(skyCube_handle);
-		qglDeleteTextures(1, &skyCube);
-	}	
 }

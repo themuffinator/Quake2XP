@@ -319,6 +319,7 @@ typedef struct image_s {
 	qboolean	has_alpha;
 	qboolean	paletted;
 	qboolean	envMap;
+	qboolean	legacySky;
 
 	float		picScale_w;
 	float		picScale_h;

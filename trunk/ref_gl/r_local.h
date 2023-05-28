@@ -202,12 +202,10 @@ image_t	*r_hdrBloomImage;
 image_t	*r_thermalImage;
 image_t	*r_lensDirt;
 image_t *r_ddscube;
+image_t *r_levelSkyBox;
 
 int			i_stencilView;
 uint64_t	i_stencilView_handle;
-
-int			skyCube;
-uint64_t	skyCube_handle;
 
 byte r_ssaoColorTexIndex;
 
@@ -267,6 +265,7 @@ cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
+cvar_t	*r_hdrBloomBlurPasses;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -1222,6 +1221,7 @@ typedef struct img_s {
 	int		width;
 	int		height;
 } img_t;
+
 void R_FlipImage(int idx, img_t* pix, byte* dst);
 
 ///  DDS Support

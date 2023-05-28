@@ -637,8 +637,6 @@ struct model_s *S_RegisterSexedModel (entity_state_t * ent, char *base) {
 	if (!model[0])
 		strcpy (model, "male");
 
-
-
 	Com_sprintf (buffer, sizeof(buffer), "players/%s/%s", model, base + 1);
 	mdl = R_RegisterModel (buffer);
 	if (!mdl) {
@@ -816,7 +814,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			p->colorVel[2] = 0;
 
 			p->type = PT_BEAM;
-			p->size = 1.0;
+			p->size = 2.0;
 			p->sizeVel = 0.0;
 			VectorCopy (s1->origin, p->org);
 			VectorSubtract (s1->old_origin, s1->origin, p->length);

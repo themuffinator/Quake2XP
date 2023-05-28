@@ -112,7 +112,7 @@ void CreateBloomBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 
-	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen,
+	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, it_screen,
 	vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 
 	qglGenFramebuffers(1, &fbo._bloom);
@@ -158,7 +158,7 @@ void CreateThermalBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
 
-	r_thermalImage = R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen, 
+	r_thermalImage = R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, it_screen,
 									vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
 									GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 	

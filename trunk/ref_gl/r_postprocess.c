@@ -47,7 +47,7 @@ void R_RestoreViewPortAndScissor() {
 }
 
 void R_Bloom (void) {
-	int i;
+	int i, j;
 	
 	if (!r_hdrBloom->integer)
 		return;
@@ -78,11 +78,16 @@ void R_Bloom (void) {
 	GL_BindProgram(bloomBlurProgram);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
+	
+	r_hdrBloomBlurPasses->integer = ClampCvarInteger(1, 16, r_hdrBloomBlurPasses->integer);
 
-	for (i = 0; i < 2; i++) {
-		qglUniform1i(U_PARAM_INT_0, i);
-		R_DrawFullScreenQuad();
-		glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	for (i = 0; i < r_hdrBloomBlurPasses->integer; i++) {
+
+		for (j = 0; j < 2; j++) {
+			qglUniform1i(U_PARAM_INT_0, j);
+			R_DrawFullScreenQuad();
+			glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+		}
 	}
 
 	R_RestoreViewPortAndScissor();
@@ -301,7 +306,6 @@ void R_FilmFx(void) {
 		return;
 	
 	// hdr glares
-	int i;
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._bloom);
 
@@ -326,7 +330,7 @@ void R_FilmFx(void) {
 	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
 	qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
 
-	for (i = 0; i < r_hdrGlarePasses->integer; i++) {
+	for (int i = 0; i < r_hdrGlarePasses->integer; i++) {
 		R_DrawFullScreenQuad();
 		glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
 	}
