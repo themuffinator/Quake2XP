@@ -48,7 +48,7 @@ void main()
 	float lum = 0.0;
 
 	lum = dot(vec3(0.2125, 0.7154, 0.0721), color.rgb);
-	dirt = pow(texture(u_lensDirtTex, uv).rgb, vec3(2.2));
+	dirt = pow(texture(u_lensDirtTex, uv).rgb, vec3(4.4));
 	dirt *= lum;    
 
 	vec3 sum = vec3( 0.0 );
