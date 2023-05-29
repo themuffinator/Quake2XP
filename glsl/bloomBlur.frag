@@ -8,19 +8,19 @@ layout (location = U_PARAM_INT_0)	uniform int pass;
 
     if(pass == 0){ // horizontal
 
-    outp  = 0.015625 *	texture(u_map, gl_FragCoord.xy - vec2(6.0,0.0) );
-    outp += 0.0596875 * texture(u_map, gl_FragCoord.xy - vec2(5.0,0.0) );
-    outp += 0.09375 *	texture(u_map, gl_FragCoord.xy - vec2(4.0,0.0) );
-    outp += 0.1640625 * texture(u_map, gl_FragCoord.xy - vec2(3.0,0.0) );
-    outp += 0.234375 *	texture(u_map, gl_FragCoord.xy - vec2(2.0,0.0) );
-    outp += 0.2734375 * texture(u_map, gl_FragCoord.xy - vec2(1.0,0.0) );
+    outp  = 0.015625 *	texture(u_map, gl_FragCoord.xy - vec2(3.0,0.0) );
+    outp += 0.0596875 * texture(u_map, gl_FragCoord.xy - vec2(2.2,0.0) );
+    outp += 0.09375 *	texture(u_map, gl_FragCoord.xy - vec2(2.0,0.0) );
+    outp += 0.1640625 * texture(u_map, gl_FragCoord.xy - vec2(1.5,0.0) );
+    outp += 0.234375 *	texture(u_map, gl_FragCoord.xy - vec2(1.0,0.0) );
+    outp += 0.2734375 * texture(u_map, gl_FragCoord.xy - vec2(0.5,0.0) );
     outp += 0.3125 *	texture(u_map, gl_FragCoord.xy );
-    outp += 0.2734375 * texture(u_map, gl_FragCoord.xy + vec2(1.0,0.0) );
-    outp += 0.234375 *	texture(u_map, gl_FragCoord.xy + vec2(2.0,0.0) );
-    outp += 0.1640625 * texture(u_map, gl_FragCoord.xy + vec2(3.0,0.0) );
-    outp += 0.09375 *	texture(u_map, gl_FragCoord.xy + vec2(4.0,0.0) );
-    outp += 0.0596875 * texture(u_map, gl_FragCoord.xy + vec2(5.0,0.0) );
-    outp += 0.015625 *	texture(u_map, gl_FragCoord.xy + vec2(6.0,0.0) );
+    outp += 0.2734375 * texture(u_map, gl_FragCoord.xy + vec2(0.5,0.0) );
+    outp += 0.234375 *	texture(u_map, gl_FragCoord.xy + vec2(1.0,0.0) );
+    outp += 0.1640625 * texture(u_map, gl_FragCoord.xy + vec2(1.5,0.0) );
+    outp += 0.09375 *	texture(u_map, gl_FragCoord.xy + vec2(2.0,0.0) );
+    outp += 0.0596875 * texture(u_map, gl_FragCoord.xy + vec2(2.5,0.0) );
+    outp += 0.015625 *	texture(u_map, gl_FragCoord.xy + vec2(3.0,0.0) );
  
     fragData = outp * 0.5;
     return;
@@ -28,19 +28,19 @@ layout (location = U_PARAM_INT_0)	uniform int pass;
     
     if(pass == 1){ // vertical
 
-    outp  = 0.015625    *   texture(u_map, gl_FragCoord.xy - vec2(0.0,6.0) );
-    outp += 0.0596875   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,5.0) );
-    outp += 0.09375     *	texture(u_map, gl_FragCoord.xy - vec2(0.0,4.0) );
-    outp += 0.1640625   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,3.0) );
-    outp += 0.234375    *	texture(u_map, gl_FragCoord.xy - vec2(0.0,2.0) );
-    outp += 0.2734375   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,1.0) );
+    outp  = 0.015625    *   texture(u_map, gl_FragCoord.xy - vec2(0.0,3.0) );
+    outp += 0.0596875   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,2.5) );
+    outp += 0.09375     *	texture(u_map, gl_FragCoord.xy - vec2(0.0,2.0) );
+    outp += 0.1640625   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,1.5) );
+    outp += 0.234375    *	texture(u_map, gl_FragCoord.xy - vec2(0.0,1.0) );
+    outp += 0.2734375   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,0.5) );
     outp += 0.3125      *	texture(u_map, gl_FragCoord.xy );
-    outp += 0.2734375   *	texture(u_map, gl_FragCoord.xy + vec2(0.0,1.0) );
-    outp += 0.234375    *	texture(u_map, gl_FragCoord.xy + vec2(0.0,2.0) );
-    outp += 0.1640625   *	texture(u_map, gl_FragCoord.xy + vec2(0.0,3.0) );
-    outp += 0.09375     *	texture(u_map, gl_FragCoord.xy + vec2(0.0,4.0) );
-    outp += 0.0596875   *	texture(u_map, gl_FragCoord.xy + vec2(0.0,5.0) );
-    outp += 0.015625    *	texture(u_map, gl_FragCoord.xy + vec2(0.0,6.0) );
+    outp += 0.2734375   *	texture(u_map, gl_FragCoord.xy + vec2(0.0,0.5) );
+    outp += 0.234375    *	texture(u_map, gl_FragCoord.xy + vec2(0.0,1.0) );
+    outp += 0.1640625   *	texture(u_map, gl_FragCoord.xy + vec2(0.0,1.5) );
+    outp += 0.09375     *	texture(u_map, gl_FragCoord.xy + vec2(0.0,2.0) );
+    outp += 0.0596875   *	texture(u_map, gl_FragCoord.xy + vec2(0.0,2.5) );
+    outp += 0.015625    *	texture(u_map, gl_FragCoord.xy + vec2(0.0,3.0) );
     
 	fragData = outp * 0.5;
     return;
