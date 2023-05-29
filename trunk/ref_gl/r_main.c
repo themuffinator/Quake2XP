@@ -1812,8 +1812,8 @@ int R_Init(void *hinstance, void *hWnd)
 	glCompressedTextureSubImage2D =(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC) qwglGetProcAddress("glCompressedTextureSubImage2D");
 	glCompressedTextureSubImage3D = (PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC)qwglGetProcAddress("glCompressedTextureSubImage3D");
 	
-	glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)qwglGetProcAddress("glCompressedTexSubImage2D");
-	glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)qwglGetProcAddress("glTexSubImage2D");
+	qglCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)qwglGetProcAddress("glCompressedTexSubImage2D");
+	qglTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)qwglGetProcAddress("glTexSubImage2D");
 
 	glGetTextureLevelParameteriv = (PFNGLGETTEXTURELEVELPARAMETERIVPROC) qwglGetProcAddress("glGetTextureLevelParameteriv");
 
