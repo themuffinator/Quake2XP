@@ -1358,8 +1358,8 @@ void R_RegisterCvars(void)
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
 	r_imageAutoBumpScale =				Cvar_Get("r_imageAutoBumpScale", "6.0", CVAR_ARCHIVE);
 	r_imageAutoSpecularScale =			Cvar_Get("r_imageAutoSpecularScale", "1", CVAR_ARCHIVE);
-	r_ddsQuality =						Cvar_Get("r_ddsQuality", "0", CVAR_ARCHIVE);
-	r_ddsQuality->help = "dds textures quality\n";
+	r_textureQuality =					Cvar_Get("r_textureQuality", "0", CVAR_ARCHIVE);
+	r_textureQuality->help = "textures quality: 0 - max quality\n";
 
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
 

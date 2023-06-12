@@ -78,7 +78,7 @@ void R_Bloom (void) {
 	GL_BindProgram(bloomBlurProgram);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
-	
+	qglUniform2f(U_PARAM_VEC2_0, vid.width / vid.width * 0.25, vid.height / vid.height * 0.25);
 	r_hdrBloomBlurPasses->integer = ClampCvarInteger(1, 16, r_hdrBloomBlurPasses->integer);
 
 	for (i = 0; i < r_hdrBloomBlurPasses->integer; i++) {

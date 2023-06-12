@@ -313,7 +313,11 @@ typedef struct image_s {
 	float		sl, tl, sh, th;		// 0,0 - 1,1 unless part of the scrap
 	
 	int			numChannels;
-	qboolean	isFloat;
+	uint		intFormat;
+	uint		texType;
+	uint		dataType;
+
+	qboolean	floatTex;
 	qboolean	compressed;
 
 	qboolean	has_alpha;

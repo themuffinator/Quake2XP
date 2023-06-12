@@ -111,7 +111,7 @@ char *cubeSide[6] = { "rt", "lf", "bk", "ft", "up", "dn" };
 
 uint	trans[2048 * 2048];
 image_t *R_MakeLegacySkyCubeMap(char *name) {
-	int			i, numMips;
+	int			i, side;
 	char		pname[MAX_QPATH];
 	img_t		pix[6];
 	image_t		*image;
@@ -150,7 +150,7 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 
 	image = &gltextures[i];
 	strcpy(image->name, name);
-	image->type = it_wall;
+	image->type = it_sky;
 	image->hash = hash;
 	image->compressed = qfalse;
 	image->has_alpha = qtrue;
@@ -159,37 +159,35 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 
 	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &image->texnum);
 
-	for (i = 0; i < 6; i++) {
+	for (side = 0; side < 6; side++) {
 
-		pix[i].pixels = NULL;
-		pix[i].width = pix[i].height = 0;
+		pix[side].pixels = NULL;
+		pix[side].width = pix[side].height = 0;
 
-		Com_sprintf(pname, sizeof(pname), "env/%s%s.tga", skyname, cubeSide[i]);
-		STB_LoadLdr(pname, &pix[i].pixels, &pix[i].width, &pix[i].height);
+		Com_sprintf(pname, sizeof(pname), "env/%s%s.tga", skyname, cubeSide[side]);
+		STB_LoadTexture(pname, &pix[side].pixels, &pix[side].width, &pix[side].height);
 
-		numMips = CalcMipmapCount(pix[0].width, pix[0].height);
-		glTextureStorage2D(image->texnum, numMips, GL_SRGB8, pix[0].width, pix[0].height);
+		glTextureStorage2D(image->texnum, 1, GL_SRGB8, pix[0].width, pix[0].height);
 
-		R_FlipImage(i, &pix[i], (byte *)trans);
-		free(pix[i].pixels);
-		glTextureSubImage3D(image->texnum, 0, 0, 0, i, pix[i].width, pix[i].height, 1, GL_RGB, GL_UNSIGNED_BYTE, trans);
+		R_FlipImage(side, &pix[side], (byte *)trans);
+		free(pix[side].pixels);
+		glTextureSubImage3D(image->texnum, 0, 0, 0, side, pix[side].width, pix[side].height, 1, GL_RGB, GL_UNSIGNED_BYTE, trans);
 	}
 
 	image->width = pix[0].width * 6;
 	image->height = pix[0].height;
 	image->upload_width = pix[0].width * 6;
 	image->upload_height = pix[0].height;
+	image->numMips = 1;
+
+	image->dataType = GL_UNSIGNED_BYTE;
+	image->texType = GL_TEXTURE_CUBE_MAP;
+	image->intFormat = GL_SRGB8;
 
 	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-	glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, numMips - 1);
-	glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-	glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
-
-	glGenerateTextureMipmap(image->texnum);
 
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
@@ -204,7 +202,7 @@ void R_GenSkyCubeMap(char* name) {
 	strncpy(skyname, name, sizeof(skyname) - 1);
 	
 	Com_sprintf(ddsName, sizeof(ddsName), "env/dds/%s.dds", skyname);
-	r_levelSkyBox = R_LoadDDS(ddsName, it_wall);
+	r_levelSkyBox = R_LoadDDS(ddsName, it_sky);
 
 	if (!r_levelSkyBox)
 		r_levelSkyBox = R_MakeLegacySkyCubeMap(skyname);

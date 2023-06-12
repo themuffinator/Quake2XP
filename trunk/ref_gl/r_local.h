@@ -282,7 +282,7 @@ cvar_t	*r_screenShot;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
 cvar_t	*r_textureLodBias;
-cvar_t	*r_ddsQuality;
+cvar_t	*r_textureQuality;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
@@ -385,8 +385,7 @@ float	hdrMaxLuminance;
 float	hdrTime;
 float	hdrKey;
 
-qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height);
-qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height);
+qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height);
 
 void R_CreateScreenFbo();
 void CreateHDR64Buffer(void);
@@ -1419,8 +1418,9 @@ typedef struct {
 	uint                     miscFlag;
 	uint                     arraySize;
 	uint                     miscFlags2;
-} ddsFileHeaderDXT10_t;
+} ddsFileHeaderDX10_t;
 
+image_t *f16;
 
 image_t* R_LoadDDS(char* texName, uint type);
 

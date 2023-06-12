@@ -24,7 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-static image_t* r_imageHashTable[IMAGE_HASH_SIZE];
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_JPEG
+#define STBI_ONLY_TGA
+#include "stb/stb_image.h"
 
 // original Q2 palette
 static const byte r_originalPalette[] = {
@@ -94,10 +97,9 @@ static const byte r_originalPalette[] = {
 199, 171, 155, 167, 139, 119, 135, 107,  87, 159,  91,  83
 };
 
-//qboolean GL_Upload8(uint texnum, byte* data, int width, int height, qboolean mipmap);
-//qboolean GL_Upload32(uint texnum, unsigned* data, int width, int height, qboolean mipmap, uint ClampMode);
 image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits, uint _hash);
 
+static image_t *r_imageHashTable[IMAGE_HASH_SIZE];
 static byte intensitytable[256];
 static uchar gammatable[256];
 uint d_8to24table[256];
@@ -105,18 +107,7 @@ float d_8to24tablef[256][3];
 int upload_width, upload_height;
 qboolean uploaded_paletted;
 
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_NO_PNG
-#define STBI_NO_BMP
-#define STBI_NO_PSD
-#define STBI_NO_GIF
-#define STBI_NO_PIC
-#define STBI_NO_PNM
-
-#include "stb/stb_image.h"
-
-qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
+qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
 	int		w, h, bbp;
 	byte*	buffer = NULL;
 	byte*	data = NULL;
@@ -145,48 +136,14 @@ qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
 	return qtrue;
 }
 
-qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
-	int		w, h, bpp;
-	byte*	buffer = NULL;
-	float*	data = NULL;
-
-	int len = FS_LoadFile(name, (void**)&buffer);
-	if (buffer == NULL) {
-		Com_DPrintf("%s couldn't read image form %s\n", __func__, name);
-		return qfalse;
-	}
-
-	data = stbi_loadf_from_memory(buffer, len, &w, &h, &bpp, 0);
-	if (bpp != 3) {
-		Com_Printf("HDR has not 3 channels %s\n", name); //paranoid
-		return qfalse;
-	}
-
-	if (data == NULL)
-	{
-		Com_DPrintf("%s couldn't load data from %s: %s!\n", __func__, name, stbi_failure_reason());
-		FS_FreeFile(buffer);
-		return qfalse;
-	}
-
-	FS_FreeFile(buffer);
-
-	Com_DPrintf("%s() loaded: %s\n", __func__, name);
-
-	*pic = data;
-	*width = w;
-	*height = h;
-	return qtrue;
-}
-
 image_t* R_LoadDDS(char* texName, uint type) {
 
 	ddsFileHeader_t			*header;
-	ddsFileHeaderDXT10_t	*headerDXT10;
+	ddsFileHeaderDX10_t		*headerDX10;
 	uint					len, i, width, height, skipMip;
-	uint					format, intFormat, blockSize = 16, mipLevel, texSize;
+	uint					format, intFormat, blockSize = 16, mipLevel, texSize, hdrBitsCount = 0, dataType;
 	image_t					*image;
-	qboolean				compressed;
+	qboolean				compressed, hdr;
 	byte					*buf, *imagedata;
 	uint					hash = Com_HashKey(texName);
 
@@ -232,12 +189,21 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	header = (ddsFileHeader_t*)(buf + 4);
 
 	compressed = qfalse;
+	hdr = qfalse;
 
 	if (header->ddspf.dwFlags & DDSF_FOURCC){
 
 		compressed = qtrue;
 
 		switch (header->ddspf.dwFourCC){
+
+		case 116: // D3DFMT_A32B32G32R32F
+			intFormat		= GL_RGBA32F;
+			format			= GL_RGBA;
+			compressed		= qfalse;
+			hdr				= qtrue;
+			hdrBitsCount	= 128;
+			break;
 
 		case DDS_MAKEFOURCC('D', 'X', 'T', '1'):
 		
@@ -257,25 +223,36 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 		case DDS_MAKEFOURCC('D', 'X', '1', '0'):
 
-			headerDXT10 = (ddsFileHeaderDXT10_t*)(buf + 4 + sizeof(ddsFileHeader_t));
+			headerDX10 = (ddsFileHeaderDX10_t*)(buf + 4 + sizeof(ddsFileHeader_t));
 
-			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC7_UNORM)
+			if (headerDX10->dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) {
+				intFormat = GL_RGBA32F;
+				format = GL_RGBA;
+				compressed = qfalse;
+				hdr = qtrue;
+				hdrBitsCount = 128;
+			}
+
+			if (headerDX10->dxgiFormat == DXGI_FORMAT_BC7_UNORM)
 				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 			
-			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_UF16)
+			if (headerDX10->dxgiFormat == DXGI_FORMAT_BC6H_UF16)
 				intFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
 
-			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_SF16)
+			if (headerDX10->dxgiFormat == DXGI_FORMAT_BC6H_SF16)
 				intFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
  
-			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && (headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16)){
+			if ((headerDX10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && 
+				(headerDX10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && 
+				(headerDX10->dxgiFormat != DXGI_FORMAT_BC6H_SF16) &&
+				(headerDX10->dxgiFormat != DXGI_FORMAT_R32G32B32A32_FLOAT)) {
 
-				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 95-96 'BC6U-BC6S' and 98 'BC7_UNORM') (%s)\n", headerDXT10->dxgiFormat, texName);
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 2 'R32G32B32A32_FLOAT' 95-96 'BC6U-BC6S' and 98 'BC7_UNORM') (%s)\n", headerDX10->dxgiFormat, texName);
 				return NULL;
 			}
-			if (headerDXT10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D){
+			if (headerDX10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D){
 
-				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->resourceDimension' = %i (supported 3 'Texture2D') (%s)\n", headerDXT10->resourceDimension, texName);
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->resourceDimension' = %i (supported 3 'Texture2D') (%s)\n", headerDX10->resourceDimension, texName);
 				return NULL;
 			}
 			break;
@@ -326,9 +303,11 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->upload_height = height;
 	image->type = type;
 	image->hash = hash;
+	image->floatTex = hdr;
 	image->compressed = compressed;
 	image->has_alpha = qtrue;
 	image->paletted = qfalse;
+	image->intFormat = intFormat;
 
 	if (image->type == it_pic){
 
@@ -364,15 +343,53 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	imagedata = buf + sizeof(ddsFileHeader_t) + 4;
 
 	if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
-		imagedata += sizeof(ddsFileHeaderDXT10_t);
+		imagedata += sizeof(ddsFileHeaderDX10_t);
 
-	if (!compressed)
-		blockSize = header->ddspf.dwRGBBitCount / 8;
+	if (!compressed) {
+		if (!hdr) {
+			blockSize = header->ddspf.dwRGBBitCount / 8;
+			dataType = GL_UNSIGNED_BYTE;
+			image->dataType = dataType;
+		}
+		else {
+			blockSize = hdrBitsCount / 8;
+			dataType = GL_FLOAT;
+			image->dataType = dataType;
+		}
+	} else
+		image->dataType = GL_COMPRESSED_RGBA;
 
-	if (image->type != it_part)
-		skipMip = min(r_ddsQuality->integer, image->numMips);
+	if (header->dwCaps2 & DDSCAPS2_CUBEMAP) {
+		glCreateTextures(GL_TEXTURE_CUBE_MAP_ARRAY, 1, &image->texnum);
+		image->texType = GL_TEXTURE_CUBE_MAP_ARRAY;
+	}
+	else {
+		glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+		image->texType = GL_TEXTURE_2D;
+	}
+	int maxSize = max(width, height);
+
+	if (image->type != it_part && image->type != it_sky && maxSize >= 1024)
+		skipMip = min(r_textureQuality->integer, header->dwMipMapCount);
 	else
 		skipMip = 0;
+	
+	if (header->dwFlags & DDSF_MIPMAPCOUNT) {
+
+		image->numMips = header->dwMipMapCount;
+
+		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+		glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
+		glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
+	}
+	else {
+		image->numMips = 1;
+		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 
 	if (header->dwCaps2 & DDSCAPS2_CUBEMAP){
 
@@ -380,29 +397,9 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		image->width = width * 6;
 		image->upload_width = width * 6;
 
-		glCreateTextures(GL_TEXTURE_CUBE_MAP_ARRAY, 1, &image->texnum);
-
 		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		
-		if (header->dwFlags & DDSF_MIPMAPCOUNT){
-
-			image->numMips = header->dwMipMapCount;
-
-			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
-			glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
-			glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-			glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
-		}
-		else{
-
-			image->numMips = 1;
-			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		}
-
 		uint numLayers = header->dwDepth;
 
 		glTextureStorage3D(image->texnum, image->numMips, intFormat, width, height, 6);
@@ -425,7 +422,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 				}
 				else{
 					texSize = width * height * blockSize;
-					glTextureSubImage3D(image->texnum, mipLevel, 0, 0, face, width, height, 1, format, GL_UNSIGNED_BYTE, imagedata + faceOffset);
+					glTextureSubImage3D(image->texnum, mipLevel, 0, 0, face, width, height, 1, format, dataType, imagedata + faceOffset);
 				}
 
 				width >>= 1;
@@ -444,35 +441,13 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	}
 	else{
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
-
-		if (type == it_part){
-
+		if (image->type == it_part){
 			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 		else{
-
 			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-
-		if (header->dwFlags & DDSF_MIPMAPCOUNT){
-
-			image->numMips = header->dwMipMapCount;
-
-			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
-			glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
-			glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-			glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
-		}
-		else {
-
-			image->numMips = 1;
-			glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 
 		glTextureStorage2D(image->texnum, image->numMips, intFormat, width, height);
@@ -482,15 +457,14 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 			texSize = 0;
 
-			if (compressed) {
-
+			if (compressed){
 				texSize = ((width + 3) / 4) * ((height + 3) / 4) * blockSize;
 				glCompressedTextureSubImage2D(image->texnum, mipLevel, 0, 0, width, height, intFormat, texSize, imagedata);
 			}
 			else{
-
 				texSize = width * height * blockSize;
-				glTextureSubImage2D(image->texnum, mipLevel, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imagedata);
+				glTextureSubImage2D(image->texnum, mipLevel, 0, 0, width, height, format, dataType, imagedata);
+
 			}
 
 			width >>= 1;
@@ -579,33 +553,88 @@ void GL_ImageList_f(void)
 			}
 			totalTexturesSize += itex * 4;
 		}
-		switch (image->type) {
-		case it_skin:
-			Com_Printf("Skin");
+
+		switch (image->texType) {
+		case GL_TEXTURE_2D:
+			Com_Printf("2D ");
 			break;
-		case it_sprite:
-			Com_Printf("Sprite");
+		case GL_TEXTURE_CUBE_MAP:
+			Com_Printf("CUBE ");
 			break;
-		case it_wall:
-			Com_Printf("Wall");
+		case GL_TEXTURE_CUBE_MAP_ARRAY:
+			Com_Printf("CUBEA ");
 			break;
-		case it_pic:
-			Com_Printf("Pics");
-			break;
-		case it_screen:
-			Com_Printf("Frame Buffers");
-			break;
-		case it_normal:
-			Com_Printf("Bump");
-			break;
-		default:
-			Com_Printf(" ");
+		case GL_TEXTURE_RECTANGLE:
+			Com_Printf("RECT ");
 			break;
 		}
-		
-		Com_Printf(" %3i %3i %s: %s\n",
+
+		switch (image->intFormat) {
+		case GL_RGBA8:
+			Com_Printf("RGBA8 ");
+			break;
+		case GL_RGB8:
+			Com_Printf("RGB8  ");
+			break;
+		case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+			Com_Printf("DXT1  ");
+			break;
+		case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+			Com_Printf("DXT3  ");
+			break;
+		case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+			Com_Printf("DXT5 ");
+			break;
+		case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB:
+			Com_Printf("BC6S ");
+			break;
+		case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB:
+			Com_Printf("BC6U ");
+			break;
+		case GL_COMPRESSED_RGBA_BPTC_UNORM_ARB:
+			Com_Printf("BC7   ");
+			break;
+		case GL_RG16F:
+			Com_Printf("RG16F ");
+			break;
+		case GL_R16F:
+			Com_Printf("R16F ");
+			break;
+		case GL_R32F:
+			Com_Printf("R32F ");
+			break;
+		case GL_DEPTH_COMPONENT16:
+			Com_Printf("Depth16 ");
+			break;
+		case GL_DEPTH_COMPONENT24:
+			Com_Printf("Depth24 ");
+			break;
+		case GL_DEPTH_COMPONENT32:
+			Com_Printf("Depth32 ");
+			break;
+		case GL_RGBA16F:
+			Com_Printf("RGBA16F ");
+			break;
+		case GL_RGB16F:
+			Com_Printf("RGB16F ");
+			break;
+		}
+
+		switch (image->dataType) {
+		case GL_UNSIGNED_BYTE:
+			Com_Printf("GL_UBYTE ");
+			break;
+		case GL_FLOAT:
+			Com_Printf("GL_FLOAT ");
+			break;
+		case GL_COMPRESSED_RGBA:
+			Com_Printf("GL_COMPR ");
+			break;
+		}
+
+		Com_Printf("%ix%i %s\n",
 				   image->upload_width, image->upload_height,
-				   palstrings[image->paletted], image->name);
+				   image->name);
 	}
 	Com_Printf("%i MB total image memory\n",totalTexturesSize>>20);
 }
@@ -899,6 +928,12 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	image->picScale_w = 1.0;
 	image->picScale_h = 1.0;
 	image->type = type;
+	image->floatTex = qfalse;
+	image->compressed = qfalse;
+	
+	image->dataType = GL_UNSIGNED_BYTE;
+	image->texType = GL_TEXTURE_2D;
+	image->intFormat = GL_RGBA8;
 	if (_hash)
 		image->hash = _hash;
 	else
@@ -1040,7 +1075,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		image = GL_LoadWal(name);
 
 	} else if (!strcmp(name + len - 4, ".tga")) {
-		STB_LoadLdr(name, &pic, &width, &height);
+		STB_LoadTexture(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -1049,7 +1084,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	}
 
 	else if (!strcmp(name + len - 4, ".jpg")) {
-		STB_LoadLdr(name, &pic, &width, &height);
+		STB_LoadTexture(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -1093,7 +1128,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 
  if (!strcmp(name + len - 4, ".tga")) {
 
-		STB_LoadLdr(name, &pic, &width, &height);
+	 STB_LoadTexture(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -1101,7 +1136,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 	}
 	else if (!strcmp(name + len - 4, ".jpg")) {
 
-	 STB_LoadLdr(name, &pic, &width, &height);
+	 STB_LoadTexture(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 

@@ -15,20 +15,19 @@ The source code can be downloaded from SourceForge as:
 $ svn checkout svn://svn.code.sf.net/p/quake2xp/code/trunk quake2xp-code
 
 The following dependencies are needed to compile Quake2XP.
-- DevIL
 - OpenGL
 - OpenAL (>= 1.14, see troubleshooting)
 - SDL 1.2
 - Vorbisfile (which requires Ogg and Vorbis)
-- Waf (build tool)
+- libcurl
 
 In Ubuntu they can be installed with the following command:
-$ sudo apt-get install build-essential libvorbis-dev libdevil-dev \
-  libsdl1.2-dev libopenal-dev waf
+$ sudo apt-get install build-essential libvorbis-dev \
+  libsdl1.2-dev libopenal-dev libcurl4-openssl-dev
 
 In Fedora:
-$ sudo dnf install -y SDL-devel libvorbis-devel DevIL-devel DevIL-ILUT-devel \
-  openal-soft-devel waf
+$ sudo dnf install -y SDL-devel libvorbis-devel  \
+  openal-soft-devel
 
 Once you have the mentioned packages, build and install with:
 $ waf configure
