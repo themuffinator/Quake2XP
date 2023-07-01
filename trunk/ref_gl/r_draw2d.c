@@ -569,29 +569,11 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t* gl)
 
 image_t* GL_FindImage2(char* name, imagetype_t type);
 
-image_t* GL_FindPic(char* name)
-{
-	image_t* gl;
-
-	gl = GL_FindImage2(name + 1, it_mipmap);
-
-	if (gl) {
-		if (gl != r_missingTexture)
-			strcpy(gl->bare_name, name);
-	}
-	return gl;
-}
-
 void Draw_LoadingScreen(int x, int y, int w, int h, char* pic)
 {
 	image_t* gl;
-	gl = GL_FindPic(pic);
 
-	if (!gl) {
-		Com_Printf("Can't find pic: %s\n", pic);
-		return;
-	}
-
+	gl = GL_FindImage2(pic + 1, it_mipmap);
 	Draw_LoadingScreen2(x, y, w, h, gl);
 }
 
@@ -799,8 +781,6 @@ void Draw_Pic(int x, int y, char* pic)
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-	//	Com_Printf("Can't find pic: %s\n", pic);
-	//	return;
 		gl = r_missingTexture;
 	}
 	Draw_Pic2(x, y, gl);
@@ -813,8 +793,6 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char* pic)
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-	//Com_Printf("Can't find pic: %s\n", pic);
-	//	return;
 		gl = r_missingTexture;
 	}
 	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
@@ -830,16 +808,12 @@ void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, c
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-	//	Com_Printf("Can't find pic: %s\n", pic);
-	//	return;
 		gl = r_missingTexture;
 	}
 
 	gl2 = Draw_FindPic(pic2);
 	if (!gl2) {
 		gl2 = r_defBump;
-	//	Com_Printf("Can't find pic: %s\n", pic2);
-	//	return;
 	}
 	Draw_ScaledBumpPic(x, y, scale_x, scale_y, gl, gl2);
 }

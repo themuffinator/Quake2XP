@@ -801,8 +801,6 @@ typedef struct {
 
 GLuint	vbo_fullScreenQuadF;
 GLuint	vbo_fullScreenQuad;
-GLuint	vbo_halfScreenQuad;
-GLuint	vbo_quarterScreenQuad;
 GLuint	ibo_quadString;
 GLuint	ibo_quad;
 
@@ -1418,7 +1416,7 @@ typedef struct {
 	uint                     miscFlag;
 	uint                     arraySize;
 	uint                     miscFlags2;
-} ddsFileHeaderDX10_t;
+} ddsFileHeaderDXT10_t;
 
 image_t *f16;
 

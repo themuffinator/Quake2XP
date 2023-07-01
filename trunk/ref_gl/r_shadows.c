@@ -196,7 +196,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 		icacheMd2[id++] = numVerts + 0;
 		numVerts += 3;
 	}
-
+//	qglBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(vec4_t), NULL, GL_STREAM_DRAW);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), vcacheMd2);
 	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icacheMd2);
 
@@ -503,6 +503,7 @@ void R_DrawMD3ShadowVolume(){
 			idx += 3;
 		}
 	}
+//	qglBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(float), NULL, GL_STREAM_DRAW);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
 	GL_DrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	c_shadow_volumes++;

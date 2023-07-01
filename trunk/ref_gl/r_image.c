@@ -139,7 +139,7 @@ qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
 image_t* R_LoadDDS(char* texName, uint type) {
 
 	ddsFileHeader_t			*header;
-	ddsFileHeaderDX10_t		*headerDX10;
+	ddsFileHeaderDXT10_t	*headerDXT10;
 	uint					len, i, width, height, skipMip;
 	uint					format, intFormat, blockSize = 16, mipLevel, texSize, hdrBitsCount = 0, dataType;
 	image_t					*image;
@@ -197,6 +197,14 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 		switch (header->ddspf.dwFourCC){
 
+	/*	case 113: // D3DFMT_A16B16G16R16F        
+			intFormat = GL_RGBA16F;
+			format = GL_RGBA;
+			compressed = qfalse;
+			hdr = qtrue;
+			hdrBitsCount = 64;
+			break;
+	*/	
 		case 116: // D3DFMT_A32B32G32R32F
 			intFormat		= GL_RGBA32F;
 			format			= GL_RGBA;
@@ -223,36 +231,55 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 		case DDS_MAKEFOURCC('D', 'X', '1', '0'):
 
-			headerDX10 = (ddsFileHeaderDX10_t*)(buf + 4 + sizeof(ddsFileHeader_t));
+			headerDXT10 = (ddsFileHeaderDXT10_t*)(buf + 4 + sizeof(ddsFileHeader_t));
 
-			if (headerDX10->dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) {
-				intFormat = GL_RGBA32F;
-				format = GL_RGBA;
-				compressed = qfalse;
-				hdr = qtrue;
-				hdrBitsCount = 128;
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) {
+				intFormat		= GL_RGBA32F;
+				format			= GL_RGBA;
+				compressed		= qfalse;
+				hdr				= qtrue;
+				hdrBitsCount	= 128;
 			}
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_B8G8R8A8_UNORM) {
+				intFormat		= GL_RGBA8;
+				format			= GL_BGRA;
+				compressed		= qfalse;
+			}			
 
-			if (headerDX10->dxgiFormat == DXGI_FORMAT_BC7_UNORM)
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC1_UNORM) {
+				intFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				blockSize = 8;			
+			}
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC2_UNORM)
+				intFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC3_UNORM)
+				intFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC7_UNORM)
 				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 			
-			if (headerDX10->dxgiFormat == DXGI_FORMAT_BC6H_UF16)
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_UF16)
 				intFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
 
-			if (headerDX10->dxgiFormat == DXGI_FORMAT_BC6H_SF16)
+			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC6H_SF16)
 				intFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
  
-			if ((headerDX10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && 
-				(headerDX10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && 
-				(headerDX10->dxgiFormat != DXGI_FORMAT_BC6H_SF16) &&
-				(headerDX10->dxgiFormat != DXGI_FORMAT_R32G32B32A32_FLOAT)) {
+			if ((headerDXT10->dxgiFormat != DXGI_FORMAT_BC1_UNORM) && //dxt1
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_BC2_UNORM) && //dxt3
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_BC3_UNORM) && //dxt5
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_BC7_UNORM) && //bc7
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_UF16) && //bc6u
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_BC6H_SF16) && //bc6s
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_R32G32B32A32_FLOAT)&& //rgba32f
+				(headerDXT10->dxgiFormat != DXGI_FORMAT_B8G8R8A8_UNORM)) { //rgba8
 
-				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (supported 2 'R32G32B32A32_FLOAT' 95-96 'BC6U-BC6S' and 98 'BC7_UNORM') (%s)\n", headerDX10->dxgiFormat, texName);
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->dxgiFormat' = %i (%s)\n", headerDXT10->dxgiFormat, texName);
 				return NULL;
 			}
-			if (headerDX10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D){
+			if (headerDXT10->resourceDimension != D3D10_RESOURCE_DIMENSION_TEXTURE2D){
 
-				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->resourceDimension' = %i (supported 3 'Texture2D') (%s)\n", headerDX10->resourceDimension, texName);
+				Com_Printf("R_LoadDDS: incorrect 'headerDXT10->resourceDimension' = %i (supported 3 'Texture2D') (%s)\n", headerDXT10->resourceDimension, texName);
 				return NULL;
 			}
 			break;
@@ -265,18 +292,18 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	}
 	else if ((header->ddspf.dwFlags & DDSF_RGBA) && header->ddspf.dwRGBBitCount == 32){
 
-		format = GL_BGRA;
-		intFormat = GL_RGBA8;
+		intFormat	= GL_RGBA8;
+		format		= GL_BGRA;
 	}
 	else if ((header->ddspf.dwFlags & DDSF_RGB) && header->ddspf.dwRGBBitCount == 24){
 
-		format = GL_BGR;
-		intFormat = GL_RGB8;
+		intFormat	= GL_RGB8;
+		format		= GL_BGR;
 	}
 	else{
 
 		FS_FreeFile(buf);
-		Com_Printf("R_LoadDDS: invalid uncompressed internal format (supported RGB and RGBA) (%s)\n", texName);
+		Com_Printf("R_LoadDDS: invalid uncompressed internal format (%s)\n", texName);
 		return NULL;
 	}
 
@@ -343,7 +370,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	imagedata = buf + sizeof(ddsFileHeader_t) + 4;
 
 	if (header->ddspf.dwFourCC == DDS_MAKEFOURCC('D', 'X', '1', '0'))
-		imagedata += sizeof(ddsFileHeaderDX10_t);
+		imagedata += sizeof(ddsFileHeaderDXT10_t);
 
 	if (!compressed) {
 		if (!hdr) {
@@ -523,14 +550,10 @@ GL_ImageList_f
 
 void GL_ImageList_f(void)
 {
-	int i, comptexSize = 0, level, itex;
-	uint totalTexturesSize = 0;
+	int i, comptexSize = 0, level, texSize, dataSize = sizeof(byte);
+	uint totalTexturesSize = 0, numChannels = 4;
 	image_t *image;
 
-	const char *palstrings[2] = {
-		"RGB",
-		"PAL"
-	};
 	Com_Printf("------------------\n");
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
@@ -547,77 +570,111 @@ void GL_ImageList_f(void)
 
 		}
 		else {
-			itex = image->upload_width * image->upload_height;
+			texSize = image->upload_width * image->upload_height;
 			if ((image->type != it_pic) && (image->type != it_screen)) {
-				itex = itex + itex / 3; // + mipmaps size
+				texSize *= 4; // + mipmaps size
+				texSize /= 3;
 			}
-			totalTexturesSize += itex * 4;
+
+			switch (image->intFormat) {
+
+			case GL_R16F:
+			case GL_R32F:
+				numChannels = 1;
+				break;
+
+			case GL_RG16F:
+			case GL_RG32F:
+			case GL_DEPTH24_STENCIL8:
+				numChannels = 2;
+				break;
+
+			case GL_RGB8:
+			case GL_RGB16F:
+			case GL_RGB32F:
+				numChannels = 3;
+				break;
+			}
+
+			switch (image->intFormat) {
+			case GL_R16F:
+			case GL_RG16F:
+			case GL_RGB16F:
+			case GL_RGBA16F:
+			case GL_R32F:
+			case GL_RG32F:
+			case GL_RGB32F:
+			case GL_RGBA32F:
+			case GL_R11F_G11F_B10F:
+				dataSize = sizeof(float);
+			case GL_DEPTH24_STENCIL8:
+				dataSize = sizeof(int);
+				break;
+			}
+
+			totalTexturesSize += texSize * numChannels * dataSize;
 		}
 
 		switch (image->texType) {
 		case GL_TEXTURE_2D:
-			Com_Printf("2D ");
+			Com_Printf("2D    ");
 			break;
 		case GL_TEXTURE_CUBE_MAP:
-			Com_Printf("CUBE ");
+			Com_Printf("CUBE  ");
 			break;
 		case GL_TEXTURE_CUBE_MAP_ARRAY:
 			Com_Printf("CUBEA ");
 			break;
 		case GL_TEXTURE_RECTANGLE:
-			Com_Printf("RECT ");
+			Com_Printf("RECT  ");
 			break;
 		}
 
 		switch (image->intFormat) {
 		case GL_RGBA8:
-			Com_Printf("RGBA8 ");
+			Com_Printf("RGBA8  ");
 			break;
 		case GL_RGB8:
-			Com_Printf("RGB8  ");
+			Com_Printf("RGB8   ");
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-			Com_Printf("DXT1  ");
+			Com_Printf("DXT1   ");
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-			Com_Printf("DXT3  ");
+			Com_Printf("DXT3   ");
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-			Com_Printf("DXT5 ");
+			Com_Printf("DXT5   ");
 			break;
 		case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB:
-			Com_Printf("BC6S ");
+			Com_Printf("BC6S   ");
 			break;
 		case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB:
-			Com_Printf("BC6U ");
+			Com_Printf("BC6U   ");
 			break;
 		case GL_COMPRESSED_RGBA_BPTC_UNORM_ARB:
-			Com_Printf("BC7   ");
+			Com_Printf("BC7    ");
 			break;
 		case GL_RG16F:
-			Com_Printf("RG16F ");
+			Com_Printf("RG16F  ");
 			break;
 		case GL_R16F:
-			Com_Printf("R16F ");
+			Com_Printf("R16F   ");
 			break;
 		case GL_R32F:
-			Com_Printf("R32F ");
+			Com_Printf("R32F   ");
 			break;
-		case GL_DEPTH_COMPONENT16:
-			Com_Printf("Depth16 ");
-			break;
-		case GL_DEPTH_COMPONENT24:
-			Com_Printf("Depth24 ");
-			break;
-		case GL_DEPTH_COMPONENT32:
-			Com_Printf("Depth32 ");
+		case GL_DEPTH24_STENCIL8:
+			Com_Printf("D24S8   ");
 			break;
 		case GL_RGBA16F:
 			Com_Printf("RGBA16F ");
 			break;
 		case GL_RGB16F:
-			Com_Printf("RGB16F ");
+			Com_Printf("RGB16F  ");
 			break;
+		case GL_R11F_G11F_B10F:
+			Com_Printf("RG11B10F ");
 		}
 
 		switch (image->dataType) {
@@ -630,11 +687,11 @@ void GL_ImageList_f(void)
 		case GL_COMPRESSED_RGBA:
 			Com_Printf("GL_COMPR ");
 			break;
+		case GL_UNSIGNED_INT_24_8:
+			Com_Printf("GL_UINT24_8 ");
 		}
 
-		Com_Printf("%ix%i %s\n",
-				   image->upload_width, image->upload_height,
-				   image->name);
+		Com_Printf("%ix%i mips: %i %s\n", image->upload_width, image->upload_height, image->numMips, image->name);
 	}
 	Com_Printf("%i MB total image memory\n",totalTexturesSize>>20);
 }
@@ -1009,14 +1066,16 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	byte *pic, *palette;
 
 	if (!name)
-		return NULL;			
+		return NULL;	
+
 	len = strlen(name);
+
 	if (len < 5)
 		return NULL;			
 
 	// look for it
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
-	{
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++){
+
 		if (image->hash == hash)
 		{
 			if (!b_stricmp(image->name, name)){
@@ -1031,7 +1090,10 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	// 
 	pic = NULL;
 	palette = NULL;
-		
+	
+	if (type == it_mipmap)
+		goto next;
+
 	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".tga") && !override) {
 
 		char s[128];
@@ -1084,6 +1146,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	}
 
 	else if (!strcmp(name + len - 4, ".jpg")) {
+	next:
 		STB_LoadTexture(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -1103,7 +1166,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	return image;
 }
 
-image_t* GL_FindImage2(char* name, imagetype_t type)// no override
+image_t* GL_FindImage2(char* name, imagetype_t type)
 {
 	image_t	*image;
 	int		i, len, width, height;
@@ -1126,24 +1189,15 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 		}
 	}
 
- if (!strcmp(name + len - 4, ".tga")) {
-
-	 STB_LoadTexture(name, &pic, &width, &height);
-		if (!pic)
-			return NULL;
-
-		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}
-	else if (!strcmp(name + len - 4, ".jpg")) {
-
-	 STB_LoadTexture(name, &pic, &width, &height);
-		if (!pic)
-			return NULL;
-
-		image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
-	}
-	else 
+	STB_LoadTexture(name, &pic, &width, &height);
+	
+	if (!pic)
 		return NULL;
+
+	image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
+	
+	if (!image)
+		image = r_missingTexture;
 
 	if (pic)
 		free(pic);
