@@ -89,6 +89,15 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 	lightplane = plane;
 
 	for (i = 0, surf = &r_worldmodel->surfaces[node->firstsurface]; i < node->numsurfaces; i++, surf++) {
+		
+		if (surf->flags & (MSURF_DRAWSKY))
+		{
+			pointcolor[0] = 1.0;
+			pointcolor[1] = 0.5;
+			pointcolor[2] = 0.0;
+			return 1;
+		}
+		
 		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
 			continue;	// no lightmaps
 
@@ -186,6 +195,42 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 	for (i = 0; i < 3; i++)
 		if (color[i] > 1)
 			color[i] = 1;
+//---------------------------------------------
+	vec3_t dir[6] = {
+	{-8192.0, 0, 0 },	// forward 
+	{8192.0, 0, 0},		// back
+	{0, -8192.0, 0 },	// left 
+	{0, 8192.0, 0},		// right
+	{0, 0, -8192.0 },	// up 
+	{0, 0, 8192.0},		// down
+	};
+
+	byte data[3] = { 0,0,0 };
+	int side;
+
+	for (side = 0; side < 6; side++) {
+		
+		end[0] = p[0] + dir[side][0];
+		end[1] = p[1] + dir[side][1];
+		end[2] = p[2] + dir[side][2];
+
+		r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
+
+		if (r == -1) {
+			data[0] = 0;
+			data[1] = 0;
+			data[2] = 0;
+		}
+		else {
+			data[0] = pointcolor[0] * 255;
+			data[1] = pointcolor[1] * 255;
+			data[2] = pointcolor[2] * 255;
+		}
+		glTextureSubImage3D(currententity->model->ambientCube->texnum, 0, 0, 0, side, 1, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
+	}
+
+
+
 }
 
 

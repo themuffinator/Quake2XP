@@ -421,31 +421,26 @@ void CalculateAutomaticExposure() {
 		sum = 0.0f;
 		maxLuminance = 0.0f;
 
-#pragma omp parallel
+		for (i = 0; i < 4096; i += 3)
 		{
-#pragma omp for 
-			for (i = 0; i < 4096; i += 3)
+			color[0] = src[i * 3 + 0];
+			color[1] = src[i * 3 + 1];
+			color[2] = src[i * 3 + 2];
+
+			tmp[0] = pow(color[0], 1.0 / 2.2);
+			tmp[1] = pow(color[1], 1.0 / 2.2);
+			tmp[2] = pow(color[2], 1.0 / 2.2);
+			luminance = DotProduct(luma, tmp) + 0.0001f;
+			if (luminance > maxLuminance)
 			{
-				color[0] = src[i * 3 + 0];
-				color[1] = src[i * 3 + 1];
-				color[2] = src[i * 3 + 2];
-
-				tmp[0] = pow(color[0], 1.0 / 2.2);
-				tmp[1] = pow(color[1], 1.0 / 2.2);
-				tmp[2] = pow(color[2], 1.0 / 2.2);
-				luminance = DotProduct(luma, tmp) + 0.0001f;
-				if (luminance > maxLuminance)
-				{
-					maxLuminance = luminance;
-				}
-
-				float logLuminance = log2(luminance + 1.0f);
-#pragma omp atomic
-				sum += logLuminance;
+				maxLuminance = luminance;
 			}
+
+			float logLuminance = log2(luminance + 1.0f);
+			sum += logLuminance;
 		}
-			avgLuminance = sum / 4096.0f;
-		
+
+		avgLuminance = sum / 4096.0f;
 
 		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 	}

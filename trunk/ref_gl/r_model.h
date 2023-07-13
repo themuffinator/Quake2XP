@@ -355,6 +355,7 @@ typedef struct model_s {
 	image_t      *skinsMD3_roughness	[MD3_MAX_MESHES][MD3_MAX_SKINS];
 	image_t      *skinsMD3_glow			[MD3_MAX_MESHES][MD3_MAX_SKINS];
 	image_t      *skinsMD3_env			[MD3_MAX_MESHES][MD3_MAX_SKINS];
+	image_t		*ambientCube;
 
 	int			extraDataSize;
 	void		*extraData;
