@@ -303,7 +303,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	else{
 
 		FS_FreeFile(buf);
-		Com_Printf("R_LoadDDS: invalid uncompressed internal format (%s)\n", texName);
+		Com_Printf("R_LoadDDS: invalid uncompressed internal format (%s) header (%i) dwRGBBitCount (%i)\n", texName, header->ddspf.dwFlags, header->ddspf.dwRGBBitCount);
 		return NULL;
 	}
 

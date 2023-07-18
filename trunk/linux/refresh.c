@@ -207,6 +207,17 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 		Com_Printf("Use multisampling %ix samples per pixel.\n", (int)r_multiSamples->value);
 	} 
 	
+    SDL_Rect **modes;
+    int i;
+    
+    /* Get available fullscreen/hardware modes */
+    modes=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+
+    Com_Printf("Available Modes:\n");
+    
+	for(i=0; modes[i]; ++i)
+    	Com_Printf("  %d x %d\n", modes[i]->w, modes[i]->h); 
+    
 
 	/* Window title */
 	SDL_WM_SetCaption("quake2xp", "quake2xp");

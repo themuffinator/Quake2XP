@@ -161,8 +161,7 @@ VID_GetModeInfo(int *width, int *height, int mode)
 
     // close the display
     XCloseDisplay(display);
-
-
+     
 
   *width = s->width;
   *height = s->height;  
