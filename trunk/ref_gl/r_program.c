@@ -518,6 +518,8 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		qglLinkProgram(id);
 		qglGetProgramiv(id, GL_LINK_STATUS, &status);
 
+		qglObjectLabel(GL_PROGRAM, id, strlen(name), name);
+
 		R_GetInfoLog(id, log, qtrue);
 
 		if (!status) {
@@ -1067,7 +1069,6 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
 
 	Com_Printf("Load "S_COLOR_YELLOW"final pass program"S_COLOR_WHITE" ");
 	finalPassProgram = R_FindProgram("finalPass", S_DEFAULT);

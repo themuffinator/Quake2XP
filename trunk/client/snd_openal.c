@@ -204,7 +204,10 @@ void S_Init (int hardreset) {
 		s_useEfx = Cvar_Get ("s_useEfx", "1", CVAR_ARCHIVE);
 		s_initSound = Cvar_Get ("s_initSound", "1", CVAR_NOSET);
 		s_dynamicReverberation = Cvar_Get("s_dynamicReverberation", "1", CVAR_ARCHIVE);
+		
 		s_useHRTF = Cvar_Get("s_useHRTF", "1", CVAR_ARCHIVE);
+		s_hrtfIndex = Cvar_Get("s_hrtfIndex", "0", CVAR_ARCHIVE);
+
 		s_resamplerQuality = Cvar_Get("s_resamplerQuality", "1", CVAR_ARCHIVE);
 		s_resamplerQuality->help = "0- low quality, 4- high quality.";
 	}

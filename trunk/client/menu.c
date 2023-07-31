@@ -1229,7 +1229,27 @@ static void UpdateEFX(void *unused) {
 
 static void UpdateHRTF(void *unused) {
 	Cvar_SetValue("s_useHRTF", s_options_hrtf.curInteger);
-	CL_Snd_Restart_f();
+
+#ifdef _WIN32
+		extern LPALCRESETDEVICESOFT alcResetDeviceSOFT;
+		#endif
+	ALCint attrlist[5] =
+	{	ALC_HRTF_SOFT, s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
+		ALC_HRTF_ID_SOFT, s_hrtfIndex->integer,
+	0
+	};
+	if (!alcResetDeviceSOFT(alConfig.hDevice, attrlist))
+		Com_Printf("Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
+
+	ALCint	hrtfState;
+	alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+	if (!hrtfState)
+		Com_Printf("update hrtf status: mode" S_COLOR_YELLOW " off\n");
+	else {
+		Com_Printf("update hrtf status: mode" S_COLOR_GREEN " on\n");
+		const ALchar *selected = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
+		Com_Printf("update hrtf filter to: " S_COLOR_GREEN "%s\n", selected);
+	}
 }
 
 static void ConsoleFunc(void *unused) {
@@ -1526,10 +1546,6 @@ void Options_MenuInit(void) {
 	s_options_aldev_box.generic.name = "Sound Device";
 	s_options_aldev_box.generic.callback = AlDevice;
 
-#ifdef _WIN32
-	extern LPALGETSTRINGISOFT alGetStringiSOFT;
-#endif
-
 	if (alGetStringiSOFT) {
 		
 		if (ru_loc) {
@@ -1558,21 +1574,25 @@ void Options_MenuInit(void) {
 	s_options_alResempler_box.generic.y = 60 * ui_fontScale->value;
 	s_options_alResempler_box.generic.name = "Sound Resampler";
 	s_options_alResempler_box.generic.callback = AlResempler;
-
+#ifdef _WIN32
 	if (alGetStringiSOFT)
 		s_options_alResempler_box.itemnames = al_resemplers;
 	else
 		s_options_alResempler_box.itemnames = not_found;
+#else
+	s_options_alResempler_box.itemnames = not_found;
+#endif
 
 	s_options_alResempler_box.generic.statusbar = "Sources Resampling Algorithms";
 
+#ifdef _WIN32
 	s_options_alResempler_box.curInteger = 0;
 	for (i = 1; i <= alConfig.numResamplers; i++)
 		if (s_resamplerQuality->integer == i) {
 			s_options_alResempler_box.curInteger = i;
 			break;
 		}
-
+#endif
 	s_options_hrtf.generic.type = MTYPE_SPINCONTROL;
 	s_options_hrtf.generic.x = 0;
 	s_options_hrtf.generic.y = 70 * ui_fontScale->value;
@@ -1584,7 +1604,7 @@ void Options_MenuInit(void) {
 		s_options_hrtf.itemnames = not_found;
 
 	s_options_hrtf.curInteger = Cvar_VariableValue("s_useHRTF");
-	s_options_hrtf.generic.statusbar = "Enable HRTF function";
+	s_options_hrtf.generic.statusbar = "Enable HRTF function for headphones";
 
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_useEFX_list.generic.x = 0;

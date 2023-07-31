@@ -535,17 +535,16 @@ typedef struct {
 	uint	_ssao;
 	uint	_linearDepth;
 	uint	_tex2d;
-	uint	_hdr64;
-	uint	_hdrLum[9];
+	uint	_hdrLum[2];
 }fbo_t;
 
 fbo_t fbo;
 
 typedef struct {
 
-	uint	_64[2];
 	uint	_fullScreen;
 	uint	_fullScreenF;
+	uint	_luma[2];
 }pbo_t;
 
 pbo_t pbo;

@@ -210,6 +210,11 @@ AL_API const ALchar* AL_APIENTRY alGetStringiSOFT(ALenum pname, ALsizei index);
 #endif
 #endif
 
+#ifdef _WIN32
+extern LPALCRESETDEVICESOFT alcResetDeviceSOFT;
+extern LPALGETSTRINGISOFT	alGetStringiSOFT;
+extern LPALCGETSTRINGISOFT	alcGetStringiSOFT;
+#endif
 /*
  =======================================================================
 
@@ -299,6 +304,7 @@ cvar_t	*s_device;
 cvar_t	*s_initSound;
 cvar_t	*s_dynamicReverberation;
 cvar_t	*s_useHRTF;
+cvar_t	*s_hrtfIndex;
 cvar_t	*s_resamplerQuality;
 
 void EFX_RvbInit (void);

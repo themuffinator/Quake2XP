@@ -1341,6 +1341,7 @@ void R_RegisterCvars(void)
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
 	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.55", CVAR_ARCHIVE);
+	r_hdrKey =							Cvar_Get("r_hdrKey", "0.015", CVAR_ARCHIVE);
 
 	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", CVAR_ARCHIVE);
 	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
@@ -1841,6 +1842,9 @@ int R_Init(void *hinstance, void *hWnd)
 	glFenceSync = (PFNGLFENCESYNCPROC) qwglGetProcAddress("glFenceSync");
 	glGetSynciv = (PFNGLGETSYNCIVPROC)qwglGetProcAddress("glGetSynciv");
 
+	qglObjectLabel = (PFNGLOBJECTLABELPROC)qwglGetProcAddress("glObjectLabel");
+	qglGetObjectLabel = (PFNGLGETOBJECTLABELPROC)qwglGetProcAddress("glGetObjectLabel");
+
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
 
@@ -1997,9 +2001,8 @@ void R_Shutdown(void)
 	qglDeleteFramebuffers(1, &fbo._ssao);
 	qglDeleteFramebuffers(1, &fbo._linearDepth);
 	qglDeleteFramebuffers(1, &fbo._tex2d);
-	qglDeleteFramebuffers(1, &fbo._hdr64);
 	
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 2; i++)
 		qglDeleteFramebuffers(1, &fbo._hdrLum[i]);
 
 	DeleteShadowVertexBuffers();
@@ -2068,6 +2071,9 @@ void R_BeginFrame()
 
 	GL_Enable(GL_BLEND); // alpha blend for chars
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Nvidia Nsight Graphics frame frame terminator
+	qglFlush();
 
 	qglDrawBuffer( GL_BACK );
 

@@ -1532,6 +1532,32 @@ static void CL_SendCommand_Async(void)
 	CL_CheckForResend();
 }
 
+void CL_UpdateHRTF() {
+
+	if (s_hrtfIndex->modified || s_useHRTF->modified)
+	{
+		s_hrtfIndex->modified = qfalse;
+		s_useHRTF->modified = qfalse;
+
+		ALCint attrlist[5] =
+		{ ALC_HRTF_SOFT, s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
+			ALC_HRTF_ID_SOFT, s_hrtfIndex->integer,
+		0
+		};
+		if (!alcResetDeviceSOFT(alConfig.hDevice, attrlist))
+			Com_Printf(S_COLOR_RED"Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
+
+		ALCint	hrtfState;
+		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+		if (!hrtfState)
+			Com_DPrintf("update hrtf status: mode" S_COLOR_YELLOW " off\n");
+		else {
+			Com_DPrintf("update hrtf status: mode" S_COLOR_GREEN " on\n");
+			const ALchar *selected = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
+			Com_DPrintf("update hrtf filter to: " S_COLOR_GREEN "%s\n", selected);
+		}
+	}
+}
 
 /*
 ==================
@@ -1668,6 +1694,8 @@ void CL_Frame_Async(int msec)
 			memcpy(&orientation[3], cl.v_up, sizeof(vec3_t));
 			S_Update(cl.refdef.vieworg, cl.v_forward, orientation);
 		}
+		
+		CL_UpdateHRTF();
 
 		// Advance local effects for next frame
 		CL_RunDLights();
@@ -1730,6 +1758,7 @@ CL_Frame
 
 ==================
 */
+
 void CL_Frame (int msec) {
 	static int	extratime, packet_delta, misc_delta = 1000;
 	static int lasttimecalled;
@@ -1817,6 +1846,8 @@ void CL_Frame (int msec) {
 		memcpy(&orientation[3], cl.v_up, sizeof(vec3_t));
 		S_Update(cl.refdef.vieworg, cl.v_forward, orientation);
 	}
+
+	CL_UpdateHRTF();
 
 	// advance local effects for next frame
 	CL_RunDLights ();

@@ -79,6 +79,8 @@ void CreateSSAOBuffer(void) {
 		Com_Printf(S_COLOR_RED"Failed!");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
+	
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._ssao, strlen("***fbo_ssao***"), "***fbo_ssao***");
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -102,6 +104,7 @@ void CreateLinearDepthBuffer(void) {
 		Com_Printf(S_COLOR_RED"Failed!");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._linearDepth, strlen("***fbo_linearDepth***"), "***fbo_linearDepth***");
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -125,29 +128,7 @@ void CreateBloomBuffer(void) {
 		Com_Printf(S_COLOR_RED"Failed!");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-}
-
-void CreateHDR64Buffer(void) {
-	qboolean statusOK;
-
-	Com_Printf("Load "S_COLOR_YELLOW "HDR64 FBO ");
-
-	r_hdr64image= R_CreateTexture("***r_hdr64image***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB, it_screen,
-		64, 64, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
-		GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
-
-	qglGenFramebuffers(1, &fbo._hdr64);
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr64);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdr64image->texnum, 0);
-
-	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-	if (!statusOK)
-		Com_Printf(S_COLOR_RED"Failed!");
-	else
-		Com_Printf(S_COLOR_WHITE"succeeded\n");
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._bloom, strlen("***fbo_bloom***"), "***fbo_bloom***");
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -171,7 +152,7 @@ void CreateThermalBuffer(void) {
 		Com_Printf(S_COLOR_RED"Failed!");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
-
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._thermal, strlen("***fbo_thermalVision***"), "***fbo_thermalVision***");
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
@@ -185,6 +166,9 @@ void R_CreateScreenFbo() {
 	qglGenRenderbuffers(1, &rbId);
 	qglBindRenderbuffer(GL_RENDERBUFFER, rbId);
 	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
+	
+	qglObjectLabel(GL_RENDERBUFFER, rbId, strlen("***rbo_HdrRenderBuffer***"), "***rbo_HdrRenderBuffer***");
+
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
@@ -214,7 +198,7 @@ void R_CreateScreenFbo() {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
-
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._hdr, strlen("***fbo_HdrScreen***"), "***fbo_HdrScreen***");
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
@@ -238,7 +222,7 @@ void R_FboFinal() {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
-
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._final, strlen("***fbo_HdrFinal***"), "***fbo_HdrFinal***");
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -262,28 +246,27 @@ void R_Tex2dFbo() {
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
 
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._tex2d, strlen("***fbo_HdrTexture2D***"), "***fbo_HdrTexture2D***");
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void R_HdrLumFbo() {
 	qboolean statusOK;
-	int i, texSize = 128;
+	int i, texSize = 64;
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
 
-	for (i = 0; i < 9; i++) {
+	for (i = 0; i < 2; i++) {
 
 		qglGenFramebuffers(1, &fbo._hdrLum[i]);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdrLum[i]);
 
-		r_hdrLuminance[i] = R_CreateTexture("***r_hdrLuminance_%i***", GL_TEXTURE_2D, GL_R16F, GL_RED,
-			it_screen, max(1, texSize), max(1, texSize),
-			GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-			GL_FLOAT, qfalse, NULL);
-		//	Com_Printf("%i: %i\n", i, max(1, texSize));
-		texSize >>= 1;
+		r_hdrLuminance[i] = R_CreateTexture(va("***fbo_hdrLuminance_%i***", i), GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+							it_screen, texSize, texSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
+							GL_FLOAT, qtrue, NULL);
 
 		qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrLuminance[i]->texnum, 0);
+		qglObjectLabel(GL_FRAMEBUFFER, fbo._hdrLum[i], strlen(va("***fbo_hdrLuminance_%i***", i)), va("***fbo_hdrLuminance_%i***", i));
 	}
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
@@ -298,13 +281,14 @@ void R_HdrLumFbo() {
 void R_PboInit() {
 
 	Com_Printf("Initializing Pixel Buffers: " S_COLOR_GREEN "ok\n");
+	
 	// read from gpu
-	qglGenBuffers(2, pbo._64);
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[0]);
-	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_READ);
+	qglGenBuffers(2, pbo._luma);
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[0]);
+	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_COPY);
 
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[1]);
-	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_READ);
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[1]);
+	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_COPY);
 
 	qglGenBuffers(1, &pbo._fullScreen);
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);

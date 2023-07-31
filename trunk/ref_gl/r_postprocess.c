@@ -376,7 +376,7 @@ float ClampFloat(float value, float min, float max) {
 		return max;
 	return value;
 }
-void CalculateAutomaticExposure() {
+void R_CalcAutoExposure() {
 	int				i;
 	static float	image[64 * 64 * 3];
 	float           curTime;
@@ -394,7 +394,7 @@ void CalculateAutomaticExposure() {
 
 	// calculate the average scene luminance
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr64);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdrLum[0]);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 64, 64, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
@@ -407,50 +407,54 @@ void CalculateAutomaticExposure() {
 	index = (index + 1) % 2;
 	nextIndex = (index + 1) % 2;
 
-	// read back the contents
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[index]);
-	qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, 0);
+		// read back the contents
+		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[index]);
 
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._64[nextIndex]);
-	GLfloat *src = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 64*64*3*sizeof(float), GL_MAP_READ_BIT);
-	if (src)
-	{
+		static int lastUpdate;
+		if (curtime - lastUpdate >= 250) {
 
-
-		vec3_t tmp = { 0.0,0.0,0.0 };
-		sum = 0.0f;
-		maxLuminance = 0.0f;
-
-		for (i = 0; i < 4096; i += 3)
-		{
-			color[0] = src[i * 3 + 0];
-			color[1] = src[i * 3 + 1];
-			color[2] = src[i * 3 + 2];
-
-			tmp[0] = pow(color[0], 1.0 / 2.2);
-			tmp[1] = pow(color[1], 1.0 / 2.2);
-			tmp[2] = pow(color[2], 1.0 / 2.2);
-			luminance = DotProduct(luma, tmp) + 0.0001f;
-			if (luminance > maxLuminance)
-			{
-				maxLuminance = luminance;
-			}
-
-			float logLuminance = log2(luminance + 1.0f);
-			sum += logLuminance;
+			qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, 0);
+			lastUpdate = curtime;
 		}
 
-		avgLuminance = sum / 4096.0f;
+		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[nextIndex]);
+		GLfloat *src = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 64 * 64 * 3 * sizeof(float), GL_MAP_READ_BIT);
+		
+		if (src){
 
-		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-	}
-	// the user's adapted luminance level is simulated by closing the gap between
-	// adapted luminance and current luminance by 2% every frame, based on a
-	// 30 fps rate. This is not an accurate model of human adaptation, which can
-	// take longer than half an hour.
-	if (hdrTime > curTime){		
+			vec3_t tmp = { 0.0,0.0,0.0 };
+			sum = 0.0f;
+			maxLuminance = 0.0f;
+
+			for (i = 0; i < 4096; i += 3)
+			{
+				color[0] = src[i * 3 + 0];
+				color[1] = src[i * 3 + 1];
+				color[2] = src[i * 3 + 2];
+
+				tmp[0] = pow(color[0], 1.0 / 2.2);
+				tmp[1] = pow(color[1], 1.0 / 2.2);
+				tmp[2] = pow(color[2], 1.0 / 2.2);
+
+				luminance = DotProduct(luma, tmp) + 0.0001f;
+				
+				if (luminance > maxLuminance)
+					maxLuminance = luminance;
+				
+
+				float logLuminance = log2(luminance + 1.0f);
+				sum += logLuminance;
+			}
+
+			avgLuminance = sum / 4096.0f;
+
+			qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+		}		
+
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+	if (hdrTime > curTime)		
 		hdrTime = curTime;
-	}
 
 	deltaTime = curTime - hdrTime;
 
@@ -489,7 +493,7 @@ void R_ToneMaping(void) {
 
 	vec2_t hdrParams;
 	if (r_hdrAutoExposure->integer) {
-		CalculateAutomaticExposure();
+		R_CalcAutoExposure();
 		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.01, 0.1);
 		hdrParams[1] = 0.1;
 	}

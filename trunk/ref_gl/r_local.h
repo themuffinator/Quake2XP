@@ -110,12 +110,6 @@ char** vid_winModes;
 
 #include "r_model.h"
 
-typedef struct hdri_s {
-	float	*data;
-	uint	width, height;
-} hdri_t;
-qboolean R_LoadHdri(const char* fileName, hdri_t* res);
-
 void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
 
@@ -195,7 +189,7 @@ image_t	*r_hdrScreenCopy2d;
 image_t	*r_finalScreen;
 image_t	*r_linearDepth;
 image_t	*r_hdr64image;
-image_t *r_hdrLuminance[9];
+image_t *r_hdrLuminance[2]; //current, prev 
 
 image_t	*r_cinImage;
 image_t	*r_hdrBloomImage;
@@ -260,12 +254,16 @@ cvar_t	*r_gamma;
 
 cvar_t	*r_hdrAutoExposure;
 cvar_t	*r_hdrExposure;
+
+
+
 cvar_t	*r_hdrLightScale;
 cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
 cvar_t	*r_hdrBloomBlurPasses;
+cvar_t	*r_hdrKey;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -370,6 +368,11 @@ cvar_t	*r_particlesOverdraw;
 
 cvar_t	*r_colorTempK;
 
+float	hdrAverageLuminance;
+float	hdrMaxLuminance;
+float	hdrTime;
+float	hdrKey;
+
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
 
@@ -380,15 +383,9 @@ extern int r_visframecount;
 qboolean xhargar2hack;
 qboolean RA_Frame;
 
-float	hdrAverageLuminance;
-float	hdrMaxLuminance;
-float	hdrTime;
-float	hdrKey;
-
 qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height);
 
 void R_CreateScreenFbo();
-void CreateHDR64Buffer(void);
 void R_FboFinal();
 void R_Tex2dFbo();
 void CreateBloomBuffer(void);
@@ -455,7 +452,6 @@ void R_MoveLightUpDown_f (void);
 void R_Light_SpawnToCamera_f (void);
 void R_ChangeLightRadius_f (void);
 void R_Light_Clone_f (void);
-void R_ChangeLightCone_f (void);
 void R_Light_UnSelect_f (void);
 void R_FlareEdit_f (void);
 void R_ResetFlarePos_f (void);

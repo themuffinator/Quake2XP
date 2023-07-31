@@ -511,6 +511,8 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
 
+	qglObjectLabel(GL_TEXTURE, image->texnum, strlen(image->name), image->name);
+
 	FS_FreeFile(buf);
 
 	return image;

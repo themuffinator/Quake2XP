@@ -75,7 +75,7 @@ product_t product[] = {
 {0x9066, "F3 V-Track Gaming Mouse."},
 {0x9090, "XL-730K/XL-740K/XL-750BK/XL-755BK Mice."},
 {0xF613, "Bloody V7M Mouse."},
-
+{0xFA1C, "Bloody B135N Keyboard"},
 	// --------logitech
 {0XC70E,	"MX1000 Bluetooth Laser Mouse."},
 {0XC518,	"MX610 Laser Cordless Mous.e"},

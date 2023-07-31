@@ -2,6 +2,7 @@
 * This is an open source non-commercial project. Dear PVS-Studio, please check it.
 * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 */
+
 /*
 Copyright (C) 1997-2001 Id Software, Inc.
 
@@ -27,10 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 alConfig_t alConfig;
 qboolean	openalStop = qfalse;
-
-#ifdef _WIN32
-extern LPALGETSTRINGISOFT alGetStringiSOFT;
-#endif
 
 typedef struct ConvLetter {
 	char    win1251;
@@ -167,6 +164,7 @@ extern qboolean ru_loc;
  AL_InitDriver
  =================
  */
+
 static qboolean AL_InitDriver (void) {
 	char *deviceName = s_device->string;
 	char *deviceName1251 = NULL;
@@ -224,10 +222,11 @@ static qboolean AL_InitDriver (void) {
 		quality = 44100; //wtf? soft al under linux use only 44100hz
 	#endif
 
-		ALCint attrlist[6] = 
-		{	ALC_FREQUENCY, quality, 
-			ALC_HRTF_SOFT, s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
-		0 };
+		ALCint attrlist[5] = 
+		{	ALC_HRTF_SOFT, s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
+			ALC_HRTF_ID_SOFT, s_hrtfIndex->integer,
+		0 
+		};
 		
 		if ((alConfig.hALC =
 			alcCreateContext (alConfig.hDevice, attrlist)) == NULL) {
@@ -243,6 +242,9 @@ static qboolean AL_InitDriver (void) {
 		goto failed;
 	}
 	Com_Printf (S_COLOR_GREEN"succeeded\n");
+	ALCint srate;
+	alcGetIntegerv(alConfig.hDevice, ALC_FREQUENCY, 1, &srate);
+	Com_Printf("...Sound Frequency: " S_COLOR_GREEN "%i " S_COLOR_WHITE "Hz\n", srate);
 
 	Com_Printf("\n=====================================\n\n");
 
@@ -254,9 +256,26 @@ static qboolean AL_InitDriver (void) {
 			Com_Printf("...HRTF Mode:" S_COLOR_YELLOW " off\n");
 		else
 		{
-			const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
-			Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
+			int num_hrtf, i;
+					
+			const ALchar *selected = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
 			Com_Printf("...HRTF Mode:" S_COLOR_GREEN " on\n");
+
+			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &num_hrtf);
+			Com_Printf("Available HRTFs:\n");
+
+			for (i = 0; i < num_hrtf; i++)
+			{
+				const ALCchar *hrtfName = alcGetStringiSOFT(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT, i);
+				if(i == s_hrtfIndex->integer)
+					Com_Printf("> %i: %s\n", i, hrtfName);
+				else
+					Com_Printf("  %i: %s\n", i, hrtfName);
+			}
+			Com_Printf("HRTF selected: " S_COLOR_GREEN "%s\n", selected);
+
+			if (!alcResetDeviceSOFT(alConfig.hDevice, attrlist))
+				Com_Printf("Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
 		}
 
 	}else

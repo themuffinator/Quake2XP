@@ -170,106 +170,157 @@ void IN_MouseEvent (int mstate) {
 IN_MouseMove
 ===========
 */
-qboolean FindRawDevices()
-{
-	PRAWINPUTDEVICELIST g_pRawInputDeviceList;
-	UINT nDevices;
+
+void IN_PrintRawDevicesList() {
+
+	PRAWINPUTDEVICELIST pRawInputDeviceList;
+	UINT  numDevices;
+	UINT  cbSize = sizeof(RAWINPUTDEVICELIST);
 
 	Com_Printf("====== Init RAW Input Devices ======\n\n");
 
-	// Get Number of devices attached
-	if (GetRawInputDeviceList(NULL, &nDevices, sizeof(RAWINPUTDEVICELIST)) != 0)
-	{
+	if ((GetRawInputDeviceList(NULL, &numDevices, cbSize)) != 0){
+
 		Com_Printf("\n" S_COLOR_RED "No RawInput devices attached\n");
-		return qfalse;
+		return;
 	}
 	else
-		Com_DPrintf("" S_COLOR_YELLOW "... Found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " RAW input devices.\n", nDevices);
+		Com_DPrintf("" S_COLOR_YELLOW "... Found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " RAW input devices.\n", numDevices);
+	
+	if ((pRawInputDeviceList = (PRAWINPUTDEVICELIST)malloc(cbSize * numDevices)) == NULL){
 
-	// Create list large enough to hold all RAWINPUTDEVICE structs
-	if ((g_pRawInputDeviceList = (PRAWINPUTDEVICELIST)Z_Malloc(sizeof(RAWINPUTDEVICELIST) * nDevices)) == NULL)
-	{
 		Com_Printf("" S_COLOR_RED "Error mallocing RAWINPUTDEVICELIST\n");
-		return qfalse;
+		return;
 	}
-	// Now get the data on the attached devices
-	if (GetRawInputDeviceList(g_pRawInputDeviceList, &nDevices, sizeof(RAWINPUTDEVICELIST)) == -1)
-	{
+
+	if ((GetRawInputDeviceList(pRawInputDeviceList, &numDevices, cbSize)) == -1){
+
 		Com_Printf("" S_COLOR_RED "1Error from GetRawInputDeviceList\n");
-		Z_Free(g_pRawInputDeviceList);
-		return qfalse;
+		free(pRawInputDeviceList);
+		return;
 	}
 
-	PRAWINPUTDEVICE g_pRawInputDevices = (PRAWINPUTDEVICE)Z_Malloc(nDevices * sizeof(RAWINPUTDEVICE));
+	GetRawInputDeviceList(pRawInputDeviceList, &numDevices, cbSize);
 
-	for (UINT i = 0; i<nDevices; i++)
-	{
-		if (g_pRawInputDeviceList[i].dwType == RIM_TYPEMOUSE)
-		{
-			uint nchars = 300;
-			static char deviceName[300];
-			deviceName[0] = '\0';
+	for (int i = 0; i < numDevices; i++) {
 
-			if (GetRawInputDeviceInfo(g_pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, deviceName, &nchars) >= 0)
-				Com_DPrintf("Device[%d]:\n handle=0x%x\n name = %s\n\n", i, g_pRawInputDeviceList[i].hDevice, deviceName);
+		UINT             cbDataSize = 1000;
+		RID_DEVICE_INFO  devInfo = { 0 };
+		char             pData[1000] = { 0 };
 
-			RID_DEVICE_INFO dinfo;
-			UINT sizeofdinfo = sizeof(dinfo);
-			dinfo.cbSize = sizeofdinfo;
-			if (GetRawInputDeviceInfo(g_pRawInputDeviceList[i].hDevice, RIDI_DEVICEINFO, &dinfo, &sizeofdinfo) >= 0)
-			{
-				if (dinfo.dwType == RIM_TYPEMOUSE)
-				{
-					RID_DEVICE_INFO_MOUSE *pMouseInfo = &dinfo.mouse;
-										
-					char* pstart = strstr(deviceName, "VID_");
-					if (pstart) {
-						char* vid_ = pstart + 4; // skip VID_
-						char* pid_ = pstart + 13; // skip VID_XXXX&PID_
-						char vid2[5] = { 0 };
-						char pid2[5] = { 0 };
-						strncpy(vid2, vid_, 4);
-						strncpy(pid2, pid_, 4);
+		// For each device get the device name and then the device information
+		cbDataSize = sizeof(pData);
+		GetRawInputDeviceInfo(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, pData, &cbDataSize);
+		devInfo.cbSize = cbDataSize = sizeof(devInfo);  // specify the buffer size
+		GetRawInputDeviceInfo(pRawInputDeviceList[i].hDevice, RIDI_DEVICEINFO, &devInfo, &cbDataSize);
 
-						DWORD value = strtoul(vid2, NULL, 16);
-						int z;
-						Com_Printf(S_COLOR_YELLOW"...Found Mouse:\n");
-						for (z = 0; z < NUM_VENDORS; z++) {
-							if (value == usb_Vendors[z].vendorId) {
-								Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
-								break;							
-							}
-						}
-						if(z == NUM_VENDORS)
-							Com_Printf("Vendor:           " S_COLOR_GREEN "0x%04X\n", value);
+		if (devInfo.dwType == RIM_TYPEHID)
+			continue;
 
-						DWORD valPid = strtoul(pid2, NULL, 16);
-						for (z = 0; z < NUM_INPUT_DEVICES; z++) {
-							if (valPid == product[z].Id) {
-								Com_Printf("Model:            " S_COLOR_GREEN "%s\n", product[z].description);
-								break;
-							}
-						}
-						if(z == NUM_INPUT_DEVICES)
-							Com_Printf("Model:            " S_COLOR_GREEN "0x%04X\n", valPid);
+		char *pstart;
+		char *vid_; // skip VID_
+		char *pid_; // skip VID_XXXX&PID_
+		char vid2[5] = { 0 };
+		char pid2[5] = { 0 };
 
-						Com_Printf("Buttons:          " S_COLOR_GREEN "%d\n", pMouseInfo->dwNumberOfButtons);
-						if(!pMouseInfo->dwSampleRate)
-							Com_Printf("Frequency:        " S_COLOR_MAGENTA "unsupported\n");
-						else
-							Com_Printf("Frequency:        " S_COLOR_GREEN "%d\n", pMouseInfo->dwSampleRate);
-						Com_Printf("Horizontal Wheel: " S_COLOR_GREEN "%s\n", (pMouseInfo->fHasHorizontalWheel) ? "Yes" : "No");
+		if(devInfo.dwType == RIM_TYPEMOUSE)
+			Com_Printf(S_COLOR_YELLOW"...Found Mouse:\n");
+		if (devInfo.dwType == RIM_TYPEKEYBOARD)
+			Com_Printf(S_COLOR_YELLOW"...Found Keyboard:\n");
+
+		switch (devInfo.dwType) {
+
+		case RIM_TYPEMOUSE:
+
+			pstart = strstr(pData, "VID_");
+			if (pstart) {
+				vid_ = pstart + 4;
+				pid_ = pstart + 13;
+
+				strncpy(vid2, vid_, 4);
+				strncpy(pid2, pid_, 4);
+
+				DWORD value = strtoul(vid2, NULL, 16);
+				int z;
+
+				for (z = 0; z < NUM_VENDORS; z++) {
+					if (value == usb_Vendors[z].vendorId) {
+						Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
+						break;
 					}
 				}
+					if (z == NUM_VENDORS)
+						Com_Printf("Vendor:           " S_COLOR_GREEN "0x%04X\n", value);
+
+				DWORD valPid = strtoul(pid2, NULL, 16);
+				for (z = 0; z < NUM_INPUT_DEVICES; z++) {
+					if (valPid == product[z].Id) {
+						Com_Printf("Model:            " S_COLOR_GREEN "%s\n", product[z].description);
+						break;
+					}
+				}
+					if (z == NUM_INPUT_DEVICES)
+						Com_Printf("Model:            " S_COLOR_GREEN "0x%04X\n", valPid);
+
+						Com_Printf("Buttons:          " S_COLOR_GREEN "%d\n", devInfo.mouse.dwNumberOfButtons);
 			}
+			break;
+
+		case RIM_TYPEKEYBOARD:
+			
+			pstart = strstr(pData, "VID_");
+			if (pstart) {
+				vid_ = pstart + 4;
+				pid_ = pstart + 13;
+
+				strncpy(vid2, vid_, 4);
+				strncpy(pid2, pid_, 4);
+
+				DWORD value = strtoul(vid2, NULL, 16);
+				int z;
+
+				for (z = 0; z < NUM_VENDORS; z++) {
+					if (value == usb_Vendors[z].vendorId) {
+						Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
+						break;
+					}
+				}
+					if (z == NUM_VENDORS)
+						Com_Printf("Vendor:           " S_COLOR_GREEN "0x%04X\n", value);
+
+				DWORD valPid = strtoul(pid2, NULL, 16);
+				for (z = 0; z < NUM_INPUT_DEVICES; z++) {
+					if (valPid == product[z].Id) {
+						Com_Printf("Model:            " S_COLOR_GREEN "%s\n", product[z].description);
+						break;
+					}
+				}
+					if (z == NUM_INPUT_DEVICES)
+						Com_Printf("Model:            " S_COLOR_GREEN "0x%04X\n", valPid);
+
+					switch (devInfo.keyboard.dwType) {
+					case 0x51:
+						Com_Printf("Type:             " S_COLOR_GREEN "HID keyboard\n");
+						break;
+					case 0x4:
+						Com_Printf("Type:             " S_COLOR_GREEN "Enhanced 101- or 102-key keyboards (and compatibles)\n");
+						break;
+					case 0x7:
+						Com_Printf("Type:             " S_COLOR_GREEN "Japanese Keyboard\n");
+						break;
+					case 0x8:
+						Com_Printf("Type:             " S_COLOR_GREEN "Korean Keyboard\n");
+						break;
+					}
+						Com_Printf("Num keys:         " S_COLOR_GREEN "%i\n", devInfo.keyboard.dwNumberOfKeysTotal);
+			}
+
+			break;
 		}
 	}
-	Z_Free(g_pRawInputDevices);
-	Z_Free(g_pRawInputDeviceList);
-
 	Com_Printf("\n------------------------------------\n");
-	
-	return qtrue;
+	free(pRawInputDeviceList);
+
 }
 
 /*
@@ -285,10 +336,7 @@ void IN_Init (void) {
 	v_centermove = Cvar_Get ("v_centermove", "0.15", 0);
 	v_centerspeed = Cvar_Get ("v_centerspeed", "500", 0);
 
-//	Cmd_AddCommand ("+mlook", IN_MLookDown);
-//	Cmd_AddCommand ("-mlook", IN_MLookUp);
-
-	FindRawDevices();
+	IN_PrintRawDevicesList();
 	IN_StartupXInput();
 }
 

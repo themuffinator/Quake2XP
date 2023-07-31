@@ -110,6 +110,8 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
 
+	qglObjectLabel(GL_TEXTURE, image->texnum, strlen(image->name), image->name);
+
 	if(clearData)
 		free(pixdata);
 
@@ -206,67 +208,6 @@ void Load3dLut(void) {
 char	*lsuf[6] = { "ft", "bk", "lf", "rt", "up", "dn" };
 unsigned	trans[4096 * 4096];
 
-void R_FlipImageFloat(int i, hdri_t *hdri, float *dst) {
-	float *from;
-	float *src = hdri->data;
-	int	width = hdri->width;
-	int	height = hdri->height;
-	int	x, y;
-
-	if (i == 1)		// bk
-	{
-		for (y = height - 1; y >= 0; y--) {
-			for (x = width - 1; x >= 0; x--) {	// copy rgb components
-				from = src + (x * height + y) * 3;
-				dst[0] = from[0];
-				dst[1] = from[1];
-				dst[2] = from[2];
-				dst += 3;
-			}
-		}
-		return;
-	}
-
-	if (i == 2)		// lf
-	{
-		for (y = height - 1; y >= 0; y--) {
-			for (x = 0; x < width; x++) {	// copy rgb components
-				from = src + (y * width + x) * 3;
-				dst[0] = from[0];
-				dst[1] = from[1];
-				dst[2] = from[2];
-				dst += 3;
-			}
-		}
-		return;
-	}
-
-	if (i == 3)		// rt
-	{
-		for (y = 0; y < height; y++) {
-			for (x = width - 1; x >= 0; x--) {	// copy rgb components
-				from = src + (y * width + x) * 3;
-				dst[0] = from[0];
-				dst[1] = from[1];
-				dst[2] = from[2];
-				dst += 3;
-			}
-		}
-		return;
-	}
-
-	// ft, up, dn
-	for (y = 0; y < height; y++) {
-		for (x = 0; x < width; x++) {	// copy rgb components
-			from = src + (x * height + y) * 3;
-			dst[0] = from[0];
-			dst[1] = from[1];
-			dst[2] = from[2];
-			dst += 3;
-		}
-	}
-}
-//void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
 void R_FlipImage (int idx, img_t *pix, byte *dst) {
 	byte *from;
 	byte *src = pix->pixels;

@@ -154,6 +154,7 @@ LPALCGETSTRINGISOFT alcGetStringiSOFT;
 LPALCRESETDEVICESOFT alcResetDeviceSOFT;
 
 LPALGETSTRINGISOFT alGetStringiSOFT;
+
 // =====================================================================
 
 #define GPA(a)			GetProcAddress(alConfig.hInstOpenAL, a);
@@ -177,6 +178,7 @@ void QAL_Shutdown (void) {
 
 	alcGetStringiSOFT = NULL;
 	alcResetDeviceSOFT = NULL;
+	alGetStringiSOFT = NULL;
 
 	alcOpenDevice = NULL;
 	alcCloseDevice = NULL;
@@ -288,9 +290,6 @@ void QAL_Shutdown (void) {
 	alGetAuxiliaryEffectSlotiv = NULL;
 	alGetAuxiliaryEffectSlotf = NULL;
 	alGetAuxiliaryEffectSlotfv = NULL;
-
-	alGetStringiSOFT = NULL;
-
 }
 
 void S_SoundInfo_f (void);
@@ -399,6 +398,8 @@ qboolean AL_Init (int hardreset) {
 		alSource3i = (LPALSOURCE3I)GPA ("alSource3i");
 
 		alGetStringiSOFT = (LPALGETSTRINGISOFT)GPA ("alGetStringiSOFT");
+		alcGetStringiSOFT = (LPALCGETSTRINGISOFT)GPA("alcGetStringiSOFT");
+		alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)GPA("alcResetDeviceSOFT");
 	}
 
 	// Initialize OpenAL subsystem
