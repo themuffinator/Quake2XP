@@ -11,33 +11,33 @@ void main(void){
 	vec3 backBuffer = texture(u_screenMap, gl_FragCoord.xy).rgb;
 	float depth = texture(u_depthMap, gl_FragCoord.xy).x;
 
-	bool mask;
+	bool sky;
 	
-	if(depth >= 0.9999)
-		mask = false;
-	else
-		mask = true;
+//	if(depth >= 0.9999)
+		sky = false;
+//	else
+//		sky = true;
 
 	depth = depth * 0.5 + 0.5;
 
 	float fogCoord =  abs(gl_FragCoord.z / gl_FragCoord.w);
 	
-	if(!mask){
+	if(!sky){
 		fogCoord += u_fogBias.x;
 		fogCoord /= depth;
 	}
-	if(mask)
+	if(sky)
 		fogCoord += u_fogBias.y;	
 
 	vec3 fogColor;
 	float fogFactor, density;
 
-	if(mask){
+	if(sky){
 		fogColor = u_fogSkyParams.xyz;
 		density = 1000.0 * u_fogSkyParams.w; // reverse! w/o depth map value
 	 }
 
-	 if(!mask){
+	 if(!sky){
 		fogColor = u_fogParams.xyz;
 		density = 100.0 / u_fogParams.w;
 	}

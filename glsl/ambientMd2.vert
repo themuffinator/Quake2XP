@@ -5,11 +5,12 @@ layout(location = 4) in vec4 att_color4f;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
 
-out	vec2			v_texCoord;
-out	vec2			v_envCoord;
-out	vec2			v_shellCoord;
-out	vec4			v_color;
-out vec3			v_positionVS;
+out	vec2	v_texCoord;
+out	vec2	v_envCoord;
+out	vec2	v_shellCoord;
+out	vec4	v_color;
+out vec3	v_positionVS;
+out vec3	v_ambientCubeTC;
 
 layout(location = U_SHELL_PARAMS)		uniform	vec2		u_shellParams;
 layout(location = U_VIEW_POS)			uniform	vec3		u_viewOrg;
@@ -35,6 +36,21 @@ if(u_isShell >= 1 || u_isEnvMap == 1){
 
 v_texCoord = att_texCoordDiffuse;
 v_color = att_color4f;
+
+	mat3 idmat;
+	idmat[0][0] = 1.0;
+	idmat[0][1] = 0.0;
+	idmat[0][2] = 0.0;
+		
+	idmat[1][0] = 0.0;
+	idmat[1][1] = 1.0;
+	idmat[1][2] = 0.0;
+	
+	idmat[2][0] = 0.0;
+	idmat[2][1] = 0.0;
+	idmat[2][2] = 1.0;
+
+v_ambientCubeTC = idmat * att_position;
 
 gl_Position = u_modelViewProjectionMatrix * xyz;
 }

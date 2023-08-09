@@ -332,7 +332,7 @@ vec3 Lighting_BRDF (in vec3 diffuseColor, in vec3 specularColor, in float roughn
 		float NH = saturate(dot(normal, halfVec));
 		float VH = saturate(dot(viewVec, halfVec));
 
-		vec3 diffuse =  Diffuse_OrenNayar(diffuseColor, roughness, NV, NL, VH);
+		vec3 diffuse =  Diffuse_Lambert(diffuseColor);//Diffuse_OrenNayar(diffuseColor, roughness, NV, NL, VH);
 		float D = SpecularD_GGX(roughness, NH);
 		float G = SpecularG_SmithApprox(roughness, NV, NL);
   		vec3 F = SpecularF_Schlick(specularColor, VH);

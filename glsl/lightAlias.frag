@@ -190,8 +190,9 @@ void main (void) {
 	}
 
 	if (u_isAmbient == 1) {
-		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS);
-		fragData = diffuseMap * LambertLighting(curNormal, L) * v_lightColor * attenMap;
+		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS); 
+    vec3 ambient = Diffuse_Lambert(diffuseMap.rgb);
+		fragData = vec4(ambient, 1.0)/*diffuseMap * LambertLighting(curNormal, L)*/ * v_lightColor * attenMap;
 		return;
 	}
 	

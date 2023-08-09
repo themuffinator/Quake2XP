@@ -15,6 +15,7 @@ layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
 layout (location = U_LAVA_PASS)			uniform int		u_isLava;
 layout (location = U_PARAM_INT_0)		uniform int		u_envMapPass;
 layout (location = U_PARAM_INT_1)		uniform int		u_bump;	
+layout (location = U_PARAM_VEC3_0)		uniform vec3	u_glowScale;	
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -129,7 +130,7 @@ void main (void) {
 	if(u_isLava != 1)
 		fragData.xyz *=	u_ambientScale;
 	
-	fragData += vec4(glowMap * 1.2, 1.0);
+	fragData += vec4(glowMap.rgb * u_glowScale.xyz, 1.0);
 	fragData.w = 1.0;
 
 // DEBUG

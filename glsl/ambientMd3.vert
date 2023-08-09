@@ -10,10 +10,11 @@ layout(location = U_ENV_PASS)		uniform	int			u_isEnvMap;
 layout(location = U_SHELL_PASS)		uniform	int			u_isShell;
 layout(location = U_MVP_MATRIX)		uniform mat4		u_modelViewProjectionMatrix;
 
-out	vec2			v_texCoord;
-out	vec2			v_envCoord;
-out	vec2			v_shellCoord;
-out	vec4			v_color;
+out	vec2	v_texCoord;
+out	vec2	v_envCoord;
+out	vec2	v_shellCoord;
+out	vec4	v_color;
+out vec3	v_ambientCubeTC;
 
 void main ()
 {
@@ -33,6 +34,21 @@ if(u_isShell == 1 || u_isEnvMap == 1){
 
 v_texCoord = att_texCoordDiffuse;
 v_color = att_color4f;
+
+	mat3 idmat;
+	idmat[0][0] = 1.0;
+	idmat[0][1] = 0.0;
+	idmat[0][2] = 0.0;
+		
+	idmat[1][0] = 0.0;
+	idmat[1][1] = 1.0;
+	idmat[1][2] = 0.0;
+	
+	idmat[2][0] = 0.0;
+	idmat[2][1] = 0.0;
+	idmat[2][2] = 1.0;
+
+v_ambientCubeTC = idmat * att_position;
 
 gl_Position = u_modelViewProjectionMatrix * xyz;
 }
