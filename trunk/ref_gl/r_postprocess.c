@@ -46,6 +46,12 @@ void R_RestoreViewPortAndScissor() {
 	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
+void R_SetViewPortAndScissor(int x, int y, int w, int h) {
+	GL_Enable(GL_SCISSOR_TEST);
+	GL_Scissor(x, y, w, h);
+	GL_Viewport(x, y, w, h);
+}
+
 void R_Bloom (void) {
 	int i, j;
 	
@@ -59,12 +65,10 @@ void R_Bloom (void) {
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._bloom);
 
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width*0.25, vid.height*0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.25, vid.height * 0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
-	GL_Enable(GL_SCISSOR_TEST);
-	GL_Scissor(0, 0, vid.width * 0.25, vid.height * 0.25);
-	GL_Viewport(0, 0, vid.width * 0.25, vid.height * 0.25);
+	R_SetViewPortAndScissor(0, 0, vid.width * 0.25, vid.height * 0.25);
 
 	GL_BindProgram (bloomBrightProgram);
 	qglUniform1i(U_PARAM_INT_0, 0);
@@ -120,9 +124,7 @@ void R_ThermalVision (void) {
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.5, vid.height * 0.5, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
-	GL_Enable(GL_SCISSOR_TEST);
-	GL_Scissor(0, 0, vid.width * 0.5, vid.height * 0.5);
-	GL_Viewport(0, 0, vid.width * 0.5, vid.height * 0.5);
+	R_SetViewPortAndScissor(0, 0, vid.width * 0.5, vid.height * 0.5);
 
 	// process colors
 	GL_BindProgram (thermalProgram);
@@ -312,9 +314,7 @@ void R_FilmFx(void) {
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.25, vid.height * 0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
-	GL_Enable(GL_SCISSOR_TEST);
-	GL_Scissor(0, 0, vid.width * 0.25, vid.height * 0.25);
-	GL_Viewport(0, 0, vid.width * 0.25, vid.height * 0.25);
+	R_SetViewPortAndScissor(0, 0, vid.width * 0.25, vid.height * 0.25);
 
 	GL_BindProgram(bloomBrightProgram);
 	qglUniform1i(U_PARAM_INT_0, 1);
@@ -377,18 +377,15 @@ float ClampFloat(float value, float min, float max) {
 	return value;
 }
 void R_CalcAutoExposure() {
-	int				i;
-	static float	image[64 * 64 * 3];
-	float           curTime;
-	float			deltaTime;
-	float           luminance;
-	float			avgLuminance = 0.0;
-	float			maxLuminance = 0.0;
-	double			sum;
-	const vec3_t    luma = { 0.2125f, 0.7154f, 0.0721f };
-	vec3_t			color;
-	float			newAdaptation;
-	float			newMaximum;
+
+	int		i;
+	float	curTime;
+	float	deltaTime;
+	float	luminance;
+	float	avgLuminance = 0.0;
+	float	maxLuminance = 0.0;
+	float	newAdaptation;
+	float	newMaximum;
 
 	curTime = Sys_Milliseconds() * 0.001;
 
@@ -398,82 +395,76 @@ void R_CalcAutoExposure() {
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 64, 64, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-	GL_Enable(GL_SCISSOR_TEST);
-	GL_Scissor(0, 0, 64, 64);
-	GL_Viewport(0, 0, 64, 64);
+	R_SetViewPortAndScissor(0, 0, 64, 64);
 
 	static int index = 0;
 	int nextIndex = 0;
 	index = (index + 1) % 2;
 	nextIndex = (index + 1) % 2;
 
-		// read back the contents
-		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[index]);
+	// read back the contents
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[index]);
 
-		static int lastUpdate;
-		if (curtime - lastUpdate >= 250) {
+	static int lastUpdate;
+	if (curtime - lastUpdate >= r_hdrTime->integer) {
 
-			qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, 0);
-			lastUpdate = curtime;
+		qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, 0);
+		lastUpdate = curtime;
+	}
+
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[nextIndex]);
+	GLfloat *src = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 64 * 64 * 3 * sizeof(float), GL_MAP_READ_BIT);
+		
+	if (src){
+		vec3_t	color;
+		vec3_t	luma	=	{ 0.2125f, 0.7154f, 0.0721f };
+		vec3_t	tmp		=	{ 0.0,0.0,0.0 };
+		double	sum		=	0.0f;
+
+		for (i = 0; i < 4096; i += 3){
+
+			color[0] = src[i * 3 + 0];
+			color[1] = src[i * 3 + 1];
+			color[2] = src[i * 3 + 2];
+
+			tmp[0] = pow(color[0], 1.0 / 2.2);
+			tmp[1] = pow(color[1], 1.0 / 2.2);
+			tmp[2] = pow(color[2], 1.0 / 2.2);
+
+			luminance = DotProduct(luma, tmp) + 0.0001f;
+				
+			if (luminance > maxLuminance)
+				maxLuminance = luminance;				
+
+			float logLuminance = log2(luminance + 1.0f);
+			sum += logLuminance;
 		}
 
-		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[nextIndex]);
-		GLfloat *src = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 64 * 64 * 3 * sizeof(float), GL_MAP_READ_BIT);
-		
-		if (src){
+		avgLuminance = sum / 4096.0f;
 
-			vec3_t tmp = { 0.0,0.0,0.0 };
-			sum = 0.0f;
-			maxLuminance = 0.0f;
-
-			for (i = 0; i < 4096; i += 3)
-			{
-				color[0] = src[i * 3 + 0];
-				color[1] = src[i * 3 + 1];
-				color[2] = src[i * 3 + 2];
-
-				tmp[0] = pow(color[0], 1.0 / 2.2);
-				tmp[1] = pow(color[1], 1.0 / 2.2);
-				tmp[2] = pow(color[2], 1.0 / 2.2);
-
-				luminance = DotProduct(luma, tmp) + 0.0001f;
-				
-				if (luminance > maxLuminance)
-					maxLuminance = luminance;
-				
-
-				float logLuminance = log2(luminance + 1.0f);
-				sum += logLuminance;
-			}
-
-			avgLuminance = sum / 4096.0f;
-
-			qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-		}		
+		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+	}		
 
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+	R_RestoreViewPortAndScissor();
 
 	if (hdrTime > curTime)		
 		hdrTime = curTime;
 
 	deltaTime = curTime - hdrTime;
 
-	newAdaptation = hdrAverageLuminance + (avgLuminance - hdrAverageLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
-	newMaximum = hdrMaxLuminance + (maxLuminance - hdrMaxLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
+	newAdaptation = hdrAverageLuminance + (avgLuminance - hdrAverageLuminance)	* (1.0f - powf(0.98f, 30.0f * deltaTime));
+	newMaximum =	hdrMaxLuminance		+ (maxLuminance - hdrMaxLuminance)		* (1.0f - powf(0.98f, 30.0f * deltaTime));
 
-	if (!isnan(newAdaptation) && !isnan(newMaximum))
-	{
+	if (!isnan(newAdaptation) && !isnan(newMaximum)){
+
 		hdrAverageLuminance = newAdaptation;
 		hdrMaxLuminance = newMaximum;
 	}
 
 	hdrTime = curTime;
-
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
-
-	R_RestoreViewPortAndScissor();
-
-//	Com_Printf("HDR luminance avg = %f, max = %f\n", hdrAverageLuminance, hdrMaxLuminance);
+//	Com_DPrintf("HDR luminance avg = %f, max = %f\n", hdrAverageLuminance, hdrMaxLuminance);
 }
 
 float Lerp(const float v1, const float v2, const float l) {
@@ -494,8 +485,8 @@ void R_ToneMaping(void) {
 	vec2_t hdrParams;
 	if (r_hdrAutoExposure->integer) {
 		R_CalcAutoExposure();
-		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.01, 0.1);
-		hdrParams[1] = 0.1;
+		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.045, 1.0);
+		hdrParams[1] = 0.1 + hdrAverageLuminance;
 	}
 	else {
 		hdrParams[0] = 1.0;
@@ -641,9 +632,7 @@ void R_SSAO (void) {
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
-	GL_Enable(GL_SCISSOR_TEST);
-	GL_Scissor(0, 0, vid.width * 0.5, vid.height * 0.5);
-	GL_Viewport(0, 0, vid.width * 0.5, vid.height * 0.5);
+	R_SetViewPortAndScissor(0, 0, vid.width * 0.5, vid.height * 0.5);
 
 	GL_BindProgram(depthDownsampleProgram);
 	GL_SetBindlessTexture(U_TMU0, r_linearDepth->handle);

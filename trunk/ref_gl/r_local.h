@@ -254,9 +254,6 @@ cvar_t	*r_gamma;
 
 cvar_t	*r_hdrAutoExposure;
 cvar_t	*r_hdrExposure;
-
-
-
 cvar_t	*r_hdrLightScale;
 cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
@@ -264,6 +261,7 @@ cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
 cvar_t	*r_hdrBloomBlurPasses;
 cvar_t	*r_hdrKey;
+cvar_t	*r_hdrTime;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -277,8 +275,7 @@ cvar_t	*r_displayRefresh;
 
 cvar_t	*r_screenShot;
 
-cvar_t	*r_anisotropic;
-cvar_t	*r_maxAnisotropy;
+cvar_t	*r_textureAnisotropy;
 cvar_t	*r_textureLodBias;
 cvar_t	*r_textureQuality;
 

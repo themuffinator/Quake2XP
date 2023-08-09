@@ -166,8 +166,8 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 		if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
 
-		if (surf->texInfo->flags & SURF_NODRAW)
-			continue;
+	//	if (surf->texInfo->flags & SURF_NODRAW)
+	//		continue;
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 			continue;
 		else

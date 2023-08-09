@@ -1329,23 +1329,23 @@ void R_RegisterCvars(void)
 	r_vsync =							Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
-	
-	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
-	r_contrast	=						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
-	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
-	r_gamma =							Cvar_Get("r_gamma", "2.2", CVAR_ARCHIVE); 
-	r_hdrExposure =						Cvar_Get("r_hdrExposure", "1.0", CVAR_ARCHIVE);
+
+	r_hdrExposure =						Cvar_Get("r_hdrExposure", "1.5", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
 	r_hdrBloom =						Cvar_Get("r_hdrBloom", "1", CVAR_ARCHIVE);
 	r_hdrBloomBlurPasses =				Cvar_Get("r_hdrBloomBlurPasses", "4", CVAR_ARCHIVE);
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
 	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.55", CVAR_ARCHIVE);
-	r_hdrKey =							Cvar_Get("r_hdrKey", "0.015", CVAR_ARCHIVE);
+	r_hdrKey =							Cvar_Get("r_hdrKey", "0.0", CVAR_ARCHIVE); //0.015
+	r_hdrTime =							Cvar_Get("r_hdrTime", "250", CVAR_ARCHIVE);
+	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "1", CVAR_ARCHIVE);
+//	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
 
-	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", CVAR_ARCHIVE);
-	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
-
+	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
+	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
+	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
+	r_gamma =							Cvar_Get("r_gamma", "1.9", CVAR_ARCHIVE);
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
 	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
 	r_colorBalanceGreen =				Cvar_Get("r_colorBalanceGreen", "1.0", CVAR_ARCHIVE);
@@ -1353,8 +1353,7 @@ void R_RegisterCvars(void)
 
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
-	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
-	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
+	r_textureAnisotropy =				Cvar_Get("r_textureAnisotropy", "16", CVAR_ARCHIVE);
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
 	r_imageAutoBumpScale =				Cvar_Get("r_imageAutoBumpScale", "6.0", CVAR_ARCHIVE);
@@ -1412,7 +1411,7 @@ void R_RegisterCvars(void)
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
 
 	r_ssao =							Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
-	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "2.0", CVAR_ARCHIVE);
+	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "1.5", CVAR_ARCHIVE);
 	r_ssaoScale =						Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
 	r_ssaoBlur	=						Cvar_Get ("r_ssaoBlur", "2", CVAR_ARCHIVE);
 
@@ -1896,13 +1895,9 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
 
-	Cvar_SetValue("r_maxAnisotropy", (float)max_aniso);
-	if (r_anisotropic->value >= r_maxAnisotropy->value)
-		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->value);
-
-	aniso_level = r_anisotropic->value;
-	if (r_anisotropic->value <= 1.0) {
-		r_anisotropic = Cvar_Set("r_anisotropic", "1.0");
+	aniso_level = r_textureAnisotropy->value;
+	if (r_textureAnisotropy->value <= 1.0) {
+		r_textureAnisotropy = Cvar_Set("r_anisotropic", "1.0");
 		Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
 	}
 	else {
@@ -2060,8 +2055,8 @@ void R_BeginFrame()
 	if (r_parallaxMapping->modified)
 		r_parallaxMapping->modified = qfalse;
 
-	if (r_anisotropic->modified)
-		r_anisotropic->modified = qfalse;
+	if (r_textureAnisotropy->modified)
+		r_textureAnisotropy->modified = qfalse;
 
 	if (r_textureLodBias->modified)
 		r_textureLodBias->modified = qfalse;
@@ -2073,7 +2068,7 @@ void R_BeginFrame()
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Nvidia Nsight Graphics frame frame terminator
-	qglFlush();
+	//qglFlush();
 
 	qglDrawBuffer( GL_BACK );
 

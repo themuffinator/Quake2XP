@@ -66,10 +66,9 @@ void R_DrawSkyBox(){
 	msurface_t *s;
 	int			i;
 	uint		numIndices = 0;
-
+	
 	// setup program
 	GL_BindProgram(skyProgram);
-
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 

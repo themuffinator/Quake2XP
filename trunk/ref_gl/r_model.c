@@ -1760,8 +1760,8 @@ static qboolean R_LoadXPLM(void) {
 	int *pIB;
 	int i, len, numFaces;
 	
-//	if(!r_radiosityNormalMapping->integer)
-//		return qfalse;
+	if(!r_radiosityNormalMapping->integer)
+		return qfalse;
 
 	FS_StripExtension(loadmodel->name, tmp, sizeof(tmp));
 	Com_sprintf(name, sizeof(name), "%s.xplm", tmp);

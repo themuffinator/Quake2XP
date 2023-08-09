@@ -292,7 +292,7 @@ static void ApplyChanges (void *unused) {
 	if (r_gamma->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_anisotropic->modified)
+	if (r_textureAnisotropy->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_parallaxScale->modified)
@@ -379,7 +379,7 @@ void ColorTempFunc(void *unused)
 void M_ColorInit() {
 
 	if (!r_gamma)
-		r_gamma = Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE);
+		r_gamma = Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
 	
 	if (!r_colorTempK)
 		r_colorTempK = Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
@@ -402,7 +402,7 @@ void M_ColorInit() {
 	if (!r_fixFovStrength)
 		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
 
-	r_gamma->value = ClampCvar(1.0, 2.2, r_gamma->value);
+	r_gamma->value = ClampCvar(1.5, 2.2, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
@@ -428,7 +428,7 @@ void M_ColorInit() {
 	s_gamma_slider.generic.y = 10 * ui_fontScale->value;
 	s_gamma_slider.generic.name = "Gamma";
 	s_gamma_slider.generic.callback = GammaCallback;
-	s_gamma_slider.minvalue = 10;
+	s_gamma_slider.minvalue = 15;
 	s_gamma_slider.maxvalue = 22;
 	s_gamma_slider.curvalue = r_gamma->value * 10;
 	s_gamma_slider.generic.statusbar = "Screen Gamma";
@@ -637,8 +637,8 @@ void VID_MenuInit (void) {
 	if (!r_mode)
 		r_mode = Cvar_Get ("r_mode", "0", CVAR_ARCHIVE);
 
-	if (!r_anisotropic)
-		r_anisotropic = Cvar_Get ("r_anisotropic", "1", CVAR_ARCHIVE);
+	if (!r_textureAnisotropy)
+		r_textureAnisotropy = Cvar_Get ("r_textureAnisotropy", "1", CVAR_ARCHIVE);
 
 	if (!r_drawFlares)
 		r_drawFlares = Cvar_Get ("r_drawFlares", "0", CVAR_ARCHIVE);
@@ -729,22 +729,22 @@ void VID_MenuInit (void) {
 	s_aniso_list.generic.x = 0;
 	s_aniso_list.generic.y = 40 * ui_fontScale->value;
 	s_aniso_list.itemnames = aniso_items;
-	s_aniso_list.curInteger = r_anisotropic->value;
+	s_aniso_list.curInteger = r_textureAnisotropy->value;
 	s_aniso_list.generic.statusbar = "Texture Filtering Quality <Requires Restart Video Sub-System>";
 		
-	if (r_anisotropic->value == 1.0)
+	if (r_textureAnisotropy->value == 1.0)
 		s_aniso_list.curInteger = 0;
 	else
-		if (r_anisotropic->value == 2.0)
+		if (r_textureAnisotropy->value == 2.0)
 			s_aniso_list.curInteger = 1;
 	else
-		if (r_anisotropic->value == 4.0)
+		if (r_textureAnisotropy->value == 4.0)
 			s_aniso_list.curInteger = 2;
 	else
-		if (r_anisotropic->value == 8.0)
+		if (r_textureAnisotropy->value == 8.0)
 			s_aniso_list.curInteger = 3;
 	else
-		if (r_anisotropic->value == 16.0)
+		if (r_textureAnisotropy->value == 16.0)
 			s_aniso_list.curInteger = 4;
 		else
 			s_aniso_list.curInteger = 0;

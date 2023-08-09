@@ -125,9 +125,10 @@ BSP SURFACES
 */
 
 qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel) {
-	unsigned	numIndices;
-	int			i, nv = surf->numEdges;
-	float		scroll = 0.0, scale[2];
+	uint	numIndices;
+	int		i, nv = surf->numEdges, lm;
+	float	scroll = 0.0, scale[2];
+	vec3_t	glowScale;
 
 	numIndices	= *indeces;
 
@@ -193,6 +194,14 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		else
 			qglUniform1f(U_SCROLL, 0.0);
 	}
+
+	for (lm = 0; lm < MAXLIGHTMAPS && surf->styles[lm] != 255; lm++) {
+
+			for (i = 0; i < 3; i++)
+				glowScale[i] = r_newrefdef.lightstyles[surf->styles[lm]].rgb[i];
+	}
+
+	qglUniform3fv(U_PARAM_VEC3_0, 1, glowScale);
 
 	// create indexes
 	if (numIndices == 0xffffffff)
@@ -301,7 +310,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	oldTex		= 0xffffffff;
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices  = 0xffffffff;
-
+	unsigned	oldStyle0 = 0xffffffff;
+	unsigned	oldStyle1 = 0xffffffff;
+	unsigned	oldStyle2 = 0xffffffff;
+	unsigned	oldStyle3 = 0xffffffff;
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 
@@ -313,8 +325,8 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		s = sceneSurfaces[i];
 	
 		// flush batch (new texture)
-		if (s->texInfo->image->texnum != oldTex)
-		{
+		if (s->texInfo->image->texnum != oldTex || s->styles[0] != oldStyle0 || s->styles[1] != oldStyle1 || s->styles[2] != oldStyle2 || s->styles[3] != oldStyle3){
+
 			if (numIndices != 0xFFFFFFFF){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
@@ -325,6 +337,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			}
 
 			oldTex = s->texInfo->image->texnum;
+			oldStyle0 = s->styles[0];
+			oldStyle1 = s->styles[1];
+			oldStyle2 = s->styles[2];
+			oldStyle3 = s->styles[3];
 			newBatch = qtrue;
 		}
 	else
@@ -351,8 +367,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 		R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
 		c_brush_polys += numIndices / 3;
-
-
+		numIndices = 0xffffffff;
 	}
 }
 

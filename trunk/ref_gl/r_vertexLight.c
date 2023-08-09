@@ -195,6 +195,9 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 	for (i = 0; i < 3; i++)
 		if (color[i] > 1)
 			color[i] = 1;
+
+	if (currentmodel->type == it_sprite)
+		return;
 //---------------------------------------------
 	vec3_t dir[6] = {
 	{-8192.0, 0, 0 },	// forward 
@@ -217,9 +220,9 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 		r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
 
 		if (r == -1) {
-			data[0] = 0;
-			data[1] = 0;
-			data[2] = 0;
+			data[0] = 255;
+			data[1] = 255;
+			data[2] = 255;
 		}
 		else {
 			data[0] = pointcolor[0] * 255;

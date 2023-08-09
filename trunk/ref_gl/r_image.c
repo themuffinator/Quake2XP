@@ -410,7 +410,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, skipMip);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
 		glTextureParameterf(image->texnum, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-		glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->value);
+		glTextureParameterf(image->texnum, GL_TEXTURE_MAX_ANISOTROPY, r_textureAnisotropy->value);
 	}
 	else {
 		image->numMips = 1;
@@ -859,7 +859,7 @@ qboolean GL_Upload32(uint texnum, unsigned *data, int width, int height, qboolea
 
 	if (mipmap){
 		glGenerateTextureMipmap(texnum);
-		glTextureParameterf(texnum, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
+		glTextureParameterf(texnum, GL_TEXTURE_MAX_ANISOTROPY,	r_textureAnisotropy->value);
 		glTextureParameterf(texnum, GL_TEXTURE_LOD_BIAS,		r_textureLodBias->value);
 		glTextureParameteri(texnum, GL_TEXTURE_MIN_FILTER,		GL_LINEAR_MIPMAP_LINEAR);
 		glTextureParameteri(texnum, GL_TEXTURE_MAG_FILTER,		GL_LINEAR);
