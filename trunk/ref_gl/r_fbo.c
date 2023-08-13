@@ -158,27 +158,32 @@ void CreateThermalBuffer(void) {
 }
 
 void R_CreateScreenFbo() {
-	uint rbId;
+	uint rbId, rbcId;
 	qboolean statusOK;
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR FBO ");
 
+//	qglGenRenderbuffers(1, &rbcId);
+//	qglBindRenderbuffer(GL_RENDERBUFFER, rbcId);
+//	qglRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB16F, vid.width, vid.height);
+
 	qglGenRenderbuffers(1, &rbId);
 	qglBindRenderbuffer(GL_RENDERBUFFER, rbId);
 	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
-	
+//	qglRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, vid.width, vid.height);
+
 	qglObjectLabel(GL_RENDERBUFFER, rbId, strlen("***rbo_HdrRenderBuffer***"), "***rbo_HdrRenderBuffer***");
 
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
 		it_screen, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, qfalse, NULL);
 
 	r_hdrScreenCopy = R_CreateTexture("***r_hdrScreenCopy***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
 		it_screen, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, qfalse, NULL);
 
 	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
@@ -188,6 +193,9 @@ void R_CreateScreenFbo() {
 	
 	qglGenFramebuffers(1, &fbo._hdr);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+
+//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbcId);
+//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, GL_RENDERBUFFER, rbId);
 
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE,			r_hdrScreen->texnum, 0);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE,			r_hdrScreenCopy->texnum, 0);

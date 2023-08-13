@@ -988,7 +988,7 @@ void SP_misc_explobox (edict_t *self) {
 	self->solid = SOLID_BBOX;
 	self->movetype = MOVETYPE_STEP;
 
-	self->collision_model = TR_Model_Get("explobox");
+	self->collision_model = TR_Model_Get("explobox", &self->collision_model_index);
 	self->model = "models/objects/barrels/tris.md2";
 	self->s.modelindex = gi.modelindex (self->model);
 	VectorSet (self->mins, -16, -16, 0);

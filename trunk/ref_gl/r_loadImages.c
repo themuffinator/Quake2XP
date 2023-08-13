@@ -633,7 +633,7 @@ void R_InitEngineTextures (void) {
 void GL_ScreenShot_f (void) {
 	FILE	*file;
 	char	picname[80] = {0}, checkname[MAX_OSPATH];
-	int		i;
+	int		i, w, h;
 	int		startTime, endTime;
 	float	sec;
 	
@@ -645,6 +645,9 @@ void GL_ScreenShot_f (void) {
 		Q_stricmp(r_screenShot->string, "hdr") != 0 &&
 		Q_stricmp (r_screenShot->string, "jpg") != 0)
 		Cvar_Set ("r_screenShot", "jpg");
+	
+	w = vid.width & 0xFFFFFFF0; //fix 1366x768 
+	h = vid.height;
 
 	// Create the scrnshots directory if it doesn't exist
 	Com_sprintf (checkname, sizeof(checkname), "%s/screenshots", FS_Gamedir ());
@@ -672,19 +675,19 @@ void GL_ScreenShot_f (void) {
 	if (!Q_stricmp(r_screenShot->string, "hdr")) {
 		
 		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreenF);
-		qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_FLOAT, 0);
+		qglReadPixels(0, 0, w, h, GL_RGB, GL_FLOAT, 0);
 		
 		GLfloat *hdrData = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, screenSizeFloat, GL_MAP_READ_BIT);
 		
 		if (hdrData)
-			stbi_write_hdr(checkname, vid.width, vid.height, NUM_CHANNELS, hdrData);
+			stbi_write_hdr(checkname, w, h, NUM_CHANNELS, hdrData);
 		
 		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 	}
 	else {
 
 		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);
-		qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		qglReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
 		GLbyte *data = (GLbyte *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, screenSizeByte, GL_MAP_READ_BIT);
 
@@ -694,26 +697,26 @@ void GL_ScreenShot_f (void) {
 #pragma omp sections
 			{
 #pragma omp section
-				stbi_write_tga(checkname, vid.width, vid.height, NUM_CHANNELS, data);
+				stbi_write_tga(checkname, w, h, NUM_CHANNELS, data);
 			}
 			if (!Q_stricmp(r_screenShot->string, "png"))
 #pragma omp sections
 			{
 #pragma omp section
-				stbi_write_png(checkname, vid.width, vid.height, NUM_CHANNELS, data, vid.width * NUM_CHANNELS);
+				stbi_write_png(checkname, w, h, NUM_CHANNELS, data, vid.width * NUM_CHANNELS);
 			}
 
 			if (!Q_stricmp(r_screenShot->string, "jpg"))
 #pragma omp sections
 			{
 #pragma omp section
-				stbi_write_jpg(checkname, vid.width, vid.height, NUM_CHANNELS, data, 100); // max quality
+				stbi_write_jpg(checkname, w, h, NUM_CHANNELS, data, 100); // max quality
 			}
 			if (!Q_stricmp(r_screenShot->string, "bmp"))
 #pragma omp sections
 			{
 #pragma omp section
-				stbi_write_bmp(checkname, vid.width, vid.height, NUM_CHANNELS, data);
+				stbi_write_bmp(checkname, w, h, NUM_CHANNELS, data);
 			}
 			
 			qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
@@ -766,12 +769,16 @@ void GL_LevelShot_f(void) {
 
 void GL_MakeSaveShot(char* dir) {
 	char	name[MAX_QPATH];
+	int		w, h;
 
 	Com_sprintf(name, sizeof(name), "%s/savexp/%s/shot.jpg", FS_Gamedir(), dir);
 	remove(name);
 
+	w = vid.width & 0xFFFFFFF0;
+	h = vid.height;
+
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);
-	qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	qglReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
 	GLbyte *data = (GLbyte *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, screenSizeByte, GL_MAP_READ_BIT);
 
@@ -780,7 +787,7 @@ void GL_MakeSaveShot(char* dir) {
 #pragma omp sections
 		{
 #pragma omp section
-			stbi_write_jpg(name, vid.width, vid.height, NUM_CHANNELS, data, 100);
+			stbi_write_jpg(name, w, h, NUM_CHANNELS, data, 100);
 		}
 	}
 

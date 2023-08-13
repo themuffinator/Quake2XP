@@ -778,7 +778,7 @@ void SP_monster_tank (edict_t *self) {
 		return;
 	}
 
-	self->collision_model = TR_Model_Get("tank");
+	self->collision_model = TR_Model_Get("tank", &self->collision_model_index);
 	self->s.modelindex = gi.modelindex ("models/monsters/tank/tris.md2");
 	VectorSet (self->mins, -32, -32, -16);
 	VectorSet (self->maxs, 32, 32, 72);

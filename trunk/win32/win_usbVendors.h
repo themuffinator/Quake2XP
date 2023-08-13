@@ -35,7 +35,9 @@ usbVendorId_t usb_Vendors[] = {
 {0x0955, "NVIDIA Corp."},
 {0x28de, "Valve Corp."},
 {0x0738, "Mad Catz, Inc."},
-{0x0DB0, "Micro-Star International Co., Ltd"}
+{0x0DB0, "Micro-Star International Co., Ltd"},
+{0x1C4F, "Beijing Sigmachip Co., Ltd."},
+{0x0458, "KYE Systems Corp."},
 };
 
 #define NUM_VENDORS ( sizeof( usb_Vendors ) / sizeof( usb_Vendors[0] ) )
@@ -173,6 +175,9 @@ product_t product[] = {
 {0x1142,	"Wireless Steam Controller"},
 {0x1201,	"Wired Steam Controller (HEADCRAB)"},
 {0x1202,	"Bluetooth Steam Controller (HEADCRAB)"},
+
+{0x0026,	"Beijing Keyboard"},
+{0x0186,	"Genius DX-120 Mouse"},
 };
 
 #define NUM_INPUT_DEVICES ( sizeof( product ) / sizeof( product[0] ) )

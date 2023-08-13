@@ -359,7 +359,6 @@ void SCR_DrawLoading (void) {
 
 	if (loadingMessage && cl.configstrings[CS_MODELS + 1][0]) {
 		
-	//	qglDisable(GL_FRAMEBUFFER_SRGB);
 
 		strcpy (mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen (mapfile) - 4] = 0;	// cut off ".bsp"
@@ -380,7 +379,6 @@ void SCR_DrawLoading (void) {
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
 			}
 			else {
-		//	qglEnable(GL_FRAMEBUFFER_SRGB);
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 			else

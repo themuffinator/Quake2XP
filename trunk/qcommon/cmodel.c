@@ -182,7 +182,7 @@ void CMod_LoadSurfaces (lump_t * l) {
 	if (count < 1)
 		Com_Error (ERR_DROP, "CMod_LoadSurfaces: map with no surfaces");
 	if (count > MAX_MAP_TEXINFO)
-		Com_Error (ERR_DROP, "CMod_LoadSurfaces: map has too many surfaces");
+		Com_Error (ERR_DROP, "CMod_LoadSurfaces: map has too many surfaces, %i", count);
 
 	numTexInfo = count;
 	out = map_surfaces;

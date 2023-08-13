@@ -1,6 +1,6 @@
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+//#include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -117,10 +117,10 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_STRING1             "*"
-END
+//STRINGTABLE DISCARDABLE 
+//BEGIN
+ //   IDS_STRING1             "*"
+//END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

@@ -1212,7 +1212,7 @@ void soldier_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int dama
 
 void SP_monster_soldier_x (edict_t *self) {
 
-	self->collision_model = TR_Model_Get("soldier");
+	self->collision_model = TR_Model_Get("soldier", &self->collision_model_index);
 	self->s.modelindex = gi.modelindex ("models/monsters/soldier/tris.md2");
 	self->monsterinfo.scale = MODEL_SCALE;
 	VectorSet (self->mins, -16, -16, -24);
@@ -1285,7 +1285,6 @@ void SP_monster_soldier (edict_t *self) {
 	sound_pain = gi.soundindex ("soldier/solpain1.wav");
 	sound_death = gi.soundindex ("soldier/soldeth1.wav");
 	gi.soundindex ("soldier/solatck1.wav");
-
 	self->s.skinnum = 2;
 	self->health = 30;
 	if (skill->value == 3)

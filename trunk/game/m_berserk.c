@@ -444,7 +444,7 @@ void SP_monster_berserk (edict_t *self) {
 	sound_step3 = gi.soundindex("berserk/step3.wav");
 	sound_step4 = gi.soundindex("berserk/step4.wav");
 
-	self->collision_model = TR_Model_Get("berserk");
+	self->collision_model = TR_Model_Get("berserk", &self->collision_model_index);
 	self->s.modelindex = gi.modelindex ("models/monsters/berserk/tris.md2");
 	VectorSet (self->mins, -16, -16, -24);
 	VectorSet (self->maxs, 16, 16, 32);

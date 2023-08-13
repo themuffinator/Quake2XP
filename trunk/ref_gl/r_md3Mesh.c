@@ -298,11 +298,6 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_bump.dds");
 			outMesh->skinsNormal[j] = R_LoadDDS(tex, it_normal);
 
-		//	if (!outMesh->skinsNormal[j]) {
-		//		tex[strlen(tex) - 4] = 0;
-		//		strcat(tex, "_bump.tga");
-		//		outMesh->skinsNormal[j] = GL_FindImage(tex, it_normal);				
-		//	}
 			if (!outMesh->skinsNormal[j])
 				outMesh->skinsNormal[j] = r_defBump;
 
@@ -501,55 +496,6 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 
 	for (i = 0; i<3; i++)
 		mod->center[i] = (mod->maxs[i] + mod->mins[i]) * 0.5;
-
-	if (!mod->ambientCube) {
-		int side;
-		image_t *image;
-		byte color[3] = { 255, 0, 255 };
-
-		// find a free image
-		for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
-			if (!image->texnum)
-				break;
-		}
-		if (i == numgltextures) {
-			if (numgltextures == MAX_GLTEXTURES)
-				VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-			numgltextures++;
-		}
-		image = &gltextures[i];
-
-		strcpy(image->name, "ambientCubeMd3");
-
-		image->width = 1;
-		image->height = 1;
-		image->upload_width = 1;
-		image->upload_height = 1;
-		image->type = it_skin;
-		image->hash = Com_HashKey(image->name);
-
-		mod->ambientCube = image;
-
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &mod->ambientCube->texnum);
-
-		glTextureStorage2D(mod->ambientCube->texnum, 1, GL_RGB8, 1, 1);
-
-		for (side = 0; side < 6; side++)
-			glTextureSubImage3D(mod->ambientCube->texnum, 0, 0, 0, side, 1, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color);
-
-		image->dataType = GL_UNSIGNED_BYTE;
-		image->texType = GL_TEXTURE_CUBE_MAP;
-		image->intFormat = GL_RGB8;
-
-		glTextureParameteri(mod->ambientCube->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(mod->ambientCube->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(mod->ambientCube->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(mod->ambientCube->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		mod->ambientCube->handle = glGetTextureHandleARB(mod->ambientCube->texnum);
-		glMakeTextureHandleResidentARB(mod->ambientCube->handle);
-
-	}
 }
 
 

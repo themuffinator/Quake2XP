@@ -37,7 +37,6 @@ struct modelTR_s{
 
 	int num_triangles;
 	triangle_t* triangles;
-
 	vec3_t mins, maxs;
 
 };
@@ -91,19 +90,19 @@ static model_to_TRmesh_t models[] =
 {
 	{ "berserk", "models/monsters/berserk/tris.md2", NULL },
 	{ "bitch", "models/monsters/bitch/tris.md2", NULL },
-	{ "blackwidow", "models/monsters/blackwidow/tris.md2", NULL },
-	{ "blackwidow2", "models/monsters/blackwidow2/tris.md2", NULL },
+//	{ "blackwidow", "models/monsters/blackwidow/tris.md2", NULL },
+//	{ "blackwidow2", "models/monsters/blackwidow2/tris.md2", NULL },
 	{ "boss1", "models/monsters/boss1/tris.md2", NULL },
 	{ "boss2", "models/monsters/boss2/tris.md2", NULL },
 	{ "jorg", "models/monsters/boss3/jorg/tris.md2", NULL },
 	{ "rider", "models/monsters/boss3/rider/tris.md2", NULL },
 	{ "brain", "models/monsters/brain/tris.md2", NULL },
-	{ "carrier", "models/monsters/carrier/tris.md2", NULL },
-	{ "fixbot", "models/monsters/fixbot/tris.md2", NULL },
+//	{ "carrier", "models/monsters/carrier/tris.md2", NULL },
+//	{ "fixbot", "models/monsters/fixbot/tris.md2", NULL },
 	{ "flipper", "models/monsters/flipper/tris.md2", NULL },
 	{ "float", "models/monsters/float/tris.md2", NULL },
 	{ "flyer", "models/monsters/flyer/tris.md2", NULL },
-	{ "gekk", "models/monsters/gekk/tris.md2", NULL },
+//	{ "gekk", "models/monsters/gekk/tris.md2", NULL },
 	{ "gladiator", "models/monsters/gladiatr/tris.md2", NULL  },
 	{ "gunner", "models/monsters/gunner/tris.md2", NULL },
 	{ "hover", "models/monsters/hover/tris.md2", NULL },
@@ -139,17 +138,26 @@ void TR_Model_Free(){
 	}
 }
 
-modelTR_t* TR_Model_Get(const char* name){
+modelTR_t* TR_Model_Get(const char* name, int *index){
 
 	for (int i = 0; i < sizeof(models) / sizeof(model_to_TRmesh_t); ++i)
 	{
 		model_to_TRmesh_t* convert = &models[i];
-		if (Q_strcasecmp((char*)name, (char*)convert->name) == 0)
+		if (Q_strcasecmp((char *)name, (char *)convert->name) == 0) {
+			*index = i + 1;
 			return convert->model;
+		}
 	}
-
 	gi.dprintf("can't load collision model %s", name);
+	*index = 0;
 	return NULL;
+}
+
+modelTR_t *TR_Model_Get_by_Index(int index)
+{
+	if (!index)
+		return NULL;
+	return models[index - 1].model;
 }
 
 void TR_Model_Convert(){

@@ -1100,7 +1100,7 @@ void PutClientInServer (edict_t *ent) {
 	ent->deadflag = DEAD_NO;
 	ent->air_finished = level.time + 12;
 	ent->clipmask = MASK_PLAYERSOLID;
-	ent->collision_model = TR_Model_Get("MALE");
+	ent->collision_model = TR_Model_Get("MALE", &ent->collision_model_index);
 	ent->model = "players/male/tris.md2";
 	ent->pain = player_pain;
 	ent->die = player_die;
@@ -1336,7 +1336,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo) {
 	strncpy (ent->client->pers.userinfo, userinfo, sizeof(ent->client->pers.userinfo) - 1);
 
 	char* info = Info_ValueForKey(ent->client->pers.userinfo, "gender");
-	ent->collision_model = TR_Model_Get(info);
+	ent->collision_model = TR_Model_Get(info, &ent->collision_model_index);
 }
 
 

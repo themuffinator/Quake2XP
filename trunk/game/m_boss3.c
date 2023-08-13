@@ -58,6 +58,7 @@ void SP_monster_boss3_stand (edict_t *self) {
 		return;
 	}
 
+	self->collision_model = TR_Model_Get("rider", &self->collision_model_index);
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
 	self->model = "models/monsters/boss3/rider/tris.md2";

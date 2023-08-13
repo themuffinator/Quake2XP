@@ -969,7 +969,9 @@ struct gclient_s {
 
 typedef struct modelTR_s modelTR_t;
 
-modelTR_t* TR_Model_Get(const char* name);
+modelTR_t *TR_Model_Get(const char *name, int *index);
+modelTR_t *TR_Model_Get_by_Index(int index);
+
 modelTR_t* TR_Model_Create(const char* filename);
 modelTR_t* TR_Model_Load(const char* name);
 qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o);
@@ -1129,6 +1131,7 @@ struct edict_s {
 
 	modelTR_t* collision_model;
 	solid_t old_contentmask;
+	int		collision_model_index;
 };
 
 void ED_CallSpawn (edict_t *ent);
