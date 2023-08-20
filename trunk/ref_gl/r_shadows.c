@@ -202,8 +202,8 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 
 	GL_DrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, NULL);
 
-	c_shadow_tris += id / 3;
-	c_shadow_volumes++;
+	c_numDynamicShadowsTris += id / 3;
+	c_numDynamicShadows++;
 }
 
 //differs from the test for mesh in light bound
@@ -470,7 +470,6 @@ void R_DrawMD3ShadowVolume(){
 			}
 
 			idx += 3;
-			c_shadow_tris += numTris;
 		}
 
 		idx = mesh->indexes;
@@ -497,16 +496,16 @@ void R_DrawMD3ShadowVolume(){
 				}
 
 				numTris += 6;
-				c_shadow_tris += numTris;
 			}
 
 			idx += 3;
 		}
 	}
+	c_numDynamicShadowsTris += numVerts / 4;
 //	qglBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(float), NULL, GL_STREAM_DRAW);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
 	GL_DrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
-	c_shadow_volumes++;
+	c_numDynamicShadows++;
 }
 
 
@@ -817,8 +816,8 @@ void R_DrawBrushModelVolumes () {
 		GL_DrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 	}
 
-	c_shadow_volumes++;
-	c_shadow_tris += ib / 3;
+	c_numDynamicShadows++;
+	c_numDynamicShadowsTris += ib / 3;
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 }
@@ -979,6 +978,8 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW);
 		currentShadowLight->iboNumIndices = ib;
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		
+		currentShadowLight->numStaticShadowTis = ib / 3;
 
 		// gen vao
 		glGenVertexArrays(1, &currentShadowLight->vao);
@@ -1002,7 +1003,8 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 			GL_DrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 		}
 	}
-	c_shadow_tris += ib / 3;
+	if(!currentShadowLight->isStatic)
+		c_numDynamicShadowsTris += ib / 3;
 }
 
 

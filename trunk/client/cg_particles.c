@@ -414,10 +414,7 @@ void CL_AddParticles (void) {
 							17, 12000,
 							DECAL_ACIDMARK, DF_OVERBRIGHT,
 							frand () * 360, GL_ONE, GL_ONE);
-
 					}
-
-
 					continue;
 				}
 

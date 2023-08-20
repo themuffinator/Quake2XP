@@ -235,7 +235,7 @@ void R_DrawParticles (void) {
 
 			if (partVert) {
 				GL_DrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
-				c_part_tris += index / 3;
+				c_particlesTris += index / 3;
 			}
 			texture = texId;
 			flags = flagId;
@@ -631,7 +631,7 @@ void R_DrawParticles (void) {
 
 	if (partVert) {
 		GL_DrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
-		c_part_tris += index / 3;
+		c_particlesTris += index / 3;
 	}
 
 	GL_Disable (GL_BLEND);

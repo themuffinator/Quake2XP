@@ -754,7 +754,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
 		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 		
-		c_alias_polys += md3Hdr->meshes[i].num_tris;
+		c_aliasTris += md3Hdr->meshes[i].num_tris;
 
 		if (mesh->muzzle) {
 			GL_Enable(GL_BLEND);
@@ -889,7 +889,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
 			oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
-			c_alias_polys += md3Hdr->meshes[i].num_tris;
+			c_aliasTris += md3Hdr->meshes[i].num_tris;
 
 			if (mesh->muzzle)
 				continue;
@@ -1185,7 +1185,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		else
 			qglUniform1i(U_PARAM_INT_5, 0);
 
-		c_alias_polys += md3Hdr->meshes[i].num_tris;
+		c_litAliasTris += md3Hdr->meshes[i].num_tris;
 
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_missingTexture)
@@ -1358,7 +1358,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		if (mesh->muzzle)
 			continue;
 
-		c_alias_polys += md3Hdr->meshes[i].num_tris;
+		c_aliasTris += md3Hdr->meshes[i].num_tris;
 		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
 		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 

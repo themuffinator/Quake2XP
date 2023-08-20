@@ -1534,6 +1534,9 @@ static void CL_SendCommand_Async(void)
 
 void CL_UpdateHRTF() {
 
+	if (!alcResetDeviceSOFT)
+		return;
+
 	if (s_hrtfIndex->modified || s_useHRTF->modified)
 	{
 		s_hrtfIndex->modified = qfalse;

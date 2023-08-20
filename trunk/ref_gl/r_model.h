@@ -89,6 +89,7 @@ typedef struct worldShadowLight_s {
 	int			isFog;
 	int			scissor[4];
 	int			start_off;
+	uint		numStaticShadowTis;
 
 	qboolean	spherical;
 	qboolean	castCaustics, castCaustics2;

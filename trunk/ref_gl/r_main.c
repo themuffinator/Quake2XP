@@ -524,8 +524,6 @@ void R_DrawLightScene (void)
 {
 	int i;
 
-	num_visLights = 0;
-
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
@@ -569,8 +567,12 @@ void R_DrawLightScene (void)
 		qglClearStencil(128);
 		GL_StencilMask(255);
 		qglClear(GL_STENCIL_BUFFER_BIT);
+		c_numVisLights++;
 	}
 
+	if (!currentShadowLight->isAmbient && currentShadowLight->isShadow)
+			c_staticShadowTris += currentShadowLight->numStaticShadowTis;
+	
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(qtrue);	// player shadow
 
@@ -1094,6 +1096,7 @@ extern char buff14[128];
 extern char buff15[128];
 extern char buff16[128];
 extern char buff17[128];
+extern char buff18[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -1143,8 +1146,9 @@ void R_RenderFrame(refdef_t * fd) {
 		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14, qtrue);
 		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15, qtrue);
 
-		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16, qtrue);
-		Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17, qtrue);
+//		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16, qtrue);
+	//	Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17, qtrue);
+		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff18, qtrue);
 		RE_SetColor(colorWhite);
 	}
 }

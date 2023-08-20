@@ -216,7 +216,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
-	c_alias_polys += paliashdr->num_tris;
+	c_aliasTris += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 
 	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
@@ -358,7 +358,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	else
 		R_CalcAliasFrameLerp (paliashdr, 0.5);
 
-	c_alias_polys += paliashdr->num_tris;
+	c_aliasTris += paliashdr->num_tris;
 
 	tris		= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
@@ -513,7 +513,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
-	c_alias_polys += paliashdr->num_tris;
+	c_litAliasTris += paliashdr->num_tris;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {

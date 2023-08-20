@@ -33,7 +33,7 @@ worldShadowLight_t	shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 
 static int num_dlits;
 int num_nwmLights;
-int num_visLights;
+int c_numVisLights;
 
 vec3_t player_org, v_forward, v_right, v_up;
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
@@ -328,7 +328,6 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 
 			if (!R_AddLightToFrame (light, weapon))
 				continue;
-			num_visLights++;
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
 		}
@@ -340,7 +339,7 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		if (num_dlits > MAX_WORLD_SHADOW_LIHGTS)
 			break;
 
-		R_AddDynamicLight (&r_newrefdef.dlights[i]);
+		R_AddDynamicLight (&r_newrefdef.dlights[i]);		
 	}
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) 
@@ -1445,6 +1444,7 @@ char buff14[128];
 char buff15[128];
 char buff16[128];
 char buff17[128];
+char buff18[128];
 
 void R_DrawCube(vec3_t v[8], vec3_t org, int size) {
 
@@ -1572,6 +1572,12 @@ void UpdateLightEditor(void) {
 		sprintf(buff13, "Start Off: %i", selectedShadowLight->start_off);
 		sprintf(buff14, "Fog Light: %i", selectedShadowLight->isFog);
 		sprintf(buff15, "Fog Density: %5f", selectedShadowLight->fogDensity);
+	
+		if (!selectedShadowLight->isAmbient && selectedShadowLight->isShadow)
+			sprintf(buff18, "Shadow Tris: %i", (int)selectedShadowLight->numStaticShadowTis);
+		else
+			sprintf(buff18, "Shadow Tris: %i", 0);
+			
 
 		VectorCopy(selectedShadowLight->origin, tmpOrg);
 		VectorCopy(selectedShadowLight->radius, tmpRad);
@@ -2041,6 +2047,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		VectorScale(light->radius, 0.75, light->occRadius);
 	
 	}
+	light->numStaticShadowTis = 0;
 
 	R_DrawOcclusionBbox(light, qfalse);
 
@@ -2114,14 +2121,14 @@ void Load_BspLights () {
 				flag = atoi (value);
 		}
 
-		if (addLight/* && style > 0*/) {
+		if (addLight && style > 0) {
 			VectorSet (radius, radius[0], radius[0], radius[0]);
 			vec3_t occRad;
 			VectorScale(radius, 0.75, occRad);
 			if (cone)
 				proj = qtrue;
 			vec3_t angles;
-			VectorSet(angles, 90.0, 0.0, 0.0); //down
+			VectorSet(angles, 0.0, 0.0, 0.0); //down
 
 			R_AddNewWorldLight (origin, color, radius, style, 0, angles, vec3_origin, qtrue, 1, 0, qfalse, 0, origin, 10.0, target, flag, 0, 0.0, origin, occRad, proj, 45.0, 45.0, 1024.0);
 			numlights++;

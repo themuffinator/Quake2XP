@@ -195,7 +195,6 @@ image_t	*r_cinImage;
 image_t	*r_hdrBloomImage;
 image_t	*r_thermalImage;
 image_t	*r_lensDirt;
-image_t *r_ddscube;
 image_t *r_levelSkyBox;
 
 int			i_stencilView;
@@ -543,13 +542,13 @@ byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
 void R_ColorTemperatureCorrection(void);
 
-image_t* R_CreateTexture(char* texName, uint targetTex,
+image_t *R_CreateTexture(char *texName, uint targetTex,
 	uint intFormat, uint format,
-	uint type, uint width, uint height,
+	uint flags, uint width, uint height,
 	uint warpS, uint warpT,
 	uint filterMin, uint filterMag,
-	uint imageType, qboolean mipmap,
-	uint* pixdata);
+	uint imageType,
+	uint *pixdata);
 //====================================================================
 mleaf_t* Mod_PointInLeaf(vec3_t p, model_t* model);
 

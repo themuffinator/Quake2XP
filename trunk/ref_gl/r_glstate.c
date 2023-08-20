@@ -39,14 +39,18 @@ void GL_SetBindlessTexture(int loc, uint64 handle) {
 
 void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray) {
 
-	if (numIdx > 0)
+	if (numIdx > 0) {
 		qglDrawElements(mode, numIdx, type, idxArray);
+		c_numDips++;
+	}
 }
 
 void GL_DrawArrays(int mode, int first, int count) {
 	
-	if (count > 0)
+	if (count > 0) {
 		qglDrawArrays(mode, first, count);
+		c_numDips++;
+	}
 }
 
 void GL_UpdateLightPos(vec3_t pos) {

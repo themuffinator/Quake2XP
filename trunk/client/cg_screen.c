@@ -878,47 +878,56 @@ extern cvar_t *r_speeds;
 void SCR_DrawStats ();
 void SCR_DrawLayout (void);
 
-int c_brush_polys,
-c_alias_polys,
-c_flares,
-c_visible_lightmaps,
-c_visible_textures,
-c_flares,
-c_shadow_volumes,
-c_decals,
-c_shadow_tris,
-c_part_tris,
-c_decal_tris,
-c_light_batch;
-
 extern cvar_t *cl_drawFPS;
 extern cvar_t *ui_hudScale;
 
-void SCR_DrawSpeeds (void) {
+void SCR_DrawSpeeds(void) {
 
-	char	bsp[18], alias[18], st[18], partTris[18], shadow[18], decals[18], dtr[18], lt[18];
+	char	bspTris[64],			litBspTris[64],			aliasTris[64],		litAliasTris[64],  
+			dynamicShadowTris[64],	partTris[64],			numDynShadow[64],	decalTris[64],
+			numVisLights[64],		staticShadowTris[64],	numDips[64];
+
 	float	fontscale = ui_fontScale->value;
 
 	if (!r_speeds->integer)
 		return;
 
-	sprintf (bsp, "%i w_tris", c_brush_polys);
-	sprintf (alias, "%i m_tris", c_alias_polys);
-	sprintf (st, "%i s_tris", c_shadow_tris);
-	sprintf (partTris, "%i p_tris", c_part_tris);
-	sprintf (shadow, "%i shadows", c_shadow_volumes);
-	sprintf (decals, "%i decals", c_decals);
-	sprintf (dtr, "%i d_tris", c_decal_tris);
-	sprintf(lt, "%i vis lights", num_visLights);
+	sprintf (bspTris,			"%i Bsp Tris", c_brushTris);
+	sprintf	(litBspTris,		"%i Lit Bsp Tris", c_lightBrushTris);
+	sprintf (aliasTris,			"%i Alias Tris", c_aliasTris);
+	sprintf	(litAliasTris,		"%i Lit Alias Tris", c_litAliasTris);
+	sprintf (dynamicShadowTris,	"%i Dynamic Shadow Tris", c_numDynamicShadowsTris);
+	sprintf (staticShadowTris,	"%i Static Shadow Tris", c_staticShadowTris);
+	sprintf (numDynShadow,		"%i Dynamic Shadows", c_numDynamicShadows);
+	sprintf (numVisLights,		"%i Vis Lights", c_numVisLights);
+	sprintf	(partTris,			"%i Particles Tris", c_particlesTris);
+	sprintf	(decalTris,			"%i Decals Tris", c_decalsTris);
+	sprintf	(numDips,			"%i Draw Calls", c_numDips);
 
-	RE_SetColor (colorCyan);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4, fontscale, fontscale, bsp, qtrue);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 10 * fontscale, fontscale, fontscale, alias, qtrue);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 20 * fontscale, fontscale, fontscale, st, qtrue);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 30 * fontscale, fontscale, fontscale, partTris, qtrue);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 40 * fontscale, fontscale, fontscale, shadow, qtrue);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 50 * fontscale, fontscale, fontscale, dtr, qtrue);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 60 * fontscale, fontscale, fontscale, lt, qtrue);
+	RE_SetColor (colorGreen);
+
+	Draw_StringScaled (viddef.width - (int)strlen(bspTris)		* 6 * fontscale, viddef.height * 0.25, fontscale, fontscale, bspTris, qtrue);
+
+	Draw_StringScaled (viddef.width	- (int)strlen(litBspTris)	* 6 * fontscale, viddef.height * 0.25 + 10 * fontscale, fontscale, fontscale, litBspTris, qtrue);
+
+	Draw_StringScaled (viddef.width - (int)strlen(aliasTris)	* 6 * fontscale, viddef.height * 0.25 + 20 * fontscale, fontscale, fontscale, aliasTris, qtrue);
+
+	Draw_StringScaled (viddef.width	- (int)strlen(litAliasTris) * 6 * fontscale, viddef.height * 0.25 + 30 * fontscale, fontscale, fontscale, litAliasTris, qtrue);
+	
+	Draw_StringScaled (viddef.width - (int)strlen(dynamicShadowTris)* 6 * fontscale, viddef.height * 0.25 + 40 * fontscale, fontscale, fontscale, dynamicShadowTris, qtrue);
+
+	Draw_StringScaled (viddef.width	- (int)strlen(staticShadowTris)	* 6 * fontscale, viddef.height * 0.25 + 50 * fontscale, fontscale, fontscale, staticShadowTris, qtrue);
+
+	Draw_StringScaled (viddef.width - (int)strlen(numDynShadow) * 6 * fontscale, viddef.height * 0.25 + 60 * fontscale, fontscale, fontscale, numDynShadow, qtrue);
+
+	Draw_StringScaled (viddef.width - (int)strlen(numVisLights) * 6 * fontscale, viddef.height * 0.25 + 70 * fontscale, fontscale, fontscale, numVisLights, qtrue);
+
+	Draw_StringScaled (viddef.width	- (int)strlen(partTris)		* 6 * fontscale, viddef.height * 0.25 + 80 * fontscale, fontscale, fontscale, partTris, qtrue);
+
+	Draw_StringScaled (viddef.width	- (int)strlen(decalTris)	* 6 * fontscale, viddef.height * 0.25 + 90 * fontscale, fontscale, fontscale, decalTris, qtrue);
+
+	Draw_StringScaled (viddef.width	- (int)strlen(numDips)		* 6 * fontscale, viddef.height * 0.25 + 100 * fontscale, fontscale, fontscale, numDips, qtrue);
+	
 	RE_SetColor (colorWhite);
 }
 

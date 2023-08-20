@@ -45,10 +45,10 @@ R_InitEngineTextures
 
 image_t *R_CreateTexture(char *texName, uint targetTex, 
 						uint intFormat, uint format, 
-						uint type, uint width, uint height, 
+						uint flags, uint width, uint height, 
 						uint warpS, uint warpT, 
 						uint filterMin, uint filterMag, 
-						uint imageType, qboolean mipmap, 
+						uint imageType, 
 						uint *pixdata) {
 
 	int		i;
@@ -80,17 +80,13 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	image->height = height;
 	image->upload_width = width;
 	image->upload_height = height;
-	image->type = type;
+	image->type = it_screen;
+	image->flags = flags;
 	image->hash = Com_HashKey(image->name);
 	
 	image->texType = targetTex;
 	image->intFormat = intFormat;
 	image->dataType = imageType;
-
-	if (mipmap)
-		image->numMips = CalcMipmapCount(width, height);
-	else
-		image->numMips = 1;
 
 	glCreateTextures(targetTex, 1, &image->texnum);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, warpS);
@@ -98,11 +94,14 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, filterMin);
 	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, filterMag);
 
-	if (mipmap) {
+	if (image->flags & IF_MIPMAP) {
+		image->numMips = CalcMipmapCount(width, height);
 		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips-1);
 		glGenerateTextureMipmap(image->texnum);
 	}
+	else
+		image->numMips = 1;
 
 	glTextureStorage2D(image->texnum, image->numMips, intFormat, width, height);
 	glTextureSubImage2D(image->texnum, 0, 0, 0, width, height, format, imageType, pixdata);
@@ -131,7 +130,7 @@ void CreateWaterWarpTexture(void) {
 			pix[x][y][3] = rand() % 48;
 		}
 
-	r_DSTTex = R_CreateTexture("***r_DSTTex***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, (uint*)pix);
+	r_DSTTex = R_CreateTexture("***r_DSTTex***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, IF_MIPMAP, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint*)pix);
 
 }
 
@@ -591,7 +590,7 @@ void R_InitEngineTextures (void) {
 	if (!r_envTex)
 		r_envTex = r_missingTexture;
 
-	r_randomNormalTex = R_LoadDDS("gfx/randomNormal.dds", it_pic);
+	r_randomNormalTex = R_LoadDDS("gfx/randomNormal.dds", it_screen);
 	if (!r_randomNormalTex)
 		r_randomNormalTex = r_defBump;
 
@@ -606,16 +605,13 @@ void R_InitEngineTextures (void) {
 
 	//Load3dLut();
 
-	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, 
-								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
+	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
+								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, NULL);
 
-	r_lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_pic);
+	r_lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_screen);
 	if (!r_lensDirt)
 		r_lensDirt = r_missingTexture;
 
-	r_ddscube = R_LoadDDS("gfx/cube0.dds", it_wall);
-	if (!r_ddscube)
-		r_ddscube = r_missingTexture;
 }
 
 

@@ -673,8 +673,10 @@ void V_RenderView () {
 
 		if (!cl_add_particles->integer)
 			r_numparticles = 0;
+		
 		if (!cl_add_lights->integer)
 			r_numdlights = 0;
+
 		if (!cl_add_blend->integer)
 			VectorClear (cl.refdef.blend);
 
@@ -686,7 +688,7 @@ void V_RenderView () {
 
 		cl.refdef.num_particles = r_numparticles;
 		cl.refdef.particles = r_particles;
-
+		
 		cl.refdef.num_dlights = r_numdlights;
 		cl.refdef.dlights = r_dlights;
 
@@ -699,13 +701,17 @@ void V_RenderView () {
 
 	}
 
-	c_brush_polys = 0;
-	c_alias_polys = 0;
-	c_part_tris = 0;
-	c_shadow_tris = 0;
-	c_flares = 0;
-	c_shadow_volumes = 0;
-	c_decal_tris = 0;
+	c_brushTris = 0;
+	c_lightBrushTris = 0;
+	c_aliasTris = 0;
+	c_litAliasTris = 0;
+	c_particlesTris = 0;
+	c_numDynamicShadowsTris = 0;
+	c_numDynamicShadows = 0;
+	c_decalsTris = 0;
+	c_staticShadowTris = 0;
+	c_numVisLights = 0;
+	c_numDips = 0;
 
 	R_RenderFrame (&cl.refdef);
 

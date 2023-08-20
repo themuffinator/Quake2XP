@@ -47,7 +47,7 @@ static void GL_DrawDepthBspTris () {
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
 				GL_DrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_brushTris += numIndices / 3;
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
@@ -57,7 +57,7 @@ static void GL_DrawDepthBspTris () {
 	// draw the rest
 	if (numIndices != 0xFFFFFFFF) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-		c_brush_polys += numIndices / 3;
+		c_brushTris += numIndices / 3;
 	}
 }
 
@@ -281,7 +281,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-	c_alias_polys += paliashdr->num_tris;
+	c_aliasTris += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 	jj = 0;
 

@@ -34,15 +34,15 @@ R_LoadFont
 
 void R_Init2D(void)
 {
-	draw_chars = R_LoadDDS("gfx/fonts/engfont.dds", it_pic);
+	draw_chars = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
 
 	if (!draw_chars)
-		draw_chars = GL_FindImage("pics/conchars.pcx", it_pic);
+		draw_chars = GL_FindImage("pics/conchars.pcx", it_nomips);
 
 	if (!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	draw_charsInt = R_LoadDDS("gfx/fonts/intfont.dds", it_pic);
+	draw_charsInt = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
 	if (!draw_charsInt)
 		draw_charsInt = r_missingTexture;
 }

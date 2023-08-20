@@ -58,13 +58,13 @@ void CreateSSAOBuffer(void) {
 	Com_Printf("Load "S_COLOR_YELLOW "SSAO FBO ");
 
 	r_miniDepthTex = R_CreateTexture("***r_miniDepthTex***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 
-									it_screen, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
-									GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+									0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
+									GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	for (int i = 0; i < 2; i++)
 		r_ssaoColorTex[i] = R_CreateTexture("***r_ssaoColorTex***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 
-											it_screen, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
-											GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+									0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+											GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	r_ssaoColorTexIndex = 0;
 
@@ -91,9 +91,9 @@ void CreateLinearDepthBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "LINEAR DEPTH FBO ");
 
-	r_linearDepth = R_CreateTexture("***r_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, it_screen, vid.width, vid.height, 
+	r_linearDepth = R_CreateTexture("***r_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, vid.width, vid.height,
 									GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-									GL_FLOAT, qfalse, NULL);
+									GL_FLOAT, NULL);
 
 	qglGenFramebuffers(1, &fbo._linearDepth);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth);
@@ -115,8 +115,8 @@ void CreateBloomBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 
-	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, it_screen,
-	vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+	vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	qglGenFramebuffers(1, &fbo._bloom);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._bloom);
@@ -139,9 +139,9 @@ void CreateThermalBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
 
-	r_thermalImage = R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, it_screen,
+	r_thermalImage = R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 									vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
-									GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+									GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 	
 	qglGenFramebuffers(1, &fbo._thermal);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._thermal);
@@ -177,19 +177,19 @@ void R_CreateScreenFbo() {
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
-		it_screen, vid.width, vid.height,
+		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_FLOAT, qfalse, NULL);
+		GL_FLOAT, NULL);
 
 	r_hdrScreenCopy = R_CreateTexture("***r_hdrScreenCopy***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
-		it_screen, vid.width, vid.height,
+		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_FLOAT, qfalse, NULL);
+		GL_FLOAT, NULL);
 
 	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
-		it_screen, vid.width, vid.height,
+		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_UNSIGNED_INT_24_8, qfalse, NULL);
+		GL_UNSIGNED_INT_24_8, NULL);
 	
 	qglGenFramebuffers(1, &fbo._hdr);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
@@ -219,9 +219,9 @@ void R_FboFinal() {
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._final);
 
 	r_finalScreen = R_CreateTexture("***r_finalScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
-									it_screen, vid.width, vid.height,
+									0, vid.width, vid.height,
 									GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR,
-									GL_FLOAT, qfalse, NULL);
+									GL_FLOAT, NULL);
 
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_finalScreen->texnum, 0);
 
@@ -243,8 +243,7 @@ void R_Tex2dFbo() {
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._tex2d);
 
 	r_hdrScreenCopy2d = R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-		it_screen, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+						0, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrScreenCopy2d->texnum, 0);
 
@@ -270,8 +269,7 @@ void R_HdrLumFbo() {
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdrLum[i]);
 
 		r_hdrLuminance[i] = R_CreateTexture(va("***fbo_hdrLuminance_%i***", i), GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-							it_screen, texSize, texSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-							GL_FLOAT, qtrue, NULL);
+		IF_MIPMAP, texSize, texSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 		qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrLuminance[i]->texnum, 0);
 		qglObjectLabel(GL_FRAMEBUFFER, fbo._hdrLum[i], strlen(va("***fbo_hdrLuminance_%i***", i)), va("***fbo_hdrLuminance_%i***", i));

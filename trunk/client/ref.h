@@ -285,15 +285,21 @@ typedef enum {
 	it_skin,
 	it_sprite,
 	it_wall,
-	it_wall4free,
 	it_pic,
 	it_sky,
 	it_normal,
 	it_pbr,
-	it_mipmap, 
+	it_mipmap,
+	it_nomips, 
 	it_screen,
-	it_part // clamp to enge mode
+	it_part // clamp to edge mode
 } imagetype_t;
+
+typedef enum {
+	IF_MIPMAP	= BIT(0),
+	IF_CUBEMAP	= BIT(1),
+	IF_SHADOW	= BIT(3)
+} imageFlags_t;
 
 vec3_t hColor;
 
@@ -316,6 +322,7 @@ typedef struct image_s {
 	uint		intFormat;
 	uint		texType;
 	uint		dataType;
+	uint		flags;
 
 	qboolean	floatTex;
 	qboolean	compressed;
@@ -361,18 +368,20 @@ typedef struct mtexInfo_s {
 
 } mtexInfo_t;
 
-extern int	c_brush_polys,
-c_alias_polys,
-c_visible_textures,
-c_visible_lightmaps,
-c_flares,
-c_shadow_volumes,
-c_decals,
-c_shadow_tris,
-c_part_tris,
-c_decal_tris;
+int
+c_brushTris,
+c_lightBrushTris,
+c_litAliasTris,
+c_aliasTris,
+c_numDynamicShadows,
+c_numDynamicShadowsTris,
+c_particlesTris,
+c_decalsTris,
+c_staticShadowTris,
+c_numDips;
+;
 
-extern int num_visLights;
+extern int c_numVisLights;
 
 #define	VERTEXSIZE	16
 

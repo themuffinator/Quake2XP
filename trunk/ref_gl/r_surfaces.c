@@ -329,7 +329,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 			if (numIndices != 0xFFFFFFFF){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_brushTris += numIndices / 3;
 
 				R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 				R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
@@ -351,7 +351,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			if (numIndices != 0xFFFFFFFF){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_brushTris += numIndices / 3;
 
 				R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 				R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
@@ -366,7 +366,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 		R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 		R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
-		c_brush_polys += numIndices / 3;
+		c_brushTris += numIndices / 3;
 		numIndices = 0xffffffff;
 	}
 }
@@ -566,7 +566,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		{
 			if (numIndices != 0xffffffff){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_brushTris += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 			oldTex = s->texInfo->image->texnum;
@@ -582,7 +582,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		{
 			if (numIndices != 0xffffffff){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_lightBrushTris += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 		}
@@ -590,7 +590,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 	// draw the rest
 	if (numIndices != 0xffffffff) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-		c_brush_polys += numIndices / 3;
+		c_lightBrushTris += numIndices / 3;
 	}
 }
 
@@ -617,7 +617,7 @@ static void GL_DrawStaticLightPass()
 		{
 			if (numIndices != 0xffffffff) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_lightBrushTris += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 
@@ -633,7 +633,7 @@ static void GL_DrawStaticLightPass()
 		{
 			if (numIndices != 0xffffffff) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brush_polys += numIndices / 3;
+				c_lightBrushTris += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 		}
@@ -641,7 +641,7 @@ static void GL_DrawStaticLightPass()
 	// draw the rest
 	if (numIndices != 0xffffffff) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-		c_brush_polys += numIndices / 3;
+		c_lightBrushTris += numIndices / 3;
 	}
 }
 

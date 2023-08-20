@@ -81,7 +81,7 @@ void R_DrawSkyBox(){
 
 		if (numIndices >= MAX_SKY_IDX) {
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-			c_brush_polys += numIndices / 3;
+			c_brushTris += numIndices / 3;
 
 			R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.7, 0.0, skyProgram);
 			numIndices = 0;
@@ -89,7 +89,7 @@ void R_DrawSkyBox(){
 	}
 	if (numIndices) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-		c_brush_polys += numIndices / 3;
+		c_brushTris += numIndices / 3;
 
 		R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.7, 0.0, skyProgram);
 		numIndices = 0;

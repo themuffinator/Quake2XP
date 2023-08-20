@@ -157,7 +157,7 @@ void R_RenderDecals(qboolean twoside)
         // flush array if new texture/blend
         if (numIndices) {
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-			c_decal_tris += numIndices/3;
+			c_decalsTris += numIndices/3;
 			numVertices = 0;
 			numIndices = 0;
 		}
@@ -178,7 +178,7 @@ void R_RenderDecals(qboolean twoside)
 		 (numVertices >= MAX_DECAL_ARRAY_VERTS - dl->numverts)) {
           
 		 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-         c_decal_tris = numIndices/3;
+         c_decalsTris = numIndices/3;
 		 numVertices = 0;
          numIndices = 0;
      }
@@ -211,7 +211,7 @@ void R_RenderDecals(qboolean twoside)
      // draw the rest
 	 if (numIndices){
 		 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-		c_decal_tris += numIndices/3;
+		c_decalsTris += numIndices/3;
 	 }
     qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
