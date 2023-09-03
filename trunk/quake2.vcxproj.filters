@@ -164,55 +164,55 @@
     <ClCompile Include="game\q_shared.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_decals.c">
+    <ClCompile Include="renderer\r_decals.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_image.c">
+    <ClCompile Include="renderer\r_image.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_model.c">
+    <ClCompile Include="renderer\r_model.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_particles.c">
+    <ClCompile Include="renderer\r_particles.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_postprocess.c">
+    <ClCompile Include="renderer\r_postprocess.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_program.c">
+    <ClCompile Include="renderer\r_program.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_draw2d.c">
+    <ClCompile Include="renderer\r_draw2d.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_math.c">
+    <ClCompile Include="renderer\r_math.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\snd_openal.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_lightMaps.c">
+    <ClCompile Include="renderer\r_lightMaps.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_cull.c">
+    <ClCompile Include="renderer\r_cull.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_main.c">
+    <ClCompile Include="renderer\r_main.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_shadows.c">
+    <ClCompile Include="renderer\r_shadows.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_glstate.c">
+    <ClCompile Include="renderer\r_glstate.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_zprepass.c">
+    <ClCompile Include="renderer\r_zprepass.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_vertexLight.c">
+    <ClCompile Include="renderer\r_vertexLight.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_light.c">
+    <ClCompile Include="renderer\r_light.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="win32\win_glimp.c">
@@ -272,16 +272,16 @@
     <ClCompile Include="client\cg_view.c">
       <Filter>Source Files\Cg</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_md3Mesh.c">
+    <ClCompile Include="renderer\r_md3Mesh.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_md2Mesh.c">
+    <ClCompile Include="renderer\r_md2Mesh.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_vertexCache.c">
+    <ClCompile Include="renderer\r_vertexCache.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_qgl.c">
+    <ClCompile Include="renderer\r_qgl.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\vid_menu.c">
@@ -302,10 +302,10 @@
     <ClCompile Include="win32\win_sysinfo.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_loadImages.c">
+    <ClCompile Include="renderer\r_loadImages.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_sky.c">
+    <ClCompile Include="renderer\r_sky.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\cl_keys.c">
@@ -314,7 +314,7 @@
     <ClCompile Include="client\cg_screen.c">
       <Filter>Source Files\Cg</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_surfaces.c">
+    <ClCompile Include="renderer\r_surfaces.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\cl_preload.c">
@@ -323,7 +323,7 @@
     <ClCompile Include="win32\win_syscons.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_surfacesRA.c">
+    <ClCompile Include="renderer\r_surfacesRA.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\cl_https.c">
@@ -335,7 +335,7 @@
     <ClCompile Include="client\cl_download.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_fbo.c">
+    <ClCompile Include="renderer\r_fbo.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="qcommon\files.c">
@@ -346,16 +346,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ref_gl\qgl.h">
+    <ClInclude Include="renderer\qgl.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_local.h">
+    <ClInclude Include="renderer\r_local.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_model.h">
+    <ClInclude Include="renderer\r_model.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\wglext.h">
+    <ClInclude Include="renderer\wglext.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\snd_loc.h">
@@ -370,7 +370,7 @@
     <ClInclude Include="client\cdaudio.h">
       <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\glcorearb.h">
+    <ClInclude Include="renderer\glcorearb.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="game\q_shared.h">
@@ -454,7 +454,7 @@
     <ClInclude Include="win32\adl\adl_structures.h">
       <Filter>Source Files\Win32\Headers\Adl</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_md3.h">
+    <ClInclude Include="renderer\r_md3.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\win_languages.h">
@@ -517,13 +517,13 @@
     <ClInclude Include="client\curl\urlapi.h">
       <Filter>Source Files\Client\Headers\curl</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\stb\stb_image.h">
+    <ClInclude Include="renderer\stb\stb_image.h">
       <Filter>Source Files\Renderer\Headers\stb</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\stb\stb_image_write.h">
+    <ClInclude Include="renderer\stb\stb_image_write.h">
       <Filter>Source Files\Renderer\Headers\stb</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\khrplatform.h">
+    <ClInclude Include="renderer\khrplatform.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
   </ItemGroup>

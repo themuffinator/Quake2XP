@@ -3273,31 +3273,31 @@
 				Name="Renderer"
 				>
 				<File
-					RelativePath=".\ref_gl\r_alias_md2.c"
+					RelativePath=".\renderer\r_alias_md2.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_arb_shader.c"
+					RelativePath=".\renderer\r_arb_shader.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_arbbump.c"
+					RelativePath=".\renderer\r_arbbump.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_bloom.c"
+					RelativePath=".\renderer\r_bloom.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_decals.c"
+					RelativePath=".\renderer\r_decals.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_draw.c"
+					RelativePath=".\renderer\r_draw.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_image.c"
+					RelativePath=".\renderer\r_image.c"
 					>
 				</File>
 				<File
@@ -3305,19 +3305,19 @@
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_light.c"
+					RelativePath=".\renderer\r_light.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_model.c"
+					RelativePath=".\renderer\r_model.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_particles.c"
+					RelativePath=".\renderer\r_particles.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_postprocess.c"
+					RelativePath=".\renderer\r_postprocess.c"
 					>
 				</File>
 				<File
@@ -3325,27 +3325,27 @@
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_rmain.c"
+					RelativePath=".\renderer\r_rmain.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_rmisc.c"
+					RelativePath=".\renderer\r_rmisc.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_rsurf.c"
+					RelativePath=".\renderer\r_rsurf.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_shadows.c"
+					RelativePath=".\renderer\r_shadows.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_warp.c"
+					RelativePath=".\renderer\r_warp.c"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_xpfx.c"
+					RelativePath=".\renderer\r_xpfx.c"
 					>
 				</File>
 			</Filter>
@@ -3954,11 +3954,11 @@
 				Name="Renderer"
 				>
 				<File
-					RelativePath=".\ref_gl\anormtab.h"
+					RelativePath=".\renderer\anormtab.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\glext.h"
+					RelativePath=".\renderer\glext.h"
 					>
 				</File>
 				<File
@@ -3966,62 +3966,62 @@
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\qgl.h"
+					RelativePath=".\renderer\qgl.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_local.h"
+					RelativePath=".\renderer\r_local.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_model.h"
+					RelativePath=".\renderer\r_model.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_particle.h"
+					RelativePath=".\renderer\r_particle.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_q2pal.h"
+					RelativePath=".\renderer\r_q2pal.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\r_warpsin.h"
+					RelativePath=".\renderer\r_warpsin.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ref_gl\wglext.h"
+					RelativePath=".\renderer\wglext.h"
 					>
 				</File>
 				<Filter
 					Name="ImageLib"
 					>
 					<File
-						RelativePath=".\ref_gl\ImageLib\config.h"
+						RelativePath=".\renderer\ImageLib\config.h"
 						>
 					</File>
 					<File
-						RelativePath=".\ref_gl\ImageLib\il.h"
+						RelativePath=".\renderer\ImageLib\il.h"
 						>
 					</File>
 					<File
-						RelativePath=".\ref_gl\ImageLib\ilu.h"
+						RelativePath=".\renderer\ImageLib\ilu.h"
 						>
 					</File>
 					<File
-						RelativePath=".\ref_gl\ImageLib\ilut.h"
+						RelativePath=".\renderer\ImageLib\ilut.h"
 						>
 					</File>
 					<File
-						RelativePath=".\ref_gl\ImageLib\jconfig.h"
+						RelativePath=".\renderer\ImageLib\jconfig.h"
 						>
 					</File>
 					<File
-						RelativePath=".\ref_gl\ImageLib\jmorecfg.h"
+						RelativePath=".\renderer\ImageLib\jmorecfg.h"
 						>
 					</File>
 					<File
-						RelativePath=".\ref_gl\ImageLib\jpeglib.h"
+						RelativePath=".\renderer\ImageLib\jpeglib.h"
 						>
 					</File>
 				</Filter>

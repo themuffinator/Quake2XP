@@ -5,7 +5,7 @@
 // AMD Driver SDK
 // Overdrive N 
 
-#include "../ref_gl/r_local.h"
+#include "../renderer/r_local.h"
 
 
 // Definitions of the used function pointers. Add more if you use other ADL APIs

@@ -32,7 +32,7 @@ sources_glob = {
         'client/*.c',
         'qcommon/*.c',
         'server/*.c',
-        'ref_gl/*.c',
+        'renderer/*.c',
         'linux/*.c',
         'game/m_flash.c'
         ]

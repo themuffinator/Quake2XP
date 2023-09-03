@@ -430,20 +430,20 @@
     </ClCompile>
     <ClCompile Include="qcommon\files.c" />
     <ClCompile Include="qcommon\unzip.c" />
-    <ClCompile Include="ref_gl\r_cull.c" />
-    <ClCompile Include="ref_gl\r_fbo.c" />
-    <ClCompile Include="ref_gl\r_glstate.c" />
-    <ClCompile Include="ref_gl\r_light.c" />
-    <ClCompile Include="ref_gl\r_lightMaps.c" />
-    <ClCompile Include="ref_gl\r_main.c" />
-    <ClCompile Include="ref_gl\r_md3Mesh.c" />
-    <ClCompile Include="ref_gl\r_program.c" />
-    <ClCompile Include="ref_gl\r_qgl.c" />
-    <ClCompile Include="ref_gl\r_shadows.c" />
-    <ClCompile Include="ref_gl\r_sky.c" />
-    <ClCompile Include="ref_gl\r_surfacesRA.c" />
-    <ClCompile Include="ref_gl\r_vertexCache.c" />
-    <ClCompile Include="ref_gl\r_zprepass.c" />
+    <ClCompile Include="renderer\r_cull.c" />
+    <ClCompile Include="renderer\r_fbo.c" />
+    <ClCompile Include="renderer\r_glstate.c" />
+    <ClCompile Include="renderer\r_light.c" />
+    <ClCompile Include="renderer\r_lightMaps.c" />
+    <ClCompile Include="renderer\r_main.c" />
+    <ClCompile Include="renderer\r_md3Mesh.c" />
+    <ClCompile Include="renderer\r_program.c" />
+    <ClCompile Include="renderer\r_qgl.c" />
+    <ClCompile Include="renderer\r_shadows.c" />
+    <ClCompile Include="renderer\r_sky.c" />
+    <ClCompile Include="renderer\r_surfacesRA.c" />
+    <ClCompile Include="renderer\r_vertexCache.c" />
+    <ClCompile Include="renderer\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -620,18 +620,18 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_md2Mesh.c" />
-    <ClCompile Include="ref_gl\r_decals.c" />
-    <ClCompile Include="ref_gl\r_draw2d.c" />
-    <ClCompile Include="ref_gl\r_image.c" />
+    <ClCompile Include="renderer\r_md2Mesh.c" />
+    <ClCompile Include="renderer\r_decals.c" />
+    <ClCompile Include="renderer\r_draw2d.c" />
+    <ClCompile Include="renderer\r_image.c" />
     <ClCompile Include="win32\win_glimp.c" />
-    <ClCompile Include="ref_gl\r_vertexLight.c" />
-    <ClCompile Include="ref_gl\r_model.c" />
-    <ClCompile Include="ref_gl\r_particles.c" />
-    <ClCompile Include="ref_gl\r_postprocess.c" />
-    <ClCompile Include="ref_gl\r_loadImages.c" />
-    <ClCompile Include="ref_gl\r_surfaces.c" />
-    <ClCompile Include="ref_gl\r_math.c" />
+    <ClCompile Include="renderer\r_vertexLight.c" />
+    <ClCompile Include="renderer\r_model.c" />
+    <ClCompile Include="renderer\r_particles.c" />
+    <ClCompile Include="renderer\r_postprocess.c" />
+    <ClCompile Include="renderer\r_loadImages.c" />
+    <ClCompile Include="renderer\r_surfaces.c" />
+    <ClCompile Include="renderer\r_math.c" />
     <ClCompile Include="client\cg_cin.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -710,11 +710,11 @@
     <ClInclude Include="client\curl\typecheck-gcc.h" />
     <ClInclude Include="client\curl\urlapi.h" />
     <ClInclude Include="client\music.h" />
-    <ClInclude Include="ref_gl\glcorearb.h" />
-    <ClInclude Include="ref_gl\khrplatform.h" />
-    <ClInclude Include="ref_gl\r_md3.h" />
-    <ClInclude Include="ref_gl\stb\stb_image.h" />
-    <ClInclude Include="ref_gl\stb\stb_image_write.h" />
+    <ClInclude Include="renderer\glcorearb.h" />
+    <ClInclude Include="renderer\khrplatform.h" />
+    <ClInclude Include="renderer\r_md3.h" />
+    <ClInclude Include="renderer\stb\stb_image.h" />
+    <ClInclude Include="renderer\stb\stb_image_write.h" />
     <ClInclude Include="win32\adl\adl_defines.h" />
     <ClInclude Include="win32\adl\adl_sdk.h" />
     <ClInclude Include="win32\adl\adl_structures.h" />
@@ -739,10 +739,10 @@
     <ClInclude Include="server\server.h" />
     <ClInclude Include="qcommon\unzip.h" />
     <ClInclude Include="client\vid.h" />
-    <ClInclude Include="ref_gl\qgl.h" />
-    <ClInclude Include="ref_gl\r_local.h" />
-    <ClInclude Include="ref_gl\r_model.h" />
-    <ClInclude Include="ref_gl\wglext.h" />
+    <ClInclude Include="renderer\qgl.h" />
+    <ClInclude Include="renderer\r_local.h" />
+    <ClInclude Include="renderer\r_model.h" />
+    <ClInclude Include="renderer\wglext.h" />
     <ClInclude Include="client\snd_loc.h" />
     <ClInclude Include="client\sound.h" />
     <ClInclude Include="win32\winquake.h" />

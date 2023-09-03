@@ -5,7 +5,7 @@
 
 // NV API SDK
 
-#include "../ref_gl/r_local.h"
+#include "../renderer/r_local.h"
 
 NvPhysicalGpuHandle hPhysicalGpu[NVAPI_MAX_PHYSICAL_GPUS];
 NvU32 physicalGpuCount = 0;
@@ -246,16 +246,29 @@ void R_GpuInfo_f(void) {
 				
 		// get gpu temperature
 		NV_GPU_THERMAL_SETTINGS	thermal;
+
 		thermal.version = NV_GPU_THERMAL_SETTINGS_VER_2;
-		ret = NvAPI_GPU_GetThermalSettings(hPhysicalGpu[i], 0, &thermal);
+		ret = NvAPI_GPU_GetThermalSettings(hPhysicalGpu[i], NVAPI_THERMAL_TARGET_ALL, &thermal);
 		if (ret != NVAPI_OK) {
 			NvAPI_GetErrorMessage(ret, string);
 			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetThermalSettings() fail: %\n", string);
 		}
-		else
-			Com_Printf("...temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius (%s)\n", thermal.sensor[i].currentTemp,
-				GLimp_NvApi_GetThermalController(thermal.sensor[i].controller));
+		else {
 
+			for (int j = 0; j < thermal.count; j++) {
+
+				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_GPU)
+					Com_Printf("...GPU temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius (%s)\n", thermal.sensor[j].currentTemp, GLimp_NvApi_GetThermalController(thermal.sensor[i].controller));
+				
+				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_MEMORY)
+					Com_Printf("...VRAM temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius \n", thermal.sensor[j].currentTemp);
+				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_POWER_SUPPLY)
+					Com_Printf("...Power Supply temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius \n", thermal.sensor[j].currentTemp);
+				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_BOARD)
+					Com_Printf("...Board temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius \n", thermal.sensor[j].currentTemp);
+			}
+
+		}
 		// get fans speed
 		NvU32 rpm = 0;
 		ret = NvAPI_GPU_GetTachReading(hPhysicalGpu[i], &rpm);

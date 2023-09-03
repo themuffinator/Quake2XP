@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include "client.h"
-#include "../ref_gl/r_local.h"
+#include "../renderer/r_local.h"
 
 typedef struct {
 	byte *data;

@@ -545,6 +545,7 @@ typedef struct {
 	uint	_linearDepth;
 	uint	_tex2d;
 	uint	_hdrLum[2];
+	uint	_gbuffer;
 }fbo_t;
 
 fbo_t fbo;

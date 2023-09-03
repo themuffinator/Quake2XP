@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/client.h"
 #include "../client/qmenu.h"
-#include "../ref_gl/r_local.h"
+#include "../renderer/r_local.h"
 
 extern qboolean drawIDlogo;
 extern cvar_t *vid_ref;

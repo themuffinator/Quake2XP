@@ -1,0 +1,689 @@
+/*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+/*
+Copyright (C) 2004-2014 Quake2xp Team.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+
+#include "r_local.h"
+
+// bindless cache
+void GL_SetBindlessTexture(int loc, uint64 handle) {
+
+	if (gl_state.bindlessCache[gl_state.currentBindlessLocation] == loc &&
+		gl_state.bindlessCache[gl_state.currentBindlessHandle] == handle)
+		return;
+
+	glUniformHandleui64ARB(loc, handle);
+
+	gl_state.bindlessCache[gl_state.currentBindlessLocation] = loc;
+	gl_state.bindlessCache[gl_state.currentBindlessHandle] = handle;
+}
+
+void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray) {
+
+	if (numIdx > 0) {
+		qglDrawElements(mode, numIdx, type, idxArray);
+		c_numDips++;
+	}
+}
+
+void GL_DrawArrays(int mode, int first, int count) {
+	
+	if (count > 0) {
+		qglDrawArrays(mode, first, count);
+		c_numDips++;
+	}
+}
+
+void GL_UpdateLightPos(vec3_t pos) {
+	
+	if (lightUniforms.pos[0] == pos[0] && lightUniforms.pos[1] == pos[1] && lightUniforms.pos[2] == pos[2])
+		return;
+
+	qglUniform3fv(U_LIGHT_POS, 1, pos);
+
+	lightUniforms.pos[0] = pos[0];
+	lightUniforms.pos[1] = pos[1];
+	lightUniforms.pos[2] = pos[2];
+}
+
+void GL_UpdateLightColor(vec3_t color) {
+
+	if (lightUniforms.color[0] == color[0] && lightUniforms.color[1] == color[1] && lightUniforms.color[2] == color[2])
+		return;
+
+	qglUniform4f(U_COLOR, color[0] * r_hdrLightScale->value, color[1] * r_hdrLightScale->value, color[2] * r_hdrLightScale->value, 1.0);
+
+	lightUniforms.color[0] = color[0];
+	lightUniforms.color[1] = color[1];
+	lightUniforms.color[2] = color[2];
+	lightUniforms.color[3] = 1.0;
+}
+
+/*
+ ==================
+ GL_Viewport
+ ==================
+*/
+void GL_Viewport(GLint x, GLint y, GLint w, GLint h) {
+
+	if (gl_state.viewportX != x && gl_state.viewportY != y && gl_state.viewportWidth != w && gl_state.viewportHeight != h) {
+
+		qglViewport(x, y, w, h);
+		gl_state.viewportX = x;
+		gl_state.viewportY = y;
+		gl_state.viewportWidth = w;
+		gl_state.viewportHeight = h;
+	}
+}
+
+/*
+=============
+GL_CullFace
+
+=============
+*/
+void GL_CullFace(GLenum mode) {
+	if (gl_state.cullMode != mode) {
+		qglCullFace(mode);
+		gl_state.cullMode = mode;
+	}
+}
+
+/*
+=============
+GL_FrontFace
+
+=============
+*/
+void GL_FrontFace(GLenum mode) {
+	if (gl_state.frontFace != mode) {
+		qglFrontFace(mode);
+		gl_state.frontFace = mode;
+	}
+}
+
+/*
+=============
+GL_DepthFunc
+
+=============
+*/
+void GL_DepthFunc(GLenum func) {
+	if (gl_state.depthFunc != func) {
+		qglDepthFunc(func);
+		gl_state.depthFunc = func;
+	}
+}
+
+/*
+=============
+GL_BlendFunc
+
+=============
+*/
+void GL_BlendFunc(GLenum src, GLenum dst) {
+	if (gl_state.blendSrc != src || gl_state.blendDst != dst) {
+		qglBlendFunc(src, dst);
+
+		gl_state.blendSrc = src;
+		gl_state.blendDst = dst;
+	}
+}
+
+/*
+===============
+GL_StencilFunc
+
+===============
+*/
+void GL_StencilFunc(GLenum func, GLint ref, GLuint mask) {
+	if (gl_state.stencilFunc != func || gl_state.stencilRef != ref || gl_state.stencilRefMask != mask) {
+		qglStencilFunc(func, ref, mask);
+
+		gl_state.stencilFunc = func;
+		gl_state.stencilRef = ref;
+		gl_state.stencilRefMask = mask;
+	}
+}
+
+/*
+==============
+GL_StencilOp
+
+==============
+*/
+void GL_StencilOp(GLenum fail, GLenum zFail, GLenum zPass) {
+	if (gl_state.stencilFail != fail || gl_state.stencilZFail != zFail || gl_state.stencilZPass != zPass) {
+		qglStencilOp(fail, zFail, zPass);
+
+		gl_state.stencilFail = fail;
+		gl_state.stencilZFail = zFail;
+		gl_state.stencilZPass = zPass;
+	}
+}
+
+void GL_StencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask){
+	if (gl_state.stencilFace != face || gl_state.stencilFunc != func || gl_state.stencilRef != ref || gl_state.stencilRefMask != mask) {
+		qglStencilFuncSeparate(face, func, ref, mask);
+
+		gl_state.stencilFace = face;
+		gl_state.stencilFunc = func;
+		gl_state.stencilRef = ref;
+		gl_state.stencilRefMask = mask;
+	}
+}
+
+void GL_StencilOpSeparate(GLenum face, GLenum fail, GLenum zFail, GLenum zPass) {
+	if (gl_state.stencilFace != face || gl_state.stencilFail != fail || gl_state.stencilZFail != zFail || gl_state.stencilZPass != zPass) {
+		qglStencilOpSeparate(face, fail, zFail, zPass);
+
+		gl_state.stencilFace = face;
+		gl_state.stencilFail = fail;
+		gl_state.stencilZFail = zFail;
+		gl_state.stencilZPass = zPass;
+	}
+}
+/*
+=============
+GL_ColorMask
+
+=============
+*/
+void GL_ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
+	if (gl_state.colorMask[0] != red || gl_state.colorMask[1] != green || gl_state.colorMask[2] != blue || gl_state.colorMask[3] != alpha) {
+		qglColorMask(red, green, blue, alpha);
+
+		gl_state.colorMask[0] = red;
+		gl_state.colorMask[1] = green;
+		gl_state.colorMask[2] = blue;
+		gl_state.colorMask[3] = alpha;
+	}
+}
+
+/*
+=============
+GL_StencilMask
+
+=============
+*/
+void GL_StencilMask(GLuint mask) {
+	if (gl_state.stencilMask != mask) {
+		qglStencilMask(mask);
+		gl_state.stencilMask = mask;
+	}
+}
+
+/*
+=============
+GL_DepthMask
+
+=============
+*/
+void GL_DepthMask(GLboolean flag) {
+	if (gl_state.depthMask != flag) {
+		qglDepthMask(flag);
+		gl_state.depthMask = flag;
+	}
+}
+
+void GL_AlphaFunc(GLenum func, GLclampf ref)
+{
+	if (gl_state.alphaFunc == func && gl_state.alphaRef == ref)
+		return;
+	gl_state.alphaFunc = func;
+	gl_state.alphaRef = ref;
+	qglAlphaFunc(func, ref);
+}
+/*
+=============
+GL_Scissor
+
+=============
+*/
+void GL_Scissor(GLint x, GLint y, GLint width, GLint height) {
+	if (gl_state.scissor[0] != x || gl_state.scissor[1] != y || gl_state.scissor[2] != width || gl_state.scissor[3] != height) {
+		qglScissor(x, y, width, height);
+
+		gl_state.scissor[0] = x;
+		gl_state.scissor[1] = y;
+		gl_state.scissor[2] = width;
+		gl_state.scissor[3] = height;
+	}
+}
+
+/*
+=============
+GL_DepthRange
+
+=============
+*/
+void GL_DepthRange(GLclampd n, GLclampd f) {
+	if (gl_state.depthRange[0] != n || gl_state.depthRange[1] != f) {
+		qglDepthRange(n, f);
+
+		gl_state.depthRange[0] = n;
+		gl_state.depthRange[1] = f;
+	}
+}
+
+
+/*
+=============
+GL_PolygonOffset
+
+=============
+*/
+void GL_PolygonOffset(GLfloat factor, GLfloat units) {
+	if (gl_state.polygonOffsetFactor != factor || gl_state.polygonOffsetUnits != units) {
+		qglPolygonOffset(factor, units);
+
+		gl_state.polygonOffsetFactor = factor;
+		gl_state.polygonOffsetUnits = units;
+	}
+}
+
+/*
+=============
+GL_DepthBoundsTest
+
+=============
+*/
+void GL_DepthBoundsTest(GLfloat mins, GLfloat maxs) {
+	if (gl_state.depthBoundsMins != mins || gl_state.depthBoundsMax != maxs) {
+		glDepthBoundsEXT(mins, maxs);
+
+		gl_state.depthBoundsMins = mins;
+		gl_state.depthBoundsMax = maxs;
+	}
+}
+
+/*
+===========
+GL_Enable
+
+Handles state of the common caps.
+===========
+*/
+void GL_Enable(GLenum cap) {
+	switch (cap) {
+	case GL_BLEND:
+		if (gl_state.blend)
+			return;
+		gl_state.blend = qtrue;
+		break;
+	case GL_CULL_FACE:
+		if (gl_state.cullFace)
+			return;
+		gl_state.cullFace = qtrue;
+		break;
+	case GL_DEPTH_TEST:
+		if (gl_state.depthTest)
+			return;
+		gl_state.depthTest = qtrue;
+		break;
+	case GL_DEPTH_BOUNDS_TEST_EXT:
+		if (gl_state.glDepthBoundsTest)
+		return;
+		gl_state.glDepthBoundsTest = qtrue;
+		break;
+	case GL_SCISSOR_TEST:
+		if (gl_state.scissorTest)
+			return;
+		gl_state.scissorTest = qtrue;
+		break;
+	case GL_STENCIL_TEST:
+		if (gl_state.stencilTest)
+			return;
+		gl_state.stencilTest = qtrue;
+		break;
+	case GL_POLYGON_OFFSET_FILL:
+		if (gl_state.polygonOffsetFill)
+			return;
+		gl_state.polygonOffsetFill = qtrue;
+		break;
+	case GL_LINE_SMOOTH:
+		if (gl_state.lineSmooth)
+			return;
+		gl_state.lineSmooth = qtrue;
+		break;
+	case GL_DEPTH_CLAMP:
+		if (gl_state.depthClamp)
+			return;
+		gl_state.depthClamp = qtrue;
+
+//	case GL_ALPHA_TEST:
+//		if (gl_state.alphaTest)
+//			return;
+//		gl_state.alphaTest = qtrue;
+
+	}
+
+	qglEnable(cap);
+}
+
+/*
+===========
+GL_Disable
+
+===========
+*/
+void GL_Disable(GLenum cap) {
+	switch (cap) {
+	case GL_BLEND:
+		if (!gl_state.blend)
+			return;
+		gl_state.blend = qfalse;
+		break;
+	case GL_CULL_FACE:
+		if (!gl_state.cullFace)
+			return;
+		gl_state.cullFace = qfalse;
+		break;
+	case GL_DEPTH_TEST:
+		if (!gl_state.depthTest)
+			return;
+		gl_state.depthTest = qfalse;
+		break;
+	case GL_DEPTH_BOUNDS_TEST_EXT:
+		if (!gl_state.glDepthBoundsTest)
+		return;
+		gl_state.glDepthBoundsTest = qfalse;
+		break;
+	case GL_SCISSOR_TEST:
+		if (!gl_state.scissorTest)
+			return;
+		gl_state.scissorTest = qfalse;
+		break;
+	case GL_STENCIL_TEST:
+		if (!gl_state.stencilTest)
+			return;
+		gl_state.stencilTest = qfalse;
+		break;
+	case GL_POLYGON_OFFSET_FILL:
+		if (!gl_state.polygonOffsetFill)
+			return;
+		gl_state.polygonOffsetFill = qfalse;
+		break;
+	case GL_LINE_SMOOTH:
+		if (!gl_state.lineSmooth)
+			return;
+		gl_state.lineSmooth = qfalse;
+		break;
+	case GL_DEPTH_CLAMP:
+		if (!gl_state.depthClamp)
+			return;
+		gl_state.depthClamp = qfalse;
+//	case GL_ALPHA_TEST:
+//		if (!gl_state.alphaTest)
+//			return;
+//		gl_state.alphaTest = qfalse;
+	}
+
+	qglDisable(cap);
+}
+
+/*
+===========
+GL_EnableVertexAttribArray
+
+===========
+*/
+void GL_EnableVertexAttribArray(GLenum cap) {
+	switch (cap) {
+	case ATT_POSITION:
+		if (gl_state.att_position)
+			return;
+		gl_state.att_position = qtrue;
+		break;
+	case ATT_NORMAL:
+		if (gl_state.att_normal)
+			return;
+		gl_state.att_normal = qtrue;
+		break;
+	case ATT_TANGENT:
+		if (gl_state.att_tangent)
+			return;
+		gl_state.att_tangent = qtrue;
+		break;
+	case ATT_BINORMAL:
+		if (gl_state.att_bitangent)
+			return;
+		gl_state.att_bitangent = qtrue;
+		break;
+	case ATT_COLOR:
+		if (gl_state.att_color)
+			return;
+		gl_state.att_color = qtrue;
+		break;
+	case ATT_TEX0:
+		if (gl_state.att_tex0)
+			return;
+		gl_state.att_tex0 = qtrue;
+		break;
+	case ATT_TEX1:
+		if (gl_state.att_tex1)
+			return;
+		gl_state.att_tex1 = qtrue;
+		break;
+	case ATT_TEX2:
+		if (gl_state.att_tex2)
+			return;
+		gl_state.att_tex2 = qtrue;
+		break;
+	}
+	qglEnableVertexAttribArray(cap);
+}
+
+/*
+===========
+GL_DisableVertexAttribArray
+
+===========
+*/
+void GL_DisableVertexAttribArray(GLenum cap) {
+	switch (cap) {
+	case ATT_POSITION:
+		if (!gl_state.att_position)
+			return;
+		gl_state.att_position = qfalse;
+		break;
+	case ATT_NORMAL:
+		if (!gl_state.att_normal)
+			return;
+		gl_state.att_normal = qfalse;
+		break;
+	case ATT_TANGENT:
+		if (!gl_state.att_tangent)
+			return;
+		gl_state.att_tangent = qfalse;
+		break;
+	case ATT_BINORMAL:
+		if (!gl_state.att_bitangent)
+			return;
+		gl_state.att_bitangent = qfalse;
+		break;
+	case ATT_COLOR:
+		if (!gl_state.att_color)
+			return;
+		gl_state.att_color = qfalse;
+		break;
+	case ATT_TEX0:
+		if (!gl_state.att_tex0)
+			return;
+		gl_state.att_tex0 = qfalse;
+		break;
+	case ATT_TEX1:
+		if (!gl_state.att_tex1)
+			return;
+		gl_state.att_tex1 = qfalse;
+		break;
+	case ATT_TEX2:
+		if (!gl_state.att_tex2)
+			return;
+		gl_state.att_tex2 = qfalse;
+		break;
+	}
+	qglDisableVertexAttribArray(cap);
+}
+
+/*
+** GL_Strings_f
+*/
+void GL_Strings_f(void) {
+	int			profile, i;
+	uint		n, major, minor;
+	const char* profileName[] = { "core", "compatibility" };
+	char* string = "";
+
+	Com_Printf("\n");
+	Com_Printf("GL_VENDOR:    "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
+	Com_Printf("GL_RENDERER:  "S_COLOR_GREEN"%s\n", gl_config.renderer_string);
+	Com_Printf("GL_VERSION:   "S_COLOR_GREEN"%s\n", gl_config.version_string);
+
+#ifdef _WIN32
+
+	string = (char*)glw_state.wglExtsString;
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+	qglGetIntegerv(GL_MAJOR_VERSION, &major);
+	qglGetIntegerv(GL_MINOR_VERSION, &minor);
+
+	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n\n", major, minor, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+	Com_Printf("WGL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n", string);
+#endif
+
+	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	Com_Printf("GL_EXTENSIONS:\n");
+	for (i = 0; i < n; i++) {
+		gl_config.extensions3_string = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions3_string);
+	}
+}
+
+
+/*
+** GL_SetDefaultState
+*/
+
+void GL_SetDefaultState(void) {
+
+	// font color
+	colorDefault[0] = 255;
+	colorDefault[1] = 255;
+	colorDefault[2] = 255;
+	colorDefault[3] = 255;
+
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0.f, 1.f);
+	gl_state.polygonOffsetFill = qfalse;
+	gl_state.polygonOffsetFactor = 0.f;
+	gl_state.polygonOffsetUnits = 1.f;
+
+	qglDepthRange(0.f, 1.f);
+	gl_state.depthRange[0] = 0.f;
+	gl_state.depthRange[1] = 1.f;
+
+	// scissor
+	qglDisable(GL_SCISSOR_TEST);
+	qglScissor(0, 0, vid.width, vid.height);
+	gl_state.scissorTest = qfalse;
+	gl_state.scissor[0] = 0;
+	gl_state.scissor[1] = 0;
+	gl_state.scissor[2] = vid.width;
+	gl_state.scissor[3] = vid.height;
+
+	// color mask
+	qglColorMask(1, 1, 1, 1);
+	gl_state.colorMask[0] = GL_TRUE;
+	gl_state.colorMask[1] = GL_TRUE;
+	gl_state.colorMask[2] = GL_TRUE;
+	gl_state.colorMask[3] = GL_TRUE;
+
+	// depth test
+	qglDisable(GL_DEPTH_TEST);
+	qglDepthFunc(GL_LEQUAL);
+	qglDepthMask(1);
+	gl_state.depthTest = qfalse;
+	gl_state.depthFunc = GL_LEQUAL;
+	gl_state.depthMask = qtrue;
+
+	// stencil test
+	qglDisable(GL_STENCIL_TEST);
+	qglStencilMask(255);
+	qglStencilFunc(GL_ALWAYS, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT_AND_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
+	gl_state.stencilTest = qfalse;
+	gl_state.stencilMask = 255;
+	gl_state.stencilFunc = GL_ALWAYS;
+	gl_state.stencilRef = 128;
+	gl_state.stencilRefMask = 255;
+	gl_state.stencilFace = GL_FRONT_AND_BACK;
+	gl_state.stencilFail = GL_KEEP;
+	gl_state.stencilZFail = GL_KEEP;
+	gl_state.stencilZPass = GL_KEEP;
+
+	// blending
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gl_state.blend = qfalse;
+	gl_state.blendSrc = GL_SRC_ALPHA;
+	gl_state.blendDst = GL_ONE_MINUS_SRC_ALPHA;
+
+	// face culling
+	qglDisable(GL_CULL_FACE);
+	qglCullFace(GL_BACK);
+	qglFrontFace(GL_CW);
+	gl_state.cullFace = qfalse;
+	gl_state.cullMode = GL_BACK;
+	gl_state.frontFace = GL_CW;
+
+	// depth bounds test
+	if (gl_state.depthBoundsTest) {
+		gl_state.glDepthBoundsTest = qfalse;
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+		glDepthBoundsEXT(0.f, 1.f);
+		gl_state.depthBoundsMins = 0.f;
+		gl_state.depthBoundsMax = 1.f;
+	}
+
+	gl_state.alphaTest = qfalse;
+	gl_state.alphaFunc = GL_GREATER;
+	gl_state.alphaRef = 0.666f;
+
+	lightUniforms.pos[0] = -999999;
+	lightUniforms.pos[1] = -999999;
+	lightUniforms.pos[2] = -999999;
+
+	lightUniforms.color[0] = -1.0;
+	lightUniforms.color[1] = -1.0;
+	lightUniforms.color[2] = -1.0;
+	lightUniforms.color[3] = -1.0;
+	
+	hdrAverageLuminance = 0;
+	hdrMaxLuminance = 0;
+	hdrTime = 0;
+	hdrKey = 0;
+
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	qglHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	GL_UpdateSwapInterval();
+}
