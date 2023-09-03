@@ -13,10 +13,10 @@ void main(void){
 
 	bool sky;
 	
-//	if(depth >= 0.9999)
+	if(depth >= 0.9999)
 		sky = false;
-//	else
-//		sky = true;
+	else
+		sky = true;
 
 	depth = depth * 0.5 + 0.5;
 

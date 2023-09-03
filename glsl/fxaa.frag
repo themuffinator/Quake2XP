@@ -771,7 +771,7 @@ void main(void)
     //   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
     //   0.25 - almost off
     //   0.00 - completely off
-    float QualitySubpix = 0.5;
+    float QualitySubpix = 0.75;
 
     // The minimum amount of local contrast required to apply algorithm.
     //   0.333 - too little (faster)
@@ -779,7 +779,7 @@ void main(void)
     //   0.166 - default
     //   0.125 - high quality 
     //   0.033 - very high quality (slower)
-    float QualityEdgeThreshold = 0.125;
+    float QualityEdgeThreshold = 0.033;
 
      // Only used on FXAA Quality.
     // This used to be the FXAA_QUALITY__EDGE_THRESHOLD_MIN define.
@@ -794,7 +794,7 @@ void main(void)
     //   will appear very dark in the green channel!
     //   Tune by looking at mostly non-green content,
     //   then start at zero and increase until aliasing is a problem.
-    float QualityEdgeThresholdMin = 0.0625;
+    float QualityEdgeThresholdMin = 0.0312;
 
     fragData = FxaaPixelShader(pos, u_ScreenTex, rcpFrame, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin);
 }

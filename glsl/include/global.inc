@@ -8,6 +8,7 @@ precision mediump float;
 precision mediump int;
 
 out vec4 fragData;	// out fragColor
+out vec4 glFragData[3]; // out mrt
 
 #define	CUTOFF_EPSILON	1.0 / 255.0 
 #define	PI				3.14159265358979323846 
