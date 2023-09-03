@@ -177,6 +177,34 @@ void R_InitVertexBuffers() {
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+//------------------------------------------- skybox
+	vec3_t v[8];
+	float size = 4096.0;
+	vec3_t org = { 0.0, 0.0, 0.0 };
+	VectorSet(v[0], org[0] - size, org[1] - size, org[2] + size);
+	VectorSet(v[1], org[0] + size, org[1] - size, org[2] + size);
+	VectorSet(v[2], org[0] + size, org[1] + size, org[2] + size);
+	VectorSet(v[3], org[0] - size, org[1] + size, org[2] + size);
+
+	VectorSet(v[4], org[0] - size, org[1] - size, org[2] - size);
+	VectorSet(v[5], org[0] + size, org[1] - size, org[2] - size);
+	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
+	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
+
+	qglGenBuffers(1, &vbo.vbo_skyBox);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_skyBox);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec3_t) * 8, v, GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &vao.sky);
+	glBindVertexArray(vao.sky);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_skyBox);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+
+	glBindVertexArray(0);
+
 	Com_Printf(S_COLOR_GREEN"ok\n\n");	
 }
 

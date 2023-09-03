@@ -802,6 +802,7 @@ GLuint	ibo_dynamic;
 GLuint	ibo_cube;
 GLuint	vbo_draw2d;
 GLuint	vbo_draw2dString;
+GLuint	vbo_skyBox;
 
 int xyz_offset;
 
@@ -829,6 +830,7 @@ typedef struct {
 	GLuint	quaterScreenQuad;
 	GLuint	draw2d;
 	GLuint	draw2dString;
+	GLuint	sky;
 }vao_t;
 
 vao_t vao;

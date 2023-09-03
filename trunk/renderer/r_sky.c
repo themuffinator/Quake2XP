@@ -48,29 +48,10 @@ void R_DrawSkyBox(){
 	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, r_levelSkyBox->handle);
-	vec3_t v[8];
-	float size = 4096.0;
-	vec3_t org = { 0.0, 0.0, 0.0 };
-	VectorSet(v[0], org[0] - size, org[1] - size, org[2] + size);
-	VectorSet(v[1], org[0] + size, org[1] - size, org[2] + size);
-	VectorSet(v[2], org[0] + size, org[1] + size, org[2] + size);
-	VectorSet(v[3], org[0] - size, org[1] + size, org[2] + size);
 
-	VectorSet(v[4], org[0] - size, org[1] - size, org[2] - size);
-	VectorSet(v[5], org[0] + size, org[1] - size, org[2] - size);
-	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
-	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
-
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, v);
-	GL_Disable(GL_CULL_FACE);
-
+	glBindVertexArray(vao.sky);
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
-
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	GL_Enable(GL_CULL_FACE);	
+	glBindVertexArray(0);
 }
 
 // convert q2 skybox sides to ogl cubemap faces
