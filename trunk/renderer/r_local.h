@@ -766,6 +766,7 @@ typedef struct {
 					viewportWidth,
 					viewportHeight;
 	vec4_t			fontColor;
+	int				numDrawBuffers;
 } glstate_t;
 
 typedef struct {
@@ -896,6 +897,7 @@ void GL_Disable (GLenum cap);
 void GL_EnableVertexAttribArray(GLenum cap);
 void GL_DisableVertexAttribArray(GLenum cap);
 void GL_Viewport(GLint x, GLint y, GLint w, GLint h);
+void GL_DrawBuffers(int num);
 
 #ifndef BIT
 #define BIT(num)				(1 << (num))

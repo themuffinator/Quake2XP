@@ -1009,7 +1009,7 @@ void R_RenderView (refdef_t *fd) {
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
-		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+		GL_DrawBuffers(1);
 		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -1739,13 +1739,13 @@ int R_Init(void *hinstance, void *hWnd)
 	qglDetachShader =				(PFNGLDETACHSHADERPROC)				qwglGetProcAddress("glDetachShader");
 	qglLinkProgram =				(PFNGLLINKPROGRAMPROC)				qwglGetProcAddress("glLinkProgram");
 	qglUseProgram =					(PFNGLUSEPROGRAMPROC)				qwglGetProcAddress("glUseProgram");
-	qglVertexAttribPointer =		(PFNGLVERTEXATTRIBPOINTERPROC)				qwglGetProcAddress("glVertexAttribPointer");
-	qglEnableVertexAttribArray =	(PFNGLENABLEVERTEXATTRIBARRAYPROC)		qwglGetProcAddress("glEnableVertexAttribArray");
-	qglDisableVertexAttribArray =	(PFNGLDISABLEVERTEXATTRIBARRAYPROC)		qwglGetProcAddress("glDisableVertexAttribArray");
-	qglBindAttribLocation =			(PFNGLBINDATTRIBLOCATIONPROC)			qwglGetProcAddress("glBindAttribLocation");
-	qglGetAttribLocation =			(PFNGLGETATTRIBLOCATIONPROC)				qwglGetProcAddress("glGetAttribLocation");
-	qglGetActiveUniform =			(PFNGLGETACTIVEUNIFORMPROC)					qwglGetProcAddress("glGetActiveUniform");
-	qglGetUniformLocation =			(PFNGLGETUNIFORMLOCATIONPROC)				qwglGetProcAddress("glGetUniformLocation");
+	qglVertexAttribPointer =		(PFNGLVERTEXATTRIBPOINTERPROC)		qwglGetProcAddress("glVertexAttribPointer");
+	qglEnableVertexAttribArray =	(PFNGLENABLEVERTEXATTRIBARRAYPROC)	qwglGetProcAddress("glEnableVertexAttribArray");
+	qglDisableVertexAttribArray =	(PFNGLDISABLEVERTEXATTRIBARRAYPROC)	qwglGetProcAddress("glDisableVertexAttribArray");
+	qglBindAttribLocation =			(PFNGLBINDATTRIBLOCATIONPROC)		qwglGetProcAddress("glBindAttribLocation");
+	qglGetAttribLocation =			(PFNGLGETATTRIBLOCATIONPROC)		qwglGetProcAddress("glGetAttribLocation");
+	qglGetActiveUniform =			(PFNGLGETACTIVEUNIFORMPROC)			qwglGetProcAddress("glGetActiveUniform");
+	qglGetUniformLocation =			(PFNGLGETUNIFORMLOCATIONPROC)		qwglGetProcAddress("glGetUniformLocation");
 	qglUniform1f =					(PFNGLUNIFORM1FPROC)				qwglGetProcAddress("glUniform1f");
 	qglUniform2f =					(PFNGLUNIFORM2FPROC)				qwglGetProcAddress("glUniform2f");
 	qglUniform3f =					(PFNGLUNIFORM3FPROC)				qwglGetProcAddress("glUniform3f");
@@ -2072,7 +2072,7 @@ void R_BeginFrame()
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Nvidia Nsight Graphics frame frame terminator
-	//qglFlush();
+	qglFlush();
 
 	qglDrawBuffer( GL_BACK );
 

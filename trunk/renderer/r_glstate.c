@@ -108,6 +108,13 @@ void GL_CullFace(GLenum mode) {
 	}
 }
 
+void GL_DrawBuffers(int num) {
+	if (gl_state.numDrawBuffers != num) {
+		qglDrawBuffers(num, drawbuffers);
+		gl_state.numDrawBuffers = num;
+	}
+}
+
 /*
 =============
 GL_FrontFace
@@ -664,6 +671,8 @@ void GL_SetDefaultState(void) {
 		gl_state.depthBoundsMins = 0.f;
 		gl_state.depthBoundsMax = 1.f;
 	}
+	
+	gl_state.numDrawBuffers = 1;
 
 	gl_state.alphaTest = qfalse;
 	gl_state.alphaFunc = GL_GREATER;

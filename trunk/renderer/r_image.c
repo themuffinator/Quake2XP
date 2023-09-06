@@ -633,6 +633,9 @@ void GL_ImageList_f(void)
 		}
 
 		switch (image->intFormat) {
+		case GL_SRGB8:
+			Com_Printf("SRGB8  ");
+			break;
 		case GL_RGBA8:
 			Com_Printf("RGBA8  ");
 			break;

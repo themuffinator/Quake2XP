@@ -1259,7 +1259,7 @@ void Mod_BuildVertexCache() {
 	glDeleteVertexArrays(1, &vao.bsp);
 	glGenVertexArrays(1, &vao.bsp);
 	glBindVertexArray(vao.bsp);
-
+	qglObjectLabel(GL_VERTEX_ARRAY, vao.bsp, strlen("***vaoBsp***"), "***vaoBsp***");
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -1285,7 +1285,7 @@ void Mod_BuildVertexCache() {
 	glDeleteVertexArrays(1, &vao.depthBSP);
 	glGenVertexArrays(1, &vao.depthBSP);
 	glBindVertexArray(vao.depthBSP);
-
+	qglObjectLabel(GL_VERTEX_ARRAY, vao.depthBSP, strlen("***vaoDepthBSP***"), "***vaoDepthBSP***");
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
