@@ -832,6 +832,7 @@ typedef struct {
 	GLuint	draw2d;
 	GLuint	draw2dString;
 	GLuint	sky;
+	GLuint	tessStream;
 }vao_t;
 
 vao_t vao;
@@ -872,6 +873,7 @@ vec2_t	texCoord[MAX_2D_VERTS];
 vec2_t	texCoord1[MAX_2D_VERTS];
 vec2_t	vertCoord[MAX_2D_VERTS];
 vec4_t	colorCoord[MAX_2D_VERTS];
+
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
@@ -915,13 +917,23 @@ extern glstate_t gl_state;
 #define VA_SetElem3v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2])
 #define VA_SetElem4v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2],(v)[3]=(a)[3])
 
-#define MAX_VERTICES		16384
-#define MAX_INDICES			65536
+#define MAX_VERTICES	65536
+#define MAX_INDICES		MAX_VERTICES * 3
 
 #define MAX_STREAM_VBO_VERTS MD3_MAX_VERTS * MD3_MAX_MESHES
-#define MAX_STREAM_IBO_IDX	 MD3_MAX_VERTS * MD3_MAX_MESHES
+#define MAX_STREAM_IBO_IDX	 MAX_STREAM_VBO_VERTS *3
 
 #define CUBE_INDICES 36
+
+typedef struct tess_s {
+
+	vec3_t	xyz[MAX_VERTICES];
+	vec2_t	st[MAX_VERTICES];
+	vec4_t	rgb[MAX_VERTICES];
+	uint	idxBuff[MAX_INDICES];
+} tess_t;
+
+tess_t tess;
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;

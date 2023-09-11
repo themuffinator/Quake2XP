@@ -70,15 +70,6 @@ extern cvar_t *cl_decals;
 
 void CL_FreeDecal(decals_t * dl);
 
-#define MAX_DECAL_ARRAY_VERTS 4096
-#define MAX_DECAL_INDICES     8192
-
-vec4_t	DecalColorArray		[MAX_DECAL_ARRAY_VERTS];
-vec2_t	DecalTexCoordArray	[MAX_DECAL_ARRAY_VERTS];
-vec3_t	DecalVertexArray	[MAX_DECAL_ARRAY_VERTS];
-vec3_t	DecalNormalArray	[MAX_DECAL_INDICES /3];
-index_t	DecalIdxArray		[MAX_DECAL_INDICES];
-
 void R_RenderDecals(qboolean twoside)
 {
     decals_t    *dl, *next, *active; 
@@ -95,14 +86,8 @@ void R_RenderDecals(qboolean twoside)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-    qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-    qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, DecalVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, DecalTexCoordArray);
-    qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
-     
+	glBindVertexArray(vao.tessStream);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 
 	GL_BindProgram(colorProgram);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -122,13 +107,12 @@ void R_RenderDecals(qboolean twoside)
                continue;
 
 		 // look if it has a bad type
-          if (dl->type < 0 || dl->type >= DECAL_MAX)
-		  {
+          if (dl->type < 0 || dl->type >= DECAL_MAX){
 			  CL_FreeDecal(dl);
               continue;
 		  }
        	
-		  if( R_CullSphere(dl->org, dl->size * 1.3) )
+		  if(R_CullSphere(dl->org, dl->size * 1.3))
 				continue;
 		
 		  if (!twoside && (dl->flags & DF_TWOSIDE))
@@ -141,9 +125,9 @@ void R_RenderDecals(qboolean twoside)
 		endLerp *= 250.0;
 
 		for (i = 0; i < 3; i++) {
+
 			decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
-			//hdr - negative color clamp
-			decalColor[i] = clamp(decalColor[i], 0.0, 3.0);
+			decalColor[i] = clamp(decalColor[i], 0.0, 3.0); //hdr - negative color clamp
 			
 			if (decalColor[i] < dl->endColor[i])
 				decalColor[i] = dl->endColor[i];
@@ -156,7 +140,13 @@ void R_RenderDecals(qboolean twoside)
         if (texture != texId || dl->flags != oldFlag) {
         // flush array if new texture/blend
         if (numIndices) {
-			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
+
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);
+			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.idxBuff);
+
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
 			c_decalsTris += numIndices/3;
 			numVertices = 0;
 			numIndices = 0;
@@ -171,51 +161,60 @@ void R_RenderDecals(qboolean twoside)
 			GL_Disable(GL_CULL_FACE);
         }
 
-     //
-     // array is full, flush to screen
-     //
-     if ((numIndices >= MAX_DECAL_INDICES - (dl->numverts - 2) * 3) || 
-		 (numVertices >= MAX_DECAL_ARRAY_VERTS - dl->numverts)) {
-          
-		 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-         c_decalsTris = numIndices/3;
-		 numVertices = 0;
-         numIndices = 0;
-     }
+		if ((numIndices >= MAX_INDICES - (dl->numverts - 2) * 3) || (numVertices >= MAX_VERTICES - dl->numverts)) {
 
-     // set vertices
-          for (x = 0; x < dl->numverts; x++) {
-               DecalColorArray      [x + numVertices][0] = decalColor[0];
-               DecalColorArray      [x + numVertices][1] = decalColor[1];
-               DecalColorArray      [x + numVertices][2] = decalColor[2];
-               DecalColorArray      [x + numVertices][3] = decalAlpha;
+			 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
+			 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
+			 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);
+			 qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.idxBuff);
 
-               DecalTexCoordArray   [x + numVertices][0] = dl->stcoords[x][0];
-               DecalTexCoordArray   [x + numVertices][1] = dl->stcoords[x][1];
+			 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
+			 c_decalsTris = numIndices/3;
+			 numVertices = 0;
+			 numIndices = 0;
+		}
 
-               DecalVertexArray     [x + numVertices][0] = dl->verts[x][0];
-               DecalVertexArray     [x + numVertices][1] = dl->verts[x][1];
-               DecalVertexArray     [x + numVertices][2] = dl->verts[x][2];
-          }
+		// set vertices
+		for (x = 0; x < dl->numverts; x++) {
 
-     // set indices
-     for (x = 0; x < dl->numverts - 2; x++) {
-		 DecalIdxArray[numIndices+x*3+0] = numVertices;
-		 DecalIdxArray[numIndices+x*3+1] = numVertices + x + 1;
-		 DecalIdxArray[numIndices+x*3+2] = numVertices + x + 2;
-     }
-     numVertices += dl->numverts;
-     numIndices += (dl->numverts - 2) * 3;
+			tess.xyz[x + numVertices][0] = dl->verts[x][0];
+			tess.xyz[x + numVertices][1] = dl->verts[x][1];
+			tess.xyz[x + numVertices][2] = dl->verts[x][2];
+
+			tess.st[x + numVertices][0] = dl->stcoords[x][0];
+			tess.st[x + numVertices][1] = dl->stcoords[x][1];
+
+			tess.rgb[x + numVertices][0] = decalColor[0];
+			tess.rgb[x + numVertices][1] = decalColor[1];
+			tess.rgb[x + numVertices][2] = decalColor[2];
+			tess.rgb[x + numVertices][3] = decalAlpha;
+		}
+
+		// set indices
+		for (x = 0; x < dl->numverts - 2; x++) {
+			tess.idxBuff[numIndices+x*3+0] = numVertices;
+			tess.idxBuff[numIndices+x*3+1] = numVertices + x + 1;
+			tess.idxBuff[numIndices+x*3+2] = numVertices + x + 2;
+		}
+		numVertices += dl->numverts;
+		numIndices += (dl->numverts - 2) * 3;
      }     
 
      // draw the rest
 	 if (numIndices){
-		 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
+
+		 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
+		 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
+		 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);
+		 qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.idxBuff);
+
+		 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
 		c_decalsTris += numIndices/3;
 	 }
-    qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-    qglDisableVertexAttribArray(ATT_COLOR);
+
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	GL_Disable(GL_BLEND);
 	GL_Disable(GL_POLYGON_OFFSET_FILL);
 	GL_Enable(GL_CULL_FACE);

@@ -102,7 +102,7 @@ void R_InitVertexBuffers() {
 	VA_SetElem2(tmpVerts[1], vid.width, vid.height);
 	VA_SetElem2(tmpVerts[2], vid.width, 0);
 	VA_SetElem2(tmpVerts[3], 0, 0);
-
+	
 	qglGenBuffers(1, &vbo.vbo_fullScreenQuad);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
@@ -161,10 +161,12 @@ void R_InitVertexBuffers() {
 
 	qglGenBuffers(1, &vbo.vbo_dynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	qglObjectLabel(GL_VERTEX_ARRAY, vbo.vbo_dynamic, strlen("***vboDinamic***"), "***vboDinamic***");
 	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_STREAM_DRAW);
 
 	qglGenBuffers(1, &vbo.ibo_dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
+	qglObjectLabel(GL_VERTEX_ARRAY, vbo.ibo_dynamic, strlen("***iboDinamic***"), "***iboDinamic***");
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_STREAM_DRAW);
 
 	glGenVertexArrays(1, &vao.dynamic);
@@ -175,12 +177,29 @@ void R_InitVertexBuffers() {
 	
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+
+//-------------
+	glGenVertexArrays(1, &vao.tessStream);
+	glBindVertexArray(vao.tessStream);
+	qglObjectLabel(GL_VERTEX_ARRAY, vao.tessStream, strlen("***vaoTessStream***"), "***vaoTessStream***");
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->xyz);
+	qglVertexAttribPointer(ATT_TEX0,	 2, GL_FLOAT, qfalse, 0, ((tess_t *)0)->st);
+	qglVertexAttribPointer(ATT_COLOR,	 4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->rgb);
 	
 	glBindVertexArray(0);
+
 //------------------------------
 	qglGenBuffers(1, &vbo.ibo_cube);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_idx), cube_idx, GL_STATIC_DRAW);
+	qglObjectLabel(GL_BUFFER, vbo.ibo_cube, strlen("***ibo_cube***"), "***ibo_cube***");
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
