@@ -516,8 +516,6 @@ void Mod_LoadLighting(lump_t * l) {
 	loadmodel->lightData = (byte*)Hunk_Alloc(l->filelen);
 	Q_memcpy(loadmodel->lightData, mod_base + l->fileofs, l->filelen);
 
-	loadmodel->memorySize += l->filelen;
-
 	loadmodel->lightmap_scale = -1;
 
 	if ((s = strstr(CM_EntityString(), "\"lightmap_scale\""))) {  // resolve lightmap scale
@@ -550,7 +548,6 @@ void Mod_LoadVisibility(lump_t * l) {
 	}
 	
 	loadmodel->vis = (dvis_t*)Hunk_Alloc(l->filelen);
-	loadmodel->memorySize += l->filelen;
 	Q_memcpy(loadmodel->vis, mod_base + l->fileofs, l->filelen);
 
 	loadmodel->vis->numclusters = LittleLong(loadmodel->vis->numclusters);
@@ -582,8 +579,6 @@ void Mod_LoadVertexes(lump_t * l) {
 
 	loadmodel->vertexes = out;
 	loadmodel->numVertexes = count;
-
-	loadmodel->memorySize += count * sizeof(*out);
 
 	for (i = 0; i < count; i++, in++, out++) {
 		out->position[0] = LittleFloat(in->point[0]);
@@ -630,8 +625,6 @@ void Mod_LoadsubModels(lump_t * l) {
 	loadmodel->subModels = out;
 	loadmodel->numSubModels = count;
 
-	loadmodel->memorySize += count * sizeof(*out);
-
 	for (i = 0; i < count; i++, in++, out++) {
 		for (j = 0; j < 3; j++) {	// spread the mins / maxs by a pixel
 			out->mins[j] = LittleFloat(in->mins[j]) - 1;
@@ -664,8 +657,6 @@ void Mod_LoadEdges(lump_t * l) {
 
 	loadmodel->edges = out;
 	loadmodel->numEdges = count;
-
-	loadmodel->memorySize += count * sizeof(*out);
 
 	for (i = 0; i < count; i++, in++, out++) {
 		out->v[0] = (unsigned short)LittleShort(in->v[0]);
@@ -735,7 +726,6 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 	loadmodel->numTexInfo = count;
 	loadmodel->texInfo = out = (mtexInfo_t*)Hunk_Alloc(count * sizeof(*out));
-	loadmodel->memorySize += count * sizeof(*out);
 
 	uint texCount = 0, nt = 0;
 	for (z = 0; z < count; z++) 
@@ -1020,8 +1010,6 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 	poly->flags = fa->flags;
 	fa->polys = poly;
 	poly->numVerts = numVerts;
-
-	currentmodel->memorySize += sizeof(glpoly_t) + (numVerts - 4) * VERTEXSIZE * sizeof(float);
 
 	// reserve space for neighbour pointers
 	// FIXME: pointers don't need to be 4 bytes
@@ -1313,7 +1301,6 @@ void Mod_LoadFaces(lump_t * l) {
 
 	loadmodel->surfaces = out;
 	loadmodel->numSurfaces = count;
-	loadmodel->memorySize += count * sizeof(*out);
 
 	currentmodel = loadmodel;
 	surf = currentmodel->surfaces;
@@ -1550,8 +1537,6 @@ void Mod_LoadNodes(lump_t * l) {
 	count = l->filelen / sizeof(*in);
 	out = (mnode_t*)Hunk_Alloc(count * sizeof(*out));
 
-	loadmodel->memorySize += count * sizeof(*out);
-
 	loadmodel->nodes = out;
 	loadmodel->numNodes = count;
 
@@ -1598,8 +1583,6 @@ void Mod_LoadLeafs(lump_t *l) {
 
 	count = l->filelen / sizeof(*in);
 	out = (mleaf_t *)Hunk_Alloc(count * sizeof(*out));
-
-	loadmodel->memorySize += count * sizeof(*out);
 
 	loadmodel->leafs = out;
 	loadmodel->numLeafs = count;
@@ -1664,8 +1647,6 @@ void Mod_LoadMarksurfaces(lump_t * l) {
 	loadmodel->markSurfaces = out;
 	loadmodel->numMarkSurfaces = count;
 
-	loadmodel->memorySize += count * sizeof(*out);
-
 	for (i = 0; i < count; i++) {
 		j = (ushort)LittleShort(in[i]);
 		out[i] = loadmodel->surfaces + j;
@@ -1692,8 +1673,6 @@ void Mod_LoadSurfedges(lump_t * l) {
 			loadmodel->name, count);
 
 	out = (int*)Hunk_Alloc(count * sizeof(*out));
-
-	loadmodel->memorySize += count * sizeof(*out);
 
 	loadmodel->surfEdges = out;
 	loadmodel->numSurfEdges = count;
@@ -1724,8 +1703,6 @@ void Mod_LoadPlanes(lump_t * l) {
 
 	loadmodel->planes = out;
 	loadmodel->numPlanes = count;
-
-	loadmodel->memorySize += count * sizeof(*out);
 
 	for (i = 0; i < count; i++, in++, out++) {
 		bits = 0;
@@ -1811,7 +1788,6 @@ static qboolean R_LoadXPLM(void) {
 
 	loadmodel->lightData = (byte *)Hunk_Alloc(len);
 	Q_memcpy(loadmodel->lightData, pB, len);
-	loadmodel->memorySize += len;
 	loadmodel->useXPLM = qtrue;
 
 	FS_FreeFile(buf);
@@ -1944,8 +1920,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 	R_ClearLightSurf();
 	DeleteShadowVertexBuffers();
 	R_ClearWorldLights();
-	
-	loadmodel->memorySize = 0;
+
 	loadmodel->type = mod_brush;
 
 	if (loadmodel != mod_known)
@@ -2144,28 +2119,6 @@ Mod_LoadAliasModel
 ==================
 */
 
-void InitModLights(model_t* mod)
-{
-	int		i;
-	for (i = 0; i < MAX_MODEL_LIGHTS; i++)
-	{	/// Set defaults
-		mod->mod_lights[i].mesh = -1;
-		mod->mod_lights[i].tri = 0;
-		mod->mod_lights[i]._cone = 0;
-		mod->mod_lights[i].distance = 0;
-		VectorClear(mod->mod_lights[i].angles);
-		VectorClear(mod->mod_lights[i].rspeed);
-		VectorSet(mod->mod_lights[i].color, 1, 1, 1);
-		mod->mod_lights[i].style = mod->mod_lights[i].cl_style = 0;
-		mod->mod_lights[i].filtercube_end = mod->mod_lights[i].filtercube_start = 0;
-		mod->mod_lights[i].framerate = 0;
-		mod->mod_lights[i].radius = 64;
-		mod->mod_lights[i].skinbits = 0;
-		mod->mod_lights[i].frame_start = 0;
-		mod->mod_lights[i].frame_end = 0x7FFFFFFF;
-	}
-}
-
 void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 
 	char	*token;
@@ -2261,9 +2214,6 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 	mod->binormals	= binormals = (byte*)Hunk_Alloc(cx);
 	mod->tangents	= tangents	= (byte*)Hunk_Alloc(cx);
 	mod->normals	= normals	= Hunk_Alloc(cx2);
-
-	mod->memorySize += cx *2;
-	mod->memorySize += cx2;
 
 	//for all frames
 	for (i = 0; i < pheader->num_frames; i++) {
@@ -2382,9 +2332,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	int				k, l;
 	char			nam[MAX_OSPATH];
 	char			*buff;
-	uint			loadMem = 0;
-
-	mod->memorySize = 0;
 
 	pinmodel = (dmdl_t *)buffer;
 
@@ -2393,7 +2340,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		VID_Error(ERR_DROP, "%s has wrong version number (%i should be %i)", mod->name, version, ALIAS_VERSION);
 
 	pheader = (dmdl_t*)Hunk_Alloc(LittleLong(pinmodel->ofs_end));
-	mod->memorySize += LittleLong(pinmodel->ofs_end);
 
 	// byte swap the header fields and sanity check
 	for (i = 0; i < sizeof(dmdl_t)* 0.25; i++)
@@ -2416,8 +2362,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 
 	mod->flags = 0;
-	
-	InitModLights(mod);
 
 	// set default render fx values
 	mod->glowCfg[0] = 0.3;
@@ -2459,7 +2403,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	// find neighbours
 	mod->neighbours = (neighbors_t*)malloc(pheader->num_tris * sizeof(neighbors_t));
 	Mod_BuildTriangleNeighbors(mod->neighbours, pouttri, pheader->num_tris);
-	mod->memorySize += pheader->num_tris * sizeof(neighbors_t);
+
 	//
 	// load the frames
 	//
@@ -2533,7 +2477,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 
 	// Calculate texcoords for triangles (for compute tangents and binormals)
-	mod->memorySize += pheader->num_st * sizeof(fstvert_t);
 	pinst = (dstvert_t *)((byte *)pinmodel + pheader->ofs_st);
 	poutst = (fstvert_t*)Hunk_Alloc(pheader->num_st * sizeof(fstvert_t));
 	iw = 1.0 / pheader->skinwidth;
@@ -2617,12 +2560,8 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer) {
 	dsprite_t *sprin, *sprout;
 	int i;
 
-	mod->memorySize = 0;
-
 	sprin = (dsprite_t *)buffer;
 	sprout = (dsprite_t*)Hunk_Alloc(modfilelen);
-
-	mod->memorySize += modfilelen;
 
 	sprout->ident = LittleLong(sprin->ident);
 	sprout->version = LittleLong(sprin->version);

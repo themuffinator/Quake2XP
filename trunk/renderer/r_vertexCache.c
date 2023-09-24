@@ -188,11 +188,17 @@ void R_InitVertexBuffers() {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_COLOR);
+	qglEnableVertexAttribArray(ATT_TANGENT);
+	qglEnableVertexAttribArray(ATT_BINORMAL);
+	qglEnableVertexAttribArray(ATT_NORMAL);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->xyz);
-	qglVertexAttribPointer(ATT_TEX0,	 2, GL_FLOAT, qfalse, 0, ((tess_t *)0)->st);
-	qglVertexAttribPointer(ATT_COLOR,	 4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->rgb);
-	
+	qglVertexAttribPointer(ATT_POSITION,	3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->xyz);
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, ((tess_t *)0)->st);
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->rgb);
+	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->tangent);
+	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->binormal);
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->normal);
+
 	glBindVertexArray(0);
 
 //------------------------------

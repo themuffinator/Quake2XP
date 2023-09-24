@@ -930,6 +930,9 @@ typedef struct tess_s {
 	vec3_t	xyz[MAX_VERTICES];
 	vec2_t	st[MAX_VERTICES];
 	vec4_t	rgb[MAX_VERTICES];
+	vec3_t	tangent[MAX_VERTICES];
+	vec3_t	binormal[MAX_VERTICES];
+	vec3_t	normal[MAX_VERTICES];
 	uint	idxBuff[MAX_INDICES];
 } tess_t;
 
