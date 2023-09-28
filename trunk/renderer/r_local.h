@@ -346,7 +346,6 @@ cvar_t	*r_debug;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
 
-cvar_t	*r_fontsShadow;
 cvar_t	*r_hudLighting;
 cvar_t	*r_bump2D;
 
@@ -551,6 +550,9 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	uint *pixdata);
 //====================================================================
 mleaf_t* Mod_PointInLeaf(vec3_t p, model_t* model);
+
+void R_FillConsoleSymbols(int x, int y, float scale_x, float scale_y, unsigned char num);
+void R_DrawConsoleSymbols();
 
 #define MAX_POLY_VERT		128
 #define	MAX_BATCH_SURFS		21845
@@ -837,44 +839,6 @@ typedef struct {
 
 vao_t vao;
 
-// 2D VBO stuff
-#define MAX_DRAW_STRING_LENGTH 512
-#define QUADVERT 4
-index_t	ibo_quadString[6 * MAX_DRAW_STRING_LENGTH];
-
-#define	VERT2D_POS		((byte *)(NULL)+0)
-#define	VERT2D_TC		((byte *)(NULL)+8)
-#define VERT2D_COLOR	((byte *)(NULL)+16)
-
-///	fill array
-/// xy0, st0, rgba0
-/// xy1, st1, rgba1
-/// xy2, st2, rgba2
-/// xy3, st3, rgba3
-
-typedef struct {
-	vec2_t pos;
-	vec2_t texCoord;
-	vec4_t colorCoord;
-}vertex2d_t;
-
-typedef struct {
-	vertex2d_t data[QUADVERT];
-}tess2d_t;
-tess2d_t tess2d;
-
-typedef struct {
-	vertex2d_t data[QUADVERT * MAX_DRAW_STRING_LENGTH];
-}tess2dString_t;
-tess2dString_t tess2dString;
-
-#define MAX_2D_VERTS 2048 //QUADVERT * MAX_DRAW_STRING_LENGTH
-vec2_t	texCoord[MAX_2D_VERTS];
-vec2_t	texCoord1[MAX_2D_VERTS];
-vec2_t	vertCoord[MAX_2D_VERTS];
-vec4_t	colorCoord[MAX_2D_VERTS];
-
-
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
 
@@ -937,6 +901,55 @@ typedef struct tess_s {
 } tess_t;
 
 tess_t tess;
+
+
+// 2D VBO stuff
+#define MAX_DRAW_STRING_LENGTH 512
+#define QUADVERT 4
+index_t	ibo_quadString[MAX_VERTICES];
+
+#define	VERT2D_POS		((byte *)(NULL)+0)
+#define	VERT2D_TC		((byte *)(NULL)+8)
+#define VERT2D_COLOR	((byte *)(NULL)+16)
+
+///	fill array
+/// xy0, st0, rgba0
+/// xy1, st1, rgba1
+/// xy2, st2, rgba2
+/// xy3, st3, rgba3
+
+typedef struct {
+	vec2_t pos;
+	vec2_t texCoord;
+	vec4_t colorCoord;
+}vertex2d_t;
+
+typedef struct {
+	vertex2d_t data[QUADVERT];
+}tess2d_t;
+tess2d_t tess2d;
+
+typedef struct {
+	vertex2d_t data[QUADVERT * MAX_DRAW_STRING_LENGTH];
+}tess2dString_t;
+tess2dString_t tess2dString;
+
+#define MAX_2D_VERTS 2048 //QUADVERT * MAX_DRAW_STRING_LENGTH
+vec2_t	texCoord[MAX_VERTICES];
+vec2_t	texCoord1[MAX_VERTICES];
+vec2_t	vertCoord[MAX_VERTICES];
+vec4_t	colorCoord[MAX_VERTICES];
+
+#define MAX_2DVERTS (SHRT_MAX  / 6)
+typedef struct consoleText_s {
+
+	vec2_t	tc[MAX_2DVERTS];
+	vec2_t	verts[MAX_2DVERTS];
+	vec4_t	color[MAX_2DVERTS];
+	uint	counter, quadCounter;
+} consoleText_t;
+
+consoleText_t consoleText;
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;

@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ** QGL_Shutdown() - unloads libraries, NULLs function pointers
 */
 #include <float.h>
-#include "../ref_gl/r_local.h"
+#include "../renderer/r_local.h"
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif

@@ -41,7 +41,7 @@ void R_InitVertexBuffers() {
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
 	qglObjectLabel(GL_BUFFER, vbo.ibo_quad, strlen("***ibo_quad***"), "***ibo_quad***");
 
-	for (i = 0; i < MAX_DRAW_STRING_LENGTH * 4; i += 4)
+	for (i = 0; i < SHRT_MAX; i += 4)
 	{
 		ibo_quadString[idx++] = i + 0;
 		ibo_quadString[idx++] = i + 1;
@@ -123,18 +123,18 @@ void R_InitVertexBuffers() {
 
 	qglGenBuffers(1, &vbo.vbo_aliasShadow);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
-	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec4_t), 0, GL_STREAM_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW);
 
 	qglGenBuffers(1, &vbo.ibo_md2Shadow);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md2Shadow);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_STREAM_DRAW);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
 
 	for (i = 0; i < MD3_MAX_VERTS * MD3_MAX_MESHES; i++)
 		ibo_md3Shadow[i] = i;
 
 	qglGenBuffers(1, &vbo.ibo_md3Shadow);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md3Shadow);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, i * sizeof(uint), ibo_md3Shadow, GL_STATIC_DRAW);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, i * sizeof(uint), ibo_md3Shadow, GL_DYNAMIC_DRAW);
 
 //--------------------
 	glGenVertexArrays(1, &vao.md2Shadow);
@@ -162,12 +162,12 @@ void R_InitVertexBuffers() {
 	qglGenBuffers(1, &vbo.vbo_dynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 	qglObjectLabel(GL_VERTEX_ARRAY, vbo.vbo_dynamic, strlen("***vboDinamic***"), "***vboDinamic***");
-	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_STREAM_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_DYNAMIC_DRAW);
 
 	qglGenBuffers(1, &vbo.ibo_dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
 	qglObjectLabel(GL_VERTEX_ARRAY, vbo.ibo_dynamic, strlen("***iboDinamic***"), "***iboDinamic***");
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_STREAM_DRAW);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
 
 	glGenVertexArrays(1, &vao.dynamic);
 	glBindVertexArray(vao.dynamic);

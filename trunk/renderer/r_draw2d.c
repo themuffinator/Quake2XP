@@ -92,20 +92,6 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	VA_SetElem2(texCoord[2], fcol + size, frow + size);
 	VA_SetElem2(texCoord[3], fcol, frow + size);
 
-	//====== draw font shadow
-	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26 && r_fontsShadow->integer) { // fields and sliders filter
-		VA_SetElem2(vertCoord[0], x2, y2);
-		VA_SetElem2(vertCoord[1], x2 + 8 * scale_x, y2);
-		VA_SetElem2(vertCoord[2], x2 + 8 * scale_x, y2 + 8 * scale_y);
-		VA_SetElem2(vertCoord[3], x2, y + 8 * scale_y);
-
-		for (int i = 0; i < 4; i++)
-			VA_SetElem4(colorCoord[i], 0.0, 0.0, 0.0, 1.0);
-
-		GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
-	}
-
-	//====== draw regular font
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + 8 * scale_x, y);
 	VA_SetElem2(vertCoord[2], x + 8 * scale_x, y + 8 * scale_y);
@@ -119,6 +105,77 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_COLOR);
+}
+
+void R_FillConsoleSymbols(int x, int y, float scale_x, float scale_y, unsigned char num)
+{
+	int row, col;
+	float frow, fcol, size;
+
+	num &= 255;
+
+	if ((num & 127) == 32)
+		return;					// space
+
+	if (y <= -8 * scale_y)
+		return;					// totally off screen
+
+	// shadow offcets
+	int x2 = x + 2;
+	int y2 = y + 2;
+
+	row = num >> 4;
+	col = num & 15;
+
+	frow = row * 0.0625;
+	fcol = col * 0.0625;
+	size = 0.0625;
+
+	consoleText.quadCounter = consoleText.counter << 2;
+
+	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 0], fcol, frow);
+	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 1], fcol + size, frow);
+	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 2], fcol + size, frow + size);
+	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 3], fcol, frow + size);
+
+	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 0], x, y);
+	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 1], x + 8 * scale_x, y);
+	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 2], x + 8 * scale_x, y + 8 * scale_y);
+	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 3], x, y + 8 * scale_y);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(consoleText.color[consoleText.quadCounter + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+
+	consoleText.counter++;
+}
+
+void R_DrawConsoleSymbols() {
+
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
+
+	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, consoleText.verts);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, consoleText.tc);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, consoleText.color);
+
+	GL_BindProgram(genericProgram);
+	qglUniform1i(U_2D_PICS, 1);
+	qglUniform1i(U_CONSOLE_BACK, 0);
+	qglUniform1i(U_FRAG_COLOR, 0);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
+
+	GL_DrawElements(GL_TRIANGLES, 6 * consoleText.counter, GL_UNSIGNED_SHORT, NULL);
+	consoleText.counter = 0;
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num)
@@ -166,20 +223,6 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	VA_SetElem2(texCoord[2], fcol + size, frow + size);
 	VA_SetElem2(texCoord[3], fcol, frow + size);
 
-	//====== draw font shadow
-	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26 && r_fontsShadow->integer) { // fields and sliders filter
-		VA_SetElem2(vertCoord[0], x2, y2);
-		VA_SetElem2(vertCoord[1], x2 + 8 * scale_x, y2);
-		VA_SetElem2(vertCoord[2], x2 + 8 * scale_x, y2 + 8 * scale_y);
-		VA_SetElem2(vertCoord[3], x2, y + 8 * scale_y);
-
-		for (int i = 0; i < 4; i++)
-			VA_SetElem4(colorCoord[i], 0.0, 0.0, 0.0, 1.0);
-
-		GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
-	}
-
-	//====== draw regular font
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + 8 * scale_x, y);
 	VA_SetElem2(vertCoord[2], x + 8 * scale_x, y + 8 * scale_y);
@@ -279,9 +322,6 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* s
 		GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
 	else 
 		GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
-
-	if(r_fontsShadow->integer)
-		Draw_StringShadow(x, y, scale_x, scale_y, s);
 
 	px = x;
 	py = y;

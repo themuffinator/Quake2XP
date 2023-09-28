@@ -258,7 +258,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <HeapReserveSize>8388608</HeapReserveSize>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>false</GenerateMapFile>
       <MapExports>false</MapExports>
       <AssemblyDebug>false</AssemblyDebug>

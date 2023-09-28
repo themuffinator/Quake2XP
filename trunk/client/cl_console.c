@@ -38,10 +38,6 @@ color4_t	ColorTable[8] = {
 	{ 1.0, 1.0, 1.0, 1.0 },
 };
 
-//void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str);
-void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num);
-
-
 color4_t		colorDefault;
 
 void RE_SetColor (const color4_t color) {
@@ -221,8 +217,6 @@ void Con_Dump_f (void) {
 			else
 				break;
 		}
-
-
 
 		fprintf (f, "%s\n", buffer);
 	}
@@ -641,7 +635,7 @@ Draws the console with the solid background
 void Con_DrawConsole (float frac) {
 	int			i, j, x, y, n;
 	int			rows;
-	short		*text, output[1024];
+	short		*text;
 	int			row;
 	int			lines;
 	char		version[64];
@@ -649,6 +643,7 @@ void Con_DrawConsole (float frac) {
 	int			currentColor;
 	float		intervalScale = 0.75;
 	float		fontscale = ui_fontScale->value;
+	extern consoleText_t consoleText;
 
 	if (frac == 1.0)
 		lines = viddef.height * frac;
@@ -661,7 +656,8 @@ void Con_DrawConsole (float frac) {
 	if (lines > viddef.height)
 		lines = viddef.height;
 
-//	qglEnable(GL_FRAMEBUFFER_SRGB);
+	consoleText.quadCounter = 0;
+	consoleText.counter = 0;
 
 	// draw the background
 	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
@@ -669,12 +665,12 @@ void Con_DrawConsole (float frac) {
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
 
 	Com_sprintf (version, sizeof(version), "q2xp %s (%s)", VERSION, __DATE__);
-//	for (x = 0; x < strlen (version); x++)
-//		version[x] += 128;
 	int len = strlen(version);
-	
+
 	RE_SetColor(colorGreen);
-	Draw_StringScaled (viddef.width - len * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version, qtrue);
+
+	for (x = 0; x < strlen(version); x++)
+		R_FillConsoleSymbols((viddef.width - (len * 6 * fontscale)) + x * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version[x]);
 
 	// draw the text
 	con.vislines = lines;
@@ -687,7 +683,7 @@ void Con_DrawConsole (float frac) {
 		// draw arrows to show the buffer is backscrolled
 		RE_SetColor (colorCyan);
 		for (x = 0; x < con.lineWidth; x += 4)
-			Draw_CharScaled ((x*fontscale + 1) * 8, y, fontscale, fontscale, '^');
+			R_FillConsoleSymbols((x * fontscale + 1) * 8, y, fontscale, fontscale, '^');
 
 		RE_SetColor (colorWhite);
 		y -= 8 * fontscale;
@@ -707,7 +703,6 @@ void Con_DrawConsole (float frac) {
 
 		text = con.text + (row % con.totalLines) * con.lineWidth;
 
-		Com_sprintf(output, sizeof(output), "");
 		for (x = 0; x < con.lineWidth; x++) {
 			if ((text[x] & 0xFF) == ' ')
 				continue;
@@ -724,7 +719,7 @@ void Con_DrawConsole (float frac) {
 				//Reset Current font color
 				RE_SetColor(ColorTable[currentColor]);
 
-			Draw_CharScaledInt ((x*fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
+			R_FillConsoleSymbols((x * fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
 
 			if (text[x] < 190)
 				currentColor = oldColor;
@@ -778,15 +773,15 @@ void Con_DrawConsole (float frac) {
 		// draw it
 		y = con.vislines - 12;
 		for (i = 0; i < strlen (dlbar); i++)
-			//	Draw_Char((i + 1) << 3, y, dlbar[i]);
-			Draw_CharScaled ((i*fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
+			R_FillConsoleSymbols((i * fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
 	}
 	//ZOID
+	
+	R_DrawConsoleSymbols(); // draw all
 
 	// draw the input prompt, user text, and cursor if desired
 	Con_DrawInput ();
 
 	RE_SetColor (colorWhite);
-//	qglDisable(GL_FRAMEBUFFER_SRGB);
 }
 
