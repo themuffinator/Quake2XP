@@ -63,16 +63,16 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 		clearData = qfalse;
 
 	// find a free image_t
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
-	if (i == numgltextures) {
-		if (numgltextures == MAX_GLTEXTURES)
+	if (i == r_numTextures) {
+		if (r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-		numgltextures++;
+		r_numTextures++;
 	}
-	image = &gltextures[i];
+	image = &r_textures[i];
 
 	strcpy(image->name, texName);
 
@@ -149,14 +149,14 @@ void Load3dLut(void) {
 		Com_sprintf(name, sizeof(name), "***lut_%i***", j);
 
 		// find a free image
-		for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		for (i = 0, image = gltextures; i < numTextures; i++, image++) {
 			if (!image->texnum)
 				break;
 		}
-		if (i == numgltextures) {
-			if (numgltextures == MAX_GLTEXTURES)
+		if (i == numTextures) {
+			if (numTextures == MAX_GLTEXTURES)
 				VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-			numgltextures++;
+			numTextures++;
 		}
 		image = &gltextures[i];
 
@@ -281,16 +281,16 @@ image_t *R_LoadLightFilter (int id) {
 	Com_sprintf (name, sizeof(name), "***Filter%2i***", id + 1);
 
 	// find a free image_t
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
-	if (i == numgltextures) {
-		if (numgltextures == MAX_GLTEXTURES)
+	if (i == r_numTextures) {
+		if (r_numTextures == MAX_GLTEXTURES)
 			Com_Error (ERR_FATAL, "MAX_GLTEXTURES");
-		numgltextures++;
+		r_numTextures++;
 	}
-	image = &gltextures[i];
+	image = &r_textures[i];
 
 	strcpy (image->name, name);
 	image->registration_sequence = registration_sequence;

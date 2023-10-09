@@ -598,6 +598,7 @@ extern PFNGLUNMAPBUFFERPROC					qglUnmapBuffer;
 extern PFNGLGETBUFFERPARAMETERIVPROC		qglGetBufferParameteriv;
 extern PFNGLGETBUFFERPOINTERVPROC			qglGetBufferPointerv;
 extern PFNGLMAPBUFFERRANGEPROC				qglMapBufferRange;
+extern PFNGLINVALIDATEBUFFERDATAPROC		qglInvalidateBufferData;
 
 extern PFNGLVERTEXATTRIB1SPROC				glVertexAttrib1s;
 extern PFNGLVERTEXATTRIB1FPROC				glVertexAttrib1f;

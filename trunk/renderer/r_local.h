@@ -155,8 +155,8 @@ image_t* r_lightCubeMap[MAX_FILTERS];
 //image_t* r_3dLut[MAX_LUTS];
 //int			lutCount;
 
-image_t gltextures[MAX_IDX];
-int numgltextures;
+image_t r_textures[MAX_IDX];
+int		r_numTextures;
 
 image_t *r_blackTexture1x1;
 image_t	*r_missingTexture;
@@ -190,6 +190,7 @@ image_t	*r_finalScreen;
 image_t	*r_linearDepth;
 image_t	*r_hdr64image;
 image_t *r_hdrLuminance[2]; //current, prev 
+image_t *r_fogMask;
 
 image_t	*r_cinImage;
 image_t	*r_hdrBloomImage;
@@ -603,7 +604,7 @@ void LoadPCX(char *filename, byte **pic, byte **palette, int *width, int *height
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
-void R_DrawSkyBox ();
+void R_DrawSkyBox();
 
 void COM_StripExtension (char *in, char *out);
 
@@ -805,6 +806,7 @@ GLuint	ibo_dynamic;
 GLuint	ibo_cube;
 GLuint	vbo_draw2d;
 GLuint	vbo_draw2dString;
+GLuint	vbo_drawText;
 GLuint	vbo_skyBox;
 
 int xyz_offset;
@@ -835,6 +837,7 @@ typedef struct {
 	GLuint	draw2dString;
 	GLuint	sky;
 	GLuint	tessStream;
+	GLuint	drawText;
 }vao_t;
 
 vao_t vao;
@@ -881,13 +884,24 @@ extern glstate_t gl_state;
 #define VA_SetElem3v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2])
 #define VA_SetElem4v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2],(v)[3]=(a)[3])
 
-#define MAX_VERTICES	65536
-#define MAX_INDICES		MAX_VERTICES * 3
-
 #define MAX_STREAM_VBO_VERTS MD3_MAX_VERTS * MD3_MAX_MESHES
 #define MAX_STREAM_IBO_IDX	 MAX_STREAM_VBO_VERTS *3
 
 #define CUBE_INDICES 36
+
+#define MAX_VERTICES	65536
+#define MAX_INDICES		MAX_VERTICES * 3
+
+uint ibo_quadString[MAX_INDICES];
+typedef struct consoleText_s {
+	vec2_t	verts[MAX_VERTICES];
+	vec2_t	tc[MAX_VERTICES];
+	vec4_t	color[MAX_VERTICES];
+	uint	numSymbols, numVerts;
+} consoleText_t;
+
+consoleText_t consoleText;
+
 
 typedef struct tess_s {
 
@@ -906,7 +920,6 @@ tess_t tess;
 // 2D VBO stuff
 #define MAX_DRAW_STRING_LENGTH 512
 #define QUADVERT 4
-index_t	ibo_quadString[MAX_VERTICES];
 
 #define	VERT2D_POS		((byte *)(NULL)+0)
 #define	VERT2D_TC		((byte *)(NULL)+8)
@@ -939,17 +952,6 @@ vec2_t	texCoord[MAX_VERTICES];
 vec2_t	texCoord1[MAX_VERTICES];
 vec2_t	vertCoord[MAX_VERTICES];
 vec4_t	colorCoord[MAX_VERTICES];
-
-#define MAX_2DVERTS (SHRT_MAX  / 6)
-typedef struct consoleText_s {
-
-	vec2_t	tc[MAX_2DVERTS];
-	vec2_t	verts[MAX_2DVERTS];
-	vec4_t	color[MAX_2DVERTS];
-	uint	counter, quadCounter;
-} consoleText_t;
-
-consoleText_t consoleText;
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;

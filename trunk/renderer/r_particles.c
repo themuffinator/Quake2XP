@@ -211,7 +211,8 @@ void R_DrawParticles (void) {
 		if (texture != texId || flags != flagId) {
 
 			if(partVert){
-
+				qglInvalidateBufferData(GL_ARRAY_BUFFER);
+				qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, partVert * sizeof(vec3_t), tess.xyz);
 				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st,	partVert * sizeof(vec2_t), tess.st);
 				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, partVert * sizeof(vec4_t), tess.rgb);
@@ -579,6 +580,8 @@ void R_DrawParticles (void) {
 
 	if (partVert) {
 
+		qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, partVert * sizeof(vec3_t), tess.xyz);
 		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st,  partVert * sizeof(vec2_t), tess.st);
 		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, partVert * sizeof(vec4_t), tess.rgb);

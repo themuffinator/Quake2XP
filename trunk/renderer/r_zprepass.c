@@ -429,11 +429,10 @@ void R_DrawDepthScene (void) {
 	GL_DepthFunc(GL_LESS);
 	GL_DepthMask(1);
 	
-	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		GL_DepthRange(0.9999, 1.0);
-		R_DrawSkyBox();
-		GL_DepthRange(0.0, 1.0);
-	}
+//	GL_DepthRange(0.999, 1.0);
+	R_DrawSkyBox();
+//	GL_DepthRange(0.0, 1.0);
+
 	GL_BindProgram (nullProgram);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {

@@ -1009,7 +1009,7 @@ void R_RenderView (refdef_t *fd) {
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
-		GL_DrawBuffers(1);
+		GL_DrawBuffers(4);
 		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -1108,7 +1108,7 @@ void R_RenderFrame(refdef_t * fd) {
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
 		R_FixFov();
-		R_FXAA();
+//		R_FXAA();
 		R_RadialBlur();
 		R_ThermalVision();
 		R_DofBlur();
@@ -1667,14 +1667,15 @@ int R_Init(void *hinstance, void *hWnd)
 	glMultiDrawArrays		= (PFNGLMULTIDRAWARRAYSPROC)	qwglGetProcAddress("glMultiDrawArrays");
 
 	// vbo stuff
-	qglBindBuffer		= (PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
-	qglDeleteBuffers	= (PFNGLDELETEBUFFERSPROC)	qwglGetProcAddress("glDeleteBuffers");
-	qglGenBuffers		= (PFNGLGENBUFFERSPROC)		qwglGetProcAddress("glGenBuffers");
-	qglBufferData		= (PFNGLBUFFERDATAPROC)		qwglGetProcAddress("glBufferData");
-	qglBufferSubData	= (PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
-	qglMapBuffer		= (PFNGLMAPBUFFERPROC)		qwglGetProcAddress("glMapBuffer");
-	qglUnmapBuffer		= (PFNGLUNMAPBUFFERPROC)	qwglGetProcAddress("glUnmapBuffer");
-	qglMapBufferRange	= (PFNGLMAPBUFFERRANGEPROC)	qwglGetProcAddress("glMapBufferRange");
+	qglBindBuffer			= (PFNGLBINDBUFFERPROC)			qwglGetProcAddress("glBindBuffer");
+	qglDeleteBuffers		= (PFNGLDELETEBUFFERSPROC)		qwglGetProcAddress("glDeleteBuffers");
+	qglGenBuffers			= (PFNGLGENBUFFERSPROC)			qwglGetProcAddress("glGenBuffers");
+	qglBufferData			= (PFNGLBUFFERDATAPROC)			qwglGetProcAddress("glBufferData");
+	qglBufferSubData		= (PFNGLBUFFERSUBDATAPROC)		qwglGetProcAddress("glBufferSubData");
+	qglMapBuffer			= (PFNGLMAPBUFFERPROC)			qwglGetProcAddress("glMapBuffer");
+	qglUnmapBuffer			= (PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
+	qglMapBufferRange		= (PFNGLMAPBUFFERRANGEPROC)			qwglGetProcAddress("glMapBufferRange");
+	qglInvalidateBufferData = (PFNGLINVALIDATEBUFFERDATAPROC)	qwglGetProcAddress("glInvalidateBufferData");
 
 	// fbo stuff
 	qglIsRenderbuffer						= (PFNGLISRENDERBUFFERPROC)						qwglGetProcAddress("glIsRenderbuffer");
@@ -2071,7 +2072,7 @@ void R_BeginFrame()
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Nvidia Nsight Graphics frame frame terminator
-	qglFlush();
+//	qglFlush();
 
 	qglDrawBuffer( GL_BACK );
 

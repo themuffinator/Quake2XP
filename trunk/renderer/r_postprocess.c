@@ -274,31 +274,6 @@ void R_DofBlur (void) {
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
-void R_FXAA (void) {
-
-	if (!r_fxaa->integer)
-		return;
-	
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	// setup program
-	GL_BindProgram (fxaaProgram);
-
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
-
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
-
-	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawFullScreenQuad ();
-	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-}
-
 void R_FilmFx(void) {
 
 	if (!r_filmicFx->integer)
@@ -366,6 +341,31 @@ void R_FilmFx(void) {
 	qglUniform1f (U_PARAM_FLOAT_0,	r_filmicFxVignetSize->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+}
+
+void R_FXAA(void) {
+
+	if (!r_fxaa->integer)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	// setup program
+	GL_BindProgram(fxaaProgram);
+
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
+
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+
+	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	R_DrawFullScreenQuad();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
@@ -500,6 +500,8 @@ void R_ToneMaping(void) {
 	qglUniform1f(U_PARAM_FLOAT_1, r_gamma->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
+
+	R_FXAA(); // apply fxaa AFTER tonemap!!!!
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._final);

@@ -52,17 +52,11 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	int row, col;
 	float frow, fcol, size;
 
-	num &= 255;
-
 	if ((num & 127) == 32)
 		return;					// space
 
 	if (y <= -8 * scale_y)
 		return;					// totally off screen
-
-	// shadow offcets
-	int x2 = x + 2;
-	int y2 = y + 2;
 
 	row = num >> 4;
 	col = num & 15;
@@ -107,59 +101,13 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
-void R_FillConsoleSymbols(int x, int y, float scale_x, float scale_y, unsigned char num)
-{
-	int row, col;
-	float frow, fcol, size;
-
-	num &= 255;
-
-	if ((num & 127) == 32)
-		return;					// space
-
-	if (y <= -8 * scale_y)
-		return;					// totally off screen
-
-	// shadow offcets
-	int x2 = x + 2;
-	int y2 = y + 2;
-
-	row = num >> 4;
-	col = num & 15;
-
-	frow = row * 0.0625;
-	fcol = col * 0.0625;
-	size = 0.0625;
-
-	consoleText.quadCounter = consoleText.counter << 2;
-
-	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 0], fcol, frow);
-	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 1], fcol + size, frow);
-	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 2], fcol + size, frow + size);
-	VA_SetElem2(consoleText.tc[consoleText.quadCounter + 3], fcol, frow + size);
-
-	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 0], x, y);
-	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 1], x + 8 * scale_x, y);
-	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 2], x + 8 * scale_x, y + 8 * scale_y);
-	VA_SetElem2(consoleText.verts[consoleText.quadCounter + 3], x, y + 8 * scale_y);
-
-	for (int i = 0; i < 4; i++)
-		VA_SetElem4(consoleText.color[consoleText.quadCounter + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-
-	consoleText.counter++;
-}
-
 void R_DrawConsoleSymbols() {
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
+	if (!consoleText.numVerts)
+		return;
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, consoleText.verts);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, consoleText.tc);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, consoleText.color);
+	glBindVertexArray(vao.drawText);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_drawText);
 
 	GL_BindProgram(genericProgram);
 	qglUniform1i(U_2D_PICS, 1);
@@ -169,21 +117,24 @@ void R_DrawConsoleSymbols() {
 
 	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
 
-	GL_DrawElements(GL_TRIANGLES, 6 * consoleText.counter, GL_UNSIGNED_SHORT, NULL);
-	consoleText.counter = 0;
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((consoleText_t *)0)->verts,	consoleText.numVerts * sizeof(vec2_t), consoleText.verts);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((consoleText_t *)0)->tc,		consoleText.numVerts * sizeof(vec2_t), consoleText.tc);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((consoleText_t *)0)->color,	consoleText.numVerts * sizeof(vec4_t), consoleText.color);
+	
+	GL_DrawElements(GL_TRIANGLES, 6 * consoleText.numSymbols, GL_UNSIGNED_INT, NULL);
 
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	consoleText.numVerts = 0;
+	consoleText.numSymbols = 0;
+
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num)
+void R_FillConsoleSymbols(int x, int y, float scale_x, float scale_y, unsigned char num)
 {
 	int row, col;
 	float frow, fcol, size;
-
-	num &= 255;
 
 	if ((num & 127) == 32)
 		return;					// space
@@ -191,9 +142,46 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	if (y <= -8 * scale_y)
 		return;					// totally off screen
 
-	// shadow offcets
-	int x2 = x + 2;
-	int y2 = y + 2;
+	row = num >> 4;
+	col = num & 15;
+
+	frow = row * 0.0625;
+	fcol = col * 0.0625;
+	size = 0.0625;
+
+	consoleText.numVerts = consoleText.numSymbols << 2;
+
+	VA_SetElem2(consoleText.tc[consoleText.numVerts + 0], fcol, frow);
+	VA_SetElem2(consoleText.tc[consoleText.numVerts + 1], fcol + size, frow);
+	VA_SetElem2(consoleText.tc[consoleText.numVerts + 2], fcol + size, frow + size);
+	VA_SetElem2(consoleText.tc[consoleText.numVerts + 3], fcol, frow + size);
+
+	VA_SetElem2(consoleText.verts[consoleText.numVerts + 0], x, y);
+	VA_SetElem2(consoleText.verts[consoleText.numVerts + 1], x + 8 * scale_x, y);
+	VA_SetElem2(consoleText.verts[consoleText.numVerts + 2], x + 8 * scale_x, y + 8 * scale_y);
+	VA_SetElem2(consoleText.verts[consoleText.numVerts + 3], x, y + 8 * scale_y);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(consoleText.color[consoleText.numVerts + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+
+	consoleText.numSymbols++;
+
+	if (consoleText.numVerts >= MAX_VERTICES) {
+		R_DrawConsoleSymbols();
+	}
+}
+
+
+void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num)
+{
+	int row, col;
+	float frow, fcol, size;
+
+	if ((num & 127) == 32)
+		return;					// space
+
+	if (y <= -8 * scale_y)
+		return;					// totally off screen
 
 	row = num >> 4;
 	col = num & 15;
@@ -237,65 +225,6 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_COLOR);
 }
-
-void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char* s)
-{
-	int px, py, row, col, num, counter, quadCounter;
-	float frow, fcol, size;
-
-	px = x + 2;
-	py = y + 2;
-
-	size = 0.0625;
-	counter = 0;
-
-	while (*s) {
-		num = *s++;
-
-		if ((num & 127) == 32) {  // space
-			px += 6 * scale_x;
-			continue;
-		}
-
-		if (y <= -6) {			// totally off screen
-			px += 6 * scale_x;
-			continue;
-		}
-
-		row = num >> 4;
-		col = num & 15;
-
-		frow = row * 0.0625;
-		fcol = col * 0.0625;
-
-		quadCounter = counter << 2;
-
-		VA_SetElem2(texCoord[quadCounter + 0], fcol, frow);
-		VA_SetElem2(texCoord[quadCounter + 1], fcol + size, frow);
-		VA_SetElem2(texCoord[quadCounter + 2], fcol + size, frow + size);
-		VA_SetElem2(texCoord[quadCounter + 3], fcol, frow + size);
-
-		VA_SetElem2(vertCoord[quadCounter + 0], px, py);
-		VA_SetElem2(vertCoord[quadCounter + 1], px + 8 * scale_x, py);
-		VA_SetElem2(vertCoord[quadCounter + 2], px + 8 * scale_x, py + 8 * scale_y);
-		VA_SetElem2(vertCoord[quadCounter + 3], px, py + 8 * scale_y);
-
-		for (int i = 0; i < 4; i++)
-			VA_SetElem4(colorCoord[quadCounter + i], 0.0, 0.0, 0.0, 1.0);
-
-		px += 6 * scale_x;
-		counter++;
-
-		if (counter == MAX_DRAW_STRING_LENGTH) {
-			GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
-			counter = 0;
-		}
-	}
-
-	if (counter)
-		GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
-}
-
 
 void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* str, qboolean international)
 {
@@ -367,13 +296,13 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* s
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH) {
-			GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_INT, NULL);
 			counter = 0;
 		}
 	}
 
 	if (counter)
-		GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+		GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_INT, NULL);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -606,14 +535,11 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t* gl)
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-
-image_t* GL_FindImage2(char* name, imagetype_t type);
-
 void Draw_LoadingScreen(int x, int y, int w, int h, char* pic)
 {
 	image_t* gl;
 
-	gl = GL_FindImage2(pic + 1, it_mipmap);
+	gl = GL_FindImage(pic + 1, it_mipmap);
 	Draw_LoadingScreen2(x, y, w, h, gl);
 }
 

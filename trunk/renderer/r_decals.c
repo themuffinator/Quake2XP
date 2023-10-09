@@ -141,6 +141,8 @@ void R_RenderDecals(qboolean twoside)
         // flush array if new texture/blend
         if (numIndices) {
 
+			qglInvalidateBufferData(GL_ARRAY_BUFFER);
+			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
 			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
 			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);
@@ -162,11 +164,13 @@ void R_RenderDecals(qboolean twoside)
         }
 
 		if ((numIndices >= MAX_INDICES - (dl->numverts - 2) * 3) || (numVertices >= MAX_VERTICES - dl->numverts)) {
-
-			 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
-			 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
-			 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);
-			 qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.idxBuff);
+			
+			qglInvalidateBufferData(GL_ARRAY_BUFFER);
+			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);
+			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.idxBuff);
 
 			 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
 			 c_decalsTris = numIndices/3;
@@ -203,6 +207,8 @@ void R_RenderDecals(qboolean twoside)
      // draw the rest
 	 if (numIndices){
 
+		 qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		 qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVertices * sizeof(vec3_t), tess.xyz);
 		 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st, numVertices * sizeof(vec2_t), tess.st);
 		 qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVertices * sizeof(vec4_t), tess.rgb);

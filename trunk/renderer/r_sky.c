@@ -42,6 +42,8 @@ void R_SetSky(char *name, float rotate, vec3_t axis) {
 
 void R_DrawSkyBox(){
 	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 	// setup program
 	GL_BindProgram(skyProgram);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -81,7 +83,7 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 	if (len < 5)
 		return NULL;
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 
 		if (image->hash == hash) {
 
@@ -94,17 +96,17 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 	}
 	
 	// find a free image_t
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
-	if (i == numgltextures) {
-		if (numgltextures == MAX_GLTEXTURES)
+	if (i == r_numTextures) {
+		if (r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-		numgltextures++;
+		r_numTextures++;
 	}
 
-	image = &gltextures[i];
+	image = &r_textures[i];
 	strcpy(image->name, name);
 	image->type = it_sky;
 	image->hash = hash;

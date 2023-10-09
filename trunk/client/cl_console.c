@@ -485,6 +485,7 @@ void Con_DrawInput (void) {
 	char	*text, output[2048], addch[8], cursor[2048];
 	int		i;
 	float	fontscale = ui_fontScale->value;
+	float	intervalScale = 0.75;
 
 	if (cls.key_dest == key_menu)
 		return;
@@ -538,8 +539,12 @@ void Con_DrawInput (void) {
 		addch[1] = '\0';
 		Q_strncatz(output, sizeof(output), addch);
 	}
-	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, output, qtrue);
-	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, cursor, qtrue);
+
+	for (i = 0; i < con.lineWidth; i++) {
+		R_FillConsoleSymbols((i * fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, output[i]);
+		R_FillConsoleSymbols((i * fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, cursor[i]);
+	}
+
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
 }
@@ -643,7 +648,6 @@ void Con_DrawConsole (float frac) {
 	int			currentColor;
 	float		intervalScale = 0.75;
 	float		fontscale = ui_fontScale->value;
-	extern consoleText_t consoleText;
 
 	if (frac == 1.0)
 		lines = viddef.height * frac;
@@ -656,9 +660,6 @@ void Con_DrawConsole (float frac) {
 	if (lines > viddef.height)
 		lines = viddef.height;
 
-	consoleText.quadCounter = 0;
-	consoleText.counter = 0;
-
 	// draw the background
 	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
 	SCR_AddDirtyPoint (0, 0);
@@ -668,9 +669,11 @@ void Con_DrawConsole (float frac) {
 	int len = strlen(version);
 
 	RE_SetColor(colorGreen);
-
-	for (x = 0; x < strlen(version); x++)
+	
+	for (x = 0; x < strlen(version)+1; x++)
 		R_FillConsoleSymbols((viddef.width - (len * 6 * fontscale)) + x * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version[x]);
+
+	R_DrawConsoleSymbols();
 
 	// draw the text
 	con.vislines = lines;
@@ -689,11 +692,12 @@ void Con_DrawConsole (float frac) {
 		y -= 8 * fontscale;
 		rows--;
 	}
-
+	R_DrawConsoleSymbols();
+	
 	currentColor = 7;
 	RE_SetColor (ColorTable[currentColor]);
 	int oldColor;
-
+	
 	row = con.display;
 	for (i = 0; i < rows; i++, y -= 8 * fontscale, row--) {
 		if (row < 0)
@@ -702,11 +706,11 @@ void Con_DrawConsole (float frac) {
 			break;				// past scrollback wrap point
 
 		text = con.text + (row % con.totalLines) * con.lineWidth;
-
+		
 		for (x = 0; x < con.lineWidth; x++) {
 			if ((text[x] & 0xFF) == ' ')
 				continue;
-
+			
 			oldColor = currentColor;
 
 			if (((text[x] >> 8) & 7) != currentColor) {
@@ -718,13 +722,15 @@ void Con_DrawConsole (float frac) {
 			else
 				//Reset Current font color
 				RE_SetColor(ColorTable[currentColor]);
-
-			R_FillConsoleSymbols((x * fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
+			
+			R_FillConsoleSymbols((x * fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x]);
 
 			if (text[x] < 190)
 				currentColor = oldColor;
 		}
 	}
+
+	R_DrawConsoleSymbols(); // draw console text
 
 	//ZOID draw the download bar figure out width
 #ifdef USE_CURL
@@ -776,11 +782,10 @@ void Con_DrawConsole (float frac) {
 			R_FillConsoleSymbols((i * fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
 	}
 	//ZOID
-	
-	R_DrawConsoleSymbols(); // draw all
 
 	// draw the input prompt, user text, and cursor if desired
 	Con_DrawInput ();
+	R_DrawConsoleSymbols(); // draw input
 
 	RE_SetColor (colorWhite);
 }

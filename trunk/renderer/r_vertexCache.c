@@ -41,7 +41,7 @@ void R_InitVertexBuffers() {
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
 	qglObjectLabel(GL_BUFFER, vbo.ibo_quad, strlen("***ibo_quad***"), "***ibo_quad***");
 
-	for (i = 0; i < SHRT_MAX; i += 4)
+	for (i = 0; i < MAX_VERTICES; i += 4)
 	{
 		ibo_quadString[idx++] = i + 0;
 		ibo_quadString[idx++] = i + 1;
@@ -55,13 +55,32 @@ void R_InitVertexBuffers() {
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quadString), ibo_quadString, GL_STATIC_DRAW);
 	qglObjectLabel(GL_BUFFER, vbo.ibo_quadString, strlen("***ibo_quadString***"), "***ibo_quadString***");
 
+	qglGenBuffers(1, &vbo.vbo_drawText);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_drawText);
+	qglObjectLabel(GL_VERTEX_ARRAY, vbo.vbo_drawText, strlen("***vbo_drawText***"), "***vbo_drawText***");
+	qglBufferData(GL_ARRAY_BUFFER,sizeof(consoleText), &consoleText, GL_DYNAMIC_DRAW);
+
+	glGenVertexArrays(1, &vao.drawText);
+	glBindVertexArray(vao.drawText);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_drawText);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
+
+	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, ((consoleText_t *)0)->verts);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, ((consoleText_t *)0)->tc);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, ((consoleText_t *)0)->color);
+	glBindVertexArray(0);
+
 	qglGenBuffers(1, &vbo.vbo_draw2d);
 	glGenVertexArrays(1, &vao.draw2d);
 
 	glBindVertexArray(vao.draw2d);
 	qglObjectLabel(GL_VERTEX_ARRAY, vao.draw2d, strlen("***vao2d***"), "***vao2d***");
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), &tess2d, GL_STREAM_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), &tess2d, GL_DYNAMIC_DRAW);
 
 	qglEnableVertexAttribArray	(ATT_POSITION);
 	qglEnableVertexAttribArray	(ATT_TEX0);
@@ -81,7 +100,7 @@ void R_InitVertexBuffers() {
 	glBindVertexArray(vao.draw2dString);
 	qglObjectLabel(GL_VERTEX_ARRAY, vao.draw2dString, strlen("***vao2dString***"), "***vao2dString***");
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2dString);
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2dString), &tess2dString, GL_STREAM_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2dString), &tess2dString, GL_DYNAMIC_DRAW);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -244,19 +263,22 @@ void R_InitVertexBuffers() {
 
 void R_ShutDownVertexBuffers() {
 
+	glDeleteVertexArrays(1, &vao.bsp);
+	glDeleteVertexArrays(1, &vao.dynamic);
+	glDeleteVertexArrays(1, &vao.fullscreenQuad);
+	glDeleteVertexArrays(1, &vao.draw2d);
+	glDeleteVertexArrays(1, &vao.drawText);
+
 	qglDeleteBuffers(1, &vbo.vbo_fullScreenQuad);
 	qglDeleteBuffers(1, &vbo.vbo_aliasShadow);
 	qglDeleteBuffers(1, &vbo.vbo_BSP);
 	qglDeleteBuffers(1, &vbo.vbo_draw2d);
+	qglDeleteBuffers(1, &vbo.vbo_drawText);
 
 	qglDeleteBuffers(1, &vbo.ibo_quad);
 	qglDeleteBuffers(1, &vbo.ibo_md2Shadow);
 	qglDeleteBuffers(1, &vbo.ibo_md3Shadow);
 	qglDeleteBuffers(1, &vbo.ibo_dynamic);
 	qglDeleteBuffers(1, &vbo.ibo_cube);
-
-	glDeleteVertexArrays(1, &vao.bsp);
-	glDeleteVertexArrays(1, &vao.dynamic);
-	glDeleteVertexArrays(1, &vao.fullscreenQuad);
-	glDeleteVertexArrays(1, &vao.draw2d);
+	qglDeleteBuffers(1, &vbo.ibo_quadString);
 }

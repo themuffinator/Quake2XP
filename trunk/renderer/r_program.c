@@ -28,7 +28,6 @@ static const char * glslGlobals =
 "precision mediump int;\n"
 
 "out vec4 fragData;\n"
-"out vec4 glFragData[3];\n"
 
 "#ifndef saturate\n"
 "#define saturate(x)    clamp(x, 0.0, 1.0)\n"

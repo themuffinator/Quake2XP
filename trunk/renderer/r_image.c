@@ -155,7 +155,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	if (len < 5)
 		return NULL;
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++){
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++){
 
 		if (image->hash == hash){
 
@@ -308,20 +308,20 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	}
 
 	// find a free image_t
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++){
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++){
 		if (!image->texnum)
 			break;
 	}
-	if (i == numgltextures){
-		if (numgltextures == MAX_GLTEXTURES)
+	if (i == r_numTextures){
+		if (r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-		numgltextures++;
+		r_numTextures++;
 	}
 
 	width = header->dwWidth;
 	height = header->dwHeight;
 	
-	image = &gltextures[i];
+	image = &r_textures[i];
 	strcpy(image->name, texName);
 
 	image->width = width;
@@ -558,7 +558,7 @@ void GL_ImageList_f(void)
 
 	Com_Printf("------------------\n");
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		
 		if (image->texnum <= 0)
 			continue;
@@ -932,7 +932,7 @@ void R_FreePic(char* name)
 	int		i;
 	image_t* image;
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++)
 	{
 		if (!image->registration_sequence)
 			continue;		// free image_t slot
@@ -967,18 +967,18 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	char s[128];
 
 	// find a free image_t
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
 
-	if (i == numgltextures) {
-		if (numgltextures == MAX_GLTEXTURES)
+	if (i == r_numTextures) {
+		if (r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_DROP, "MAX_GLTEXTURES");
-		numgltextures++;
+		r_numTextures++;
 	}
 
-	image = &gltextures[i];
+	image = &r_textures[i];
 
 	if (strlen(name) >= sizeof(image->name))
 		VID_Error(ERR_DROP, "Draw_LoadPic: \"%s\" is too long", name);
@@ -1062,7 +1062,7 @@ GL_FindImage
 Finds or loads the given image
 ===============
 */
-char override = 0;
+
 image_t *GL_FindImage(char *name, imagetype_t type)
 {
 	image_t *image;
@@ -1079,8 +1079,9 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		return NULL;			
 
 	// look for it
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++){
-
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++){
+		if (image->type != type)
+			continue;
 		if (image->hash == hash)
 		{
 			if (!b_stricmp(image->name, name)){
@@ -1090,45 +1091,10 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 			}
 		}
 	}
-	// 
-	// load the pic from disk
-	// 
+
 	pic = NULL;
 	palette = NULL;
-	
-	if (type == it_mipmap)
-		goto next;
 
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".tga") && !override) {
-
-		char s[128];
-		override = 1;
-		strcpy(s, name);
-		s[strlen(s) - 4] = 0;
-		strcat(s, ".tga");
-
-		image = GL_FindImage(s, type);
-		if (image) {
-			override = 0;
-			return image;
-		}
-	}
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".tga") && !override) {
-
-		char s[128];
-		override = 1;
-		strcpy(s, name);
-		s[strlen(s) - 4] = 0;
-		strcat(s, ".jpg");
-
-		image = GL_FindImage(s, type);
-		if (image) {
-			override = 0;
-			return image;
-		}
-	}
-
-	override = 0;
 	if (!strcmp(name + len - 4, ".pcx")) {
 		LoadPCX(name, &pic, &palette, &width, &height);
 
@@ -1146,21 +1112,19 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-		
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));		
 	}
 
 	else if (!strcmp(name + len - 4, ".jpg")) {
-	next:
+
 		STB_LoadTexture(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, it_pic, 24, Com_HashKey(name));
+		image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
 	} 
 	else 
 		return NULL;
-
 
 	if (pic)
 		free(pic);
@@ -1170,48 +1134,6 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 	return image;
 }
-
-image_t* GL_FindImage2(char* name, imagetype_t type)
-{
-	image_t	*image;
-	int		i, len, width, height;
-	byte	*pic = NULL;
-
-	if (!name)
-		return NULL;
-
-	len = strlen(name);
-
-	if (len < 5)
-		return NULL;
-
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
-		if (image->type != type)
-			continue;
-		if (!strcmp(name, image->name)) {
-			image->registration_sequence = registration_sequence;
-			return image;
-		}
-	}
-
-	STB_LoadTexture(name, &pic, &width, &height);
-	
-	if (!pic)
-		return NULL;
-
-	image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
-	
-	if (!image)
-		image = r_missingTexture;
-
-	if (pic)
-		free(pic);
-
-	return image;
-}
-
-
-
 
 /*
 ===============
@@ -1328,7 +1250,7 @@ void GL_FreeUnusedImages(void)
 	r_laser_normal->registration_sequence = registration_sequence;
 	r_lensDirt->registration_sequence = registration_sequence;
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
 			continue;			// used this sequence
 
@@ -1405,7 +1327,7 @@ void GL_ShutdownImages(void) {
 	int i;
 	image_t *image;
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 	//	if (!image->registration_sequence)
 		//	continue;			// free image_t slot
 
@@ -1414,7 +1336,7 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures(1, (GLuint*)&image->texnum);
 		memset(image, 0, sizeof(*image));
 	}
-	numgltextures = 0;
+	r_numTextures = 0;
 
 	if (gl_lms.handle) {
 		glMakeTextureHandleNonResidentARB(gl_lms.handle[0]);

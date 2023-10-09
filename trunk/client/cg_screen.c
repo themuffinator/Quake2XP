@@ -401,7 +401,6 @@ void SCR_DrawLoading (void) {
 		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[2]), qtrue);
 		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[3]), qtrue);
 		RE_SetColor (colorWhite);
-	//	qglDisable(GL_FRAMEBUFFER_SRGB);
 	}
 }
 
@@ -1080,6 +1079,7 @@ void SCR_UpdateScreen (void) {
 	// changing)
 	// do nothing at all
 	int start = Sys_Milliseconds();
+
 	if (cls.disableScreen) {
 		if (cls.download)		// Knightmare- don't time out on downloads
 			cls.disableScreen = Sys_Milliseconds ();
@@ -1093,7 +1093,6 @@ void SCR_UpdateScreen (void) {
 
 	if (!scr_initialized || !con.initialized)
 		return;					// not initialized yet
-
 
 	ui_hudScale->value = ClampCvar(0.3, 0.8, ui_hudScale->value);
 	ui_fontScale->value = ClampCvar(2.0, 4.0, ui_fontScale->value);
@@ -1154,8 +1153,6 @@ void SCR_UpdateScreen (void) {
 				makeSaveShot[0] = 0;
 			}
 
-		SCR_DrawSpeeds();
-
 		SCR_DrawStats ();
 		if (cl.frame.playerstate.stats[STAT_LAYOUTS] & 1)
 			SCR_DrawLayout ();
@@ -1201,6 +1198,8 @@ void SCR_UpdateScreen (void) {
 		M_Draw ();
 
 		SCR_DrawLoading ();
+
+		SCR_DrawSpeeds();
 		
 	}
 	GLimp_EndFrame();
