@@ -1809,44 +1809,24 @@ void Mod_ParseFogParams(model_t *mod, char *s) {
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "worldColor")) {
-			fog.worldColor[0] = atof(COM_Parse(&s)); // r
-			fog.worldColor[1] = atof(COM_Parse(&s)); // g
-			fog.worldColor[2] = atof(COM_Parse(&s)); // b
-			Com_DPrintf("world fog color:" S_COLOR_GREEN " %.3f %.3f %.3f\n", fog.worldColor[0], fog.worldColor[1], fog.worldColor[2]);
+		if (!Q_strcasecmp(token, "color")) {
+			fog.color[0] = atof(COM_Parse(&s)); // r
+			fog.color[1] = atof(COM_Parse(&s)); // g
+			fog.color[2] = atof(COM_Parse(&s)); // b
+			Com_DPrintf("fog color:" S_COLOR_GREEN " %.3f %.3f %.3f\n", fog.color[0], fog.color[1], fog.color[2]);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "skyColor")) {
-			fog.skyColor[0] = atof(COM_Parse(&s)); // r
-			fog.skyColor[1] = atof(COM_Parse(&s)); // g
-			fog.skyColor[2] = atof(COM_Parse(&s)); // b
-			Com_DPrintf("sky fog color:" S_COLOR_GREEN " %.3f %.3f %.3f\n", fog.skyColor[0], fog.skyColor, fog.skyColor);
+		if (!Q_strcasecmp(token, "density")) {
+			fog.density = atof(COM_Parse(&s));
+			Com_DPrintf("fog density:" S_COLOR_GREEN " %.3f\n", fog.density);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "worldDensity")) {
-			fog.worldDensity = atof(COM_Parse(&s));
-			Com_DPrintf("world fog density:" S_COLOR_GREEN " %.3f\n", fog.worldDensity);
-			continue;
-		}
-
-		if (!Q_strcasecmp(token, "skyDensity")) {
-			fog.skyDensity = atof(COM_Parse(&s));
-			Com_DPrintf("fogSkyDensity:" S_COLOR_GREEN " %.3f\n", fog.skyDensity);
-			continue;
-		}
-
-		if (!Q_strcasecmp(token, "worldBias")) { // -1.0 ... 1.0
-			fog.worldBias = atof(COM_Parse(&s));
-		//	fog.worldBias = clamp(fog.worldBias, -1.0, 1.0);
-			Com_DPrintf("world fog bias:" S_COLOR_GREEN " %.3f\n", fog.worldBias);
-			continue;
-		}
-		if (!Q_strcasecmp(token, "skyBias")) { // -1.0 ... 1.0
-			fog.skyBias = atof(COM_Parse(&s));
-		//	mod->fogSkyBias = clamp(mod->fogBias, -1.0, 1.0);
-			Com_DPrintf("sky fog bias:" S_COLOR_GREEN " %.3f\n", fog.skyBias);
+		if (!Q_strcasecmp(token, "bias")) {
+			fog.bias = atof(COM_Parse(&s));
+		//	fog.bias = clamp(fog.bias, -1.0, 1.0);
+			Com_DPrintf("fog bias:" S_COLOR_GREEN " %.3f\n", fog.bias);
 			continue;
 		}
 	}
@@ -1870,12 +1850,9 @@ void Mod_LoadFogScript(model_t * mod) {
 		//can't find fog script? Set default  params 
 		Com_Printf("Load default fog values for:" S_COLOR_GREEN " %s\n", mod->name);
 		fog.type = 0;
-		VectorSet(fog.worldColor, 1.0, 0.3, 0.1);
-		VectorSet(fog.skyColor, 1.0, 0.35, 0.0);
-		fog.worldDensity = 0.02500;
-		fog.skyDensity = 0.005;
-		fog.worldBias = 0.0;
-		fog.skyBias = 0.0;
+		VectorSet(fog.color, 1.0, 0.3, 0.1);
+		fog.density = 0.02500;
+		fog.bias = 0.0;
 	}
 	if (buf) {
 		Com_Printf("Load fog script for:" S_COLOR_GREEN " %s\n", mod->name);

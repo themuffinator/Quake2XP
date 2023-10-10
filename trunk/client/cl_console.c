@@ -673,8 +673,6 @@ void Con_DrawConsole (float frac) {
 	for (x = 0; x < strlen(version)+1; x++)
 		R_FillConsoleSymbols((viddef.width - (len * 6 * fontscale)) + x * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version[x]);
 
-	R_DrawConsoleSymbols();
-
 	// draw the text
 	con.vislines = lines;
 
@@ -692,12 +690,11 @@ void Con_DrawConsole (float frac) {
 		y -= 8 * fontscale;
 		rows--;
 	}
-	R_DrawConsoleSymbols();
-	
+
 	currentColor = 7;
 	RE_SetColor (ColorTable[currentColor]);
 	int oldColor;
-	
+
 	row = con.display;
 	for (i = 0; i < rows; i++, y -= 8 * fontscale, row--) {
 		if (row < 0)
@@ -721,8 +718,8 @@ void Con_DrawConsole (float frac) {
 				RE_SetColor(ColorTable[oldColor]);
 			else
 				//Reset Current font color
-				RE_SetColor(ColorTable[currentColor]);
-			
+			RE_SetColor(ColorTable[currentColor]);
+
 			R_FillConsoleSymbols((x * fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x]);
 
 			if (text[x] < 190)

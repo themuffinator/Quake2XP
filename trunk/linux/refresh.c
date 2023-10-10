@@ -31,7 +31,7 @@
 
 #include <SDL.h>
 
-#include "../ref_gl/r_local.h"
+#include "../renderer/r_local.h"
 #include "../client/ref.h"
 
 /* The window icon */

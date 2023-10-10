@@ -1009,7 +1009,7 @@ void R_RenderView (refdef_t *fd) {
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
-		GL_DrawBuffers(4);
+		GL_DrawBuffers(1);
 		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -1108,7 +1108,6 @@ void R_RenderFrame(refdef_t * fd) {
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
 		R_FixFov();
-//		R_FXAA();
 		R_RadialBlur();
 		R_ThermalVision();
 		R_DofBlur();
@@ -2072,7 +2071,7 @@ void R_BeginFrame()
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Nvidia Nsight Graphics frame frame terminator
-//	qglFlush();
+	//qglFlush();
 
 	qglDrawBuffer( GL_BACK );
 

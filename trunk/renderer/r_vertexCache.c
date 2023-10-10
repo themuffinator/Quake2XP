@@ -231,7 +231,7 @@ void R_InitVertexBuffers() {
 
 //------------------------------------------- skybox
 	vec3_t v[8];
-	float size = 4096.0;
+	float size = 16000.0;
 	vec3_t org = { 0.0, 0.0, 0.0 };
 	VectorSet(v[0], org[0] - size, org[1] - size, org[2] + size);
 	VectorSet(v[1], org[0] + size, org[1] - size, org[2] + size);

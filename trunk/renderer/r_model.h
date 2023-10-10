@@ -164,15 +164,9 @@ byte	viewvis[MAX_MAP_LEAFS / 8];
 typedef struct fog_s {
 
 	int type;
-
-	vec3_t skyColor;
-	vec3_t worldColor;
-
-	float skyBias;
-	float worldBias;
-
-	float skyDensity;
-	float worldDensity;
+	vec3_t color;
+	float bias;
+	float density;
 }fog_t;
 fog_t fog;
 
