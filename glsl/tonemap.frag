@@ -73,5 +73,7 @@ void main(){
 
     float gamma = 1.0 / u_gamma; // hdr gamma 2.2
 	fragData.rgb = pow( hdrColor.rgb, vec3(gamma) );
-    fragData.a = 1.0;
+    // store luma for fxaa
+    float lum = dot(vec3(0.2125, 0.7154, 0.0721), fragData.rgb);
+    fragData.a = lum;
 }

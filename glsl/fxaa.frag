@@ -4,7 +4,7 @@
 // Copyright (c) 2014-2015, NVIDIA CORPORATION. All rights reserved.
 
 #define FXAA_GLSL_130 1
-#define FXAA_GREEN_AS_LUMA 1
+#define FXAA_GREEN_AS_LUMA 0
 #define FXAA_GATHER4_ALPHA 1
 #define FXAA_FAST_PIXEL_OFFSET 1
 // low
@@ -794,7 +794,7 @@ void main(void)
     //   will appear very dark in the green channel!
     //   Tune by looking at mostly non-green content,
     //   then start at zero and increase until aliasing is a problem.
-    float QualityEdgeThresholdMin = 0.0833;
+    float QualityEdgeThresholdMin = 0.0312;
 
     fragData = FxaaPixelShader(pos, u_ScreenTex, rcpFrame, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin);
 }

@@ -7,5 +7,4 @@ void main(void){
 
     fragData = textureLod(u_map, v_texCoord.xyz, 0);
     fragData *= 1.18;
- //   glFragData[0] = textureLod(u_map, v_texCoord.xyz, 0);
 }
