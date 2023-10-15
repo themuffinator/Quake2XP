@@ -1464,6 +1464,8 @@ void R_RegisterCvars(void)
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
 	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);
+	r_nsightDebug =						Cvar_Get("r_nsightDebug", "0", 0);
+	r_nsightDebug->help =				"Enable Nvidia Nsight Graphics frame delimiter";
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1873,21 +1875,24 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetIntegerv(GL_MAX_DRAW_BUFFERS,					&gl_state.maxDrawBuffers);
 	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,			&gl_state.maxColorAttachments);
 	qglGetIntegerv(GL_MAX_SAMPLES,						&gl_state.maxSamples);
+	qglGetIntegerv(GL_MAX_PATCH_VERTICES,				&gl_config.maxPatchVertices);
 
 	Com_Printf("\n");
-	Com_Printf(S_COLOR_YELLOW"Max Fragment Uniform Components:"S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
-	Com_Printf(S_COLOR_YELLOW"Max Vertex Uniform Components: "S_COLOR_GREEN"  %i\n", gl_config.maxVertexUniformComponents);
-	Com_Printf(S_COLOR_YELLOW"Max Uniform Locations:"S_COLOR_GREEN"           %i\n", gl_config.maxUniformLocations);
-	Com_Printf(S_COLOR_YELLOW"Max Vertex Attribs:           "S_COLOR_GREEN"   %i\n", gl_config.maxVertexAttribs);
-	Com_Printf(S_COLOR_YELLOW"Max Varying Floats:           "S_COLOR_GREEN"   %i\n", gl_config.maxVaryingFloats);
-	Com_Printf(S_COLOR_YELLOW"Max Vertex TextureImageUnits: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexTextureImageUnits);
-	Com_Printf(S_COLOR_YELLOW"Max Texture ImageUnits:       "S_COLOR_GREEN"   %i\n", gl_config.maxTextureImageUnits);
-	Com_Printf(S_COLOR_YELLOW"Max Combined TextureImageUnits: "S_COLOR_GREEN" %i\n", gl_config.maxCombinedTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Fragment Uniform Components:" S_COLOR_GREEN " %i\n", gl_config.maxFragmentUniformComponents);
+	Com_Printf(S_COLOR_YELLOW"Max Vertex Uniform Components:  " S_COLOR_GREEN " %i\n", gl_config.maxVertexUniformComponents);
+	Com_Printf(S_COLOR_YELLOW"Max Uniform Locations:          " S_COLOR_GREEN " %i\n", gl_config.maxUniformLocations);
+	Com_Printf(S_COLOR_YELLOW"Max Vertex Attribs:             " S_COLOR_GREEN " %i\n", gl_config.maxVertexAttribs);
+	Com_Printf(S_COLOR_YELLOW"Max Varying Floats:             " S_COLOR_GREEN " %i\n", gl_config.maxVaryingFloats);
+	Com_Printf(S_COLOR_YELLOW"Max Vertex TextureImageUnits:   " S_COLOR_GREEN " %i\n", gl_config.maxVertexTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Texture ImageUnits:         " S_COLOR_GREEN " %i\n", gl_config.maxTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Combined TextureImageUnits: " S_COLOR_GREEN " %i\n", gl_config.maxCombinedTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Patch Vertices:             " S_COLOR_GREEN " %i\n", gl_config.maxPatchVertices);
+	Com_Printf("\n");
+	Com_Printf(S_COLOR_YELLOW"Max Render Buffer Size:   " S_COLOR_GREEN "       %i\n", gl_state.maxRenderBufferSize);
+	Com_Printf(S_COLOR_YELLOW"Max Draw Buffers:         " S_COLOR_GREEN "       %i\n", gl_state.maxDrawBuffers);
+	Com_Printf(S_COLOR_YELLOW"Max Color Attachments:    " S_COLOR_GREEN "       %i\n", gl_state.maxColorAttachments);
+	Com_Printf(S_COLOR_YELLOW"Max Buffer Samples:       " S_COLOR_GREEN "       %i\n", gl_state.maxSamples);
 
-	Com_Printf(S_COLOR_YELLOW"Max Render Buffer Size:   "S_COLOR_GREEN"       %i\n", gl_state.maxRenderBufferSize);
-	Com_Printf(S_COLOR_YELLOW"Max Draw Buffers:         "S_COLOR_GREEN"       %i\n", gl_state.maxDrawBuffers);
-	Com_Printf(S_COLOR_YELLOW"Max Color Attachments:    "S_COLOR_GREEN"       %i\n", gl_state.maxColorAttachments);
-	Com_Printf(S_COLOR_YELLOW"Max Buffer Samples:       "S_COLOR_GREEN"       %i\n", gl_state.maxSamples);
 
 	R_InitPrograms();
 	R_InitFboBuffers();
@@ -2070,8 +2075,8 @@ void R_BeginFrame()
 	GL_Enable(GL_BLEND); // alpha blend for chars
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// Nvidia Nsight Graphics frame frame terminator
-	//qglFlush();
+	if(r_nsightDebug->integer)
+		qglFlush();
 
 	qglDrawBuffer( GL_BACK );
 

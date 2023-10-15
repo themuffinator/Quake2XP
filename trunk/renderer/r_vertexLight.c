@@ -217,7 +217,6 @@ void R_InitLightgrid (void) {
 
 	b = &r_lightgrid[0][0];
 
-	// Huh ?
 	for (x = 0; x < 8192; x += LIGHTGRID_STEP)
 		for (y = 0; y < 8192; y += LIGHTGRID_STEP)
 			for (z = 0; z < 8192; z += LIGHTGRID_STEP) {
@@ -225,6 +224,8 @@ void R_InitLightgrid (void) {
 				end[1] = p[1] = y - 4096;
 				end[2] = (p[2] = z - 4096) - 2048;
 				r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
+				if (r < 0.1)
+					r = 0.1;
 				if (r != -1) {
 					for (i = 0; i < 3; i++) {
 						float mu = pointcolor[i];

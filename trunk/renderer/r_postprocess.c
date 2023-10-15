@@ -761,7 +761,7 @@ void R_SaveFogParams() {
 	fprintf(f, "type %i\n",					fog.type);
 	fprintf(f, "color %.3f %.3f %.3f\n",	fog.color[0], fog.color[1], fog.color[2]);
 	fprintf(f, "density %.5f\n",			fog.density);
-	fprintf(f, "bias %.3f\n",				fog.bias);
+	fprintf(f, "bias %.5f\n",				fog.bias);
 	fclose(f);
 
 	Com_Printf(""S_COLOR_MAGENTA"R_SaveFogParams: "S_COLOR_WHITE"Save Fog Script To "S_COLOR_GREEN"%s.fog\n", name);
@@ -777,8 +777,8 @@ void R_RemoveFogParams() {
 	Com_Printf(""S_COLOR_MAGENTA"R_RemoveFogParams: "S_COLOR_WHITE"Remove Fog Script To "S_COLOR_GREEN"%s.fog\n", name);
 
 	fog.type = 0;
-	VectorSet(fog.color, 1.0, 1.0, 0.5);
-	fog.density = 0.02500;
+	VectorSet(fog.color, 1.0, 0.3, 0.1);
+	fog.density = 0.025;
 	fog.bias = 0.0;
 }
 
@@ -836,7 +836,7 @@ void R_FogEditor_f(void) {
 
 	if (!strcmp(Cmd_Argv(1), "density")) {
 		if (Cmd_Argc() != 3) {
-			Com_Printf("usage: fogEdit %s value\nCurrent fog density: " S_COLOR_YELLOW "%.3f\n", Cmd_Argv(0), fog.density);
+			Com_Printf("usage: fogEdit %s value\nCurrent fog density: " S_COLOR_YELLOW "%.5f\n", Cmd_Argv(0), fog.density);
 			return;
 		}
 		fog.density = atof(Cmd_Argv(2));
@@ -844,7 +844,7 @@ void R_FogEditor_f(void) {
 
 	if (!strcmp(Cmd_Argv(1), "bias")) {
 		if (Cmd_Argc() != 3) {
-			Com_Printf("usage: fogEdit %s value\nCurrent fog bias: " S_COLOR_YELLOW "%.3f\n", Cmd_Argv(0), fog.bias);
+			Com_Printf("usage: fogEdit %s value\nCurrent fog bias: " S_COLOR_YELLOW "%.5f\n", Cmd_Argv(0), fog.bias);
 			return;
 		}
 		fog.bias = atof(Cmd_Argv(2));

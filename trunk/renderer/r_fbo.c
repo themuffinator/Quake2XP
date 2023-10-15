@@ -171,12 +171,12 @@ void R_CreateScreenFbo() {
 
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
+	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
 		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, NULL);
 
-	r_hdrScreenCopy = R_CreateTexture("***r_hdrScreenCopy***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
+	r_hdrScreenCopy = R_CreateTexture("***r_hdrScreenCopy***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
 		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, NULL);
@@ -237,7 +237,7 @@ void R_Tex2dFbo() {
 	qglGenFramebuffers(1, &fbo._tex2d);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._tex2d);
 
-	r_hdrScreenCopy2d = R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+	r_hdrScreenCopy2d = R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA,
 						0, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrScreenCopy2d->texnum, 0);

@@ -301,7 +301,7 @@ void SCR_DrawNet (void) {
 		< CMD_BACKUP - 1)
 		return;
 
-	Draw_Pic2 (scr_vrect.x + 64, scr_vrect.y, i_net);
+	Draw_ScaledPic(scr_vrect.x, scr_vrect.y, ui_fontScale->value, ui_fontScale->value, i_net);
 }
 
 /*
@@ -705,11 +705,9 @@ void SCR_TileClear (void) {
 
 
 #define STAT_MINUS		10		// num frame for '-' stats digit
-char *sb_nums[2][11] = {
-	{ "num_0", "num_1", "num_2", "num_3", "num_4", "num_5",
-	"num_6", "num_7", "num_8", "num_9", "num_minus" },
-	{ "anum_0", "anum_1", "anum_2", "anum_3", "anum_4", "anum_5",
-	"anum_6", "anum_7", "anum_8", "anum_9", "anum_minus" }
+char *sb_nums[2][11] = { 
+	{ "num_0",	"num_1",  "num_2",  "num_3",  "num_4",  "num_5",  "num_6",  "num_7",  "num_8",  "num_9",  "num_minus" },
+	{ "anum_0", "anum_1", "anum_2", "anum_3", "anum_4",	"anum_5", "anum_6", "anum_7", "anum_8", "anum_9", "anum_minus" }
 };
 
 char *sb_nums_bump[11] = {	"num_0_bump", "num_1_bump", "num_2_bump", "num_3_bump", "num_4_bump", "num_5_bump",

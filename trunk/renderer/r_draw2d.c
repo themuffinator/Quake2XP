@@ -549,60 +549,6 @@ Draw_Pic
 =============
 */
 
-void Draw_Pic2(int x, int y, image_t* gl)
-{
-	int w, h;
-
-	if (!gl) {
-		Com_Printf("NULL pic in Draw_Pic\n");
-		return;
-	}
-
-	w = gl->width;
-	h = gl->height;
-
-	if (!gl->has_alpha)
-		GL_Disable(GL_BLEND);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 2 , GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
-
-	GL_BindProgram(genericProgram);
-	qglUniform1i(U_2D_PICS, 1);
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
-
-	GL_SetBindlessTexture(U_TMU0, gl->handle);
-
-	VA_SetElem2(texCoord[0], gl->sl, gl->tl);
-	VA_SetElem2(texCoord[1], gl->sh, gl->tl);
-	VA_SetElem2(texCoord[2], gl->sh, gl->th);
-	VA_SetElem2(texCoord[3], gl->sl, gl->th);
-
-	VA_SetElem2(vertCoord[0], x, y);
-	VA_SetElem2(vertCoord[1], x + gl->width, y);
-	VA_SetElem2(vertCoord[2], x + gl->width, y + gl->height);
-	VA_SetElem2(vertCoord[3], x, y + gl->height);
-
-	for (int i = 0; i < 4; i++)
-		VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
-
-	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
-
-
-	if (!gl->has_alpha)
-		GL_Enable(GL_BLEND);
-
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
-}
 
 void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 {
@@ -739,18 +685,6 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-}
-
-void Draw_Pic(int x, int y, char* pic)
-{
-	image_t* gl;
-
-	gl = Draw_FindPic(pic);
-	if (!gl) {
-		gl = r_missingTexture;
-	}
-	Draw_Pic2(x, y, gl);
-
 }
 
 void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char* pic)

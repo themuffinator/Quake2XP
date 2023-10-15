@@ -617,8 +617,7 @@ extern char *sInf;
 int R_GetClippedFragments (vec3_t origin, float radius, mat3_t axis,
 	int maxfverts, vec3_t * fverts, int maxfragments,
 	fragment_t * fragments);
-void Draw_Pic (int x, int y, char *name);
-void Draw_Pic2 (int x, int y, image_t * gl);
+
 void Draw_StretchPic2 (int x, int y, int w, int h, image_t * gl);
 void Draw_StretchPic (int x, int y, int w, int h, char *name);
 
@@ -640,10 +639,9 @@ void R_EndRegistration (void);
 void R_RenderFrame (refdef_t * fd);
 void Draw_GetPicSize (int *w, int *h, char *name);	// will return 0 0 if
 // not found
-void R_ModelBounds (struct model_s * model, vec3_t mins, vec3_t maxs);
+
 void R_ModelRadius (struct model_s * model, vec3_t rad);
 void R_ModelCenter (struct model_s * model, vec3_t center);
-
 
 void R_Shutdown (void);
 qboolean R_CullPoint (vec3_t org);

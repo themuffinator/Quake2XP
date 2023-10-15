@@ -203,9 +203,15 @@ void Load3dLut(void) {
 }
 */
 
-
-char	*lsuf[6] = { "ft", "bk", "lf", "rt", "up", "dn" };
-unsigned	trans[4096 * 4096];
+//photoshop helper
+/*
+X+  -   rot90cc flip y
+X-  -   rot90c	flip y
+Y+  -   flip y
+Y-  -   flip x 
+Z+	-	rot90c flip x
+Z-	-	rot90c flip x
+*/
 
 void R_FlipImage (int idx, img_t *pix, byte *dst) {
 	byte *from;
@@ -214,7 +220,7 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 	int	height = pix->height;
 	int	x, y;
 
-	if (idx == 1)		// bk
+	if (idx == 1)		// x neg
 	{
 		for (y = height - 1; y >= 0; y--) {
 			for (x = width - 1; x >= 0; x--) {	// copy rgb components
@@ -228,7 +234,7 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 		return;
 	}
 
-	if (idx == 2)		// lf
+	if (idx == 2)		// y plus
 	{
 		for (y = height - 1; y >= 0; y--) {
 			for (x = 0; x < width; x++) {	// copy rgb components
@@ -242,7 +248,7 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 		return;
 	}
 
-	if (idx == 3)		// rt
+	if (idx == 3)		// y neg
 	{
 		for (y = 0; y < height; y++) {
 			for (x = width - 1; x >= 0; x--) {	// copy rgb components
@@ -256,7 +262,7 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 		return;
 	}
 
-	// ft, up, dn
+	// x plus, z plus, z neg
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {	// copy rgb components
 			from = src + (x*height + y) * 4;
@@ -267,117 +273,6 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 		}
 	}
 }
-
-
-image_t *R_LoadLightFilter (int id) {
-	int		i, minw, minh, maxw, maxh;
-	image_t	*image;
-	char	name[MAX_OSPATH];
-	char	checkname[MAX_OSPATH];
-	img_t	pix[6];
-	byte	*nullpixels;
-	qboolean	allNull = qtrue;
-
-	Com_sprintf (name, sizeof(name), "***Filter%2i***", id + 1);
-
-	// find a free image_t
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
-		if (!image->texnum)
-			break;
-	}
-	if (i == r_numTextures) {
-		if (r_numTextures == MAX_GLTEXTURES)
-			Com_Error (ERR_FATAL, "MAX_GLTEXTURES");
-		r_numTextures++;
-	}
-	image = &r_textures[i];
-
-	strcpy (image->name, name);
-	image->registration_sequence = registration_sequence;
-	image->type = it_pic;
-	image->hash = Com_HashKey(image->name);
-
-	glCreateTextures (GL_TEXTURE_CUBE_MAP, 1, &image->texnum);
-
-	minw = minh = 0;
-	maxw = maxh = 9999999;
-	for (i = 0; i < 6; i++) {
-		pix[i].pixels = NULL;
-		pix[i].width = pix[i].height = 0;
-		Com_sprintf (checkname, sizeof(checkname), "gfx/lights/%i_%s.tga", id + 1, lsuf[i]);
-
-		// Berserker: stop spam
-		if (FS_LoadFile (checkname, NULL) != -1) {
-			STB_LoadTexture(checkname, &pix[i].pixels, &pix[i].width, &pix[i].height);
-
-			if (pix[i].width) {
-				if (minw < pix[i].width)	
-					minw = pix[i].width;
-				if (maxw > pix[i].width)	
-					maxw = pix[i].width;
-			}
-
-			if (pix[i].height) {
-				if (minh < pix[i].height)	
-					minh = pix[i].height;
-				if (maxh > pix[i].height)	
-					maxh = pix[i].height;
-			}
-		}
-	}
-
-	if ((minw == 0) || (minh == 0)) 
-		minw = minh = maxw = maxh = 1;	// Для отсутствующего фильтра пусть будет фильтр 1х1 черный... (нет света)
-	
-
-	if ((minw != maxw) || (minh != maxh) || (minw != minh))
-		Com_Error (ERR_DROP, "R_LoadLightFilter: (%i) all images must be quadratic with equal sizes", id + 1);
-
-	int numMips = CalcMipmapCount(minw, minh);
-	glTextureStorage2D(image->texnum, numMips, GL_RGB8, minw, minh);
-
-	for (i = 0; i < 6; i++) {
-		if (pix[i].pixels) {
-			allNull = qfalse;
-			R_FlipImage (i, &pix[i], (byte*)trans);
-			free (pix[i].pixels);
-			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGB, GL_UNSIGNED_BYTE, trans);
-		}
-		else {
-			nullpixels = (byte*)calloc (minw*minh * 3, 1);
-			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGB, GL_UNSIGNED_BYTE, nullpixels);
-			free (nullpixels);
-		}
-
-	}
-
-	image->width = minw;
-	image->height = minh;
-	image->upload_width = image->width * 6;
-	image->upload_height = image->height;
-	
-	image->texType = GL_TEXTURE_CUBE_MAP;
-	image->intFormat = GL_RGB8;
-	image->dataType = GL_UNSIGNED_BYTE;
-
-	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, numMips-1);
-	glGenerateTextureMipmap(image->texnum);
-
-	image->handle = glGetTextureHandleARB(image->texnum);
-	glMakeTextureHandleResidentARB(image->handle);
-
-	if (allNull)
-		image->registration_sequence = -1;	// free
-
-	return image;
-}
-
 byte	missingTexture[16][16] =
 {
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -400,6 +295,7 @@ byte	missingTexture[16][16] =
 
 void R_InitEngineTextures (void) {
 	int		i, x, y;
+	char	name[MAX_QPATH];
 	static byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
 	static byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
 	static byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
@@ -415,7 +311,6 @@ void R_InitEngineTextures (void) {
 			mt[y][x][3] = 255;
 		}
 	}
-	//f16 = R_LoadDDS("gfx/f16.dds", it_pic);
 
 	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_normal, 32, 0);
 	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_wall, 32, 0);
@@ -462,9 +357,7 @@ void R_InitEngineTextures (void) {
 	r_particleTexture[PT_FLARE]			= R_LoadDDS("gfx/flares/flare0.dds", it_part);
 
 	for (i = 0; i < MAX_BFG_EXPL; i++) {
-		char name[MAX_QPATH];
 		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.dds", i);
-
 		r_bfg_expl[i] = R_LoadDDS(name, it_part);
 		if (!r_bfg_expl[i])
 			r_bfg_expl[i] = r_missingTexture;
@@ -501,8 +394,6 @@ void R_InitEngineTextures (void) {
 	}
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
-		char name[MAX_QPATH];
-
 		if (i < 10)
 			Com_sprintf (name, sizeof(name), "gfx/caust/caust_0%i.dds", i);
 		else
@@ -513,8 +404,6 @@ void R_InitEngineTextures (void) {
 	}
 
 	for (i = 0; i < MAX_WATER_NORMALS; i++) {
-		char name[MAX_QPATH];
-
 		if (i < 10)
 			Com_sprintf(name, sizeof(name), "gfx/water/00%iNormal.dds", i);
 		else
@@ -525,55 +414,46 @@ void R_InitEngineTextures (void) {
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {
-		char frame[MAX_QPATH];
-		Com_sprintf (frame, sizeof(frame), "gfx/fly/fly%i.dds", i);
-		fly[i] = R_LoadDDS(frame, it_wall);
+		Com_sprintf (name, sizeof(name), "gfx/fly/fly%i.dds", i);
+		fly[i] = R_LoadDDS(name, it_wall);
 		if (!fly[i])
 			fly[i] = r_missingTexture;
 	}
 
 	for (i = 0; i < MAX_FLAMEANIM; i++) {
-		char frame2[MAX_QPATH];
-		Com_sprintf (frame2, sizeof(frame2), "gfx/flame/fire_0%i.dds", i);
-		flameanim[i] = R_LoadDDS(frame2, it_wall);
+		Com_sprintf (name, sizeof(name), "gfx/flame/fire_0%i.dds", i);
+		flameanim[i] = R_LoadDDS(name, it_wall);
 		if (!flameanim[i])
 			flameanim[i] = r_missingTexture;
 	}
 
 
 	for (i = 0; i < MAX_BLOOD; i++) {
-		char bloodspr[MAX_QPATH];
-		Com_sprintf (bloodspr, sizeof(bloodspr),
-			"gfx/particles/bloodhit%i.dds", i);
-		r_blood[i] = R_LoadDDS(bloodspr, it_wall);
+		Com_sprintf (name, sizeof(name), "gfx/particles/bloodhit%i.dds", i);
+		r_blood[i] = R_LoadDDS(name, it_wall);
 		if (!r_blood[i])
 			r_blood[i] = r_missingTexture;
 
 	}
 
 	for (i = 0; i < MAX_xBLOOD; i++) {
-		char xbloodspr[MAX_QPATH];
-
-		Com_sprintf (xbloodspr, sizeof(xbloodspr),
-			"gfx/particles/xbloodhit%i.dds", i);
-		r_xblood[i] = R_LoadDDS(xbloodspr, it_wall);
+		Com_sprintf (name, sizeof(name), "gfx/particles/xbloodhit%i.dds", i);
+		r_xblood[i] = R_LoadDDS(name, it_wall);
 		if (!r_xblood[i])
 			r_xblood[i] = r_missingTexture;
 
 	}
 
 	for (i = 0; i < MAX_EXPLODE; i++) {
-		char expl[MAX_QPATH];
-		Com_sprintf (expl, sizeof(expl), "gfx/explode/rlboom_%i.dds", i);
-		r_explode[i] = R_LoadDDS(expl, it_part);
+		Com_sprintf (name, sizeof(name), "gfx/explode/rlboom_%i.dds", i);
+		r_explode[i] = R_LoadDDS(name, it_part);
 		if (!r_explode[i])
 			r_explode[i] = r_missingTexture;
 	}
 
 	for (i = 0; i < MAX_SHELLS; i++) {
-		char shell[MAX_QPATH];
-		Com_sprintf (shell, sizeof(shell), "gfx/shells/shell%i.dds", i);
-		r_texshell[i] = R_LoadDDS(shell, it_wall);
+		Com_sprintf (name, sizeof(name), "gfx/shells/shell%i.dds", i);
+		r_texshell[i] = R_LoadDDS(name, it_wall);
 		if (!r_texshell[i])
 			r_texshell[i] = r_missingTexture;
 	}
@@ -593,9 +473,13 @@ void R_InitEngineTextures (void) {
 	r_randomNormalTex = R_LoadDDS("gfx/randomNormal.dds", it_screen);
 	if (!r_randomNormalTex)
 		r_randomNormalTex = r_defBump;
-
-	for (i = 0; i < MAX_GLOBAL_FILTERS; i++)
-		r_lightCubeMap[i] = R_LoadLightFilter (i);
+	
+	for (i = 0; i < MAX_GLOBAL_FILTERS; i++) {
+		Com_sprintf(name, sizeof(name), "gfx/lights/lf_%i.dds", i+1);
+		r_lightCubeMap[i] = R_LoadDDS(name, it_wall);
+		if (!r_lightCubeMap[i])
+			r_lightCubeMap[i] = r_missingTexture;
+	}
 
 	skinBump = R_LoadDDS("gfx/skinBlend_bump.dds", it_normal);
 	if (!skinBump)
@@ -642,7 +526,7 @@ void GL_ScreenShot_f (void) {
 		Q_stricmp (r_screenShot->string, "jpg") != 0)
 		Cvar_Set ("r_screenShot", "jpg");
 	
-	w = vid.width & 0xFFFFFFF0; //fix 1366x768 
+	w = vid.width;
 	h = vid.height;
 
 	// Create the scrnshots directory if it doesn't exist
@@ -681,7 +565,6 @@ void GL_ScreenShot_f (void) {
 		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 	}
 	else {
-
 		qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);
 		qglReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
@@ -690,30 +573,16 @@ void GL_ScreenShot_f (void) {
 		if (data){
 
 			if (!Q_stricmp(r_screenShot->string, "tga"))
-#pragma omp sections
-			{
-#pragma omp section
 				stbi_write_tga(checkname, w, h, NUM_CHANNELS, data);
-			}
+
 			if (!Q_stricmp(r_screenShot->string, "png"))
-#pragma omp sections
-			{
-#pragma omp section
 				stbi_write_png(checkname, w, h, NUM_CHANNELS, data, vid.width * NUM_CHANNELS);
-			}
 
 			if (!Q_stricmp(r_screenShot->string, "jpg"))
-#pragma omp sections
-			{
-#pragma omp section
 				stbi_write_jpg(checkname, w, h, NUM_CHANNELS, data, 100); // max quality
-			}
+
 			if (!Q_stricmp(r_screenShot->string, "bmp"))
-#pragma omp sections
-			{
-#pragma omp section
 				stbi_write_bmp(checkname, w, h, NUM_CHANNELS, data);
-			}
 			
 			qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		}		
@@ -748,12 +617,7 @@ void GL_LevelShot_f(void) {
 	GLbyte *data = (GLbyte *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, screenSizeByte, GL_MAP_READ_BIT);
 	
 	if (data) {
-		stbi_flip_vertically_on_write(1);
-#pragma omp sections
-		{
-#pragma omp section
 			stbi_write_jpg(checkname, vid.width, vid.height, NUM_CHANNELS, data, 100);
-		}
 	}
 	qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -770,7 +634,7 @@ void GL_MakeSaveShot(char* dir) {
 	Com_sprintf(name, sizeof(name), "%s/savexp/%s/shot.jpg", FS_Gamedir(), dir);
 	remove(name);
 
-	w = vid.width & 0xFFFFFFF0;
+	w = vid.width;
 	h = vid.height;
 
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);
@@ -780,11 +644,7 @@ void GL_MakeSaveShot(char* dir) {
 
 	if (data) {
 		stbi_flip_vertically_on_write(1);
-#pragma omp sections
-		{
-#pragma omp section
-			stbi_write_jpg(name, w, h, NUM_CHANNELS, data, 100);
-		}
+		stbi_write_jpg(name, w, h, NUM_CHANNELS, data, 100);
 	}
 
 	qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);

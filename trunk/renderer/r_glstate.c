@@ -694,5 +694,10 @@ void GL_SetDefaultState(void) {
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	qglHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+	//fix 1366x768 screenshots
+	qglPixelStorei(GL_UNPACK_ALIGNMENT, (vid.width & 3) ? 1 : 4);
+	qglPixelStorei(GL_PACK_ALIGNMENT, (vid.width & 3) ? 1 : 4);
+
 	GL_UpdateSwapInterval();
 }

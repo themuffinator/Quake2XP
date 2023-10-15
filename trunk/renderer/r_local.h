@@ -363,6 +363,7 @@ cvar_t	*r_useShaderCache;
 cvar_t	*r_particlesOverdraw;
 
 cvar_t	*r_colorTempK;
+cvar_t	*r_nsightDebug;
 
 float	hdrAverageLuminance;
 float	hdrMaxLuminance;
@@ -609,7 +610,6 @@ void R_DrawSkyBox();
 void COM_StripExtension (char *in, char *out);
 
 void Draw_GetPicSize (int *w, int *h, char *name);
-void Draw_Pic (int x, int y, char *name);
 void Draw_StretchPic (int x, int y, int w, int h, char *name);
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, qboolean loading);
@@ -669,6 +669,7 @@ typedef struct {
 	int			maxVertexAttribs;
 	int			maxTextureImageUnits;
 	int			maxUniformLocations;
+	int			maxPatchVertices;
 
 	int			glMajorVersion;
 	int			glMinorVersion;

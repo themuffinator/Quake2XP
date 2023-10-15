@@ -103,6 +103,7 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 	if (i == r_numTextures) {
 		if (r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+
 		r_numTextures++;
 	}
 
