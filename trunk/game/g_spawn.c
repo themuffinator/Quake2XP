@@ -896,7 +896,7 @@ string <stat>
 
 		// help icon for statusbar
 		gi.imageindex ("i_help");
-		level.pic_health = gi.imageindex ("i_health3");
+		level.pic_health = gi.imageindex ("i_health");
 		level.model_health = gi.modelindex ("models/items/healing/medium/tris.md2");
 		gi.imageindex ("help");
 		gi.imageindex ("field_3");

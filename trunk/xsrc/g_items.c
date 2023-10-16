@@ -1206,7 +1206,7 @@ gitem_t	itemlist[] =
 		"misc/ar2_pkup.wav",
 		"models/items/armor/shard/tris.md2", EF_ROTATE,
 		NULL,
-		/* icon */		"i_jacketarmor",
+		/* icon */		"i_shard",
 		/* pickup */	"Armor Shard",
 		/* width */		3,
 		0,
@@ -2250,6 +2250,67 @@ gitem_t	itemlist[] =
 		/* precache */ "items/s_health.wav items/n_health.wav items/l_health.wav items/m_health.wav"
 	},
 
+		{
+		NULL,
+		Pickup_Health,
+		NULL,
+		NULL,
+		NULL,
+		"items/pkup.wav",
+		NULL, 0,
+		NULL,
+		/* icon */		"i_health3",
+		/* pickup */	"Large Health",
+		/* width */		3,
+		25,
+		NULL,
+		0,
+		0,
+		NULL,
+		0,
+		/* precache */ "items/l_health.wav"
+		},
+{
+		NULL,
+		Pickup_Health,
+		NULL,
+		NULL,
+		NULL,
+		"items/pkup.wav",
+		NULL, 0,
+		NULL,
+		/* icon */		"i_health2",
+		/* pickup */	"Stimpack",
+		/* width */		3,
+		2,
+		NULL,
+		0,
+		0,
+		NULL,
+		0,
+		/* precache */ "items/s_health.wav"
+},
+
+	{
+		NULL,
+		Pickup_Health,
+		NULL,
+		NULL,
+		NULL,
+		"items/pkup.wav",
+		NULL, 0,
+		NULL,
+		/* icon */		"i_health4",
+		/* pickup */	"Mega Health",
+		/* width */		3,
+		100,
+		NULL,
+		0,
+		0,
+		NULL,
+		0,
+		/* precache */ "items/m_health.wav"
+	},
 	// end of list marker
 	{ NULL }
 };
@@ -2279,7 +2340,7 @@ void SP_item_health_small (edict_t *self) {
 
 	self->model = "models/items/healing/stimpack/tris.md2";
 	self->count = 2;
-	SpawnItem (self, FindItem ("Health"));
+	SpawnItem (self, FindItem ("Stimpack"));
 	self->style = HEALTH_IGNORE_MAX;
 	gi.soundindex ("items/s_health.wav");
 }

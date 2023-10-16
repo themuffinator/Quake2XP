@@ -655,10 +655,6 @@ void SCR_ExecuteLayoutString (char *s) {
 }
 
 
-
-
-
-
 void SCR_ExecuteLayoutString3d (char *s) {
 	int x, y;
 	int value;
@@ -734,10 +730,6 @@ void SCR_ExecuteLayoutString3d (char *s) {
 
 				SCR_AddDirtyPoint (x, y);
 				SCR_AddDirtyPoint (x + 24 * hud_sx, y + 24 * hud_sy);
-
-				if (!strcmp
-					(cl.configstrings[CS_IMAGES + value], "p_mask"))
-					SCR_DrawHudModel (x, y, hudmodel.cl_hud_predator);
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_help")) {
