@@ -431,7 +431,7 @@ SV_DemoCompleted
 ==================
 */
 void SV_DemoCompleted (void) {
-	FS_FCloseFile (&sv.demofile);
+	FS_FCloseFile (sv.demofile);
 	SV_Nextserver ();
 }
 
@@ -482,12 +482,12 @@ void SV_SendClientMessages (void) {
 	msglen = 0;
 
 	// read the next demo message if needed
-	if (sv.state == ss_demo && sv.demofile.f) {
+	if (sv.state == ss_demo && sv.demofile) {
 		if (sv_paused->integer)
 			msglen = 0;
 		else {
 			// get the next message
-			r = fread (&msglen, 4, 1, sv.demofile.f);
+			r = fread (&msglen, 4, 1, sv.demofile);
 			if (r != 1) {
 				SV_DemoCompleted ();
 				return;
@@ -500,7 +500,7 @@ void SV_SendClientMessages (void) {
 			if (msglen > MAX_MSGLEN)
 				Com_Error (ERR_DROP,
 				"SV_SendClientMessages: msglen > MAX_MSGLEN");
-			r = fread (msgbuf, msglen, 1, sv.demofile.f);
+			r = fread (msgbuf, msglen, 1, sv.demofile);
 			if (r != 1) {
 				SV_DemoCompleted ();
 				return;

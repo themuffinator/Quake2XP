@@ -341,9 +341,6 @@
     <ClCompile Include="qcommon\files.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="qcommon\unzip.c">
-      <Filter>Source Files\qcommon</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\qgl.h">
@@ -380,9 +377,6 @@
       <Filter>Source Files\qcommon\Headers</Filter>
     </ClInclude>
     <ClInclude Include="qcommon\qfiles.h">
-      <Filter>Source Files\qcommon\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="qcommon\unzip.h">
       <Filter>Source Files\qcommon\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\keys.h">

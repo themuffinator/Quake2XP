@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // sv_user.c -- server code for moving users
 
 #include "server.h"
-#include "../qcommon/unzip.h"
 edict_t *sv_player;
 
 /*
@@ -43,44 +42,13 @@ SV_BeginDemoServer
 */
 
 void SV_BeginDemoserver (void) {
-	char          name[MAX_OSPATH];
-	char          checkname[MAX_OSPATH];
-	char          *buf;
-	FILE          *f;
-	int         len;
+	char		name[MAX_OSPATH];
 
-	Com_sprintf (name, sizeof(name), "demos/%s", sv.name);
-	len = FS_LoadFile (name, &buf);
-	if (len == -1)
-		Com_Error (ERR_DROP, "Couldn't open %s\n", name);
+	Com_sprintf(name, sizeof(name), "demos/%s", sv.name);
+	FS_FOpenFile(name, &sv.demofile);
+	if (!sv.demofile)
+		Com_Error(ERR_DROP, "Couldn't open %s\n", name);
 
-	// probably demo from ZIP pak
-	if (file_from_pak) {
-
-		Com_sprintf (checkname, sizeof(checkname), "%s/cachexp/temp.dm2", FS_Gamedir ());
-		FS_CreatePath (checkname);
-
-		f = fopen (checkname, "wb");
-		if (!f)
-			Com_Error (ERR_DROP, "Couldn't create temporary demo file %s", checkname);
-
-		fwrite (buf, 1, len, f);
-		fclose (f);
-
-		FS_FreeFile (buf);
-
-		Com_sprintf (checkname, sizeof(checkname), "cachexp/temp.dm2");
-		FS_FOpenFile (checkname, &sv.demofile);
-		if (!sv.demofile.f && !sv.demofile.z)
-			Com_Error (ERR_DROP, "Couldn't open %s\n", name);
-
-
-		return;
-	}
-
-	FS_FOpenFile (name, &sv.demofile);
-	if (!sv.demofile.f && !sv.demofile.z)
-		Com_Error (ERR_DROP, "Couldn't open %s\n", name);
 }
 
 /*

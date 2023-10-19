@@ -727,12 +727,13 @@ qboolean CM_AreasConnected (int area1, int area2);
 int CM_WriteAreaBits (byte * buffer, int area);
 qboolean CM_HeadnodeVisible (int headnode, byte * visbits);
 
+/*/
 typedef struct {
 	void *z;					// in case of the file being a zip archive
 	FILE *f;					// in case the file being part of a pak or
 	// the actual file
 } qFILE;
-
+*/
 typedef struct {
 	char	name[MAX_QPATH];
 	int		filepos, filelen;
@@ -740,14 +741,14 @@ typedef struct {
 } packfile_t;
 
 typedef enum {
-	pt_zip,
+//	pt_zip,
 	pt_pak,
 	pt_file
 } packtype_t;
 
 typedef struct pack_s {
 	char		filename[MAX_OSPATH];
-	qFILE		qfile;
+	FILE		*handle;
 	int			numfiles;
 	int			size;
 	packfile_t* files;
@@ -811,23 +812,23 @@ void FS_ExecAutoexec (void);
 char *FS_FindNext (char *find);
 char *FS_FindFirst (char *find);
 
-int FS_FOpenFile (const char *filename, qFILE *file);
+int FS_FOpenFile (const char *filename, FILE **file);
 qboolean FS_FileExists (char *path);
-void FS_FCloseFile (qFILE * f);
+void FS_FCloseFile (FILE *f);
 // note: this can't be called from another DLL, due to MS libc issues
 
 int FS_LoadFile (const char *path, void **buffer);
 // a null buffer will just return the file length without loading
 // a -1 length is not present
 
-void FS_Read (void *buffer, int len, qFILE * f);	// was void
+void FS_Read (void *buffer, int len, FILE *f);	// was void
 // properly handles partial reads
 
 void FS_FreeFile (void *buffer);
 
 void FS_CreatePath (char *path);
 
-int FS_filelength (qFILE *f);
+int FS_filelength (FILE *f);
 
 
 char **FS_ListFiles (char *findname, int *numfiles, unsigned musthave, unsigned canthave);

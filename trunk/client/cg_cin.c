@@ -165,9 +165,9 @@ void SCR_StopCinematic (void) {
 		R_SetPalette (NULL);
 		cl.cinematicpalette_active = qfalse;
 	}
-	if (cl.cinematic_file.f) {
-		fclose (cl.cinematic_file.f);
-		cl.cinematic_file.f = NULL;
+	if (cl.cinematic_file) {
+		fclose (cl.cinematic_file);
+		cl.cinematic_file = NULL;
 	}
 	if (cin.hnodes1) {
 		Z_Free (cin.hnodes1);
@@ -243,7 +243,7 @@ void Huff1TableInit (void) {
 		memset (cin.h_used, 0, sizeof(cin.h_used));
 
 		// read a row of counts
-		FS_Read (counts, sizeof(counts), &cl.cinematic_file);
+		FS_Read (counts, sizeof(counts), cl.cinematic_file);
 		for (j = 0; j < 256; j++)
 			cin.h_count[j] = counts[j];
 
@@ -411,9 +411,9 @@ byte *SCR_ReadNextFrame (void) {
 
 
 	// read the next frame
-	r = fread (&command, 4, 1, cl.cinematic_file.f);
+	r = fread (&command, 4, 1, cl.cinematic_file);
 	if (r == 0)					// we'll give it one more chance
-		r = fread (&command, 4, 1, cl.cinematic_file.f);
+		r = fread (&command, 4, 1, cl.cinematic_file);
 
 	if (r != 1)
 		return NULL;
@@ -423,16 +423,16 @@ byte *SCR_ReadNextFrame (void) {
 
 	if (command == 1) {			// read palette
 		FS_Read (cl.cinematicpalette, sizeof(cl.cinematicpalette),
-			&cl.cinematic_file);
+			cl.cinematic_file);
 		cl.cinematicpalette_active = 0;	// dubious....  exposes an edge
 		// case
 	}
 	// decompress the next frame
-	FS_Read (&size, 4, &cl.cinematic_file);
+	FS_Read (&size, 4, cl.cinematic_file);
 	size = LittleLong (size);
 	if (size > sizeof(compressed) || size < 1)
 		Com_Error (ERR_DROP, "Bad compressed frame size");
-	FS_Read (compressed, size, &cl.cinematic_file);
+	FS_Read (compressed, size, cl.cinematic_file);
 
 	// ////////////////////////
 	// read sound
@@ -448,7 +448,7 @@ byte *SCR_ReadNextFrame (void) {
 		S_Streaming_Add (samples, num);
 	}
 
-	FS_Read (samples, numBytes, &cl.cinematic_file);
+	FS_Read (samples, numBytes, cl.cinematic_file);
 	// FIXME: convert to little endian if cin.s_width == 2, as in Yamagi Q2
 
 	S_Streaming_Add (samples, numBytes);
@@ -617,7 +617,7 @@ void SCR_PlayCinematic (char *arg) {
 
 	Com_sprintf (name, sizeof(name), "video/%s", arg);
 	FS_FOpenFile (name, &cl.cinematic_file);
-	if (!cl.cinematic_file.f && !cl.cinematic_file.z) {
+	if (!cl.cinematic_file) {
 		//      Com_Error (ERR_DROP, "Cinematic %s not found.\n", name);
 		SCR_FinishCinematic ();
 		cl.cinematictime = 0;	// done
@@ -628,16 +628,16 @@ void SCR_PlayCinematic (char *arg) {
 
 	cls.state = ca_active;
 
-	FS_Read (&width, 4, &cl.cinematic_file);
-	FS_Read (&height, 4, &cl.cinematic_file);
+	FS_Read (&width, 4, cl.cinematic_file);
+	FS_Read (&height, 4, cl.cinematic_file);
 	cin.width = LittleLong (width);
 	cin.height = LittleLong (height);
 
-	FS_Read (&cin.s_rate, 4, &cl.cinematic_file);
+	FS_Read (&cin.s_rate, 4, cl.cinematic_file);
 	cin.s_rate = LittleLong (cin.s_rate);
-	FS_Read (&cin.s_width, 4, &cl.cinematic_file);
+	FS_Read (&cin.s_width, 4, cl.cinematic_file);
 	cin.s_width = LittleLong (cin.s_width);
-	FS_Read (&cin.s_channels, 4, &cl.cinematic_file);
+	FS_Read (&cin.s_channels, 4, cl.cinematic_file);
 	cin.s_channels = LittleLong (cin.s_channels);
 
 	S_Streaming_Start (cin.s_width * 8, cin.s_channels, cin.s_rate, s_effectsVolume->value);

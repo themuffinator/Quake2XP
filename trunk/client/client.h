@@ -473,7 +473,7 @@ typedef struct {
 	//
 	// non-gameserver infornamtion
 	// FIXME: move this cinematic stuff into the cin_t structure
-	qFILE cinematic_file;
+	FILE *cinematic_file;
 	int cinematictime;			// cls.realTime for first cinematic frame
 	int cinematicframe;
 	int cinStaticHD;

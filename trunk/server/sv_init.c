@@ -185,8 +185,8 @@ void SV_SpawnServer (char *server, char *spawnpoint,
 	Com_DPrintf ("SpawnServer: %s\n", server);
 	//	if (sv.demofile)
 	//		fclose(sv.demofile);
-	if (sv.demofile.f)
-		FS_FCloseFile (&sv.demofile);
+	if (sv.demofile)
+		FS_FCloseFile (sv.demofile);
 
 
 	svs.spawncount++;			// any partially connected client will be

@@ -239,7 +239,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;zlib.lib;ogg_static.lib;vorbisfile_static.lib;nvapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;ogg_static.lib;vorbisfile_static.lib;nvapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
       <Version>
       </Version>
@@ -429,7 +429,6 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="qcommon\files.c" />
-    <ClCompile Include="qcommon\unzip.c" />
     <ClCompile Include="renderer\r_cull.c" />
     <ClCompile Include="renderer\r_fbo.c" />
     <ClCompile Include="renderer\r_glstate.c" />
@@ -737,7 +736,6 @@
     <ClInclude Include="win32\resource.h" />
     <ClInclude Include="client\screen.h" />
     <ClInclude Include="server\server.h" />
-    <ClInclude Include="qcommon\unzip.h" />
     <ClInclude Include="client\vid.h" />
     <ClInclude Include="renderer\qgl.h" />
     <ClInclude Include="renderer\r_local.h" />

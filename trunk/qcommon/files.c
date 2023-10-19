@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "qcommon.h"
-#include "unzip.h" // unzip stuff thx to Vic
 
 // define this to dissalow any data but the demo pak file
 //#define   NO_ADDONS
@@ -85,14 +84,14 @@ The "game directory" is the first tree on the search path and directory that all
 FS_filelength
 ================
 */
-int FS_filelength (qFILE *f) {
+int FS_filelength (FILE *f) {
 	int		pos;
 	int		end;
 
-	pos = ftell (f->f);
-	fseek (f->f, 0, SEEK_END);
-	end = ftell (f->f);
-	fseek (f->f, pos, SEEK_SET);
+	pos = ftell (f);
+	fseek (f, 0, SEEK_END);
+	end = ftell (f);
+	fseek (f, pos, SEEK_SET);
 
 	return end;
 }
@@ -125,15 +124,10 @@ For some reason, other dll's can't just call fclose()
 on files returned by FS_FOpenFile...
 ==============
 */
-void FS_FCloseFile (qFILE *f) {
-	if (f->f) {
-		fclose (f->f);
+void FS_FCloseFile (FILE *f) {
+	if (f) {
+		fclose (f);
 	}
-	else if (f->z) {
-		unzCloseCurrentFile (f->z);
-	}
-	f->f = NULL;
-	f->z = NULL;
 }
 
 
@@ -229,8 +223,7 @@ a seperate file.
 ===========
 */
 int file_from_pak = 0;
-int zipdata;
-int FS_FOpenFile (const char *filename, qFILE *qfile) {
+int FS_FOpenFile (const char *filename, FILE **file) {
 	searchpath_t	*search;
 	char			netpath[MAX_OSPATH];
 	pack_t			*pak;
@@ -238,8 +231,6 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 	
 	while (RepairPath((char*)filename)); //ctank skin fix
 
-	qfile->f = 0;
-	qfile->z = 0;
 	file_from_pak = 0;
 	unsigned hash_filename = Com_HashKey(filename);
 
@@ -258,29 +249,11 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 					file_from_pak = 1;
 						Com_DPrintf ("PackFile: %s : %s\n", pak->filename, filename);
 						// open a new file on the pakfile
-						qfile->f = fopen (pak->filename, "rb");
-						if (!qfile->f)
+						*file = fopen (pak->filename, "rb");
+						if (!*file)
 							Com_Error (ERR_FATAL, "Couldn't reopen %s", pak->filename);
-						fseek (qfile->f, pak->files[i].filepos, SEEK_SET);
+						fseek (*file, pak->files[i].filepos, SEEK_SET);
 						return pak->files[i].filelen;
-					}
-				}
-			}
-			else if (search->pack->packtype == pt_zip) {
-				// pack is zip
-				// look through all the pak file elements
-				pak = search->pack;
-				if (unzLocateFile (pak->qfile.z, filename, 2) == UNZ_OK) {
-					// found it!
-					if (unzOpenCurrentFile (pak->qfile.z) == UNZ_OK) {
-						unz_file_info info;
-						file_from_pak = 1;
-						Com_DPrintf ("PackFile: %s : %s\n", pak->filename, filename);
-						if (unzGetCurrentFileInfo (pak->qfile.z, &info, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK) {
-							Com_Error (ERR_FATAL, "Couldn't get size of %s in %s", filename, pak->filename);
-						}
-						qfile->z = pak->qfile.z;
-						return info.uncompressed_size;
 					}
 				}
 			}
@@ -288,10 +261,11 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 		else {
 			// check a file in the directory tree
 			Com_sprintf (netpath, sizeof(netpath), "%s/%s", search->filename, filename);
-			qfile->f = fopen (netpath, "rb");
-			if (!qfile->f) continue;
+			*file = fopen (netpath, "rb");
+			if (!*file) 
+				continue;
 			Com_DPrintf ("FindFile: %s\n", netpath);
-			return FS_filelength (qfile);
+			return FS_filelength (*file);
 		}
 	}
 	Com_DPrintf ("FindFile: can't find %s\n", filename);
@@ -301,10 +275,10 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 
 
 qboolean FS_FileExists (char *path) {
-	qFILE f;
+	FILE *f;
 
 	if (FS_FOpenFile (path, &f)) {
-		FS_FCloseFile (&f);
+		FS_FCloseFile (f);
 		return (qtrue);
 	}
 
@@ -320,21 +294,13 @@ Properly handles partial reads
 */
 void CDAudio_Stop (void);
 #define	MAX_READ	0x10000		// read in blocks of 64k
-void FS_Read (void *buffer, int len, qFILE *qfile) {
+void FS_Read (void *buffer, int len, FILE *file) {
 	int		block, remaining;
 	int		read;
 	byte	*buf;
 	int		tries;
 
 	buf = (byte *)buffer;
-
-	if (qfile->z) {
-		read = unzReadCurrentFile (qfile->z, buf, len);
-		if (read == -1) {
-			Com_Error (ERR_FATAL, "FS_ReadFromZipFile: -1 bytes read");
-		}
-		return;
-	}
 
 	// read in chunks for progress bar
 	remaining = len;
@@ -343,7 +309,7 @@ void FS_Read (void *buffer, int len, qFILE *qfile) {
 		block = remaining;
 		if (block > MAX_READ)
 			block = MAX_READ;
-		read = fread (buf, 1, block, qfile->f);
+		read = fread (buf, 1, block, file);
 		if (read == 0) {
 			// we might have been trying to read from a CD
 			if (!tries) {
@@ -373,7 +339,7 @@ a null buffer will just return the file length without loading
 ============
 */
 int FS_LoadFile (const char *path, void **buffer) {
-	qFILE	qfile;
+	FILE	*file;
 	byte	*buf;
 	int		len;
 
@@ -381,18 +347,16 @@ int FS_LoadFile (const char *path, void **buffer) {
 	buf = NULL;
 
 	// look for it in the filesystem or pack files
-	qfile.f = NULL;
-	qfile.z = NULL;
-	len = FS_FOpenFile (path, &qfile);
+	len = FS_FOpenFile (path, &file);
 
-	if (!qfile.f && !qfile.z) {
+	if (!file) {
 		if (buffer)
 			*buffer = NULL;
 		return -1;
 	}
 
 	if (!buffer) {
-		FS_FCloseFile (&qfile);
+		FS_FCloseFile (file);
 		return len;
 	}
 
@@ -401,8 +365,8 @@ int FS_LoadFile (const char *path, void **buffer) {
 	buf[len] = 0; // safety backup for some cases (eg. parser)
 	*buffer = buf;
 
-	FS_Read (buf, len, &qfile);
-	FS_FCloseFile (&qfile);
+	FS_Read (buf, len, file);
+	FS_FCloseFile (file);
 
 	return len;
 }
@@ -428,24 +392,10 @@ of the list so they override previous pack files.
 =================
 */
 
-pack_t *FS_LoadZipFile (char *packfile) {
-	pack_t	*pack;
+const char *idpaks[] = {"pak0.pak pak1.pak pak0.pak"};
 
-	pack = Z_Malloc (sizeof (pack_t));
-	strcpy (pack->filename, packfile);
-	pack->qfile.z = unzOpen (packfile);
-
-	if (!pack->qfile.z) {
-		Z_Free (pack);
-		Com_Error (ERR_FATAL, "%s is not really a zip file", packfile);
-	}
-	pack->numfiles = Unz_NumEntries (pack->qfile.z);
-	pack->packtype = pt_zip;
-
-	Com_Printf (S_COLOR_YELLOW"Added packfile "S_COLOR_GREEN"%s"S_COLOR_YELLOW" ("S_COLOR_GREEN"%i "S_COLOR_YELLOW"files)\n", packfile, pack->numfiles);
-	return pack;
-}
-
+int numPaks;
+static char **pakNames;
 
 pack_t *FS_LoadPackFile (char *packfile) {
 	dpackheader_t	header;
@@ -461,7 +411,7 @@ pack_t *FS_LoadPackFile (char *packfile) {
 #ifdef _WIN32
 		strlwr (packfile);
 #endif
-		if (!strstr (packfile, "pak0.pak") && !strstr (packfile, "pak1.pak") && !strstr (packfile, "pak2.pak"))
+		if (!strstr (packfile, "pak0.pak") && !strstr (packfile, "pak1.pak") && !strstr (packfile, "pak2.pak") && !strstr(packfile, "q2xp"))
 			return NULL;
 	}
 
@@ -500,7 +450,7 @@ pack_t *FS_LoadPackFile (char *packfile) {
 
 	pack = Z_Malloc (sizeof (pack_t));
 	strcpy (pack->filename, packfile);
-	pack->qfile.f = packhandle;
+	pack->handle = packhandle;
 	pack->numfiles = numpackfiles;
 	pack->files = newfiles;
 	pack->packtype = pt_pak;
@@ -536,19 +486,7 @@ FS_AddPkxFile
 Adds a pkx file to the searchpath
 =================
 */
-void FS_AddPkxFile(char* packPath)
-{
-	searchpath_t* search;
-	pack_t* pack;
 
-	pack = FS_LoadZipFile(packPath);
-	if (!pack)
-		return;
-	search = Z_Malloc(sizeof(searchpath_t));
-	search->pack = pack;
-	search->next = fs_searchpaths;
-	fs_searchpaths = search;
-}
 static int SortListPtrs (const void *data1, const void *data2) {
 	// XXX: we have pointers to strings here!
 	return Q_stricmp (*(char * const *)data1, *(char * const *)data2);
@@ -582,27 +520,7 @@ void FS_AddGameDirectory (char *dir) {
 		// Add each pak file from our list to the search path
 		for (i = 0; i < nfiles; i++) {
 			pak = FS_LoadPackFile (paklist[i]);
-			if (!pak) continue;
-
-			search = Z_Malloc (sizeof(searchpath_t));
-			search->pack = pak;
-			search->next = fs_searchpaths;
-			fs_searchpaths = search;
-		}
-		FS_FreeList (paklist, nfiles);
-	}
-	// -----------------------------------------------------
-
-	// Get list of PKX files
-	sprintf (pattern, "%s/*.pkx", dir);
-	paklist = FS_ListFiles (pattern, &nfiles, 0, SFF_SUBDIR);
-	if (paklist != NULL) {
-		qsort ((void *)paklist, nfiles, sizeof(char*), SortListPtrs);
-
-		// Add each pak file from our list to the search path
-		for (i = 0; i < nfiles; i++) {
-			pak = FS_LoadZipFile (paklist[i]);
-			if (!pak)
+			if (!pak) 
 				continue;
 
 			search = Z_Malloc (sizeof(searchpath_t));
@@ -612,6 +530,7 @@ void FS_AddGameDirectory (char *dir) {
 		}
 		FS_FreeList (paklist, nfiles);
 	}
+	// -----------------------------------------------------
 
 	// add the directory to the search path here, so it overrides pak/pkx
 	search = Z_Malloc (sizeof(searchpath_t));
@@ -695,16 +614,16 @@ void FS_SetGamedir (char *dir) {
 	//
 	// free up any current game dir info
 	//
-	while (fs_searchpaths != fs_base_searchpaths) {
-		if (fs_searchpaths->pack) {
-			FS_FCloseFile (&fs_searchpaths->pack->qfile);
-			if (fs_searchpaths->pack->qfile.f) {
-				Z_Free (fs_searchpaths->pack->files);
-			}
-			Z_Free (fs_searchpaths->pack);
+	while (fs_searchpaths != fs_base_searchpaths)
+	{
+		if (fs_searchpaths->pack)
+		{
+			fclose(fs_searchpaths->pack->handle);
+			Z_Free(fs_searchpaths->pack->files);
+			Z_Free(fs_searchpaths->pack);
 		}
 		next = fs_searchpaths->next;
-		Z_Free (fs_searchpaths);
+		Z_Free(fs_searchpaths);
 		fs_searchpaths = next;
 	}
 
@@ -850,9 +769,6 @@ static int FS_ListFilesPacks (char *findname, char **list, int len, unsigned mus
 					nfound++;
 				}
 			}
-		}
-		else if (search->pack->packtype == pt_zip) {
-			nfound += Unz_ListFiles (pak->qfile.z, findname, list + nfound, len - nfound, musthave, canthave);
 		}
 	}
 
@@ -1185,11 +1101,85 @@ char* FS_DownloadDir(void)
 	return FS_Gamedir();
 }
 
+#include <corecrt_io.h>
+void FS_LoadPureList(char *dir)
+{
+	char	*buffer;
+	char	name[MAX_QPATH];
+	char	*s;
+	int		length;
+	int		i, count;
+	FILE	*f;
+
+	/*
+	** load the list of pak names
+	*/
+	Com_sprintf(name, sizeof(name), "%s/purepaks.lst", dir);
+	if ((f = fopen(name, "rb")) == 0)
+	{
+		Com_Printf("^1Couldn't find %s\n", name);
+		return;
+	}
+	else
+	{
+		length = filelength(fileno(f));
+		buffer = (char *)Z_Malloc(length + 3);
+		fread(buffer, length, 1, f);
+		buffer[length] = 13;
+		buffer[length + 1] = 10;
+		buffer[length + 2] = 0;
+		length += 3;
+	}
+
+	s = buffer;
+	i = 0;
+	while (i < length)
+	{
+		if (s[i] == '\r')
+			numPaks++;
+		i++;
+	}
+
+	if (numPaks == 0)
+	{
+		Com_Printf("^1No paks in %s\n", name);
+		Z_Free(buffer);
+		return;
+	}
+
+	pakNames = (char **)Z_Malloc(sizeof(char *) * (numPaks + 1));
+
+	s = buffer;
+
+	for (count = 0, i = 0; i < numPaks; i++)
+	{
+		char	shortname[MAX_QPATH];
+		char	scratch[MAX_QPATH + MAX_QPATH];
+
+		strcpy(shortname, COM_Parse(&s));
+
+		if (strlen(shortname))
+		{
+			Com_sprintf(scratch, sizeof(scratch), "%s/%s", dir, shortname);
+			pakNames[count] = (char *)Z_Malloc(strlen(scratch) + 1);
+			strcpy(pakNames[count], scratch);
+			count++;
+		}
+	}
+	numPaks = count;
+	pakNames[count] = 0;
+
+	f = 0;
+	Z_Free(buffer);
+}
+
+
 /*
 ================
 FS_InitFilesystem
 ================
 */
+
 void FS_InitFilesystem (void) {
 	Com_Printf ("====== File System Initialization ======\n\n");
 	fs_OriginalPaksOnly = Cvar_Get ("fs_OriginalPaksOnly", "1", 0);
@@ -1201,6 +1191,8 @@ void FS_InitFilesystem (void) {
 	// allows the game to run from outside the data tree
 	//
 	fs_basedir = Cvar_Get ("basedir", ".", CVAR_NOSET);
+	
+	FS_LoadPureList(BASEDIRNAME);
 
 	//
 	// cddir <path>
@@ -1218,6 +1210,7 @@ void FS_InitFilesystem (void) {
 	// start up with baseq2 by default
 	FS_AddGameDirectory (va ("%s/"BASEDIRNAME, fs_basedir->string));
 	FS_AddHomeAsGameDirectory (BASEDIRNAME);
+
 
 	// any set gamedirs will be freed up to here
 	fs_base_searchpaths = fs_searchpaths;
