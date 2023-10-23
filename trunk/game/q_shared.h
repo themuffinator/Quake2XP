@@ -244,11 +244,12 @@ extern vec3_t vec3_origin;
 //float Q_fabs (float f);
 //#define	fabs(f) Q_fabs(f)
 
-#if !defined C_ONLY && !defined __linux__ && !defined __sgi
-extern long Q_ftol (float f);
-#else
-#define Q_ftol( f ) ( long ) (f)
-#endif
+//#if !defined C_ONLY && !defined __linux__ && !defined __sgi
+//extern long Q_ftol (float f);
+//#else
+//#define Q_ftol( f ) ( long ) (f)
+//#endif
+extern int Q_ftol(float f);
 
 
 #define dotProduct(x)		((x)[0]*(x)[0]+(x)[1]*(x)[1]+(x)[2]*(x)[2])

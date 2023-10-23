@@ -2292,9 +2292,67 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 }
 
+void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
+
+	int		*order, count, numVerts = 0,
+			index = 0, i, n;
+
+	order = (int *)((byte *)pheader + pheader->ofs_glcmds);
+
+	while (count = *order++){
+
+		if (index > MAX_INDICES - 6)
+			break;
+
+		if (count < 0){
+
+			count = -count;
+			n = (count - 2);
+
+			for (i = 0; i < n; i++){
+
+				tess.idxBuff[index++] = numVerts;
+				tess.idxBuff[index++] = numVerts + i + 1;
+				tess.idxBuff[index++] = numVerts + i + 2;
+			}
+		}
+		else if (count > 0){
+
+			n = (count - 2);
+
+			for (i = 0; i < n; i++){
+
+				tess.idxBuff[index++] = numVerts + i + (i & 1);
+				tess.idxBuff[index++] = numVerts + i + ((i & 1) ^ 1);
+				tess.idxBuff[index++] = numVerts + i + 2;
+			}
+		}
+		else
+		{
+			break; //done
+		}
+
+		order += 3 * count;
+		numVerts += count;
+	}
+
+	mod->numIndices = index;
+	mod->numVertexes = numVerts;
+	mod->indexArray = Hunk_Alloc(index * sizeof(int));
+	memcpy(mod->indexArray, tess.idxBuff, index * sizeof(int));
+
+	qglGenBuffers(1, &mod->iboId);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mod->iboId);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(int), mod->indexArray, GL_STATIC_DRAW);
+	qglObjectLabel(GL_BUFFER, mod->iboId, strlen("***ibo_md2***"), "***ibo_md2***");
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
-	int				i, j, indexST;
-	dmdl_t			*pinmodel, *pheader;
+	int				i, j;
+	int				*pincmd,	*poutcmd;
+	dmdl_t			*pinmodel,	*pheader;
 	fstvert_t		*poutst;
 	dstvert_t		*pinst;
 	dtriangle_t		*pintri, *pouttri, *tris;
@@ -2405,6 +2463,19 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 	mod->type = mod_alias;
 
+	// load the glcmds
+	pincmd = (int *)((byte *)pinmodel + pheader->ofs_glcmds);
+	poutcmd = (int *)((byte *)pheader + pheader->ofs_glcmds);
+	for (i = 0; i < pheader->num_glcmds; i++){
+		poutcmd[i] = LittleLong(pincmd[i]);
+	}
+
+	if (poutcmd[pheader->num_glcmds - 1] != 0){
+		Com_Printf("%s: Entity %s has possible last element issues with %d verts.\n", __func__, mod->name, poutcmd[pheader->num_glcmds - 1]);
+	}
+
+	Mod_CalcMd2Indicies(mod, pheader);
+
 	// register all skins
 	Q_memcpy((char *)pheader + pheader->ofs_skins, (char *)pinmodel + pheader->ofs_skins, pheader->num_skins * MAX_SKINNAME);
 
@@ -2452,7 +2523,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		
 	}
 
-
 	// Calculate texcoords for triangles (for compute tangents and binormals)
 	pinst = (dstvert_t *)((byte *)pinmodel + pheader->ofs_st);
 	poutst = (fstvert_t*)Hunk_Alloc(pheader->num_st * sizeof(fstvert_t));
@@ -2498,22 +2568,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 	for (i = 0; i < 3; i++)
 		mod->center[i] = (mod->maxs[i] + mod->mins[i]) * 0.5;
-
-	// generate st cache for fast md2 rendering
-	tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-	mod->st = (float*)malloc(pheader->num_tris * 3 * sizeof(float) * 2);
-	for (l = 0, i = 0; i < pheader->num_tris; i++) {
-		for (j = 0; j < 3; j++) {
-			indexST = tris[i].index_st[j];
-			mod->st[l++] = poutst[indexST].s;
-			mod->st[l++] = poutst[indexST].t;
-		}
-	}
-
-	qglGenBuffers(1, &mod->vboId);
-	qglBindBuffer(GL_ARRAY_BUFFER, mod->vboId);
-	qglBufferData(GL_ARRAY_BUFFER, l * sizeof(float), mod->st, GL_STATIC_DRAW);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 
@@ -2773,7 +2827,7 @@ void Mod_Free(model_t * mod) {
 		if (mod->neighbours)
 			free(mod->neighbours);
 
-		qglDeleteBuffers(1, &mod->vboId);
+		qglDeleteBuffers(1, &mod->iboId);
 	}
 	memset(mod, 0, sizeof(*mod));
 }
@@ -2794,7 +2848,7 @@ void Mod_FreeAll() {
 
 }
 
-#ifdef _WIN32
+#ifdef _WIN32_
 /// from Tenebrae, asm by Berserker
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
 

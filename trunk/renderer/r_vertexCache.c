@@ -105,9 +105,9 @@ void R_InitVertexBuffers() {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_COLOR);
-	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_POS);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_TC);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_COLOR);
+	qglVertexAttribPointer(ATT_POSITION,	2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_POS);
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_TC);
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_COLOR);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
 
@@ -181,7 +181,7 @@ void R_InitVertexBuffers() {
 	qglGenBuffers(1, &vbo.vbo_dynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 	qglObjectLabel(GL_VERTEX_ARRAY, vbo.vbo_dynamic, strlen("***vboDinamic***"), "***vboDinamic***");
-	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_DYNAMIC_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess_t), 0, GL_DYNAMIC_DRAW);
 
 	qglGenBuffers(1, &vbo.ibo_dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
@@ -207,6 +207,21 @@ void R_InitVertexBuffers() {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_COLOR);
+
+	qglVertexAttribPointer(ATT_POSITION,	3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->xyz);
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, ((tess_t *)0)->st);
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->rgb);
+
+	glBindVertexArray(0);
+
+	glGenVertexArrays(1, &vao.drawMd2);
+	glBindVertexArray(vao.drawMd2);
+	qglObjectLabel(GL_VERTEX_ARRAY, vao.drawMd2, strlen("***vaoMd2***"), "***vaoMd2***");
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 	qglEnableVertexAttribArray(ATT_NORMAL);
@@ -217,7 +232,7 @@ void R_InitVertexBuffers() {
 	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->tangent);
 	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->binormal);
 	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->normal);
-
+	
 	glBindVertexArray(0);
 
 //------------------------------

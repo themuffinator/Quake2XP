@@ -318,7 +318,6 @@ typedef struct model_s {
 	// for alias models and skins
 	image_t		*skins				[MAX_MD2SKINS];
 	image_t		*skins_normal		[MAX_MD2SKINS];
-	image_t		*skins_specular		[MAX_MD2SKINS];
 	image_t		*skins_roughness	[MAX_MD2SKINS];
 	image_t		*glowtexture		[MAX_MD2SKINS];
 	image_t		*skin_env			[MAX_MD2SKINS];
@@ -332,7 +331,6 @@ typedef struct model_s {
 	int			extraDataSize;
 	void		*extraData;
 	int			triangles[MAX_TRIANGLES];
-	float		*st;
 	neighbors_t *neighbours;
 
 	int		num_tris;
@@ -352,8 +350,11 @@ typedef struct model_s {
 	byte	*binormals;
 	byte	*tangents;
 
-	GLuint	vboId;
+	int *indexArray;
+	int	numIndices;
 
+	GLuint	iboId;
+	vec2_t	st[MAX_VERTS];
 	mat3_t	axis;
 
 } model_t;

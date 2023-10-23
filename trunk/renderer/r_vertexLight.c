@@ -90,14 +90,6 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 
 	for (i = 0, surf = &r_worldmodel->surfaces[node->firstsurface]; i < node->numsurfaces; i++, surf++) {
 		
-		if (surf->flags & (MSURF_DRAWSKY))
-		{
-			pointcolor[0] = 1.0;
-			pointcolor[1] = 0.5;
-			pointcolor[2] = 0.0;
-			return 1;
-		}
-		
 		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
 			continue;	// no lightmaps
 

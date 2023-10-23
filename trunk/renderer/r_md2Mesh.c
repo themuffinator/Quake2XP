@@ -28,14 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 vec3_t	tempVertexArray	[MAX_VERTICES  * 4];
 
-static vec3_t	vertexArray		[MAX_TRIANGLES * 3];
-static vec3_t	normalArray		[MAX_TRIANGLES * 3];
-static vec3_t	tangentArray	[MAX_TRIANGLES * 3];
-static vec3_t	binormalArray	[MAX_TRIANGLES * 3];
-static vec4_t	colorArray		[MAX_TRIANGLES * 4];
-
-extern float	*shadedots;
-
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t	*v, *ov, *verts;
@@ -48,7 +40,7 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 
 	if (currentmodel->numFrames < 1)
 		return;
-
+	
 	backlerp = currententity->backlerp;
 
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
@@ -101,12 +93,11 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 int CL_PMpointcontents (vec3_t point);
 
 void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
-	int				index_xyz, i, j, jj = 0;
-	dtriangle_t		*tris;
-	image_t			*skin, *skinNormalmap, *glowskin;
-	float			alphaShift, alpha;
-	float			backlerp, frontlerp;
+	int				index_xyz, *order,	count, numVerts = 0;
+	image_t			*albedo, *normalMap, *emissive;
+	float			alphaShift, s, os, shade, backlerp, frontlerp;
 
+	dtriangle_t		*tris;
 	daliasframe_t	*frame,		*oldFrame;
 	dtrivertx_t		*verts,		*oldVerts;
 	vec3_t			*normals,	*oldNormals;
@@ -118,11 +109,8 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	alphaShift = (alphaShift + 3.0) * 0.5f;
 	alphaShift = clamp (alphaShift, 0.01, 6.0);
 
-	if (currententity->flags & RF_TRANSLUCENT) {
-		alpha = currententity->alpha;
-	}
-	else
-		alpha = 1.0;
+	float *shadedots = r_avertexnormal_dots[((int)(currententity->angles[1] *
+		(SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Disable(GL_CULL_FACE);
@@ -153,113 +141,126 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	
 		// select skin
 	if (currententity->skin)
-		skin = currententity->skin;	// custom player skin
+		albedo = currententity->skin;	// custom player skin
 	else {
 		if (currententity->skinnum >= MAX_MD2SKINS) {
-			skin = currentmodel->skins[0];
+			albedo = currentmodel->skins[0];
 			currententity->skinnum = 0;
 		}
 		else {
-			skin = currentmodel->skins[currententity->skinnum];
-			if (!skin) {
-				skin = currentmodel->skins[0];
+			albedo = currentmodel->skins[currententity->skinnum];
+			if (!albedo) {
+				albedo = currentmodel->skins[0];
 				currententity->skinnum = 0;
 			}
 		}
 	}
 
-	if (!skin)
-		skin = r_missingTexture;
+	if (!albedo)
+		albedo = r_missingTexture;
 
 	// select skin
 	if (currententity->bump)
-		skinNormalmap = currententity->bump;	// custom player skin
+		normalMap = currententity->bump;	// custom player skin
 	else {
 		if (currententity->skinnum >= MAX_MD2SKINS) {
-			skinNormalmap = currentmodel->skins_normal[0];
+			normalMap = currentmodel->skins_normal[0];
 			currententity->skinnum = 0;
 		}
 		else {
-			skinNormalmap = currentmodel->skins_normal[currententity->skinnum];
-			if (!skin) {
-				skinNormalmap = currentmodel->skins_normal[0];
+			normalMap = currentmodel->skins_normal[currententity->skinnum];
+			if (!albedo) {
+				normalMap = currentmodel->skins_normal[0];
 				currententity->skinnum = 0;
 			}
 		}
 	}
-	if (!skinNormalmap)
-		skinNormalmap = r_defBump;
+	if (!normalMap)
+		normalMap = r_defBump;
 
-	glowskin = currentmodel->glowtexture[currententity->skinnum];
+	emissive = currentmodel->glowtexture[currententity->skinnum];
 
-	if (!glowskin)
-		glowskin = r_blackTexture1x1;
+	if (!emissive)
+		emissive = r_blackTexture1x1;
 
-	if (!skin)
-		skin = r_missingTexture;
+	if (!albedo)
+		albedo = r_missingTexture;
 
 	R_CalcAliasFrameLerp (paliashdr, 0);
-
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_COLOR);
-	qglEnableVertexAttribArray(ATT_TEX0);
-
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
-	
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
 	c_aliasTris += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 
-	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
-	oldVerts	= oldFrame->verts;
-	offs		= paliashdr->num_xyz * currententity->oldframe;
-	oldNormals	= currentmodel->normals + offs;
-	oldTangents	= currentmodel->tangents + offs;
-	oldBinormals = currentmodel->binormals + offs;
+	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldVerts		= oldFrame->verts;
+	offs			= paliashdr->num_xyz * currententity->oldframe;
+	oldNormals		= currentmodel->normals + offs;
+	oldTangents		= currentmodel->tangents + offs;
+	oldBinormals	= currentmodel->binormals + offs;
 
-
-	frame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
-	verts	= frame->verts;
-	offs	= paliashdr->num_xyz * currententity->frame;
-	normals = currentmodel->normals + offs;
-	tangents = currentmodel->tangents + offs;
-	binormals = currentmodel->binormals + offs;
+	frame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	verts		= frame->verts;
+	offs		= paliashdr->num_xyz * currententity->frame;
+	normals		= currentmodel->normals + offs;
+	tangents	= currentmodel->tangents + offs;
+	binormals	= currentmodel->binormals + offs;
 
 	backlerp	= currententity->backlerp;
 	frontlerp	= 1 - backlerp;
 
-	for (i = 0; i < paliashdr->num_tris; i++) {
-		for (j = 0; j < 3; j++, jj++) {
-			index_xyz = tris[i].index_xyz[j];
+	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
-			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
-			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], 1.0);
-			
+	while (count = *order++) {
+		
+		if (!count)
+			break;	// done
+
+		if (count < 0)
+			count = -count;
+
+		do {
+			index_xyz = order[2];
+
+			tess.xyz[numVerts][0] = tempVertexArray[index_xyz][0];
+			tess.xyz[numVerts][1] = tempVertexArray[index_xyz][1];
+			tess.xyz[numVerts][2] = tempVertexArray[index_xyz][2];
+
+			tess.st[numVerts][0] = ((float *)order)[0];
+			tess.st[numVerts][1] = ((float *)order)[1];
+
+			s = shadedots[verts[index_xyz].lightnormalindex];
+			os = shadedots[oldVerts[index_xyz].lightnormalindex];
+			shade = os * backlerp + s * frontlerp;
+
+			tess.rgb[numVerts][0] = shade * lightColor[0];
+			tess.rgb[numVerts][1] = shade * lightColor[1];
+			tess.rgb[numVerts][2] = shade * lightColor[2];
+			tess.rgb[numVerts][3] = 1.0;
+
 			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-				tangentArray[jj][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
-				tangentArray[jj][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
-				tangentArray[jj][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
+				tess.tangent[numVerts][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
+				tess.tangent[numVerts][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
+				tess.tangent[numVerts][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
 
-				binormalArray[jj][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
-				binormalArray[jj][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
-				binormalArray[jj][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
+				tess.binormal[numVerts][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
+				tess.binormal[numVerts][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
+				tess.binormal[numVerts][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
 			}
 			if (currentmodel->envMap || r_debugTbn->integer) {
-				normalArray[jj][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
-				normalArray[jj][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
-				normalArray[jj][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
 
+			//	tess.normal[numVerts][0] = q_byteDirs[oldVerts[index_xyz].lightnormalindex][0] * backlerp + q_byteDirs[verts[index_xyz].lightnormalindex][0] * frontlerp;
+			//	tess.normal[numVerts][1] = q_byteDirs[oldVerts[index_xyz].lightnormalindex][1] * backlerp + q_byteDirs[verts[index_xyz].lightnormalindex][1] * frontlerp;
+			//	tess.normal[numVerts][2] = q_byteDirs[oldVerts[index_xyz].lightnormalindex][2] * backlerp + q_byteDirs[verts[index_xyz].lightnormalindex][2] * frontlerp;
+
+				tess.normal[numVerts][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
+				tess.normal[numVerts][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
+				tess.normal[numVerts][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
 			}
-		}
+
+			numVerts++;
+			order += 3;
+
+		} while (--count);
 	}
 
 	// setup program
@@ -278,10 +279,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	else
 		qglUniform1i(U_PARAM_INT_0, 0);
 
-	GL_SetBindlessTexture(U_TMU0, skin->handle);
-	GL_SetBindlessTexture(U_TMU1, glowskin->handle);
+	GL_SetBindlessTexture(U_TMU0, albedo->handle);
+	GL_SetBindlessTexture(U_TMU1, emissive->handle);
 	GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
-	GL_SetBindlessTexture(U_TMU3, skinNormalmap->handle);
+	GL_SetBindlessTexture(U_TMU3, normalMap->handle);
 
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
@@ -295,16 +296,37 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-	GL_DrawArrays(GL_TRIANGLES, 0, jj);
+	glBindVertexArray(vao.drawMd2);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
+
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVerts * sizeof(vec3_t), tess.xyz);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st,	numVerts * sizeof(vec2_t), tess.st);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVerts * sizeof(vec4_t), tess.rgb);
+	
+	if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent, numVerts * sizeof(vec3_t), tess.tangent);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal, numVerts * sizeof(vec3_t), tess.binormal);
+	}
+	
+	if (currentmodel->envMap || r_debugTbn->integer) 
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,	numVerts * sizeof(vec3_t), tess.normal);
+
+	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
 
 	if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+
 		GL_BindProgram(tbnDebugProgram);
+		
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+		
 		if (currententity->flags & (RF_WEAPONMODEL))
 			qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 		else
 			qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
-		GL_DrawArrays(GL_TRIANGLES, 0, jj);
+
+		GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
 	}
 
 	if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
@@ -316,19 +338,15 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		qglUniform3f(U_COLOR, 0.0, 1.0, 1.0);
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-		GL_DrawArrays(GL_TRIANGLES, 0, jj);
+		GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		GL_Enable(GL_DEPTH_TEST);
 	}
 
-	qglDisableVertexAttribArray (ATT_POSITION);
-	qglDisableVertexAttribArray (ATT_COLOR);
-	qglDisableVertexAttribArray (ATT_TEX0);
-
-	qglDisableVertexAttribArray(ATT_TANGENT);
-	qglDisableVertexAttribArray(ATT_BINORMAL);
-	qglDisableVertexAttribArray(ATT_NORMAL);
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
@@ -340,7 +358,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 }
 
 void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
-	int				index_xyz, i, j, jj = 0;
+	int				index_xyz, *order, count, numVerts = 0;
 	dtriangle_t		*tris;
 	float			backlerp, frontlerp;
 	daliasframe_t	*frame, *oldFrame;
@@ -368,23 +386,13 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	frame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts	= frame->verts;
-	offs	= paliashdr->num_xyz * currententity->oldframe;
+	offs	= paliashdr->num_xyz * currententity->frame;
 	normals = currentmodel->normals + offs;
 
 	backlerp	= currententity->backlerp;
 	frontlerp	= 1 - backlerp;
-
-	for (i = 0; i < paliashdr->num_tris; i++) {
-		for (j = 0; j < 3; j++, jj++) {
-			index_xyz = tris[i].index_xyz[j];
-			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
-
-			normalArray[jj][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
-			normalArray[jj][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
-			normalArray[jj][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
-
-		}
-	}
+	
+	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
 	// setup program
 	GL_BindProgram (aliasAmbientProgram);
@@ -409,27 +417,50 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	if (currententity->flags & RF_SHELL_HALF_DAM)
 		GL_SetBindlessTexture(U_TMU0, r_texshell[4]->handle);
 	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
-	
-	
+		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);	
 
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglEnableVertexAttribArray (ATT_NORMAL);
-	qglEnableVertexAttribArray (ATT_TEX0);
+	while (count = *order++) {
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
+		if (!count)
+			break;	// done
 
-	GL_DrawArrays(GL_TRIANGLES, 0, jj);
+		if (count < 0)
+			count = -count;
 
-	qglDisableVertexAttribArray (ATT_POSITION);
-	qglDisableVertexAttribArray (ATT_NORMAL);
-	qglDisableVertexAttribArray (ATT_TEX0);
+		do {
+			index_xyz = order[2];
+
+			tess.xyz[numVerts][0] = tempVertexArray[index_xyz][0];
+			tess.xyz[numVerts][1] = tempVertexArray[index_xyz][1];
+			tess.xyz[numVerts][2] = tempVertexArray[index_xyz][2];
+
+			tess.normal[numVerts][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
+			tess.normal[numVerts][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
+			tess.normal[numVerts][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
+
+			numVerts++;
+			order += 3;
+
+		} while (--count);
+	}
+
+	glBindVertexArray(vao.drawMd2);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
+
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz,		numVerts * sizeof(vec3_t), tess.xyz);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,	numVerts * sizeof(vec3_t), tess.normal);
+
+	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
-	int				index_xyz, i, j, jj = 0;
+	int				index_xyz,	*order, count, numVerts = 0;
 	byte			*binormals, *oldBinormals;
 	byte			*tangents,	*oldTangents;
 	vec3_t			*normals,	*oldNormals;
@@ -439,7 +470,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	float			backlerp, frontlerp;
 	uint			offs;
 	vec3_t			maxs;
-	image_t			*skin, *skinNormalmap, *rgh;
+	image_t			*albedo, *normalMap, *pbr;
 	qboolean		inWater;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
@@ -447,10 +478,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	if (currentmodel->noSelfShadow && r_shadows->integer)
 		GL_Disable(GL_STENCIL_TEST);
-
-	backlerp = currententity->backlerp;
-	frontlerp = 1 - backlerp;
-
 
 	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
 	oldVerts		= oldFrame->verts;
@@ -466,78 +493,97 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	tangents		= currentmodel->tangents + offs;
 	normals			= currentmodel->normals + offs;
 
-
-	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	tris	= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	order	= (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
+	
+	backlerp	= currententity->backlerp;
+	frontlerp	= 1 - backlerp;
 
 	// select skin
 	if (currententity->skin)
-		skin = currententity->skin;	// custom player skin
+		albedo = currententity->skin;	// custom player skin
 	else {
 		if (currententity->skinnum >= MAX_MD2SKINS) {
-			skin = currentmodel->skins[0];
+			albedo = currentmodel->skins[0];
 			currententity->skinnum = 0;
 		}
 		else {
-			skin = currentmodel->skins[currententity->skinnum];
-			if (!skin) {
-				skin = currentmodel->skins[0];
+			albedo = currentmodel->skins[currententity->skinnum];
+			if (!albedo) {
+				albedo = currentmodel->skins[0];
 				currententity->skinnum = 0;
 			}
 		}
 	}
-	if (!skin)
-		skin = r_missingTexture;
+	if (!albedo)
+		albedo = r_missingTexture;
 
 //	// select skin
 	if (currententity->bump)
-		skinNormalmap = currententity->bump;	// custom player skin
+		normalMap = currententity->bump;	// custom player skin
 	else {
 		if (currententity->skinnum >= MAX_MD2SKINS) {
-			skinNormalmap = currentmodel->skins_normal[0];
+			normalMap = currentmodel->skins_normal[0];
 			currententity->skinnum = 0;
 		}
 		else {
-			skinNormalmap = currentmodel->skins_normal[currententity->skinnum];
-			if (!skin) {
-				skinNormalmap = currentmodel->skins_normal[0];
+			normalMap = currentmodel->skins_normal[currententity->skinnum];
+			if (!albedo) {
+				normalMap = currentmodel->skins_normal[0];
 				currententity->skinnum = 0;
 			}
 		}
 	}
-	if (!skinNormalmap)
-		skinNormalmap = r_defBump;
+	if (!normalMap)
+		normalMap = r_defBump;
 	
-	rgh = currentmodel->skins_roughness[currententity->skinnum];
-	if (!rgh)
-		rgh = r_blackTexture1x1;
+	pbr = currentmodel->skins_roughness[currententity->skinnum];
+	if (!pbr)
+		pbr = r_blackTexture1x1;
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
 	c_litAliasTris += paliashdr->num_tris;
 
-	for (i = 0; i < paliashdr->num_tris; i++) {
-		for (j = 0; j < 3; j++, jj++) {
-			index_xyz = tris[i].index_xyz[j];
+	while (count = *order++) {
+
+		if (!count)
+			break;	// done
+
+		if (count < 0)
+			count = -count;
+
+		do {
+			index_xyz = order[2];
+
+			tess.xyz[numVerts][0] = tempVertexArray[index_xyz][0];
+			tess.xyz[numVerts][1] = tempVertexArray[index_xyz][1];
+			tess.xyz[numVerts][2] = tempVertexArray[index_xyz][2];
+
+		//	tess.st[numVerts][0] = ((float *)order)[0];
+		//	tess.st[numVerts][1] = ((float *)order)[1];
+
+			tess.rgb[numVerts][0] = currentShadowLight->color[0] * r_hdrLightScale->value;
+			tess.rgb[numVerts][1] = currentShadowLight->color[1] * r_hdrLightScale->value;
+			tess.rgb[numVerts][2] = currentShadowLight->color[2] * r_hdrLightScale->value;
+			tess.rgb[numVerts][3] = 1.0;
+
+			tess.tangent[numVerts][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
+			tess.tangent[numVerts][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
+			tess.tangent[numVerts][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
 			
-			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-
-			tangentArray[jj][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
-			tangentArray[jj][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
-			tangentArray[jj][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
-
-			binormalArray[jj][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
-			binormalArray[jj][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
-			binormalArray[jj][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
-
-			normalArray[jj][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
-			normalArray[jj][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
-			normalArray[jj][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
+			tess.binormal[numVerts][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
+			tess.binormal[numVerts][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
+			tess.binormal[numVerts][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
 			
-			colorArray[jj][0] = currentShadowLight->color[0] * r_hdrLightScale->value;
-			colorArray[jj][1] = currentShadowLight->color[1] * r_hdrLightScale->value;
-			colorArray[jj][2] = currentShadowLight->color[2] * r_hdrLightScale->value;
-			colorArray[jj][3] = 1.0;
-		}
+			tess.normal[numVerts][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
+			tess.normal[numVerts][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
+			tess.normal[numVerts][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
+
+			numVerts++;
+			order += 3;
+
+		} while (--count);
 	}
 
 	// setup program
@@ -551,7 +597,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	R_UpdateLightAliasUniforms();
 	
-	if (r_imageAutoBump->integer && skinNormalmap == r_defBump) {
+	if (r_imageAutoBump->integer && normalMap == r_defBump) {
 		qglUniform1i(U_USE_AUTOBUMP, 1);
 		qglUniform2f(U_AUTOBUMP_PARAMS, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 	}
@@ -573,15 +619,15 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i(U_PARAM_INT_5, 0);
 
-	GL_SetBindlessTexture(U_TMU0, skinNormalmap->handle);
-	GL_SetBindlessTexture(U_TMU1, skin->handle);
+	GL_SetBindlessTexture(U_TMU0, normalMap->handle);
+	GL_SetBindlessTexture(U_TMU1, albedo->handle);
 	GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 	GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
-	GL_SetBindlessTexture(U_TMU4, rgh->handle);
+	GL_SetBindlessTexture(U_TMU4, pbr->handle);
 	GL_SetBindlessTexture(U_TMU5, skinBump->handle);
 	GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
-	if (rgh == r_blackTexture1x1)
+	if (pbr == r_blackTexture1x1)
 		qglUniform1i(U_USE_RGH_MAP, 0);
 	else {
 		qglUniform1i(U_USE_RGH_MAP, 1);
@@ -592,28 +638,24 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 //	qglUniform1i(U_PARAM_INT_3, 0);
 	qglUniform1i(U_PARAM_INT_4, 0);
 
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
+	glBindVertexArray(vao.drawMd2);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
 
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
-	qglVertexAttribPointer (ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
-	qglVertexAttribPointer (ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
-	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, numVerts * sizeof(vec3_t), tess.xyz);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st,	numVerts * sizeof(vec2_t), tess.st);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, numVerts * sizeof(vec4_t), tess.rgb);
 
-	GL_DrawArrays(GL_TRIANGLES, 0, jj);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent, numVerts * sizeof(vec3_t), tess.tangent);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,numVerts * sizeof(vec3_t), tess.binormal);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,	numVerts * sizeof(vec3_t), tess.normal);
 
-	qglDisableVertexAttribArray (ATT_POSITION);
-	qglDisableVertexAttribArray (ATT_TANGENT);
-	qglDisableVertexAttribArray (ATT_BINORMAL);
-	qglDisableVertexAttribArray (ATT_NORMAL);
-	qglDisableVertexAttribArray (ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
+	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 
@@ -762,8 +804,8 @@ void SetModelsLight()
 	if (currententity->flags & RF_WEAPONMODEL) {
 		mid = max(max(shadelight[0], shadelight[1]), shadelight[2]);
 
-		if (mid <= 0.1)
-			mid = 0.15;
+		if (mid <= 0.01)
+			mid = 0.015;
 
 		mid *= 2.0;
 		r_lightLevel->value = 150 * mid;

@@ -839,6 +839,7 @@ typedef struct {
 	GLuint	sky;
 	GLuint	tessStream;
 	GLuint	drawText;
+	GLuint	drawMd2;
 }vao_t;
 
 vao_t vao;
@@ -909,6 +910,7 @@ typedef struct tess_s {
 	vec3_t	xyz[MAX_VERTICES];
 	vec2_t	st[MAX_VERTICES];
 	vec4_t	rgb[MAX_VERTICES];
+
 	vec3_t	tangent[MAX_VERTICES];
 	vec3_t	binormal[MAX_VERTICES];
 	vec3_t	normal[MAX_VERTICES];
@@ -1075,14 +1077,14 @@ void R_SetupOrthoMatrix(void);
 void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
 
 typedef enum {
-	ATT_POSITION = 0,
-	ATT_NORMAL = 1,
-	ATT_TANGENT = 2,
-	ATT_BINORMAL = 3,
-	ATT_COLOR = 4,
-	ATT_TEX0 = 5,
-	ATT_TEX1 = 6,
-	ATT_TEX2 = 7,
+	ATT_POSITION,
+	ATT_NORMAL,
+	ATT_TANGENT,
+	ATT_BINORMAL,
+	ATT_COLOR,
+	ATT_TEX0,
+	ATT_TEX1,
+	ATT_TEX2,
 }
 glsl_attrib;
 

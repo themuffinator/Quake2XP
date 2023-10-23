@@ -80,7 +80,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib wsock32.lib devil.lib ilu.lib zlib.lib ilut.lib"
+				AdditionalDependencies="winmm.lib wsock32.lib"
 				OutputFile="c:\quake2\quake2xp.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -460,7 +460,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib wsock32.lib devil.lib ilu.lib zlib.lib ilut.lib"
+				AdditionalDependencies="winmm.lib wsock32.lib"
 				OutputFile="c:\quake2\quake2xp.exe"
 				Version=""
 				LinkIncremental="1"
@@ -562,7 +562,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib wsock32.lib devil.lib ilu.lib zlib.lib ilut.lib"
+				AdditionalDependencies="winmm.lib wsock32.lib"
 				OutputFile="c:\quake2\quake2xp.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -937,7 +937,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="winmm.lib wsock32.lib devil.lib ilu.lib zlib.lib ilut.lib"
+				AdditionalDependencies="winmm.lib wsock32.lib"
 				OutputFile="c:\quake2\quake2xp.exe"
 				Version=""
 				LinkIncremental="1"

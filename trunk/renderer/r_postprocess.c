@@ -358,7 +358,7 @@ void R_FXAA(void) {
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
 
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 

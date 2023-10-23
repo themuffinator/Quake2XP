@@ -38,7 +38,6 @@ vec4_t	s_lerped[MAX_VERTS];
 vec4_t	vcacheMd2[MAX_INDICES];
 uint	icacheMd2[MAX_INDICES];
 
-vec4_t	extrudedVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
 float	shadowVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
 
 
@@ -336,7 +335,7 @@ void R_DrawMD2ShadowVolume () {
 
 void R_DrawMD3ShadowVolume(){
 
-	int				i, j, k, numTris = 0, numVerts = 0, id = 0;
+	int				i, j, k, numVerts = 0, id = 0;
 	float			frontlerp, backlerp;
 	md3Model_t		*paliashdr;
 	md3Frame_t		*frame, *oldframe;
@@ -362,9 +361,9 @@ void R_DrawMD3ShadowVolume(){
 
 	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
-	move[0] = DotProduct(delta, vectors[0]);	// forward
+	move[0] =  DotProduct(delta, vectors[0]);	// forward
 	move[1] = -DotProduct(delta, vectors[1]);	// left
-	move[2] = DotProduct(delta, vectors[2]);	// up
+	move[2] =  DotProduct(delta, vectors[2]);	// up
 
 	backlerp = currententity->backlerp;
 	frontlerp = 1.0 - backlerp;
@@ -386,13 +385,11 @@ void R_DrawMD3ShadowVolume(){
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
-		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
-		{
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
+
 			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
 			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
 			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
-
-			VectorCopy(md3VertexCache[j], extrudedVerts[j]);
 		}
 
 		idx = mesh->indexes;
@@ -439,19 +436,19 @@ void R_DrawMD3ShadowVolume(){
 						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
 						shadowVerts[numVerts++] = 1.0;
 
-						shadowVerts[numVerts++] = extrudedVerts[*index0][0];
-						shadowVerts[numVerts++] = extrudedVerts[*index0][1];
-						shadowVerts[numVerts++] = extrudedVerts[*index0][2];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][0];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
 						shadowVerts[numVerts++] = 0.0;
 
-						shadowVerts[numVerts++] = extrudedVerts[*index1][0];
-						shadowVerts[numVerts++] = extrudedVerts[*index1][1];
-						shadowVerts[numVerts++] = extrudedVerts[*index1][2];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][1];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][2];
 						shadowVerts[numVerts++] = 0.0;
 
-						shadowVerts[numVerts++] = extrudedVerts[*index1][0];
-						shadowVerts[numVerts++] = extrudedVerts[*index1][1];
-						shadowVerts[numVerts++] = extrudedVerts[*index1][2];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][1];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][2];
 						shadowVerts[numVerts++] = 0.0;
 
 						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
@@ -463,8 +460,6 @@ void R_DrawMD3ShadowVolume(){
 						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
 						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
 						shadowVerts[numVerts++] = 1.0;
-
-						numTris += 6;
 					}
 				}
 			}
@@ -489,13 +484,11 @@ void R_DrawMD3ShadowVolume(){
 				for (k = 2; k >= 0; k--)
 				{
 					index0 = idx + k;
-					shadowVerts[numVerts++] = extrudedVerts[*index0][0];
-					shadowVerts[numVerts++] = extrudedVerts[*index0][1];
-					shadowVerts[numVerts++] = extrudedVerts[*index0][2];
+					shadowVerts[numVerts++] = md3VertexCache[*index0][0];
+					shadowVerts[numVerts++] = md3VertexCache[*index0][1];
+					shadowVerts[numVerts++] = md3VertexCache[*index0][2];
 					shadowVerts[numVerts++] = 0.0;
 				}
-
-				numTris += 6;
 			}
 
 			idx += 3;

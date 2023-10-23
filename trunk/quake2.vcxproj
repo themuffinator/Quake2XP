@@ -86,10 +86,10 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">e:\quake2\source\Release\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">e:\quake2\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">e:\quake2\source\Debug64\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">d:\quake2\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">e:\quake2\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</GenerateManifest>
@@ -116,6 +116,9 @@
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>quake2xp64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>quake2xp64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -153,7 +156,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>nvapi.lib;winmm.lib;wsock32.lib;Ws2_32.lib;zlib.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nvapi.lib;winmm.lib;wsock32.lib;Ws2_32.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>Libs\x32\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -303,17 +306,17 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>c:\quake2\quake2xp.exe</OutputFile>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>e:\quake2\quake2xp.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>E:\Quake2\source\Libs\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>odbc32.dll;LIBC.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -362,8 +365,8 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;nvapi64.lib;libogg.lib;libvorbis.lib;libvorbisd.lib;libvorbisfile.lib;libvorbisfiled.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>d:\quake2\quake2xp64.exe</OutputFile>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;nvapi64.lib;libogg.lib;libvorbis.lib;libvorbisd.lib;libvorbisfile.lib;libvorbisfiled.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>e:\quake2\quake2xp64.exe</OutputFile>
       <Version>
       </Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
