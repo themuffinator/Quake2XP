@@ -740,16 +740,18 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 		return;
 	}
 
-	if (other->collision_model && other->takedamage)
-	{
-		vec3_t dir, start, end;
-		VectorCopy(ent->velocity, dir);
-		VectorNormalize(dir);
-		VectorMA(ent->s.origin, 1024, dir, start);
-		VectorMA(ent->s.origin, -1024, dir, end);
-		///		VectorNegate(dir, dir);
-		if (!TR_Model_Trace(other, start, end, NULL))///, dir))
-			return;
+	if (other->spawnflags & ~65536 || deathmatch->value) {
+		if (other->collision_model && other->takedamage)
+		{
+			vec3_t dir, start, end;
+			VectorCopy(ent->velocity, dir);
+			VectorNormalize(dir);
+			VectorMA(ent->s.origin, 1024, dir, start);
+			VectorMA(ent->s.origin, -1024, dir, end);
+			///		VectorNegate(dir, dir);
+			if (!TR_Model_Trace(other, start, end, NULL))///, dir))
+				return;
+		}
 	}
 
 	if (ent->owner->client)

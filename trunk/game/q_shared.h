@@ -71,6 +71,9 @@ typedef enum {
 #define NULL ((void *)0)
 #endif
 
+#ifndef BIT
+#define BIT(num)				(1 << (num))
+#endif
 
 #ifdef __linux__
 	#include <stdint.h>
@@ -623,10 +626,6 @@ typedef enum {
 	PM_GIB,		// different bounding box
 	PM_FREEZE
 } pmtype_t;
-
-#ifndef BIT
-#define BIT(num)				(1 << (num))
-#endif
 
 // pmove->pm_flags
 typedef enum {

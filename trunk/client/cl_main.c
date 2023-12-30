@@ -1285,12 +1285,10 @@ void CL_InitLocal (void) {
 	cl_blood = Cvar_Get ("cl_blood", "1", CVAR_ARCHIVE);
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);
 
-	scr_showTexName = Cvar_Get("scr_showTexName", "0", 0);
+	cl_showMaterials = Cvar_Get("cl_showMaterials", "0", 0);
 
 	ui_drawHud = Cvar_Get("ui_drawHud", "1", CVAR_ARCHIVE);
 	ui_3dHud = Cvar_Get("ui_3dHud", "1", CVAR_ARCHIVE);
-	ui_hudScale = Cvar_Get("ui_hudScale", "0.8", CVAR_ARCHIVE);
-	ui_hudScale->value = ClampCvar(0.3, 0.8, ui_hudScale->value);
 	ui_fontScale->value = ClampCvar(2.0, 3.0, ui_fontScale->value);
 	ui_drawTime = Cvar_Get("ui_drawTime", "0", CVAR_ARCHIVE);
 	ui_fontScale = Cvar_Get("ui_fontScale", "3", 0);

@@ -692,8 +692,10 @@ void GL_SetDefaultState(void) {
 	hdrTime = 0;
 	hdrKey = 0;
 
+//	gl_state.vaoId = 0;
+
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	qglHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
 	//fix 1366x768 screenshots
 	qglPixelStorei(GL_UNPACK_ALIGNMENT, (vid.width & 3) ? 1 : 4);

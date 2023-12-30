@@ -599,6 +599,7 @@ extern PFNGLGETBUFFERPARAMETERIVPROC		qglGetBufferParameteriv;
 extern PFNGLGETBUFFERPOINTERVPROC			qglGetBufferPointerv;
 extern PFNGLMAPBUFFERRANGEPROC				qglMapBufferRange;
 extern PFNGLINVALIDATEBUFFERDATAPROC		qglInvalidateBufferData;
+extern PFNGLINVALIDATEBUFFERSUBDATAPROC		qglInvalidateBufferSubData;
 
 extern PFNGLVERTEXATTRIB1SPROC				glVertexAttrib1s;
 extern PFNGLVERTEXATTRIB1FPROC				glVertexAttrib1f;
@@ -718,6 +719,7 @@ extern	PFNGLDRAWBUFFERSPROC								qglDrawBuffers;
 extern PFNGLBINDVERTEXARRAYPROC								glBindVertexArray;
 extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;
+extern PFNGLISVERTEXARRAYPROC								glIsVertexArray;
 
 extern PFNGLDEBUGMESSAGECONTROLARBPROC						glDebugMessageControlARB;
 extern PFNGLDEBUGMESSAGEINSERTARBPROC						glDebugMessageInsertARB;
@@ -820,6 +822,10 @@ extern PFNGLGETSYNCIVPROC						glGetSynciv;
 
 extern PFNGLCLAMPCOLORPROC						qglClampColor;
 
+extern PFNGLGETINTEGERI_VPROC					qglGetIntegeri_v;
+extern PFNGLMEMORYBARRIERPROC					qglMemoryBarrier;
+extern PFNGLBINDIMAGETEXTUREPROC				qglBindImageTexture;
+extern PFNGLDISPATCHCOMPUTEPROC					qglDispatchCompute;
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;

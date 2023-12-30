@@ -26,11 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
-void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwidth, int xor, char *string);
-void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int width, int value);
-float CalcFov (float fov_x, float width, float height);
 
-extern cvar_t *ui_hudScale;
+void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int width, int value);
 
 typedef struct {
 
@@ -284,7 +281,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 640.0 / screenAspect;
 
-	scale = ui_hudScale->value;
+	scale = 0.5;
 
 	hud_sx = (float)viddef.width / 640.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -341,17 +338,6 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	refdef.num_entities++;
 }
 
-void DrawAltStringScaled (int x, int y, float scale_x, float scale_y, char *s) {
-	while (*s) {
-
-			Draw_CharScaled(x, y, scale_x, scale_y, *s ^ 0x80);
-
-		x += 8 * scale_x;
-		s++;
-	}
-}
-
-
 /*
 ================
 SCR_ExecuteLayoutString
@@ -381,7 +367,7 @@ void SCR_ExecuteLayoutString (char *s) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = ui_hudScale->value;
+	scale = 0.5;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -471,13 +457,11 @@ void SCR_ExecuteLayoutString (char *s) {
 			token = COM_Parse (&s);
 			time = atoi (token);
 
+			CL_AddAltString(x + 32 * hud_sx, y, hud_sx, ci->name);
 
-
-			DrawAltStringScaled (x + 32 * hud_sx, y, hud_sx, hud_sy, ci->name);
-
-			Draw_StringScaled (x + 32 * hud_sx, y + 8 * hud_sy, hud_sx, hud_sy, va ("Score:  %i", score),qfalse);
-			Draw_StringScaled (x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, hud_sy, va ("Ping:  %i", ping), qfalse);
-			Draw_StringScaled (x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, hud_sy, va ("Time:  %i", time), qfalse);
+			CL_AddString(x + 32 * hud_sx, y + 8	 * hud_sy, hud_sx, va ("Score:  %i", score), draw_charsInt->handle);
+			CL_AddString(x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, va ("Ping:  %i", ping), draw_charsInt->handle);
+			CL_AddString(x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, va ("Time:  %i", time), draw_charsInt->handle);
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
@@ -512,10 +496,11 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			sprintf (block, "%3d %3d %-12.12s", score, ping, ci->name);
 
-			if (value == cl.playernum)
-				DrawAltStringScaled (x, y, hud_sx, hud_sy, block);
+			if (value == cl.playernum) {
+				CL_AddAltString(x, y, hud_sx, block);
+				}
 			else {
-				Draw_StringScaled (x, y, hud_sx, hud_sy, block, qfalse);
+				CL_AddString(x, y, hud_sx, block, draw_charsInt->handle);
 				continue;
 			}
 		}
@@ -530,7 +515,6 @@ void SCR_ExecuteLayoutString (char *s) {
 			strcpy(bump, token);
 			strcat(bump, "_bump");
 			Draw_PicBumpScaled(x, y, hud_sx, hud_sy, token, bump);
-
 			continue;
 		}
 
@@ -605,36 +589,40 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			token = COM_Parse (&s);
 			index = atoi (token);
+			
 			if (index < 0 || index >= MAX_CONFIGSTRINGS)
 				Com_Error (ERR_DROP, "Bad stat_string index");
+			
 			index = cl.frame.playerstate.stats[index];
+			
 			if (index < 0 || index >= MAX_CONFIGSTRINGS)
 				Com_Error (ERR_DROP, "Bad stat_string index");
-			Draw_StringScaled (x, y, hud_sx, hud_sy, cl.configstrings[index], qfalse);
+			
+			CL_AddString(x, y, hud_sx, cl.configstrings[index], draw_charsInt->handle);
 			continue;
 		}
 
 		if (!strcmp (token, "cstring")) {
 			token = COM_Parse (&s);
-			DrawHUDString (x, y, hud_sx, hud_sy, 320, 0, token);
+			CL_AddHUDString (x, y, hud_sx, viddef.width * 0.5, 0, token);
 			continue;
 		}
 
 		if (!strcmp (token, "string")) {
 			token = COM_Parse (&s);
-			Draw_StringScaled (x, y, hud_sx, hud_sy, token, qfalse);
+			CL_AddString(x, y, hud_sx, token, draw_chars->handle);
 			continue;
 		}
 
 		if (!strcmp (token, "cstring2")) {	// F1 messages upper block
 			token = COM_Parse (&s);
-			DrawHUDString (x, y, hud_sx, hud_sy, 320, 0x80, token);
+			CL_AddHUDString (x, y, hud_sx, viddef.width * 0.5, 0x80, token);
 			continue;
 		}
 
 		if (!strcmp (token, "string2")) {	// F1 messages lower block
 			token = COM_Parse (&s);
-			DrawAltStringScaled (x, y, hud_sx, hud_sy, token);
+			CL_AddAltString(x, y, hud_sx, token);
 			continue;
 		}
 
@@ -646,11 +634,8 @@ void SCR_ExecuteLayoutString (char *s) {
 					token = COM_Parse (&s);
 				}
 			}
-
 			continue;
 		}
-
-
 	}
 }
 
@@ -674,7 +659,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = ui_hudScale->value;
+	scale = 0.5;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -1091,19 +1076,6 @@ void CL_ParseInventory (void) {
 }
 
 
-/*
-================
-Inv_DrawString
-================
-*/
-void Inv_DrawString (int x, int y, char *string) {
-	while (*string) {
-		Draw_CharScaled (x, y, ui_fontScale->value, ui_fontScale->value, *string);
-		x += 8 * ui_fontScale->value;
-		string++;
-	}
-}
-
 void SetStringHighBit (char *s) {
 	while (*s)
 		*s++ |= 128;
@@ -1147,8 +1119,8 @@ void CL_DrawInventory (void) {
 	if (top < 0)
 		top = 0;
 
-	x = (viddef.width - 256 * ui_fontScale->value) * 0.5;
-	y = (viddef.height - 240 * ui_fontScale->value) * 0.5;
+	x = (viddef.width - 256 * ui_fontScale->integer) * 0.5;
+	y = (viddef.height - 240 * ui_fontScale->integer) * 0.5;
 
 	// repaint everything next frame
 	SCR_DirtyScreen ();
@@ -1156,14 +1128,13 @@ void CL_DrawInventory (void) {
 	Draw_ScaledPic (x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, i_inventory);
 	Draw_PicBumpScaled(x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, "inventory", "inventory_bump");
 	
-	y += 24 * ui_fontScale->value;
-	x += 24 * ui_fontScale->value;
+	y += 24 * ui_fontScale->integer;
+	x += 24 * ui_fontScale->integer;
 
-	Inv_DrawString (x, y, "hotkey ### item");
+	CL_AddString(x, y, ui_fontScale->integer, "hotkey ### item", draw_charsInt->handle);
+	CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, "------ --- ----", draw_charsInt->handle);
 
-	Inv_DrawString (x, y + 8 * ui_fontScale->value, "------ --- ----");
-
-	y += 16 * ui_fontScale->value;
+	y += 8 * ui_fontScale->integer;
 
 	for (i = top; i < num && i < top + DISPLAY_ITEMS; i++) {
 		item = index[i];
@@ -1184,14 +1155,12 @@ void CL_DrawInventory (void) {
 			cl.inventory[item], cl.configstrings[CS_ITEMS + item]);
 		if (item != selected)
 			SetStringHighBit (string);
-		else					// draw a blinky cursor by the selected
-			// item
-		{
-			if ((int)(cls.realTime * 10) & 1)
-				Draw_CharScaled (x - 8, y, ui_fontScale->value, ui_fontScale->value, 15);
-
+		else{
+		// draw a blinky cursor by the selected item
+		if ( (int)(cls.realTime >> 8) & 1 ) 
+			CL_AddString(x - 8, y, ui_fontScale->integer, ".", draw_charsInt->handle);
 		}
-		Inv_DrawString (x, y, string);
-		y += 8 * ui_fontScale->value;
+		CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, string, draw_chars->handle);
+		y += 8 * ui_fontScale->integer;
 	}
 }

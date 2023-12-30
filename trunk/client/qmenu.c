@@ -39,7 +39,7 @@ static void SpinControl_DoEnter (menulist_s * s);
 static void SpinControl_Draw (menulist_s * s);
 static void SpinControl_DoSlide (menulist_s * s, int dir);
 
-#define RCOLUMN_OFFSET  16
+#define RCOLUMN_OFFSET  32
 #define LCOLUMN_OFFSET -16
 
 extern viddef_t viddef;
@@ -58,7 +58,7 @@ void Action_DoEnter (menuaction_s * a) {
 
 //action items and sub menus
 void Action_Draw (menuaction_s * a) {
-	float	fontscale = ui_fontScale->value;
+	int	fontscale = ui_fontScale->integer;
 
 	if (a->generic.flags & QMF_LEFT_JUSTIFY) {
 		if (a->generic.flags & QMF_GRAYED)
@@ -67,10 +67,10 @@ void Action_Draw (menuaction_s * a) {
 			a->generic.y + a->generic.parent->y,
 			a->generic.name);
 		else
-			Draw_StringScaled(a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET*fontscale,
+			CL_AddString(a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET*fontscale,
 			a->generic.y + a->generic.parent->y,
-			fontscale, fontscale,
-			a->generic.name, qtrue);
+			fontscale,
+			(char*)a->generic.name, draw_chars->handle);
 	}
 	else {
 		if (a->generic.flags & QMF_GRAYED)
@@ -86,6 +86,8 @@ void Action_Draw (menuaction_s * a) {
 	}
 	if (a->generic.ownerdraw)
 		a->generic.ownerdraw (a);
+	
+	R_Flush2D();
 
 }
 
@@ -100,7 +102,7 @@ qboolean Field_DoEnter (menufield_s * f) {
 void Field_Draw (menufield_s * f) {
 	int i;
 	char tempbuffer[128] = "";
-	float fontscale = ui_fontScale->value;
+	int fontscale = ui_fontScale->integer;
 
 	if (f->generic.name)
 		Menu_DrawStringR2LDark (f->generic.x + f->generic.parent->x +
@@ -111,69 +113,69 @@ void Field_Draw (menufield_s * f) {
 	strncpy (tempbuffer, f->buffer + f->visible_offset, f->visible_length);
 
 	// top left part of text box
-	Draw_CharScaled (f->generic.x + f->generic.parent->x + 16 / fontscale,
+	R_AddCharsToList(f->generic.x + f->generic.parent->x + 16 / fontscale,
 		f->generic.y + f->generic.parent->y - 4,
-		fontscale, fontscale,
-		18);
+		fontscale,
+		18, draw_chars->handle);
 	// buttom left
-	Draw_CharScaled (f->generic.x + f->generic.parent->x + 16 / fontscale,
+	R_AddCharsToList(f->generic.x + f->generic.parent->x + 16 / fontscale,
 		f->generic.y + f->generic.parent->y + 4,
-		fontscale, fontscale,
-		24);
+		fontscale,
+		24, draw_chars->handle);
 
 	//right top
-	Draw_CharScaled (f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8 * fontscale,
+	R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8 * fontscale,
 		f->generic.y + f->generic.parent->y - 4,
-		fontscale, fontscale,
-		20);
+		fontscale,
+		20, draw_chars->handle);
 	//right buttom
-	Draw_CharScaled (f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8 * fontscale,
+	R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8 * fontscale,
 		f->generic.y + f->generic.parent->y + 4,
-		fontscale, fontscale,
-		26);
+		fontscale,
+		26, draw_chars->handle);
 
 	for (i = 0; i < f->visible_length; i++) {
 
-		Draw_CharScaled (f->generic.x + f->generic.parent->x + 24 + i * 8 * fontscale,
+		R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + i * 8 * fontscale,
 			f->generic.y + f->generic.parent->y - 4,
-			fontscale, fontscale,
-			19);
+			fontscale,
+			19, draw_chars->handle);
 
-		Draw_CharScaled (f->generic.x + f->generic.parent->x + 24 + i * 8 * fontscale,
+		R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + i * 8 * fontscale,
 			f->generic.y + f->generic.parent->y + 4,
-			fontscale, fontscale,
-			25);
+			fontscale,
+			25, draw_chars->handle);
 	}
 
-		Draw_StringScaled (f->generic.x + f->generic.parent->x + 24 / fontscale,
+		CL_AddString (f->generic.x + f->generic.parent->x + 24,
 		f->generic.y + f->generic.parent->y,
-		fontscale, fontscale,
-		tempbuffer, qtrue);
+		fontscale,
+		tempbuffer, draw_chars->handle);
 
 	if (Menu_ItemAtCursor (f->generic.parent) == f) {
 		int offset;
 
 		if (f->visible_offset)
-			offset = f->visible_length*ui_fontScale->value;
+			offset = f->visible_length * fontscale * CURSOR_INTERVAL;
 		else
-			offset = f->cursor*ui_fontScale->value;
+			offset = f->cursor * fontscale * CURSOR_INTERVAL;
 
 		if (((int)(Sys_Milliseconds () / 250)) & 1) {
-			Draw_CharScaled (f->generic.x + f->generic.parent->x + (offset + 3) * 8 + 8 / fontscale,
+			R_AddCharsToList(f->generic.x + f->generic.parent->x + (offset + 2) * 8 + 8,
 				f->generic.y + f->generic.parent->y,
-				fontscale, fontscale,
-				11);
+				fontscale,
+				11, draw_chars->handle);
 		}
 		else {
-			Draw_CharScaled (f->generic.x + f->generic.parent->x + (offset + 3) * 8 + 8 / fontscale,
+			R_AddCharsToList(f->generic.x + f->generic.parent->x + (offset + 2) * 8 + 8,
 				f->generic.y + f->generic.parent->y,
-				fontscale, fontscale,
-				' ');
+				fontscale,
+				' ', draw_chars->handle);
 		}
-
-
-
 	}
+
+	R_Flush2D();
+
 }
 
 qboolean Field_Key (menufield_s * f, int key) {
@@ -357,6 +359,8 @@ void Menu_AdjustCursor (menuframework_s * m, int dir) {
 				m->cursor = m->nitems - 1;
 		}
 	}
+
+	R_Flush2D();
 }
 
 void Menu_Center (menuframework_s * menu) {
@@ -409,16 +413,16 @@ void Menu_Draw (menuframework_s * menu) {
 	}
 	else if (item && item->type != MTYPE_FIELD) {
 		if (item->flags & QMF_LEFT_JUSTIFY) {
-			Draw_CharScaled (menu->x + item->x - 24 * ui_fontScale->value + item->cursor_offset,
+			R_AddCharsToList(menu->x + item->x - 24 * ui_fontScale->integer + item->cursor_offset+8,
 				menu->y + item->y,
-				ui_fontScale->value, ui_fontScale->value,
-				12 + ((int)(Sys_Milliseconds () * 0.004) & 1));
+				ui_fontScale->integer, 
+				12 + ((int)(Sys_Milliseconds () * 0.004) & 1), draw_chars->handle);
 		}
 		else {
-			Draw_CharScaled (menu->x + item->cursor_offset*ui_fontScale->value,
+			R_AddCharsToList(menu->x + item->cursor_offset*ui_fontScale->integer+8,
 				menu->y + item->y,
-				ui_fontScale->value, ui_fontScale->value,
-				12 + ((int)(Sys_Milliseconds () * 0.004) & 1));
+				ui_fontScale->integer, 
+				12 + ((int)(Sys_Milliseconds () * 0.004) & 1), draw_chars->handle);
 		}
 	}
 
@@ -436,17 +440,19 @@ void Menu_Draw (menuframework_s * menu) {
 	else {
 		Menu_DrawStatusBar (menu->statusbar);
 	}
+
+	R_Flush2D();
 }
 
 void Menu_DrawStatusBar (const char *string) {
-	int	fontscale = (int)ui_fontScale->value;
+	int	fontscale = (int)ui_fontScale->integer;
 	int	upOffset = 5;
 
 	if (string) {
-		int center = ((int)strlen(string) * fontscale * 6) * 0.5;
+		int center = ((int)strlen(string) * fontscale * 5) * 0.5;
 
 		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88, qfalse);
-		Draw_StringScaled ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, fontscale, string, qtrue);
+		CL_AddString ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, (char*)string, draw_chars->handle);
 	}
 	else {
 		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0, qfalse);
@@ -454,29 +460,29 @@ void Menu_DrawStatusBar (const char *string) {
 }
 
 void Menu_DrawStringDark (int x, int y, const char *string) {
-	unsigned	i;
-	float		fontscale = ui_fontScale->value;
+	uint	i;
+	int		fontscale = ui_fontScale->integer;
 
 	for (i = 0; i < strlen (string); i++) {
-		Draw_CharScaled ((x + i * 8 * fontscale), y, fontscale, fontscale, string[i] + 128);
+		R_AddCharsToList ((x + i * 8 * fontscale), y, fontscale, string[i] + 128, draw_chars->handle);
 	}
 }
 
 void Menu_DrawStringR2L (int x, int y, const char *string) {
 	unsigned	i;
-	float		fontscale = ui_fontScale->value;
+	int		fontscale = ui_fontScale->integer;
 
 	for (i = 0; i < strlen (string); i++) {
-		Draw_CharScaled ((x - i * 8 * fontscale), y, fontscale, fontscale, string[strlen (string) - i - 1]);
+		R_AddCharsToList((x - i * 8 * fontscale), y, fontscale, string[strlen (string) - i - 1], draw_chars->handle);
 	}
 }
 
 void Menu_DrawStringR2LDark (int x, int y, const char *string) {
 	unsigned	i;
-	float		fontscale = ui_fontScale->value;
+	int		fontscale = ui_fontScale->integer;
 
 	for (i = 0; i < strlen (string); i++) {
-		Draw_CharScaled ((x - i * 8 * fontscale), y, fontscale, fontscale, string[strlen (string) - i - 1] + 128);
+		R_AddCharsToList ((x - i * 8 * fontscale), y, fontscale, string[strlen (string) - i - 1] + 128, draw_chars->handle);
 	}
 }
 
@@ -525,6 +531,7 @@ void Menu_SlideItem (menuframework_s * s, int dir) {
 				break;
 		}
 	}
+
 }
 
 int Menu_TallySlots (menuframework_s * menu) {
@@ -584,6 +591,7 @@ void MenuList_Draw (menulist_s * l) {
 		n++;
 		y += 10;
 	}
+
 }
 
 void Separator_Draw (menuseparator_s * s) {
@@ -610,9 +618,9 @@ void Slider_DoSlide (menuslider_s * s, int dir) {
 
 void Slider_Draw (menuslider_s * s) {
 	int		i, shift;
-	float	fontscale = ui_fontScale->value;
+	int	fontscale = ui_fontScale->integer;
 
-	shift = (ui_fontScale->value - 1) * 8;
+	shift = (ui_fontScale->integer - 1) * 8;
 
 	Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
 		LCOLUMN_OFFSET,
@@ -633,19 +641,17 @@ void Slider_Draw (menuslider_s * s) {
 	//					fontscale, fontscale, 128);
 	// slider line
 	for (i = 0; i < SLIDER_RANGE; i++)
-		Draw_CharScaled (8 + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8,
-		s->generic.y + s->generic.parent->y,
-		fontscale, fontscale,
-		129);
+		R_AddCharsToList (RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x,
+		s->generic.y + s->generic.parent->y, fontscale, 129, draw_chars->handle);
 
 	// back cap
 	//	Draw_CharScaled(RCOLUMN_OFFSET + s->generic.x + i * 8*fontscale +
 	//					s->generic.parent->x + 8,
 	//					s->generic.y + s->generic.parent->y, fontscale, fontscale, 130);
 	//slider	
-	Draw_CharScaled ((int)(RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x +
-		(SLIDER_RANGE - 1) * 8 * s->range*fontscale),
-		s->generic.y + s->generic.parent->y, fontscale, fontscale, 131);
+	R_AddCharsToList((int)(RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x + (SLIDER_RANGE - 1) * 8 * s->range * fontscale),
+					s->generic.y + s->generic.parent->y, fontscale, 131, draw_chars->handle);
+
 }
 
 void SpinControl_DoEnter (menulist_s * s) {
@@ -671,7 +677,7 @@ void SpinControl_DoSlide (menulist_s * s, int dir) {
 
 void SpinControl_Draw (menulist_s * s) {
 	char	buffer[100];
-	float	fontscale = ui_fontScale->value;
+	int	fontscale = ui_fontScale->integer;
 
 	if (s->generic.name) {
 		Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
@@ -680,23 +686,24 @@ void SpinControl_Draw (menulist_s * s) {
 			s->generic.name);
 	}
 	if (!strchr (s->itemnames[s->curInteger], '\n')) {
-		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
+		CL_AddString (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
-			fontscale, fontscale,
-			s->itemnames[s->curInteger], qtrue);
+			fontscale, 
+			s->itemnames[s->curInteger], draw_chars->handle);
 	}
 	else {
 		strcpy (buffer, s->itemnames[s->curInteger]);
 		*strchr (buffer, '\n') = 0;
-		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
+		CL_AddString(RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
-			fontscale, fontscale,
-			buffer, qtrue);
+			fontscale, 
+			buffer, draw_chars->handle);
 
 		strcpy (buffer, strchr (s->itemnames[s->curInteger], '\n') + 1);
-		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
-			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->value,
-			fontscale, fontscale,
-			buffer, qtrue);
+		CL_AddString(RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
+			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->integer,
+			fontscale, 
+			buffer, draw_chars->handle);
 	}
+
 }

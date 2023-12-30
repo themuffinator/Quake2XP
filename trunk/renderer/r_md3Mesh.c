@@ -264,9 +264,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		{
 			if (!inSkin->name[0])
 			{
-				outMesh->skinsAlbedo[j] = 
-				outMesh->skinsNormal[j] = outMesh->skinsLight[j] =
-				outMesh->skinsEnv[j]	= outMesh->skinsRgh[j] = r_missingTexture;
+				outMesh->albedo[j] = 
+				outMesh->normalmap[j] = outMesh->emissive[j] =
+				outMesh->envmap[j]	= outMesh->pbr[j] = outMesh->aomap[j] = r_missingTexture;
 				continue;
 			}
 
@@ -275,56 +275,49 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, ".dds");
-			outMesh->skinsAlbedo[j] = R_LoadDDS(tex, it_skin);
-			if (!outMesh->skinsAlbedo[j])
-				outMesh->skinsAlbedo[j] = r_missingTexture;
+			outMesh->albedo[j] = R_LoadDDS(tex, it_skin);
+			if (!outMesh->albedo[j])
+				outMesh->albedo[j] = r_missingTexture;
 
 			// GlowMaps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_light.dds");
-			outMesh->skinsLight[j] = R_LoadDDS(tex, it_skin);
-			if (!outMesh->skinsLight[j])
-				outMesh->skinsLight[j] = r_blackTexture1x1;
+			outMesh->emissive[j] = R_LoadDDS(tex, it_skin);
+			if (!outMesh->emissive[j])
+				outMesh->emissive[j] = r_blackTexture1x1;
 
 			// Normal maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_bump.dds");
-			outMesh->skinsNormal[j] = R_LoadDDS(tex, it_normal);
+			outMesh->normalmap[j] = R_LoadDDS(tex, it_normal);
 
-			if (!outMesh->skinsNormal[j])
-				outMesh->skinsNormal[j] = r_defBump;
+			if (!outMesh->normalmap[j])
+				outMesh->normalmap[j] = r_defBump;
 
 			// Roughness maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_rgh.dds");
-			outMesh->skinsRgh[j] = R_LoadDDS(tex, it_skin);
-			if (!outMesh->skinsRgh[j])
-				outMesh->skinsRgh[j] = r_blackTexture1x1;
+			outMesh->pbr[j] = R_LoadDDS(tex, it_skin);
+			if (!outMesh->pbr[j])
+				outMesh->pbr[j] = r_blackTexture1x1;
 
 			// Env maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_env.dds");
-			outMesh->skinsEnv[j] = R_LoadDDS(tex, it_skin);
-			if (!outMesh->skinsEnv[j])
-				outMesh->skinsEnv[j] = r_blackTexture1x1;
+			outMesh->envmap[j] = R_LoadDDS(tex, it_skin);
+			if (!outMesh->envmap[j])
+				outMesh->envmap[j] = r_blackTexture1x1;
 
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_ao.dds");
-			outMesh->skinsAO[j] = R_LoadDDS(tex, it_skin);
-			if (!outMesh->skinsAO[j])
-				outMesh->skinsAO[j] = r_whiteMap;
-
-			strcpy(tex, name);
-			tex[strlen(tex) - 4] = 0;
-			strcat(tex, "_local.dds");
-			outMesh->skinsSkinLocal[j] = R_LoadDDS(tex, it_normal);
-			if (!outMesh->skinsSkinLocal[j])
-				outMesh->skinsSkinLocal[j] = r_defBump;
+			outMesh->aomap[j] = R_LoadDDS(tex, it_skin);
+			if (!outMesh->aomap[j])
+				outMesh->aomap[j] = r_whiteMap;
 		}
 
 		//
@@ -595,11 +588,6 @@ void CheckEntityFrameMD3(md3Model_t *paliashdr)
 	}
 
 }
-static vec3_t	vertexArray		[MD3_MAX_TRIANGLES * 3];
-static vec3_t	normalArray		[MD3_MAX_TRIANGLES * 3];
-static vec3_t	tangentArray	[MD3_MAX_TRIANGLES * 3];
-static vec3_t	binormalArray	[MD3_MAX_TRIANGLES * 3];
-static vec4_t	colorArray		[MD3_MAX_TRIANGLES * 4];
 
 void R_DrawMD3Mesh(qboolean weapon) {
 
@@ -611,7 +599,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
-	image_t     *skin, *light, *normal, *ao;
+	image_t     *albedo, *emissive, *normal, *ao;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -691,12 +679,11 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
-
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, tess.color);
+	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
+	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
@@ -761,40 +748,40 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
 
-		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!skin || skin == r_missingTexture)
+		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!albedo || albedo == r_missingTexture)
 		{
 			if (currententity->skin)
 			{
-				skin = currententity->skin;	// custom player skin
+				albedo = currententity->skin;	// custom player skin
 			}
 		}
-		if (!skin)
-			skin = r_missingTexture;
+		if (!albedo)
+			albedo = r_missingTexture;
 
-		light = mesh->skinsLight[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!light)
-			light = r_blackTexture1x1;
+		emissive = mesh->emissive[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!emissive)
+			emissive = r_blackTexture1x1;
 
-		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
 			normal = r_defBump;
 		
 		if (currententity->flags & RF_WEAPONMODEL && r_ssao->integer)
-			ao = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+			ao = mesh->pbr[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		else
 			ao = r_whiteMap;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
 			if (mesh->muzzle)
-				Vector4Set(md3ColorCache[j], 1.0, 1.0, 1.0, 1.0);
+				Vector4Set(tess.color[j], 1.0, 1.0, 1.0, 1.0);
 			else
-				Vector4Set(md3ColorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
+				Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
 
-			md3VertexCache[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-			md3VertexCache[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-			md3VertexCache[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+			tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+			tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 		}
 		
 		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
@@ -803,24 +790,24 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			for (k = 0; k < mesh->num_verts; k++) {
 
-				tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-				tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-				tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+				tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+				tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+				tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-				binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-				binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-				binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+				tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+				tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+				tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-				normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 		}
 
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 
-		GL_SetBindlessTexture(U_TMU0, skin->handle);
-		GL_SetBindlessTexture(U_TMU1, light->handle);
+		GL_SetBindlessTexture(U_TMU0, albedo->handle);
+		GL_SetBindlessTexture(U_TMU1, emissive->handle);
 		GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 		GL_SetBindlessTexture(U_TMU3, normal->handle);
 		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
@@ -892,30 +879,30 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			if (!(mesh->flags & MESH_TRANSLUSCENT))
 				continue;
 
-			skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-			if (!skin || skin == r_missingTexture)
+			albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+			if (!albedo || albedo == r_missingTexture)
 			{
 				if (currententity->skin)
 				{
-					skin = currententity->skin;	// custom player skin
+					albedo = currententity->skin;	// custom player skin
 				}
 			}
-			if (!skin)
-				skin = r_missingTexture;
+			if (!albedo)
+				albedo = r_missingTexture;
 
-			normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+			normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 			if (!normal)
 				normal = r_defBump;
 
 			for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 				if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-					Vector4Set(md3ColorCache[j], 0.33, 0.33, 0.33, 0.5);
+					Vector4Set(tess.color[j], 0.33, 0.33, 0.33, 0.5);
 				else
-					Vector4Set(md3ColorCache[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
+					Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
 
-				md3VertexCache[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-				md3VertexCache[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-				md3VertexCache[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 			}
 
 			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
@@ -924,22 +911,22 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			for (k = 0; k< mesh->num_verts; k++) {
 				
 				if (r_debugTbn->integer) {
-					tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-					tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-					tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+					tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+					tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+					tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-					binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-					binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-					binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+					tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+					tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+					tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 				}
-				normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 
 			qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 			
-			GL_SetBindlessTexture(U_TMU0, skin->handle);
+			GL_SetBindlessTexture(U_TMU0, albedo->handle);
 			GL_SetBindlessTexture(U_TMU1, r_blackTexture1x1->handle);
 			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
@@ -1044,7 +1031,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	md3Frame_t	*frame, *oldframe;
 	vec3_t		move, delta, vectors[3], maxs;
 	md3Vertex_t	*verts, *oldVerts;
-	image_t     *skin, *rgh, *normal;
+	image_t     *albedo, *pbr, *normal;
 	qboolean inWater;
 	vec3_t tmp, oldLight, oldView;
 
@@ -1114,13 +1101,12 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
+	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
+	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
+	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
+
 	// setup program
 	GL_BindProgram(aliasBumpProgram);
 
@@ -1182,30 +1168,30 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		c_litAliasTris += md3Hdr->meshes[i].num_tris;
 
-		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!skin || skin == r_missingTexture)
+		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!albedo || albedo == r_missingTexture)
 		{
 			if (currententity->skin)
 			{
-				skin = currententity->skin;	// custom player skin
+				albedo = currententity->skin;	// custom player skin
 			}
 		}
-		if (!skin)
-			skin = r_missingTexture;
+		if (!albedo)
+			albedo = r_missingTexture;
 
-		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
 			normal = r_defBump;
 
-		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!rgh)
-			rgh = r_blackTexture1x1;
+		pbr = mesh->pbr[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!pbr)
+			pbr = r_blackTexture1x1;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
-			md3VertexCache[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-			md3VertexCache[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-			md3VertexCache[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+			tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+			tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 		}
 
 		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
@@ -1213,31 +1199,26 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (k = 0; k< mesh->num_verts; k++) {
 
-				tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-				tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-				tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+				tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+				tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+				tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-				binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-				binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-				binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+				tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+				tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+				tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-				normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
-
-				colorArray[k][0] = currentShadowLight->color[0] * r_hdrLightScale->value;
-				colorArray[k][1] = currentShadowLight->color[1] * r_hdrLightScale->value;
-				colorArray[k][2] = currentShadowLight->color[2] * r_hdrLightScale->value;
-				colorArray[k][3] = 1.0;
+				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 		}
 
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 		
 		GL_SetBindlessTexture(U_TMU0, normal->handle);
-		GL_SetBindlessTexture(U_TMU1, skin->handle);
+		GL_SetBindlessTexture(U_TMU1, albedo->handle);
 		GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 		GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
-		GL_SetBindlessTexture(U_TMU4, rgh->handle);
+		GL_SetBindlessTexture(U_TMU4, pbr->handle);
 		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
 		GL_SetBindlessTexture(U_TMU6, r_hdrScreenCopy->handle);
 		GL_SetBindlessTexture(U_TMU7, r_linearDepth->handle);
@@ -1246,7 +1227,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
-		if (rgh == r_blackTexture1x1)
+		if (pbr == r_blackTexture1x1)
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
@@ -1260,7 +1241,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);
@@ -1317,8 +1297,8 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
 
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, viewOrg);
@@ -1359,13 +1339,13 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
-			md3VertexCache[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-			md3VertexCache[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-			md3VertexCache[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+			tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+			tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 
-			normalArray[j][0] = oldVerts->normal[0] * backlerp + verts->normal[0] * frontlerp;
-			normalArray[j][1] = oldVerts->normal[1] * backlerp + verts->normal[1] * frontlerp;
-			normalArray[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
+			tess.normal[j][0] = oldVerts->normal[0] * backlerp + verts->normal[0] * frontlerp;
+			tess.normal[j][1] = oldVerts->normal[1] * backlerp + verts->normal[1] * frontlerp;
+			tess.normal[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
 		}
 
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);

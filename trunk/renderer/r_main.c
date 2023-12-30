@@ -218,7 +218,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	dsprframe_t *frame;
 	float		*up, *right;
 	dsprite_t	*psprite;
-	int			vert=0;
 	int			len, scaled = 1;
 	uchar		quadIdx[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -241,28 +240,26 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 		scaled = 2;
 	}
 	else		
-		GL_SetBindlessTexture(U_TMU1, currentmodel->skins[e->frame]->handle);
+		GL_SetBindlessTexture(U_TMU1, currentmodel->albedo[e->frame]->handle);
 	
-	VectorMA	(e->origin,				-frame->origin_y * scaled, up, wVertexArray[vert+0]);
-	VectorMA	(wVertexArray[vert+0],	-frame->origin_x * scaled, right, wVertexArray[vert+0]);
-	VA_SetElem2	(wTexArray[vert+0],		0, 1);
+	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess.position[0]);
+	VectorMA (tess.position[0],	-frame->origin_x * scaled, right, tess.position[0]);
 	
-	VectorMA	(e->origin,				frame->height * scaled - frame->origin_y * scaled, up, wVertexArray[vert+1]);
-	VectorMA	(wVertexArray[vert+1], -frame->origin_x * scaled, right, wVertexArray[vert+1]);
-    VA_SetElem2	(wTexArray[vert+1],		0, 0);
+	VectorMA (e->origin,		frame->height * scaled - frame->origin_y * scaled, up, tess.position[1]);
+	VectorMA (tess.position[1],	-frame->origin_x * scaled, right, tess.position[1]);
 
-	VectorMA	(e->origin,				frame->height * scaled - frame->origin_y * scaled, up, wVertexArray[vert+2]);
-	VectorMA	(wVertexArray[vert+2],	frame->width * scaled - frame->origin_x * scaled, right, wVertexArray[vert+2]);
-    VA_SetElem2	(wTexArray[vert+2],		1, 0);
-
-	VectorMA (e->origin,				-frame->origin_y * scaled, up, wVertexArray[vert+3]);
-	VectorMA (wVertexArray[vert+3],		frame->width * scaled - frame->origin_x * scaled, right, wVertexArray[vert+3]);
-    VA_SetElem2(wTexArray[vert+3],		1, 1);
-
-	vert+=4;
+	VectorMA (e->origin,		frame->height * scaled - frame->origin_y * scaled, up, tess.position[2]);
+	VectorMA (tess.position[2],	frame->width * scaled - frame->origin_x * scaled, right, tess.position[2]);
 	
-	if(vert)
-		GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
+	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess.position[3]);
+	VectorMA (tess.position[3],	frame->width	* scaled - frame->origin_x * scaled, right, tess.position[3]);
+	
+	VA_SetElem2(tess.texCoord[0], 0, 1);
+	VA_SetElem2(tess.texCoord[1], 0, 0);
+	VA_SetElem2(tess.texCoord[2], 1, 0);
+	VA_SetElem2(tess.texCoord[3], 1, 1);
+
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 }
 
 //==================================================================================
@@ -476,16 +473,6 @@ void R_SetupGL(void)
 R_Clear
 =============
 */
-
-void R_Clear(void)
-{
-	qglClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
-	gldepthmin = 0.0;
-	gldepthmax = 1.0;
-
-	GL_DepthFunc(GL_LEQUAL); 
-	GL_DepthRange(gldepthmin, gldepthmax);
-}
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -767,8 +754,8 @@ void R_RenderSprites(void)
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, tess.texCoord);
 
 	// setup program
 	GL_BindProgram(spriteProgram);
@@ -1000,7 +987,6 @@ void R_RenderView (refdef_t *fd) {
 		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
-			qglClearColor(0.0, 0.0, 0.0, 1.0);
 			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		else
@@ -1009,8 +995,6 @@ void R_RenderView (refdef_t *fd) {
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
-		GL_DrawBuffers(1);
-		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -1128,26 +1112,26 @@ void R_RenderFrame(refdef_t * fd) {
 	
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
-		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+65,  2, 2, buff3, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+85,  2, 2, buff4, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+105, 2, 2, buff5, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14, qtrue);
-		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15, qtrue);
+		CL_AddString(0, VID_CENTER_H,       3, buff0, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, draw_charsInt->handle);
 
-//		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16, qtrue);
-	//	Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17, qtrue);
-		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff18, qtrue);
+//		Draw_StringScaled(0, VID_CENTER_H + 325, 2, 2, buff16, qtrue);
+	//	Draw_StringScaled(0, VID_CENTER_H + 345, 2, 2, buff17, qtrue);
+		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, draw_charsInt->handle);
 		RE_SetColor(colorWhite);
 	}
 }
@@ -1463,6 +1447,8 @@ void R_RegisterCvars(void)
 
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
+	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+
 	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);
 	r_nsightDebug =						Cvar_Get("r_nsightDebug", "0", 0);
 	r_nsightDebug->help =				"Enable Nvidia Nsight Graphics frame delimiter";
@@ -1524,6 +1510,7 @@ bind v			"paste"
 	Cmd_AddCommand("occEdit",					R_OccBBoxEdit_f);
 	Cmd_AddCommand("occReset",					R_ResetOccBBox_f);
 	Cmd_AddCommand("scaleLightColor",			R_ScaleLightColor_f);
+	Cmd_AddCommand("vaoList",					R_VaoListing_f);
 }
 
 /*
@@ -1602,7 +1589,6 @@ void R_InitFboBuffers() {
 	R_CreateScreenFbo();
 	R_FboFinal();
 	R_Tex2dFbo();
-	R_HdrLumFbo();
 	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
@@ -1663,20 +1649,22 @@ int R_Init(void *hinstance, void *hWnd)
 	glGenVertexArrays		= (PFNGLGENVERTEXARRAYSPROC)	qwglGetProcAddress("glGenVertexArrays");
 	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress("glDeleteVertexArrays");
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress("glBindVertexArray");
+	glIsVertexArray			= (PFNGLISVERTEXARRAYPROC)		qwglGetProcAddress("glIsVertexArray");
 
 	glMultiDrawElements		= (PFNGLMULTIDRAWELEMENTSPROC)	qwglGetProcAddress("glMultiDrawElements");
 	glMultiDrawArrays		= (PFNGLMULTIDRAWARRAYSPROC)	qwglGetProcAddress("glMultiDrawArrays");
 
 	// vbo stuff
-	qglBindBuffer			= (PFNGLBINDBUFFERPROC)			qwglGetProcAddress("glBindBuffer");
-	qglDeleteBuffers		= (PFNGLDELETEBUFFERSPROC)		qwglGetProcAddress("glDeleteBuffers");
-	qglGenBuffers			= (PFNGLGENBUFFERSPROC)			qwglGetProcAddress("glGenBuffers");
-	qglBufferData			= (PFNGLBUFFERDATAPROC)			qwglGetProcAddress("glBufferData");
-	qglBufferSubData		= (PFNGLBUFFERSUBDATAPROC)		qwglGetProcAddress("glBufferSubData");
-	qglMapBuffer			= (PFNGLMAPBUFFERPROC)			qwglGetProcAddress("glMapBuffer");
-	qglUnmapBuffer			= (PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
-	qglMapBufferRange		= (PFNGLMAPBUFFERRANGEPROC)			qwglGetProcAddress("glMapBufferRange");
-	qglInvalidateBufferData = (PFNGLINVALIDATEBUFFERDATAPROC)	qwglGetProcAddress("glInvalidateBufferData");
+	qglBindBuffer				= (PFNGLBINDBUFFERPROC)				qwglGetProcAddress("glBindBuffer");
+	qglDeleteBuffers			= (PFNGLDELETEBUFFERSPROC)			qwglGetProcAddress("glDeleteBuffers");
+	qglGenBuffers				= (PFNGLGENBUFFERSPROC)				qwglGetProcAddress("glGenBuffers");
+	qglBufferData				= (PFNGLBUFFERDATAPROC)				qwglGetProcAddress("glBufferData");
+	qglBufferSubData			= (PFNGLBUFFERSUBDATAPROC)			qwglGetProcAddress("glBufferSubData");
+	qglMapBuffer				= (PFNGLMAPBUFFERPROC)				qwglGetProcAddress("glMapBuffer");
+	qglUnmapBuffer				= (PFNGLUNMAPBUFFERPROC)			qwglGetProcAddress("glUnmapBuffer");
+	qglMapBufferRange			= (PFNGLMAPBUFFERRANGEPROC)			qwglGetProcAddress("glMapBufferRange");
+	qglInvalidateBufferData		= (PFNGLINVALIDATEBUFFERDATAPROC)	qwglGetProcAddress("glInvalidateBufferData");
+	qglInvalidateBufferSubData	= (PFNGLINVALIDATEBUFFERSUBDATAPROC)qwglGetProcAddress("glInvalidateBufferSubData");
 
 	// fbo stuff
 	qglIsRenderbuffer						= (PFNGLISRENDERBUFFERPROC)						qwglGetProcAddress("glIsRenderbuffer");
@@ -1814,13 +1802,11 @@ int R_Init(void *hinstance, void *hWnd)
 	glTextureSubImage3D		=		(PFNGLTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glTextureSubImage3D");
 	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
 
-	glCompressedTextureSubImage2D =(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC) qwglGetProcAddress("glCompressedTextureSubImage2D");
-	glCompressedTextureSubImage3D = (PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC)qwglGetProcAddress("glCompressedTextureSubImage3D");
-	
-	qglCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)qwglGetProcAddress("glCompressedTexSubImage2D");
-	qglTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)qwglGetProcAddress("glTexSubImage2D");
-
-	glGetTextureLevelParameteriv = (PFNGLGETTEXTURELEVELPARAMETERIVPROC) qwglGetProcAddress("glGetTextureLevelParameteriv");
+	glCompressedTextureSubImage2D =	(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glCompressedTextureSubImage2D");
+	glCompressedTextureSubImage3D = (PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glCompressedTextureSubImage3D");
+	qglCompressedTexSubImage2D =	(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)		qwglGetProcAddress("glCompressedTexSubImage2D");
+	qglTexSubImage2D =				(PFNGLTEXSUBIMAGE2DPROC)				qwglGetProcAddress("glTexSubImage2D");
+	glGetTextureLevelParameteriv =	(PFNGLGETTEXTURELEVELPARAMETERIVPROC)	qwglGetProcAddress("glGetTextureLevelParameteriv");
 
 	// texture storage
 	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
@@ -1841,13 +1827,13 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
 
 	qglClampColor		=	(PFNGLCLAMPCOLORPROC)		qwglGetProcAddress("glClampColor");
-	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
+//	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
 
-	glFenceSync = (PFNGLFENCESYNCPROC) qwglGetProcAddress("glFenceSync");
-	glGetSynciv = (PFNGLGETSYNCIVPROC)qwglGetProcAddress("glGetSynciv");
+	glFenceSync = (PFNGLFENCESYNCPROC)	qwglGetProcAddress("glFenceSync");
+	glGetSynciv = (PFNGLGETSYNCIVPROC)	qwglGetProcAddress("glGetSynciv");
 
-	qglObjectLabel = (PFNGLOBJECTLABELPROC)qwglGetProcAddress("glObjectLabel");
-	qglGetObjectLabel = (PFNGLGETOBJECTLABELPROC)qwglGetProcAddress("glGetObjectLabel");
+	qglObjectLabel =	(PFNGLOBJECTLABELPROC)		qwglGetProcAddress("glObjectLabel");
+	qglGetObjectLabel = (PFNGLGETOBJECTLABELPROC)	qwglGetProcAddress("glGetObjectLabel");
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
@@ -1894,9 +1880,39 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_YELLOW"Max Buffer Samples:       " S_COLOR_GREEN "       %i\n", gl_state.maxSamples);
 
 
+	qglGetIntegeri_v =		(PFNGLGETINTEGERI_VPROC)	qwglGetProcAddress("glGetIntegeri_v");
+	qglMemoryBarrier =		(PFNGLMEMORYBARRIERPROC)	qwglGetProcAddress("glMemoryBarrier");
+	qglBindImageTexture =	(PFNGLBINDIMAGETEXTUREPROC)	qwglGetProcAddress("glBindImageTexture");
+	qglDispatchCompute =	(PFNGLDISPATCHCOMPUTEPROC)	qwglGetProcAddress("glDispatchCompute");
+
+	int maxX, maxY, maxZ, maxItemsPerGroup;
+	qglGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &maxX);
+	qglGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &maxY);
+	qglGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &maxZ);
+	qglGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &maxItemsPerGroup);
+	
+	int maxGroupX, maxGroupY, maxGroupZ;
+	qglGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &maxGroupX);
+	qglGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &maxGroupY);
+	qglGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &maxGroupZ);
+
+	int maxSharedSize;
+	qglGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &maxSharedSize);
+
+	Com_Printf("\n");
+	Com_Printf(S_COLOR_YELLOW"Max Compute Work Group Size:" S_COLOR_GREEN "        %i %i %i\n", maxX, maxY, maxZ);
+	Com_Printf(S_COLOR_YELLOW"Max Compute Work Group Invocations:" S_COLOR_GREEN " %i\n", maxItemsPerGroup);
+	Com_Printf(S_COLOR_YELLOW"Max Compute Work Group Count:" S_COLOR_GREEN "       %i %i %i\n", maxGroupX, maxGroupY, maxGroupZ);
+	Com_Printf(S_COLOR_YELLOW"Max Compute Shared Memory Size:" S_COLOR_GREEN "     %i\n", maxSharedSize);
+
 	R_InitPrograms();
 	R_InitFboBuffers();
 	R_InitVertexBuffers();
+	GL_SetDefaultState();
+	GL_InitImages();
+	Mod_Init();
+	R_InitEngineTextures();
+	R_Init2D();
 
 	qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texSize);
 	Com_Printf("...Max Texture Size is ["S_COLOR_GREEN"%i"S_COLOR_WHITE"]\n", max_texSize);
@@ -1934,12 +1950,6 @@ int R_Init(void *hinstance, void *hWnd)
 
 
 	Com_Printf("=====================================\n");
-
-	GL_SetDefaultState();
-	GL_InitImages();
-	Mod_Init();
-	R_InitEngineTextures();
-	R_Init2D();
 
 	flareEdit = (qboolean)qfalse;
 	occEdit = (qboolean)qfalse;
@@ -1996,6 +2006,8 @@ void R_Shutdown(void)
 #ifdef _WIN32
 	Cmd_RemoveCommand("gpuInfo");
 #endif
+	
+	Cmd_RemoveCommand("vaoList");
 
 	qglDeleteFramebuffers(1, &fbo._hdr);
 	qglDeleteFramebuffers(1, &fbo._final);
@@ -2044,6 +2056,7 @@ void R_BeginFrame()
 	r_lightmapScale->value = ClampCvar(0.0, 1.0, r_lightmapScale->value);
 	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
 	r_parallaxScale->integer = ClampCvarInteger(0, 6, r_parallaxScale->integer);
+	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;
@@ -2078,11 +2091,13 @@ void R_BeginFrame()
 	if(r_nsightDebug->integer)
 		qglFlush();
 
-	qglDrawBuffer( GL_BACK );
-
 	GL_UpdateSwapInterval();
 
-	R_Clear();
+	gldepthmin = 0.0;
+	gldepthmax = 1.0;
+	GL_DepthFunc(GL_LEQUAL);
+	GL_DepthRange(gldepthmin, gldepthmax);
+	qglClear(GL_COLOR_BUFFER_BIT);
 }
 
 /*
@@ -2113,6 +2128,4 @@ void R_SetPalette(const unsigned char *palette)
 			rp[i * 4 + 3] = 0xff;
 		}
 	}
-	qglClearColor(0, 0, 0, 0);
-	qglClear(GL_COLOR_BUFFER_BIT);
 }

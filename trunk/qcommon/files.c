@@ -501,12 +501,14 @@ then loads and adds pak1.pak pak2.pak ...
 ================
 */
 void FS_AddGameDirectory (char *dir) {
-	searchpath_t		*search;
-	pack_t				*pak;
-	char				pattern[MAX_OSPATH];
-	int					i;
-	char				**paklist;
-	int					nfiles;
+	searchpath_t	*search;
+	pack_t			*pak;
+	char			pattern[MAX_OSPATH];
+	char			**paklist;
+	int				i, nfiles, start, stop;
+	float			sec;
+
+	start = Sys_Milliseconds();
 
 	Com_DPrintf ("Added search path '%s'\n", dir);
 	strcpy (fs_gamedir, dir);
@@ -537,6 +539,10 @@ void FS_AddGameDirectory (char *dir) {
 	strcpy (search->filename, dir);
 	search->next = fs_searchpaths;
 	fs_searchpaths = search;
+
+	stop = Sys_Milliseconds();
+	sec = (float)stop - (float)start;
+	Com_Printf("\nPAKs loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
 }
 
 /*
@@ -569,6 +575,7 @@ void FS_ExecAutoexec (void) {
 		Com_sprintf (name, sizeof(name), "%s/%s/autoexec.cfg", fs_basedir->string, BASEDIRNAME);
 	if (Sys_FindFirst (name, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM))
 		Cbuf_AddText ("exec autoexec.cfg\n");
+
 	Sys_FindClose ();
 }
 
@@ -1100,7 +1107,7 @@ char* FS_DownloadDir(void)
 {
 	return FS_Gamedir();
 }
-
+/*
 #include <corecrt_io.h>
 void FS_LoadPureList(char *dir)
 {
@@ -1111,9 +1118,6 @@ void FS_LoadPureList(char *dir)
 	int		i, count;
 	FILE	*f;
 
-	/*
-	** load the list of pak names
-	*/
 	Com_sprintf(name, sizeof(name), "%s/purepaks.lst", dir);
 	if ((f = fopen(name, "rb")) == 0)
 	{
@@ -1172,7 +1176,7 @@ void FS_LoadPureList(char *dir)
 	f = 0;
 	Z_Free(buffer);
 }
-
+*/
 
 /*
 ================
@@ -1192,7 +1196,7 @@ void FS_InitFilesystem (void) {
 	//
 	fs_basedir = Cvar_Get ("basedir", ".", CVAR_NOSET);
 	
-	FS_LoadPureList(BASEDIRNAME);
+//	FS_LoadPureList(BASEDIRNAME);
 
 	//
 	// cddir <path>
@@ -1209,6 +1213,7 @@ void FS_InitFilesystem (void) {
 
 	// start up with baseq2 by default
 	FS_AddGameDirectory (va ("%s/"BASEDIRNAME, fs_basedir->string));
+	
 	FS_AddHomeAsGameDirectory (BASEDIRNAME);
 
 

@@ -349,20 +349,16 @@ typedef struct {
 #define	CONTENTS_LADDER			0x20000000
 
 
-
 #define	SURF_LIGHT		0x1		// value will hold the light strength
-
 #define	SURF_SLICK		0x2		// effects game physics
-
 #define	SURF_SKY		0x4		// don't draw, but add to skybox
 #define	SURF_WARP		0x8		// turbulent water warp
 #define	SURF_TRANS33	0x10
 #define	SURF_TRANS66	0x20
-#define	SURF_FLOWING	0x40	// scroll towards angle
-#define	SURF_NODRAW		0x80	// don't bother referencing the texture
+#define	SURF_FLOWING	0x40		// scroll towards angle
+#define	SURF_NODRAW		0x80		// don't bother referencing the texture
 
-
-
+#define SURF_ALPHA		0x1000		// wire fence effect flag from kingpin
 
 typedef struct {
 	int planenum;
@@ -373,7 +369,6 @@ typedef struct {
 	unsigned short firstface;
 	unsigned short numfaces;	// counting both sides
 } dnode_t;
-
 
 typedef struct texInfo_s {
 	float vecs[2][4];			// [s/t][xyz offset]

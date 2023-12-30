@@ -1458,7 +1458,7 @@ void R_DrawCube(vec3_t v[8], vec3_t org, int size) {
 	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
 	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
 
-	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
 }
 
@@ -1474,7 +1474,7 @@ void R_DrawLightBox(vec3_t v[8], vec3_t org, vec3_t radius) {
 	VectorSet(v[6], org[0] + radius[0], org[1] + radius[1], org[2] - radius[2]);
 	VectorSet(v[7], org[0] - radius[0], org[1] + radius[1], org[2] - radius[2]);
 
-	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
 }
 
@@ -2368,8 +2368,8 @@ qboolean InLightVISEntity () {
 
 int lightSurfSort(const msurface_t** a, const msurface_t** b)
 {
-	return	(((*a)->texInfo->image->texnum) + ((*a)->flags)) -
-		(((*b)->texInfo->image->texnum) + ((*b)->flags));
+	return	(((*a)->texInfo->albedo->texnum) + ((*a)->flags)) -
+		(((*b)->texInfo->albedo->texnum) + ((*b)->flags));
 }
 
 void R_MarkLightCasting(mnode_t *node, qboolean precalc, worldShadowLight_t *light);
@@ -2728,10 +2728,6 @@ void R_SetViewLightScreenBounds () {
 }
 
 
-vec3_t	vert_array[MAX_FLARE_VERTS]; // MAX_FLARE_VERTS 6
-vec2_t	tex_array[MAX_FLARE_VERTS];
-vec4_t	color_array[MAX_FLARE_VERTS];
-
 void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
@@ -2763,14 +2759,14 @@ void R_DrawLightFlare () {
 
 	GL_BindProgram(flareProgram);
 
-	qglEnableVertexAttribArray (ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglEnableVertexAttribArray (ATT_COLOR);
 
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
-	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
-	
+	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, tess.position);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, tess.texCoord);
+	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, tess.color);
+
 	// Color Fade
 	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);
 	dist2 = VectorLength(v);
@@ -2780,6 +2776,10 @@ void R_DrawLightFlare () {
 		scale = 0.01;
 	VectorScale (currentShadowLight->color, scale, tmp);
 
+	tmp[0] *= r_newrefdef.lightstyles[currentShadowLight->style].rgb[0];
+	tmp[1] *= r_newrefdef.lightstyles[currentShadowLight->style].rgb[1];
+	tmp[2] *= r_newrefdef.lightstyles[currentShadowLight->style].rgb[2];
+
 	GL_SetBindlessTexture(U_TMU0, r_particleTexture[PT_FLARE]->handle);
 	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
 
@@ -2788,25 +2788,27 @@ void R_DrawLightFlare () {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 
-	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[0]);
-	VectorMA (vert_array[0], 1 + dist, vright, vert_array[0]);
-	VA_SetElem2 (tex_array[0], 0, 1);
-	VA_SetElem4 (color_array[0], tmp[0], tmp[1], tmp[2], 0.5);
+	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, tess.position[0]);
+	VectorMA (tess.position[0], 1 + dist, vright, tess.position[0]);
 
-	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[1]);
-	VectorMA (vert_array[1], -1 - dist, vright, vert_array[1]);
-	VA_SetElem2 (tex_array[1], 0, 0);
-	VA_SetElem4 (color_array[1], tmp[0], tmp[1], tmp[2], 0.5);
+	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, tess.position[1]);
+	VectorMA (tess.position[1], -1 - dist, vright, tess.position[1]);
 
-	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[2]);
-	VectorMA (vert_array[2], -1 - dist, vright, vert_array[2]);
-	VA_SetElem2 (tex_array[2], 1, 0);
-	VA_SetElem4 (color_array[2], tmp[0], tmp[1], tmp[2], 0.5);
+	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, tess.position[2]);
+	VectorMA (tess.position[2], -1 - dist, vright, tess.position[2]);
 
-	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[3]);
-	VectorMA (vert_array[3], 1 + dist, vright, vert_array[3]);
-	VA_SetElem2 (tex_array[3], 1, 1);
-	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 0.5);
+	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, tess.position[3]);
+	VectorMA (tess.position[3], 1 + dist, vright, tess.position[3]);
+
+	VA_SetElem2(tess.texCoord[0], 0, 1);
+	VA_SetElem2(tess.texCoord[1], 0, 0);
+	VA_SetElem2(tess.texCoord[2], 1, 0);
+	VA_SetElem2(tess.texCoord[3], 1, 1);
+
+	VA_SetElem4(tess.color[0], tmp[0], tmp[1], tmp[2], 0.5);
+	VA_SetElem4(tess.color[1], tmp[0], tmp[1], tmp[2], 0.5);
+	VA_SetElem4(tess.color[2], tmp[0], tmp[1], tmp[2], 0.5);
+	VA_SetElem4(tess.color[3], tmp[0], tmp[1], tmp[2], 0.5);
 
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 
@@ -2815,7 +2817,7 @@ void R_DrawLightFlare () {
 	
 	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
-
+	
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);
@@ -3000,6 +3002,9 @@ void R_UpdateLightAliasUniforms()
 //	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);//
 	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);//
+
+	qglUniform4f(U_COLOR,	currentShadowLight->color[0] * r_hdrLightScale->value, currentShadowLight->color[1] * r_hdrLightScale->value, 
+							currentShadowLight->color[2] * r_hdrLightScale->value, 1.0);
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);//

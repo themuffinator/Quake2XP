@@ -151,11 +151,10 @@ R_LightPoint
 void R_LightPoint (vec3_t p, vec3_t color) {
 	vec3_t end;
 	float r;
-	int i;
 //	trace_t trace;
 	
 	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel) {
-		color[0] = color[1] = color[2] = 1.0;
+		color[0] = color[1] = color[2] = 1.0 * r_lightmapScale->value;
 		return;
 	}
 	
@@ -182,11 +181,6 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 		VectorClear(color);
 	else
 		VectorCopy(pointcolor, color);
-
-	// this catches too bright modulated color
-	for (i = 0; i < 3; i++)
-		if (color[i] > 1)
-			color[i] = 1;
 }
 
 

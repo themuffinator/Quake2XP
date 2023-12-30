@@ -411,6 +411,7 @@ void M_ColorInit() {
 	r_hdrGlareIntens->value = ClampCvar(1.2, 2.0, r_hdrGlareIntens->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
+	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
 
 /*	static char* lut_table[8] = {0};
 	
@@ -482,7 +483,7 @@ void M_ColorInit() {
 	s_bloomIntens_slider.minvalue = 12;
 	s_bloomIntens_slider.maxvalue = 20;
 	s_bloomIntens_slider.curvalue = r_hdrGlareIntens->value * 10;
-	s_bloomIntens_slider.generic.statusbar = "Glare Intensity";
+	s_bloomIntens_slider.generic.statusbar = "Lens Glare Intensity";
 
 	s_bloomIntens2_slider.generic.type = MTYPE_SLIDER;
 	s_bloomIntens2_slider.generic.x = 0;
@@ -519,10 +520,11 @@ void M_ColorInit() {
 	s_menuColorTemp.generic.x = 0;
 	s_menuColorTemp.generic.y = 120 * ui_fontScale->value;
 	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
-	s_menuColorTemp.length = 5;
-	s_menuColorTemp.visible_length = 5;
+	s_menuColorTemp.length = 9;
+	s_menuColorTemp.visible_length = 9;
 	s_menuColorTemp.generic.callback = ColorTempFunc;
-	strcpy(s_menuColorTemp.buffer, Cvar_VariableString("r_colorTempK"));
+	sprintf(s_menuColorTemp.buffer, "%d", r_colorTempK->integer);
+	s_menuColorTemp.cursor = strlen(s_menuColorTemp.buffer);
 
 	menuSize = 130;
 
@@ -797,7 +799,7 @@ void VID_MenuInit (void) {
 	s_ambientLevel_slider.minvalue = 0;
 	s_ambientLevel_slider.maxvalue = 20;
 	s_ambientLevel_slider.curvalue = r_lightmapScale->value * 20;
-	s_ambientLevel_slider.generic.statusbar = "Precomputed Lighting Level";
+	s_ambientLevel_slider.generic.statusbar = "Ambient Lighting Level";
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
@@ -895,13 +897,14 @@ if (r_vsync->integer >= 3)
 	s_defaults_action.generic.x = 0;
 	s_defaults_action.generic.y = 230 * ui_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
+	s_defaults_action.generic.statusbar = "Reset And Restart";
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x = 0;
 	s_apply_action.generic.y = 240 * ui_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
-
+	s_apply_action.generic.statusbar = "Save Settings And Restart";
 	menuSize = 240;
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mode_list);

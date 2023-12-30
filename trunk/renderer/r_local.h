@@ -84,7 +84,6 @@ extern viddef_t vid;
 
 #define	MAX_GLTEXTURES		16384
 #define	IMAGE_HASH_SIZE		MAX_GLTEXTURES
-#define MAX_IDX				65536
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
 // ===================================================================
@@ -155,7 +154,7 @@ image_t* r_lightCubeMap[MAX_FILTERS];
 //image_t* r_3dLut[MAX_LUTS];
 //int			lutCount;
 
-image_t r_textures[MAX_IDX];
+image_t r_textures[MAX_GLTEXTURES];
 int		r_numTextures;
 
 image_t *r_blackTexture1x1;
@@ -553,22 +552,6 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 //====================================================================
 mleaf_t* Mod_PointInLeaf(vec3_t p, model_t* model);
 
-void R_FillConsoleSymbols(int x, int y, float scale_x, float scale_y, unsigned char num);
-void R_DrawConsoleSymbols();
-
-#define MAX_POLY_VERT		128
-#define	MAX_BATCH_SURFS		21845
-
-vec3_t	wVertexArray[MAX_BATCH_SURFS];
-vec2_t	wTexArray[MAX_BATCH_SURFS];
-vec2_t	wLMArray[MAX_BATCH_SURFS];
-vec4_t   wColorArray[MAX_BATCH_SURFS];
-
-vec3_t	nTexArray[MAX_BATCH_SURFS];
-vec3_t	tTexArray[MAX_BATCH_SURFS];
-vec3_t	bTexArray[MAX_BATCH_SURFS];
-uint	indexArray[MAX_MAP_VERTS * 3];
-
 extern	model_t *r_worldmodel;
 vec3_t	BmodelViewOrg;
 
@@ -701,9 +684,8 @@ typedef struct {
 
 	int			numFormats, binaryFormats;
 	int			programId;
+	int			vaoId;
 	GLenum		matrixMode;
-	
-	int			vaoBuffer, vboBuffer;
 
 	mat4_t		projectionMatrix;
 	mat4_t		modelViewMatrix;		// ready to load
@@ -806,8 +788,7 @@ GLuint	vbo_dynamic;
 GLuint	ibo_dynamic;
 GLuint	ibo_cube;
 GLuint	vbo_draw2d;
-GLuint	vbo_draw2dString;
-GLuint	vbo_drawText;
+GLuint	vbo_draw2dArray;
 GLuint	vbo_skyBox;
 
 int xyz_offset;
@@ -823,26 +804,6 @@ int col_offset;
 }vbo_t;
 
 vbo_t vbo;
-
-typedef struct {
-	GLuint	bsp;
-	GLuint	depthBSP;
-	GLuint	dynamic;
-	GLuint	md2Shadow;
-	GLuint	md3Shadow;
-	GLuint	fullscreenQuadF;
-	GLuint	fullscreenQuad;
-	GLuint	halfScreenQuad;
-	GLuint	quaterScreenQuad;
-	GLuint	draw2d;
-	GLuint	draw2dString;
-	GLuint	sky;
-	GLuint	tessStream;
-	GLuint	drawText;
-	GLuint	drawMd2;
-}vao_t;
-
-vao_t vao;
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
@@ -894,35 +855,40 @@ extern glstate_t gl_state;
 #define MAX_VERTICES	65536
 #define MAX_INDICES		MAX_VERTICES * 3
 
-uint ibo_quadString[MAX_INDICES];
-typedef struct consoleText_s {
-	vec2_t	verts[MAX_VERTICES];
-	vec2_t	tc[MAX_VERTICES];
-	vec4_t	color[MAX_VERTICES];
-	uint	numSymbols, numVerts;
-} consoleText_t;
-
-consoleText_t consoleText;
-
+#define MAX_POLY_VERT		128
+uint	indexArray[MAX_INDICES];
 
 typedef struct tess_s {
 
-	vec3_t	xyz[MAX_VERTICES];
-	vec2_t	st[MAX_VERTICES];
-	vec4_t	rgb[MAX_VERTICES];
+	vec4_t	position[MAX_VERTICES];
+	vec2_t	texCoord[MAX_VERTICES];
+	vec4_t	color[MAX_VERTICES];
 
 	vec3_t	tangent[MAX_VERTICES];
 	vec3_t	binormal[MAX_VERTICES];
 	vec3_t	normal[MAX_VERTICES];
-	uint	idxBuff[MAX_INDICES];
+	uint	indices[MAX_INDICES];
 } tess_t;
-
 tess_t tess;
+
+typedef struct tess2_s {
+
+	vec3_t	position[MAX_VERTICES];
+	vec2_t	texCoord[MAX_VERTICES];
+	vec4_t	color[MAX_VERTICES];
+	uint	numSymbols, numVerts;
+} tess2_t;
+
+tess2_t tess2;
 
 
 // 2D VBO stuff
 #define MAX_DRAW_STRING_LENGTH 512
-#define QUADVERT 4
+
+#define MAX_VERTICES_2D 16384
+#define MAX_INDICES_2D MAX_VERTICES_2D * 3
+
+uint ibo_quadString[MAX_INDICES_2D];
 
 #define	VERT2D_POS		((byte *)(NULL)+0)
 #define	VERT2D_TC		((byte *)(NULL)+8)
@@ -936,25 +902,30 @@ tess_t tess;
 
 typedef struct {
 	vec2_t pos;
-	vec2_t texCoord;
-	vec4_t colorCoord;
+	vec2_t tc;
+	vec4_t color;
 }vertex2d_t;
 
 typedef struct {
-	vertex2d_t data[QUADVERT];
+	vertex2d_t data[4];
 }tess2d_t;
 tess2d_t tess2d;
 
 typedef struct {
-	vertex2d_t data[QUADVERT * MAX_DRAW_STRING_LENGTH];
-}tess2dString_t;
-tess2dString_t tess2dString;
+	vertex2d_t data[MAX_VERTICES_2D];
+	int numVerts, numSymbols;
+	uint64 handle;
+}tess2dArray_t;
+tess2dArray_t tess2dArray;
 
-#define MAX_2D_VERTS 2048 //QUADVERT * MAX_DRAW_STRING_LENGTH
-vec2_t	texCoord[MAX_VERTICES];
-vec2_t	texCoord1[MAX_VERTICES];
-vec2_t	vertCoord[MAX_VERTICES];
-vec4_t	colorCoord[MAX_VERTICES];
+
+void CL_AddString(int x, int y, int scale, char *s, uint64 handle);
+
+void R_AddCharsToList(int x, int y, int scale, unsigned char num, uint64 handle);
+void R_Flush2D();
+
+#define VID_CENTER_W (vid.width * 0.5)
+#define VID_CENTER_H (vid.height * 0.5)
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
@@ -1068,11 +1039,41 @@ glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
 glslProgram_t		*showTrisProgram;
 
-
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
+
+typedef struct vertexObject_s {
+
+	char	name[MAX_QPATH];
+	GLuint	id;
+} vertexObject_t;
+
+#define MAX_VERTEX_OBJECTS 2048
+vertexObject_t	r_vertexObject[MAX_VERTEX_OBJECTS];
+int	r_numVertexObject;
+
+vertexObject_t *skyVao;
+vertexObject_t *md2Vao;
+vertexObject_t *consoleTextVao;
+vertexObject_t *tessStreamVao;
+vertexObject_t *tess2dArrayVao;
+vertexObject_t *tess2dVao;
+vertexObject_t *textArrayVao;
+vertexObject_t *fsqVao;
+vertexObject_t *md3shadowVao;
+vertexObject_t *md2shadowVao;
+vertexObject_t *dynamicVao;
+vertexObject_t *bspVao;
+vertexObject_t *depthBspVao;
+
+vertexObject_t *R_Alloc_VAO(const char *name, int flags);
+void GL_BindVao(vertexObject_t *va);
+void GL_BindNullVao(void);
+void R_DeleteVao(char *name);
+void R_VaoListing_f(void);
+int  GL_GetVaoBinding();
 
 void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
 
@@ -1087,6 +1088,17 @@ typedef enum {
 	ATT_TEX2,
 }
 glsl_attrib;
+
+typedef enum {
+	ATTF_POS		= BIT(0),
+	ATTF_ST0		= BIT(1),
+	ATTF_ST1		= BIT(2),
+	ATTF_ST2		= BIT(3),
+	ATTF_COLOR		= BIT(4),
+	ATTF_TANGENT	= BIT(5),
+	ATTF_BINORMAL	= BIT(6),
+	ATTF_NORMAL		= BIT(7)
+} attFlags_t;
 
 typedef enum {
 	U_MVP_MATRIX,

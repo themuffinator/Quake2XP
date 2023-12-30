@@ -32,11 +32,9 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
-	glBindVertexArray(vao.fullscreenQuad);
-
+	GL_BindVao(fsqVao);
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-	glBindVertexArray(0);
+	GL_BindNullVao();
 }
 
 void R_RestoreViewPortAndScissor() {
@@ -224,7 +222,7 @@ void R_DofBlur (void) {
 	if (!r_dofFocus->integer) {
 
 		AngleVectors (r_newrefdef.viewangles, v_f, v_r, v_up);
-		VectorMA (r_newrefdef.vieworg, 4096, v_f, end_trace);
+		VectorMA (r_newrefdef.vieworg, 4096.0, v_f, end_trace);
 
 		VectorMA (end_trace, 96, v_r, right);
 		VectorMA (end_trace, -96, v_r, left);
@@ -255,7 +253,10 @@ void R_DofBlur (void) {
 		tmpMins[1] = min (tmpDist[2], tmpDist[3]);
 		tmpMins[2] = min (tmpMins[0], tmpMins[1]);
 
-		dofParams[0] = min (tmpMins[2], tmpDist[4]);
+		if (trace.surface->flags & SURF_SKY) 
+			dofParams[0] = 17000.0;
+		else
+			dofParams[0] = min (tmpMins[2], tmpDist[4]);
 		dofParams[1] = r_dofBias->value;
 	}
 	else {
@@ -485,7 +486,7 @@ void R_ToneMaping(void) {
 	vec2_t hdrParams;
 	if (r_hdrAutoExposure->integer) {
 		R_CalcAutoExposure();
-		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.045, 1.0);
+		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.04, 1.0);
 		hdrParams[1] = 0.1 + hdrAverageLuminance;
 	}
 	else {
@@ -885,3 +886,4 @@ void R_GlobalFog() {
 	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
+

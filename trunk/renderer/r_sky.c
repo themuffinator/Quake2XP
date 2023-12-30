@@ -51,9 +51,9 @@ void R_DrawSkyBox(){
 
 	GL_SetBindlessTexture(U_TMU0, r_levelSkyBox->handle);
 
-	glBindVertexArray(vao.sky);
-	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
-	glBindVertexArray(0);
+	GL_BindVao(skyVao);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+	GL_BindNullVao();
 }
 
 // convert q2 skybox sides to ogl cubemap faces

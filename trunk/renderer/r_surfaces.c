@@ -35,12 +35,29 @@ R_TextureAnimation
 Returns the proper texture for a given time and base texture
 ===============
 */
+
+image_t *R_TextureAnimationMask(mtexInfo_t *tex)
+{
+	int c;
+
+	if (!tex->next)
+		return tex->maskmap;
+
+	c = currententity->frame % tex->numFrames;
+	while (c) {
+		tex = tex->next;
+		c--;
+	}
+
+	return tex->maskmap;
+}
+
 image_t *R_TextureAnimation(mtexInfo_t * tex)
 {
 	int c;
 
 	if (!tex->next)
-		return tex->image;
+		return tex->albedo;
 
 	c = currententity->frame % tex->numFrames;
 	while (c) {
@@ -48,16 +65,16 @@ image_t *R_TextureAnimation(mtexInfo_t * tex)
 		c--;
 	}
 
-	return tex->image;
+	return tex->albedo;
 }
 
 
-image_t *R_TextureAnimationFx(mtexInfo_t * tex)
+image_t *R_TextureAnimationGlow(mtexInfo_t * tex)
 {
 	int c;
 
 	if (!tex->next)
-		return tex->addTexture;
+		return tex->emissive;
 
 	c = currententity->frame % tex->numFrames;
 	while (c) {
@@ -65,7 +82,7 @@ image_t *R_TextureAnimationFx(mtexInfo_t * tex)
 		c--;
 	}
 
-	return tex->addTexture;
+	return tex->emissive;
 }
 
 image_t *R_TextureAnimationNormal(mtexInfo_t * tex)
@@ -89,7 +106,7 @@ image_t *R_TextureAnimationEnv(mtexInfo_t * tex)
 	int c;
 
 	if (!tex->next)
-		return tex->envTexture;
+		return tex->envmap;
 
 	c = currententity->frame % tex->numFrames;
 	while (c) {
@@ -97,15 +114,15 @@ image_t *R_TextureAnimationEnv(mtexInfo_t * tex)
 		c--;
 	}
 
-	return tex->envTexture;
+	return tex->envmap;
 }
 
-image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
+image_t *R_TextureAnimationPbr(mtexInfo_t * tex)
 {
 	int c;
 
 	if (!tex->next)
-		return tex->rghMap;
+		return tex->pbr;
 
 	c = currententity->frame % tex->numFrames;
 	while (c) {
@@ -113,7 +130,7 @@ image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
 		c--;
 	}
 
-	return tex->rghMap;
+	return tex->pbr;
 }
 
 /*
@@ -132,16 +149,16 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 	numIndices	= *indeces;
 
-	if ((nv-2) * 3 >= MAX_IDX)
+	if ((nv-2) * 3 >= MAX_INDICES)
 		return qfalse;	// force the start new batch
 
 	if (newBatch) {
 		image_t	*image, *fx, *normal, *rgh;
 
 		image	= R_TextureAnimation(surf->texInfo);
-		fx		= R_TextureAnimationFx(surf->texInfo);
+		fx		= R_TextureAnimationGlow(surf->texInfo);
 		normal	= R_TextureAnimationNormal(surf->texInfo);
-		rgh		= R_TextureAnimationRgh(surf->texInfo);
+		rgh		= R_TextureAnimationPbr(surf->texInfo);
 
 		qglUniform1f(U_SPECULAR_SCALE, image->specularScale ? image->specularScale : r_radiositySpecularScale->value);
 		
@@ -195,8 +212,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 			qglUniform1f(U_SCROLL, 0.0);
 	}
 
-	for (lm = 0; lm < MAXLIGHTMAPS && surf->styles[lm] != 255; lm++) {
+	VectorSet(glowScale, 0.f, 0.f, 0.f); // start off 
 
+	for (lm = 0; lm < MAXLIGHTMAPS && surf->styles[lm] != 255; lm++) {
+		
+		if (surf->texInfo->flags & SURF_LIGHT)
 			for (i = 0; i < 3; i++)
 				glowScale[i] = r_newrefdef.lightstyles[surf->styles[lm]].rgb[i];
 	}
@@ -220,7 +240,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 int SurfSort( const msurface_t **a, const msurface_t **b )
 {
-	return	( ((*a)->texInfo->image->texnum) ) - ( ((*b)->texInfo->image->texnum) );
+	return	( ((*a)->texInfo->albedo->texnum) ) - ( ((*b)->texInfo->albedo->texnum) );
 }
 
 void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program) {
@@ -325,7 +345,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		s = sceneSurfaces[i];
 	
 		// flush batch (new texture)
-		if (s->texInfo->image->texnum != oldTex || s->styles[0] != oldStyle0 || s->styles[1] != oldStyle1 || s->styles[2] != oldStyle2 || s->styles[3] != oldStyle3){
+		if (s->texInfo->albedo->texnum != oldTex || s->styles[0] != oldStyle0 || s->styles[1] != oldStyle1 || s->styles[2] != oldStyle2 || s->styles[3] != oldStyle3){
 
 			if (numIndices != 0xFFFFFFFF){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
@@ -336,7 +356,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 				numIndices = 0xFFFFFFFF;
 			}
 
-			oldTex = s->texInfo->image->texnum;
+			oldTex = s->texInfo->albedo->texnum;
 			oldStyle0 = s->styles[0];
 			oldStyle1 = s->styles[1];
 			oldStyle2 = s->styles[2];
@@ -380,7 +400,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 
 	numIndices = *indeces;
 
-	if ((nv - 2) * 3 >= MAX_IDX)
+	if ((nv - 2) * 3 >= MAX_INDICES)
 		return qfalse;	// force the start new batch
 
 	if (newBatch)
@@ -388,7 +408,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		image_t		*image, *normalMap, *rghMap;
 		image		= R_TextureAnimation		(surf->texInfo);
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
-		rghMap		= R_TextureAnimationRgh		(surf->texInfo);
+		rghMap		= R_TextureAnimationPbr		(surf->texInfo);
 
 		if (rghMap == r_blackTexture1x1) {
 			qglUniform1i(U_USE_RGH_MAP, 0);
@@ -562,14 +582,14 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 			continue;
 
 		// flush batch (new texture or flag)
-		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust)
+		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust)
 		{
 			if (numIndices != 0xffffffff){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
-			oldTex = s->texInfo->image->texnum;
+			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
 			oldCaust = caustics;
 			newBatch = qtrue;
@@ -613,7 +633,7 @@ static void GL_DrawStaticLightPass()
 			continue;
 
 		// flush batch (new texture or flag)
-		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag)
+		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag)
 		{
 			if (numIndices != 0xffffffff) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
@@ -621,7 +641,7 @@ static void GL_DrawStaticLightPass()
 				numIndices = 0xffffffff;
 			}
 
-			oldTex = s->texInfo->image->texnum;
+			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
 			newBatch = qtrue;
 		}
@@ -910,7 +930,7 @@ void R_DrawLightWorld(void)
 
 	GL_BindProgram(lightWorldProgram);
 
-	glBindVertexArray(vao.bsp);
+	GL_BindVao(bspVao);
 
 	if (!currentShadowLight->isStatic) {
 		r_lightTimestamp++;
@@ -922,7 +942,7 @@ void R_DrawLightWorld(void)
 	else
 		GL_DrawStaticLightPass();
 
-	glBindVertexArray(0);
+	GL_BindNullVao();
 }
 
 
@@ -953,9 +973,9 @@ void R_DrawBSP (void) {
 
 	numSceneSurfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
-	glBindVertexArray(vao.bsp);
+	GL_BindVao(bspVao);
 	GL_DrawLightmappedPoly(qfalse);
-	glBindVertexArray(0);
+	GL_BindNullVao();
 
 
 }
@@ -1093,15 +1113,13 @@ void R_DrawBrushModel (void) {
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
-	glBindVertexArray(vao.bsp);
+	GL_BindVao(bspVao);
 
 	numSceneSurfaces = 0;
 	R_AddAmbientBmodelSurfaces();
 	GL_DrawLightmappedPoly(qtrue);
 	
-	glBindVertexArray(0);
-
-//	GL_DepthMask(1);
+	GL_BindNullVao();
 }
 
 /*
@@ -1259,7 +1277,7 @@ void R_DrawLightBrushModel (void) {
 
 	GL_BindProgram(lightWorldProgram);
 
-	glBindVertexArray(vao.bsp);
+	GL_BindVao(bspVao);
 
 	r_lightTimestamp++;
 	numInteractionSurfs = 0;
@@ -1269,7 +1287,7 @@ void R_DrawLightBrushModel (void) {
 	if(numInteractionSurfs > 0)
 		GL_DrawDynamicLightPass(qtrue, caustics);
 	
-	glBindVertexArray(0);
+	GL_BindNullVao();
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 }

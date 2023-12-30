@@ -165,7 +165,7 @@
       <StringPooling>false</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -177,7 +177,7 @@
       </DebugInformationFormat>
       <CompileAs>CompileAsC</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <GlobalOptimizations>true</GlobalOptimizations>
       <InterproceduralOptimization>SingleFile</InterproceduralOptimization>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
@@ -186,7 +186,7 @@
       <GenerateAlternateCodePaths>SSSE3</GenerateAlternateCodePaths>
       <UseProcessorExtensions>SSSE3</UseProcessorExtensions>
       <WarningLevel>Level3</WarningLevel>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>

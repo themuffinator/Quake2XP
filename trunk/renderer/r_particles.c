@@ -55,7 +55,7 @@ void R_DrawParticles (void) {
 
 	GL_Enable(GL_BLEND);
 
-	glBindVertexArray(vao.tessStream);
+	GL_BindVao(tessStreamVao);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 
 	// setup program
@@ -213,11 +213,11 @@ void R_DrawParticles (void) {
 			if(partVert){
 				qglInvalidateBufferData(GL_ARRAY_BUFFER);
 				qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, partVert * sizeof(vec3_t), tess.xyz);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st,	partVert * sizeof(vec2_t), tess.st);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, partVert * sizeof(vec4_t), tess.rgb);
+				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	partVert * sizeof(vec4_t), tess.position);
+				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	partVert * sizeof(vec2_t), tess.texCoord);
+				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		partVert * sizeof(vec4_t), tess.color);
 				
-				qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index * sizeof(uint), tess.idxBuff);
+				qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index * sizeof(uint), tess.indices);
 
 				GL_DrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
 				c_particlesTris += index / 3;
@@ -301,41 +301,41 @@ void R_DrawParticles (void) {
 			VectorNormalizeFast	(width);
 			VectorScale			(width, scale, width);
 
-			VA_SetElem3 (tess.xyz[partVert + 0],	p->origin[0] + width[0],
-													p->origin[1] + width[1],
-													p->origin[2] + width[2]);
-			VA_SetElem2 (tess.st [partVert + 0], 0, 0);
-			VA_SetElem4 (tess.rgb[partVert + 0], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 0],	p->origin[0] + width[0],
+														p->origin[1] + width[1],
+														p->origin[2] + width[2]);
+			VA_SetElem2 (tess.texCoord [partVert + 0], 0, 0);
+			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 1],	p->origin[0] - width[0],
-													p->origin[1] - width[1],
-													p->origin[2] - width[2]);
-			VA_SetElem2 (tess.st [partVert + 1], 1, 0);
-			VA_SetElem4 (tess.rgb[partVert + 1], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] - width[0],
+														p->origin[1] - width[1],
+														p->origin[2] - width[2]);
+			VA_SetElem2 (tess.texCoord [partVert + 1], 1, 0);
+			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
 
 			VectorAdd			(point, p->length, point);
 			CrossProduct		(point, p->length, width);
 			VectorNormalizeFast	(width);
 			VectorScale			(width, scale, width);
 
-			VA_SetElem3 (tess.xyz[partVert + 2],	p->origin[0] + p->length[0] - width[0],
-													p->origin[1] + p->length[1] - width[1],
-													p->origin[2] + p->length[2] - width[2]);
-			VA_SetElem2 (tess.st [partVert + 2], 1, 1);
-			VA_SetElem4 (tess.rgb[partVert + 2], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] + p->length[0] - width[0],
+														p->origin[1] + p->length[1] - width[1],
+														p->origin[2] + p->length[2] - width[2]);
+			VA_SetElem2 (tess.texCoord [partVert + 2], 1, 1);
+			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 3],	p->origin[0] + p->length[0] + width[0],
-													p->origin[1] + p->length[1] + width[1],
-													p->origin[2] + p->length[2] + width[2]);
-			VA_SetElem2 (tess.st [partVert + 3], 0, 1);
-			VA_SetElem4 (tess.rgb[partVert + 3], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 3],	p->origin[0] + p->length[0] + width[0],
+														p->origin[1] + p->length[1] + width[1],
+														p->origin[2] + p->length[2] + width[2]);
+			VA_SetElem2 (tess.texCoord [partVert + 3], 0, 1);
+			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
 
-			tess.idxBuff[index++] = partVert + 0;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 2;
+			tess.indices[index++] = partVert + 0;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 2;
 
 			partVert += 4;
 		}
@@ -381,17 +381,17 @@ void R_DrawParticles (void) {
 				else
 					VectorCopy (vup, width);
 
-				VA_SetElem3 (tess.xyz[partVert + 0],	point[0] + width[0] + r_origin[0],
-														point[1] + width[1] + r_origin[1],
-														point[2] + width[2] + r_origin[2]);
-				VA_SetElem2 (tess.st [partVert + 0], 0.5, 1);
-				VA_SetElem4 (tess.rgb[partVert + 0], r, g, b, a);
+				VA_SetElem3 (tess.position[partVert + 0],	point[0] + width[0] + r_origin[0],
+															point[1] + width[1] + r_origin[1],
+															point[2] + width[2] + r_origin[2]);
+				VA_SetElem2 (tess.texCoord [partVert + 0], 0.5, 1);
+				VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
 
-				VA_SetElem3 (tess.xyz[partVert + 1],	point[0] - width[0] + r_origin[0],
-														point[1] - width[1] + r_origin[1],
-														point[2] - width[2] + r_origin[2]);
-				VA_SetElem2 (tess.st [partVert + 1], 0.5, 0);
-				VA_SetElem4 (tess.rgb[partVert + 1], r, g, b, a);
+				VA_SetElem3 (tess.position[partVert + 1],	point[0] - width[0] + r_origin[0],
+															point[1] - width[1] + r_origin[1],
+															point[2] - width[2] + r_origin[2]);
+				VA_SetElem2 (tess.texCoord [partVert + 1], 0.5, 0);
+				VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
 				
 				VectorAdd		(move,	dir2, point);
 				VectorSubtract	(dir3,	dir2, spdir);
@@ -403,24 +403,24 @@ void R_DrawParticles (void) {
 				else
 					VectorCopy (vup, width);
 
-				VA_SetElem3 (tess.xyz[partVert + 2],	point[0] - width[0] + r_origin[0],
-														point[1] - width[1] + r_origin[1],
-														point[2] - width[2] + r_origin[2]);
-				VA_SetElem2 (tess.st [partVert + 2], 0.5, 0);
-				VA_SetElem4 (tess.rgb[partVert + 2], r, g, b, a);
+				VA_SetElem3 (tess.position[partVert + 2],	point[0] - width[0] + r_origin[0],
+															point[1] - width[1] + r_origin[1],
+															point[2] - width[2] + r_origin[2]);
+				VA_SetElem2 (tess.texCoord [partVert + 2], 0.5, 0);
+				VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
 
-				VA_SetElem3 (tess.xyz[partVert + 3],	point[0] + width[0] + r_origin[0],
-														point[1] + width[1] + r_origin[1],
-														point[2] + width[2] + r_origin[2]);
-				VA_SetElem2 (tess.st [partVert + 3], 0.5, 1);
-				VA_SetElem4 (tess.rgb[partVert + 3], r, g, b, a);
+				VA_SetElem3 (tess.position[partVert + 3],	point[0] + width[0] + r_origin[0],
+															point[1] + width[1] + r_origin[1],
+															point[2] + width[2] + r_origin[2]);
+				VA_SetElem2 (tess.texCoord [partVert + 3], 0.5, 1);
+				VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
 
-				tess.idxBuff[index++] = partVert + 0;
-				tess.idxBuff[index++] = partVert + 1;
-				tess.idxBuff[index++] = partVert + 3;
-				tess.idxBuff[index++] = partVert + 3;
-				tess.idxBuff[index++] = partVert + 1;
-				tess.idxBuff[index++] = partVert + 2;
+				tess.indices[index++] = partVert + 0;
+				tess.indices[index++] = partVert + 1;
+				tess.indices[index++] = partVert + 3;
+				tess.indices[index++] = partVert + 3;
+				tess.indices[index++] = partVert + 1;
+				tess.indices[index++] = partVert + 2;
 
 				partVert += 4;
 
@@ -444,36 +444,36 @@ void R_DrawParticles (void) {
 			VectorScale (axis[2], p->size, axis[2]);
 
 
-			VA_SetElem3 (tess.xyz[partVert + 0],	oldOrigin[0] + axis[2][0],
-													oldOrigin[1] + axis[2][1],
-													oldOrigin[2] + axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 0], 1, 1);
-			VA_SetElem4 (tess.rgb[partVert + 0], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 0],	oldOrigin[0] + axis[2][0],
+														oldOrigin[1] + axis[2][1],
+														oldOrigin[2] + axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 0], 1, 1);
+			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 1],	p->origin[0] + axis[2][0],
-													p->origin[1] + axis[2][1],
-													p->origin[2] + axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 1], 0, 1);
-			VA_SetElem4 (tess.rgb[partVert + 1], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] + axis[2][0],
+														p->origin[1] + axis[2][1],
+														p->origin[2] + axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 1], 0, 1);
+			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 2],	p->origin[0] - axis[2][0],
-													p->origin[1] - axis[2][1],
-													p->origin[2] - axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 2], 0, 0);
-			VA_SetElem4 (tess.rgb[partVert + 2], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] - axis[2][0],
+														p->origin[1] - axis[2][1],
+														p->origin[2] - axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 2], 0, 0);
+			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 3],	oldOrigin[0] - axis[2][0],
-													oldOrigin[1] - axis[2][1],
-													oldOrigin[2] - axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 3], 1, 0);
-			VA_SetElem4 (tess.rgb[partVert + 3], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 3],	oldOrigin[0] - axis[2][0],
+														oldOrigin[1] - axis[2][1],
+														oldOrigin[2] - axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 3], 1, 0);
+			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
 
-			tess.idxBuff[index++] = partVert + 0;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 2;
+			tess.indices[index++] = partVert + 0;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 2;
 
 			partVert += 4;
 		}
@@ -487,36 +487,36 @@ void R_DrawParticles (void) {
 			VectorScale (axis[1], p->size, axis[1]);
 			VectorScale (axis[2], p->size, axis[2]);
 
-			VA_SetElem3 (tess.xyz[partVert + 0],	p->origin[0] + axis[1][0] + axis[2][0],
-													p->origin[1] + axis[1][1] + axis[2][1],
-													p->origin[2] + axis[1][2] + axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 0], 0, 1);
-			VA_SetElem4 (tess.rgb[partVert + 0], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 0],	p->origin[0] + axis[1][0] + axis[2][0],
+														p->origin[1] + axis[1][1] + axis[2][1],
+														p->origin[2] + axis[1][2] + axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 0], 0, 1);
+			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 1],	p->origin[0] - axis[1][0] + axis[2][0],
-													p->origin[1] - axis[1][1] + axis[2][1],
-													p->origin[2] - axis[1][2] + axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 1], 0, 0);
-			VA_SetElem4 (tess.rgb[partVert + 1], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] - axis[1][0] + axis[2][0],
+														p->origin[1] - axis[1][1] + axis[2][1],
+														p->origin[2] - axis[1][2] + axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 1], 0, 0);
+			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 2],	p->origin[0] - axis[1][0] - axis[2][0],
-													p->origin[1] - axis[1][1] - axis[2][1],
-													p->origin[2] - axis[1][2] - axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 2], 1, 0);
-			VA_SetElem4 (tess.rgb[partVert + 2], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] - axis[1][0] - axis[2][0],
+														p->origin[1] - axis[1][1] - axis[2][1],
+														p->origin[2] - axis[1][2] - axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 2], 1, 0);
+			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 3],	p->origin[0] + axis[1][0] - axis[2][0],
-													p->origin[1] + axis[1][1] - axis[2][1],
-													p->origin[2] + axis[1][2] - axis[2][2]);
-			VA_SetElem2 (tess.st [partVert + 3], 1, 1);
-			VA_SetElem4 (tess.rgb[partVert + 3], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 3],	p->origin[0] + axis[1][0] - axis[2][0],
+														p->origin[1] + axis[1][1] - axis[2][1],
+														p->origin[2] + axis[1][2] - axis[2][2]);
+			VA_SetElem2 (tess.texCoord [partVert + 3], 1, 1);
+			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
 
-			tess.idxBuff[index++] = partVert + 0;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 2;
+			tess.indices[index++] = partVert + 0;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 2;
 
 			partVert += 4;
 		}
@@ -543,36 +543,36 @@ void R_DrawParticles (void) {
 				s = scale;
 			}
 
-			VA_SetElem3 (tess.xyz[partVert + 0],	p->origin[0] - right[0] * c - up[0] * s,
-													p->origin[1] - right[1] * c - up[1] * s,
-													p->origin[2] - right[2] * c - up[2] * s);
-			VA_SetElem2 (tess.st [partVert + 0], 0, 1);
-			VA_SetElem4 (tess.rgb[partVert + 0], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 0],	p->origin[0] - right[0] * c - up[0] * s,
+														p->origin[1] - right[1] * c - up[1] * s,
+														p->origin[2] - right[2] * c - up[2] * s);
+			VA_SetElem2 (tess.texCoord [partVert + 0], 0, 1);
+			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 1],	p->origin[0] - right[0] * s + up[0] * c,
-													p->origin[1] - right[1] * s + up[1] * c,
-													p->origin[2] - right[2] * s + up[2] * c);
-			VA_SetElem2 (tess.st [partVert + 1], 0, 0);
-			VA_SetElem4 (tess.rgb[partVert + 1], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] - right[0] * s + up[0] * c,
+														p->origin[1] - right[1] * s + up[1] * c,
+														p->origin[2] - right[2] * s + up[2] * c);
+			VA_SetElem2 (tess.texCoord [partVert + 1], 0, 0);
+			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 2],	p->origin[0] + right[0] * c + up[0] * s,
-													p->origin[1] + right[1] * c + up[1] * s,
-													p->origin[2] + right[2] * c + up[2] * s);
-			VA_SetElem2 (tess.st [partVert + 2], 1, 0);
-			VA_SetElem4 (tess.rgb[partVert + 2], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] + right[0] * c + up[0] * s,
+														p->origin[1] + right[1] * c + up[1] * s,
+														p->origin[2] + right[2] * c + up[2] * s);
+			VA_SetElem2 (tess.texCoord [partVert + 2], 1, 0);
+			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
 
-			VA_SetElem3 (tess.xyz[partVert + 3],	p->origin[0] + right[0] * s - up[0] * c,
-													p->origin[1] + right[1] * s - up[1] * c,
-													p->origin[2] + right[2] * s - up[2] * c);
-			VA_SetElem2 (tess.st [partVert + 3], 1, 1);
-			VA_SetElem4 (tess.rgb[partVert + 3], r, g, b, a);
+			VA_SetElem3 (tess.position[partVert + 3],	p->origin[0] + right[0] * s - up[0] * c,
+														p->origin[1] + right[1] * s - up[1] * c,
+														p->origin[2] + right[2] * s - up[2] * c);
+			VA_SetElem2 (tess.texCoord [partVert + 3], 1, 1);
+			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
 
-			tess.idxBuff[index++] = partVert + 0;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 3;
-			tess.idxBuff[index++] = partVert + 1;
-			tess.idxBuff[index++] = partVert + 2;
+			tess.indices[index++] = partVert + 0;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 3;
+			tess.indices[index++] = partVert + 1;
+			tess.indices[index++] = partVert + 2;
 
 			partVert += 4;
 		}
@@ -582,17 +582,17 @@ void R_DrawParticles (void) {
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->xyz, partVert * sizeof(vec3_t), tess.xyz);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->st,  partVert * sizeof(vec2_t), tess.st);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->rgb, partVert * sizeof(vec4_t), tess.rgb);
-        
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index * sizeof(uint), tess.idxBuff);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	partVert * sizeof(vec4_t), tess.position);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	partVert * sizeof(vec2_t), tess.texCoord);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		partVert * sizeof(vec4_t), tess.color);
+
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index * sizeof(uint), tess.indices);
 
 		GL_DrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
 		c_particlesTris += index / 3;
 	}
 
 	GL_Disable (GL_BLEND);
-	glBindVertexArray(0);
+	GL_BindNullVao();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }

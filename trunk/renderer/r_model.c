@@ -153,11 +153,11 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 
 	/* =================== calc texture color =================== */
 
-	width = surf->texInfo->image->upload_width;
-	height = surf->texInfo->image->upload_height;
+	width = surf->texInfo->albedo->upload_width;
+	height = surf->texInfo->albedo->upload_height;
 	int size = width * height * 3 * 4;
 	buffer = (byte*)malloc(width * height * 3);
-	glGetTextureImage(surf->texInfo->image->texnum, 0, GL_RGB, GL_UNSIGNED_BYTE, size, buffer);
+	glGetTextureImage(surf->texInfo->albedo->texnum, 0, GL_RGB, GL_UNSIGNED_BYTE, size, buffer);
 	VectorClear(rgbSum);
 
 	for (i = 0, p = buffer; i < width * height; i++, p += 3) {
@@ -408,7 +408,7 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 				i = 0;
 				image_t *img;
 
-				img = mod->skins[i];
+				img = mod->albedo[i];
 			}
 
 			return mod;
@@ -748,16 +748,16 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 		// grab original texture size for override textures
 		Com_sprintf(name, sizeof(name), "textures/%s.wal", in->texture);
-		out->image = GL_FindImage(name, it_wall);
+		out->albedo = GL_FindImage(name, it_wall);
 
-		if (!out->image) {
+		if (!out->albedo) {
 			// failed to load WAL, use default
 			Com_Printf("Couldn't load %s\n", name);
-			out->image = r_missingTexture;
+			out->albedo = r_missingTexture;
 			continue;
 		}
 
-		mark = out->image; // mark wal texture. Delete if hd texture loaded 
+		mark = out->albedo; // mark wal texture. Delete if hd texture loaded 
 
 		// get file name without path
 		purename = COM_SkipPath(in->texture);
@@ -773,7 +773,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			image = R_LoadDDS(name, it_wall);
 
 			if (!image) {
-				image = out->image; // load wal texture
+				image = out->albedo; // load wal texture
 				freeWalTex = qfalse; // dont free it!
 			}
 		}
@@ -781,7 +781,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 		// scale override texture size
 		image->width = mark->width;
 		image->height = mark->height;
-		out->image = image;
+		out->albedo = image;
 
 		if (freeWalTex && mark) { // hd texture loaded, delete wal 
 			glMakeTextureHandleNonResidentARB(mark->handle);
@@ -809,14 +809,14 @@ void Mod_LoadTexinfo(lump_t * l) {
 		//
 
 		Com_sprintf(name, sizeof(name), "overrides/%s_light.dds", purename);
-		out->addTexture = R_LoadDDS(name, it_wall);
+		out->emissive = R_LoadDDS(name, it_wall);
 
-		if (!out->addTexture) {
+		if (!out->emissive) {
 			Com_sprintf(name, sizeof(name), "textures/%s_light.dds", in->texture);
-			out->addTexture = R_LoadDDS(name, it_wall);
+			out->emissive = R_LoadDDS(name, it_wall);
 
-			if (!out->addTexture)
-				out->addTexture = r_blackTexture1x1;
+			if (!out->emissive)
+				out->emissive = r_blackTexture1x1;
 		}
 
 		//
@@ -824,30 +824,44 @@ void Mod_LoadTexinfo(lump_t * l) {
 		//
 
 		Com_sprintf(name, sizeof(name), "overrides/%s_env.dds", purename);
-		out->envTexture = R_LoadDDS(name, it_wall);
+		out->envmap = R_LoadDDS(name, it_wall);
 
-		if (!out->envTexture) {
+		if (!out->envmap) {
 			Com_sprintf(name, sizeof(name), "textures/%s_env.dds", in->texture);
-			out->envTexture = R_LoadDDS(name, it_wall);
+			out->envmap = R_LoadDDS(name, it_wall);
 			
-			if (!out->envTexture)
-				out->envTexture = r_blackTexture1x1;
+			if (!out->envmap)
+				out->envmap = r_blackTexture1x1;
 		}
 		//
-		// rgh load
+		// pbr load
 		//
 
 		Com_sprintf(name, sizeof(name), "overrides/%s_rgh.dds", purename);
-		out->rghMap = R_LoadDDS(name, it_wall);
+		out->pbr = R_LoadDDS(name, it_wall);
 
-		if (!out->rghMap) {
+		if (!out->pbr) {
 			Com_sprintf(name, sizeof(name), "textures/%s_rgh.dds", in->texture);
-			out->rghMap = R_LoadDDS(name, it_wall);
+			out->pbr = R_LoadDDS(name, it_wall);
 
-			if (!out->rghMap)
-				out->rghMap = r_blackTexture1x1;
+			if (!out->pbr)
+				out->pbr = r_blackTexture1x1;
 
 		}		
+		//
+		// masks map
+		//
+		Com_sprintf(name, sizeof(name), "overrides/%s_mask.dds", purename);
+		out->maskmap = R_LoadDDS(name, it_wall);
+
+		if (!out->maskmap) {
+			Com_sprintf(name, sizeof(name), "textures/%s_mask.dds", in->texture);
+			out->maskmap = R_LoadDDS(name, it_wall);
+
+			if (!out->maskmap)
+				out->maskmap = r_whiteMap;
+
+		}
 
 		extern float loadingLod;
 
@@ -871,7 +885,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			char bak = buff[i];
 			buff[x] = 0;
 			Com_DPrintf("Loading material for "S_COLOR_GREEN"%s\n", purename);
-			Mod_LoadTextureFx(out->image, buff);
+			Mod_LoadTextureFx(out->albedo, buff);
 			buff[x] = bak;
 			FS_FreeFile(buff);
 
@@ -1029,11 +1043,11 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 
 		s = DotProduct(vec,
 			fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
-		s /= fa->texInfo->image->width;
+		s /= fa->texInfo->albedo->width;
 
 		t = DotProduct(vec,
 			fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
-		t /= fa->texInfo->image->height;
+		t /= fa->texInfo->albedo->height;
 
 		VectorAdd(total, vec, total);
 		VectorCopy(vec, poly->verts[i]);
@@ -1113,10 +1127,10 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 
 	fa->c_s =
 		(DotProduct(total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
-		/ fa->texInfo->image->width;
+		/ fa->texInfo->albedo->width;
 	fa->c_t =
 		(DotProduct(total, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3])
-		/ fa->texInfo->image->height;
+		/ fa->texInfo->albedo->height;
 }
 
 
@@ -1208,7 +1222,7 @@ void Mod_BuildVertexCache() {
 			buf[vbo.bn_offset / 4 + vb * 3 + 1] = v[14];
 			buf[vbo.bn_offset / 4 + vb * 3 + 2] = v[15];
 
-			purename = COM_SkipPath(surf->texInfo->image->name);
+			purename = COM_SkipPath(surf->texInfo->albedo->name);
 			COM_StripExtension(purename, noext);
 
 			if (!strcmp(noext, "yelfield")) {
@@ -1237,51 +1251,40 @@ void Mod_BuildVertexCache() {
 
 	}
 
+	if(vbo.vbo_BSP)
+		qglDeleteBuffers(1, &vbo.vbo_BSP);
 	qglGenBuffers(1, &vbo.vbo_BSP);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
+	qglObjectLabel(GL_VERTEX_ARRAY, vbo.vbo_BSP, strlen("***vboBsp***"), "***vboBsp***");
 	qglBufferData(GL_ARRAY_BUFFER, vbo_size, buf, GL_STATIC_DRAW);
 	Com_Printf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	free(buf);
 
 	// Gen VAO
-	glDeleteVertexArrays(1, &vao.bsp);
-	glGenVertexArrays(1, &vao.bsp);
-	glBindVertexArray(vao.bsp);
-	qglObjectLabel(GL_VERTEX_ARRAY, vao.bsp, strlen("***vaoBsp***"), "***vaoBsp***");
+	R_DeleteVao("bspVao");
+	bspVao = R_Alloc_VAO("bspVao", ATTF_POS | ATTF_ST0 | ATTF_ST1 | ATTF_COLOR | ATTF_TANGENT | ATTF_BINORMAL | ATTF_NORMAL);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_TEX1);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.col_offset));
-
-	glBindVertexArray(0);
+	qglVertexAttribPointer(ATT_POSITION,	3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATT_TEX1,		2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.col_offset));
 
 //----------------------------------------------
 //setup z world
-	glDeleteVertexArrays(1, &vao.depthBSP);
-	glGenVertexArrays(1, &vao.depthBSP);
-	glBindVertexArray(vao.depthBSP);
-	qglObjectLabel(GL_VERTEX_ARRAY, vao.depthBSP, strlen("***vaoDepthBSP***"), "***vaoDepthBSP***");
+	R_DeleteVao("depthBspVao");
+	depthBspVao = R_Alloc_VAO("depthBspVao", ATTF_POS);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-	qglEnableVertexAttribArray(ATT_POSITION);
+
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-	glBindVertexArray(0);
 
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
+	GL_BindNullVao();
 }
+
 void Mod_UpdateLoadingBar(float percent, char* text);
 void Mod_LoadFaces(lump_t * l) {
 	dface_t		*in;
@@ -1350,9 +1353,12 @@ void Mod_LoadFaces(lump_t * l) {
 		if (out->texInfo->flags & SURF_WARP)
 			out->flags |= MSURF_DRAWTURB;
 
-		image = out->texInfo->image;
+		image = out->texInfo->albedo;
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
+
+		if (out->texInfo->flags & (SURF_ALPHA)) 
+			out->flags |= MSURF_ALPHA;
 
 		if (!(out->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))) {
 
@@ -1429,7 +1435,7 @@ void GL_BuildTBN(int count) {
 			if (s2->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 				continue;
 
-			if (s1->texInfo->image->texnum != s2->texInfo->image->texnum)
+			if (s1->texInfo->albedo->texnum != s2->texInfo->albedo->texnum)
 				continue;
 
 			if (s2->flags & MSURF_PLANEBACK)
@@ -2311,9 +2317,9 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 			for (i = 0; i < n; i++){
 
-				tess.idxBuff[index++] = numVerts;
-				tess.idxBuff[index++] = numVerts + i + 1;
-				tess.idxBuff[index++] = numVerts + i + 2;
+				tess.indices[index++] = numVerts;
+				tess.indices[index++] = numVerts + i + 1;
+				tess.indices[index++] = numVerts + i + 2;
 			}
 		}
 		else if (count > 0){
@@ -2322,9 +2328,9 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 			for (i = 0; i < n; i++){
 
-				tess.idxBuff[index++] = numVerts + i + (i & 1);
-				tess.idxBuff[index++] = numVerts + i + ((i & 1) ^ 1);
-				tess.idxBuff[index++] = numVerts + i + 2;
+				tess.indices[index++] = numVerts + i + (i & 1);
+				tess.indices[index++] = numVerts + i + ((i & 1) ^ 1);
+				tess.indices[index++] = numVerts + i + 2;
 			}
 		}
 		else
@@ -2339,7 +2345,7 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 	mod->numIndices = index;
 	mod->numVertexes = numVerts;
 	mod->indexArray = Hunk_Alloc(index * sizeof(int));
-	memcpy(mod->indexArray, tess.idxBuff, index * sizeof(int));
+	memcpy(mod->indexArray, tess.indices, index * sizeof(int));
 
 	qglGenBuffers(1, &mod->iboId);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mod->iboId);
@@ -2487,39 +2493,39 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, ".dds");
-		mod->skins[i] = R_LoadDDS(gl, it_skin);
-		if (!mod->skins[i]) {
-			//	mod->skins[i] = GL_FindImage(pname, it_skin);
-			//	if (!mod->skins[i])
-			mod->skins[i] = r_missingTexture;
+		mod->albedo[i] = R_LoadDDS(gl, it_skin);
+		if (!mod->albedo[i]) {
+			//	mod->albedo[i] = GL_FindImage(pname, it_skin);
+			//	if (!mod->albedo[i])
+			mod->albedo[i] = r_missingTexture;
 		}
 
 		// GlowMaps loading
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, "_light.dds");
-		mod->glowtexture[i] = R_LoadDDS(gl, it_skin);
+		mod->emissive[i] = R_LoadDDS(gl, it_skin);
 
-		if (!mod->glowtexture[i])
-			mod->glowtexture[i] = r_blackTexture1x1;
+		if (!mod->emissive[i])
+			mod->emissive[i] = r_blackTexture1x1;
 
 		// Loading Normal maps
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, "_bump.dds");
-		mod->skins_normal[i] = R_LoadDDS(gl, it_normal);
+		mod->normalmap[i] = R_LoadDDS(gl, it_normal);
 
-		if (!mod->skins_normal[i])
-			mod->skins_normal[i] = r_defBump;
+		if (!mod->normalmap[i])
+			mod->normalmap[i] = r_defBump;
 
 		// Loading roughness maps
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, "_rgh.dds");
-		mod->skins_roughness[i] = R_LoadDDS(gl, it_wall);
+		mod->pbr[i] = R_LoadDDS(gl, it_wall);
 
-		if (!mod->skins_roughness[i])
-			mod->skins_roughness[i] = r_blackTexture1x1;
+		if (!mod->pbr[i])
+			mod->pbr[i] = r_blackTexture1x1;
 		
 	}
 
@@ -2612,9 +2618,9 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer) {
 		sprout->frames[i].origin_y = LittleLong(sprin->frames[i].origin_y);
 		Q_memcpy(sprout->frames[i].name, sprin->frames[i].name,
 			MAX_SKINNAME);
-		mod->skins[i] = GL_FindImage(sprout->frames[i].name, it_sprite);
-		if (!mod->skins[i])
-			mod->skins[i] = r_missingTexture;
+		mod->albedo[i] = GL_FindImage(sprout->frames[i].name, it_sprite);
+		if (!mod->albedo[i])
+			mod->albedo[i] = r_missingTexture;
 	}
 
 	mod->type = mod_sprite;
@@ -2694,9 +2700,9 @@ struct model_s *R_RegisterModel(char *name) {
 		if (mod->type == mod_sprite) {
 			sprout = (dsprite_t *)mod->extraData;
 			for (i = 0; i < sprout->numFrames; i++) {
-				mod->skins[i] = GL_FindImage(sprout->frames[i].name, it_sprite);
-				if (!mod->skins[i])
-					mod->skins[i] = r_missingTexture;
+				mod->albedo[i] = GL_FindImage(sprout->frames[i].name, it_sprite);
+				if (!mod->albedo[i])
+					mod->albedo[i] = r_missingTexture;
 			}
 		}
 		else if (mod->type == mod_alias) {
@@ -2704,17 +2710,17 @@ struct model_s *R_RegisterModel(char *name) {
 
 			for (i = 0; i < pheader->num_skins; i++) {
 			
-				if (mod->skins[i] && mod->skins[i]->name[0])
-					mod->skins[i]->registration_sequence = registration_sequence;
+				if (mod->albedo[i] && mod->albedo[i]->name[0])
+					mod->albedo[i]->registration_sequence = registration_sequence;
 				
-				if (mod->skins_normal[i] &&  mod->skins_normal[i]->name[0])
-					mod->skins_normal[i]->registration_sequence = registration_sequence;
+				if (mod->normalmap[i] &&  mod->normalmap[i]->name[0])
+					mod->normalmap[i]->registration_sequence = registration_sequence;
 
-				if (mod->glowtexture[i] &&  mod->glowtexture[i]->name[0])
-					mod->glowtexture[i]->registration_sequence = registration_sequence;
+				if (mod->emissive[i] &&  mod->emissive[i]->name[0])
+					mod->emissive[i]->registration_sequence = registration_sequence;
 
-				if (mod->skins_roughness[i] && mod->skins_roughness[i]->name[0])
-					mod->skins_roughness[i]->registration_sequence = registration_sequence;
+				if (mod->pbr[i] && mod->pbr[i]->name[0])
+					mod->pbr[i]->registration_sequence = registration_sequence;
 			}
 			//PGM
 			mod->numFrames = pheader->num_frames;
@@ -2724,19 +2730,19 @@ struct model_s *R_RegisterModel(char *name) {
 		 if (mod->type == mod_brush) {
 						
 			for (i = 0; i < mod->numTexInfo; i++) {
-				mod->texInfo[i].image->registration_sequence = registration_sequence;
+				mod->texInfo[i].albedo->registration_sequence = registration_sequence;
 
 				if (mod->texInfo[i].normalmap != NULL)
 					mod->texInfo[i].normalmap->registration_sequence = registration_sequence;
 
-				if (mod->texInfo[i].addTexture != NULL)
-					mod->texInfo[i].addTexture->registration_sequence = registration_sequence;
+				if (mod->texInfo[i].emissive != NULL)
+					mod->texInfo[i].emissive->registration_sequence = registration_sequence;
 
-				if (mod->texInfo[i].envTexture != NULL)
-					mod->texInfo[i].envTexture->registration_sequence = registration_sequence;
+				if (mod->texInfo[i].envmap != NULL)
+					mod->texInfo[i].envmap->registration_sequence = registration_sequence;
 
-				if (mod->texInfo[i].rghMap != NULL)
-					mod->texInfo[i].rghMap->registration_sequence = registration_sequence;
+				if (mod->texInfo[i].pbr != NULL)
+					mod->texInfo[i].pbr->registration_sequence = registration_sequence;
 			}
 		}
 		 if (mod->type == mod_alias_md3) {
@@ -2748,26 +2754,23 @@ struct model_s *R_RegisterModel(char *name) {
 
 				 for (j = 0; j < md3Hdr->meshes->num_skins; j++)
 				 {
-					 if (mesh->skinsAlbedo[j] &&  mesh->skinsAlbedo[j]->name[0])
-						 mesh->skinsAlbedo[j]->registration_sequence = registration_sequence;
+					 if (mesh->albedo[j] &&  mesh->albedo[j]->name[0])
+						 mesh->albedo[j]->registration_sequence = registration_sequence;
 
-					 if (mesh->skinsNormal[j] &&  mesh->skinsNormal[j]->name[0])
-						 mesh->skinsNormal[j]->registration_sequence = registration_sequence;
+					 if (mesh->normalmap[j] &&  mesh->normalmap[j]->name[0])
+						 mesh->normalmap[j]->registration_sequence = registration_sequence;
 
-					 if (mesh->skinsLight[j] &&  mesh->skinsLight[j]->name[0])
-						 mesh->skinsLight[j]->registration_sequence = registration_sequence;
+					 if (mesh->emissive[j] &&  mesh->emissive[j]->name[0])
+						 mesh->emissive[j]->registration_sequence = registration_sequence;
 
-					 if (mesh->skinsRgh[j] && mesh->skinsRgh[j]->name[0])
-						 mesh->skinsRgh[j]->registration_sequence = registration_sequence;
+					 if (mesh->pbr[j] && mesh->pbr[j]->name[0])
+						 mesh->pbr[j]->registration_sequence = registration_sequence;
 
-					 if (mesh->skinsEnv[j] && mesh->skinsEnv[j]->name[0])
-						 mesh->skinsEnv[j]->registration_sequence = registration_sequence;
+					 if (mesh->envmap[j] && mesh->envmap[j]->name[0])
+						 mesh->envmap[j]->registration_sequence = registration_sequence;
 
-					 if (mesh->skinsAO[j] && mesh->skinsAO[j]->name[0])
-						 mesh->skinsAO[j]->registration_sequence = registration_sequence;
-
-					 if (mesh->skinsSkinLocal[j] && mesh->skinsSkinLocal[j]->name[0])
-						 mesh->skinsSkinLocal[j]->registration_sequence = registration_sequence;
+					 if (mesh->aomap[j] && mesh->aomap[j]->name[0])
+						 mesh->aomap[j]->registration_sequence = registration_sequence;
 				 }
 
 			 }

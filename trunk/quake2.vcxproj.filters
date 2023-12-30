@@ -302,7 +302,7 @@
     <ClCompile Include="win32\win_sysinfo.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\r_loadImages.c">
+    <ClCompile Include="renderer\r_imageLoad.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="renderer\r_sky.c">
@@ -340,6 +340,9 @@
     </ClCompile>
     <ClCompile Include="qcommon\files.c">
       <Filter>Source Files\qcommon</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\r_vo.c">
+      <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

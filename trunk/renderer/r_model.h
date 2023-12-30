@@ -316,17 +316,11 @@ typedef struct model_s {
 	qboolean	useXPLM;	// 3-vector basis lightmap
 	
 	// for alias models and skins
-	image_t		*skins				[MAX_MD2SKINS];
-	image_t		*skins_normal		[MAX_MD2SKINS];
-	image_t		*skins_roughness	[MAX_MD2SKINS];
-	image_t		*glowtexture		[MAX_MD2SKINS];
-	image_t		*skin_env			[MAX_MD2SKINS];
-
-	image_t      *skinsMD3				[MD3_MAX_MESHES][MD3_MAX_SKINS];
-	image_t      *skinsMD3_normal		[MD3_MAX_MESHES][MD3_MAX_SKINS];
-	image_t      *skinsMD3_roughness	[MD3_MAX_MESHES][MD3_MAX_SKINS];
-	image_t      *skinsMD3_glow			[MD3_MAX_MESHES][MD3_MAX_SKINS];
-	image_t      *skinsMD3_env			[MD3_MAX_MESHES][MD3_MAX_SKINS];
+	image_t		*albedo		[MAX_MD2SKINS];
+	image_t		*normalmap	[MAX_MD2SKINS];
+	image_t		*pbr		[MAX_MD2SKINS];
+	image_t		*emissive	[MAX_MD2SKINS];
+	image_t		*envmap		[MAX_MD2SKINS];
 
 	int			extraDataSize;
 	void		*extraData;
@@ -354,9 +348,7 @@ typedef struct model_s {
 	int	numIndices;
 
 	GLuint	iboId;
-	vec2_t	st[MAX_VERTS];
 	mat3_t	axis;
-
 } model_t;
 
 

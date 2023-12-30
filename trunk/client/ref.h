@@ -25,6 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../qcommon/qcommon.h"
 
+// Uncle Mike
+#define FBitSet( iBitVector, bit )	((iBitVector) & (bit))
+#define SetBits( iBitVector, bits )	((iBitVector) = (iBitVector) | (bits))
+#define ClearBits( iBitVector, bits )	((iBitVector) = (iBitVector) & ~(bits))
+
 typedef enum {
 PT_DEFAULT,
 PT_BUBBLE,
@@ -112,7 +117,8 @@ typedef enum {
 	MSURF_SSS				= BIT(5),
 	MSURF_WATER				= BIT(8),
 	MSURF_SLIME				= BIT(9),
-	MSURF_LAVA				= BIT(10)
+	MSURF_LAVA				= BIT(10),
+	MSURF_ALPHA = BIT(11)
 }msurfFlag_t;
 
 
@@ -357,12 +363,12 @@ typedef struct mtexInfo_s {
 	int numFrames;
 	struct mtexInfo_s *next;	// animation chain
 
-	image_t *image;
+	image_t *albedo;
 	image_t *normalmap;
-	image_t	*colorSpecular;
-	image_t *addTexture;
-	image_t *envTexture;
-	image_t *rghMap;
+	image_t *emissive;
+	image_t *envmap;
+	image_t *pbr;
+	image_t *maskmap;
 
 	int value;
 
@@ -626,9 +632,6 @@ void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);
 
 void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, char* pic2);
 void Draw_ScaledBumpPic(int x, int y, float scale_x, float scale_y, image_t* gl, image_t* gl2);
-
-void Draw_CharScaled (int x, int y, float scale_x, float scale_y, unsigned char num);
-void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *str, qboolean international);
 
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);

@@ -46,14 +46,14 @@ static	int	tread_sound;
 void BossExplode (edict_t *self);
 
 void TreadSound (edict_t *self) {
-	gi.sound (self, CHAN_VOICE, tread_sound, 1, ATTN_NORM, 0);
+	gi.sound (self, CHAN_VOICE, tread_sound, 1, ATTN_WEAPON_LIGHT, 0);
 }
 
 void supertank_search (edict_t *self) {
 	if (random () < 0.5)
-		gi.sound (self, CHAN_VOICE, sound_search1, 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, sound_search1, 1, ATTN_WEAPON_LIGHT, 0);
 	else
-		gi.sound (self, CHAN_VOICE, sound_search2, 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, sound_search2, 1, ATTN_WEAPON_LIGHT, 0);
 }
 
 

@@ -155,13 +155,13 @@ typedef struct
 	int				num_skins;
 	int				flags;
 
-	image_t			*skinsAlbedo[MD3_MAX_SKINS];
-	image_t			*skinsNormal[MD3_MAX_SKINS];
-	image_t			*skinsLight[MD3_MAX_SKINS];
-	image_t			*skinsEnv[MD3_MAX_SKINS];
-	image_t			*skinsRgh[MD3_MAX_SKINS];
-	image_t			*skinsAO[MD3_MAX_SKINS];
-	image_t			*skinsSkinLocal[MD3_MAX_SKINS];
+	image_t			*albedo[MD3_MAX_SKINS];
+	image_t			*normalmap[MD3_MAX_SKINS];
+	image_t			*emissive[MD3_MAX_SKINS];
+	image_t			*envmap[MD3_MAX_SKINS];
+	image_t			*pbr[MD3_MAX_SKINS];
+	image_t			*aomap[MD3_MAX_SKINS];
+
 	qboolean		muzzle;
 	qboolean		skinAlphatest;
 } md3Mesh_t;
@@ -177,9 +177,6 @@ typedef struct md3Model_s
 	int				num_meshes;
 	md3Mesh_t		*meshes;
 } md3Model_t;
-
-vec3_t	md3VertexCache[MD3_MAX_VERTS];
-vec4_t	md3ColorCache[MD3_MAX_VERTS * 4];
 
 #define MESH_OPAQUE 1
 #define MESH_TRANSLUSCENT 2

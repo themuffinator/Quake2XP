@@ -138,7 +138,7 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 		else {
 			// set to full bright if no light data
 			for (i = 0; i < size * 3; i++)
-				s_blocklights[i] = 255.f;
+				s_blocklights[i] = 255.0 * r_lightmapScale->value;
 		}
 
 		//
@@ -252,7 +252,7 @@ GL_CreateSurfaceLightmap
 void GL_CreateSurfaceLightmap (msurface_t * surf) {
 	int smax, tmax;
 
-	if (surf->flags & (MSURF_DRAWSKY | MSURF_DRAWTURB))
+	if (surf->flags & (MSURF_DRAWSKY | MSURF_DRAWTURB | MSURF_ALPHA))
 		return;
 
 	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1;

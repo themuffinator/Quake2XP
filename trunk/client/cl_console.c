@@ -217,7 +217,6 @@ void Con_Dump_f (void) {
 			else
 				break;
 		}
-
 		fprintf (f, "%s\n", buffer);
 	}
 
@@ -485,7 +484,6 @@ void Con_DrawInput (void) {
 	char	*text, output[2048], addch[8], cursor[2048];
 	int		i;
 	float	fontscale = ui_fontScale->value;
-	float	intervalScale = 0.75;
 
 	if (cls.key_dest == key_menu)
 		return;
@@ -541,14 +539,12 @@ void Con_DrawInput (void) {
 	}
 
 	for (i = 0; i < con.lineWidth; i++) {
-		R_FillConsoleSymbols((i * fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, output[i]);
-		R_FillConsoleSymbols((i * fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, cursor[i]);
+		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, output[i], draw_charsInt->handle);
+		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, cursor[i], draw_charsInt->handle);
 	}
-
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
 }
-
 
 
 /*
@@ -567,7 +563,6 @@ void Con_DrawNotify (void) {
 	char	*s;
 	int		skip;
 	int		currentColor;
-	float	intervalScale = 0.75;
 	float	fontscale = ui_fontScale->value;
 
 	currentColor = 7;
@@ -598,7 +593,7 @@ void Con_DrawNotify (void) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
-			Draw_CharScaled ((x*fontscale + 1) * (8 * intervalScale), v, fontscale, fontscale, text[x] & 0xff);
+			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), v, fontscale, text[x], draw_charsInt->handle);
 		}
 
 		v += 8 * fontscale;
@@ -608,12 +603,12 @@ void Con_DrawNotify (void) {
 
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
-			Draw_StringScaled (8 * fontscale, v, fontscale, fontscale, "say_team:", qfalse);
-			skip = 11;
+			CL_AddString(0, v, fontscale, "say_team:", draw_charsInt->handle);
+			skip = 9;
 		}
 		else {
-			Draw_StringScaled (8 * fontscale, v, fontscale, fontscale, "say:", qfalse);
-			skip = 5;
+			CL_AddString(0, v, fontscale, "say:", draw_charsInt->handle);
+			skip = 4; 
 		}
 
 		s = chat_buffer;
@@ -621,9 +616,13 @@ void Con_DrawNotify (void) {
 		if (chat_bufferlen > ((viddef.width / fontscale) / 8) - (skip + 1))
 			s += chat_bufferlen - (int)(((viddef.width / fontscale) / 8) - (skip + 1));
 	
-		Draw_StringScaled (skip*fontscale * 8, v, fontscale, fontscale, s, qfalse);
-		Draw_CharScaled ((strlen (s) + skip) * fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realTime >> 8) & 1));
-
+		x = 0;
+		while (s[x])
+		{
+			R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, s[x], draw_charsInt->handle);
+			x++;
+		}
+		R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, 10 + ((cls.realTime >> 8) & 1), draw_charsInt->handle);
 		v += 8;
 	}
 	RE_SetColor		(colorWhite);
@@ -640,14 +639,16 @@ Draws the console with the solid background
 void Con_DrawConsole (float frac) {
 	int			i, j, x, y, n;
 	int			rows;
-	short		*text;
+	short		*text, output[1024];
 	int			row;
 	int			lines;
 	char		version[64];
 	char		dlbar[1024];
 	int			currentColor;
-	float		intervalScale = 0.75;
 	float		fontscale = ui_fontScale->value;
+
+	if (cls.menuActive)
+		return;
 
 	if (frac == 1.0)
 		lines = viddef.height * frac;
@@ -666,12 +667,12 @@ void Con_DrawConsole (float frac) {
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
 
 	Com_sprintf (version, sizeof(version), "q2xp %s (%s)", VERSION, __DATE__);
-	int len = strlen(version);
-
 	RE_SetColor(colorGreen);
-	
-	for (x = 0; x < strlen(version)+1; x++)
-		R_FillConsoleSymbols((viddef.width - (len * 6 * fontscale)) + x * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version[x]);
+	int len = strlen(version);
+//	Draw_StringScaled (viddef.width - len * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version, qtrue);
+
+	for (x = 0; x < len; x++)
+		R_AddCharsToList((viddef.width - len * 8 * FONT_INTERVAL * (int)fontscale) + (x * 8 * FONT_INTERVAL * (int)fontscale), lines - 12 * (int)fontscale, (int)fontscale, version[x], draw_charsInt->handle);
 
 	// draw the text
 	con.vislines = lines;
@@ -684,8 +685,7 @@ void Con_DrawConsole (float frac) {
 		// draw arrows to show the buffer is backscrolled
 		RE_SetColor (colorCyan);
 		for (x = 0; x < con.lineWidth; x += 4)
-			R_FillConsoleSymbols((x * fontscale + 1) * 8, y, fontscale, fontscale, '^');
-
+			R_AddCharsToList((x * fontscale + 1) * 8, y, fontscale, '^', draw_charsInt->handle);
 		RE_SetColor (colorWhite);
 		y -= 8 * fontscale;
 		rows--;
@@ -703,11 +703,12 @@ void Con_DrawConsole (float frac) {
 			break;				// past scrollback wrap point
 
 		text = con.text + (row % con.totalLines) * con.lineWidth;
-		
+
+		Com_sprintf(output, sizeof(output), "");
 		for (x = 0; x < con.lineWidth; x++) {
 			if ((text[x] & 0xFF) == ' ')
 				continue;
-			
+
 			oldColor = currentColor;
 
 			if (((text[x] >> 8) & 7) != currentColor) {
@@ -718,16 +719,14 @@ void Con_DrawConsole (float frac) {
 				RE_SetColor(ColorTable[oldColor]);
 			else
 				//Reset Current font color
-			RE_SetColor(ColorTable[currentColor]);
+				RE_SetColor(ColorTable[currentColor]);
 
-			R_FillConsoleSymbols((x * fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x]);
+			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), y, (int)fontscale, text[x], draw_charsInt->handle);
 
 			if (text[x] < 190)
 				currentColor = oldColor;
 		}
 	}
-
-	R_DrawConsoleSymbols(); // draw console text
 
 	//ZOID draw the download bar figure out width
 #ifdef USE_CURL
@@ -776,14 +775,14 @@ void Con_DrawConsole (float frac) {
 		// draw it
 		y = con.vislines - 12;
 		for (i = 0; i < strlen (dlbar); i++)
-			R_FillConsoleSymbols((i * fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
+			//	Draw_Char((i + 1) << 3, y, dlbar[i]);
+		//	Draw_CharScaled ((i*fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
+			R_AddCharsToList((i * fontscale + 1) * 8, y, fontscale, dlbar[i], draw_chars->handle);
 	}
 	//ZOID
 
 	// draw the input prompt, user text, and cursor if desired
 	Con_DrawInput ();
-	R_DrawConsoleSymbols(); // draw input
-
 	RE_SetColor (colorWhite);
 }
 

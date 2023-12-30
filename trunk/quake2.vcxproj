@@ -226,7 +226,7 @@
       <EmitOptimizationDiagnosticsToFile>false</EmitOptimizationDiagnosticsToFile>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
-      <DisableSpecificWarnings>6031; 5105</DisableSpecificWarnings>
+      <DisableSpecificWarnings>6031; 5105; 6244</DisableSpecificWarnings>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OmitFramePointers>true</OmitFramePointers>
       <BrowseInformation>false</BrowseInformation>
@@ -444,6 +444,7 @@
     <ClCompile Include="renderer\r_shadows.c" />
     <ClCompile Include="renderer\r_sky.c" />
     <ClCompile Include="renderer\r_surfacesRA.c" />
+    <ClCompile Include="renderer\r_vo.c" />
     <ClCompile Include="renderer\r_vertexCache.c" />
     <ClCompile Include="renderer\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">
@@ -631,7 +632,7 @@
     <ClCompile Include="renderer\r_model.c" />
     <ClCompile Include="renderer\r_particles.c" />
     <ClCompile Include="renderer\r_postprocess.c" />
-    <ClCompile Include="renderer\r_loadImages.c" />
+    <ClCompile Include="renderer\r_imageLoad.c" />
     <ClCompile Include="renderer\r_surfaces.c" />
     <ClCompile Include="renderer\r_math.c" />
     <ClCompile Include="client\cg_cin.c">

@@ -129,7 +129,6 @@ void qcurlShutdown(void);
 
 
 void FS_AddPAKFile(char* packPath);
-void FS_AddPkxFile(char* packPath);
 char* FS_DownloadDir(void);
 void Sys_MemoryUsage_f(void);
 void CL_ParseDownload(void);
@@ -235,10 +234,9 @@ cvar_t* ui_drawFPS;
 
 cvar_t* ui_3dHud;
 cvar_t* ui_drawHud;
-cvar_t* ui_hudScale;
 cvar_t* ui_fontScale;
 
-cvar_t* scr_showTexName;
+cvar_t* cl_showMaterials;
 cvar_t* sys_cpuUtilization;
 cvar_t* cl_gunCollision;
 cvar_t* com_fullConsole;
@@ -269,6 +267,18 @@ void CL_ShotdownRumble();
 void CL_SendCmd_Async(void);
 void CL_RefreshCmd(void);
 void CL_RefreshMove(void);
+
+void CL_AddHUDString(float x, float y, int scale, int centerwidth, int xor, char *string);
+void CL_AddString(int x, int y, int scale, char *s, uint64 handle);
+void CL_AddAltString(int x, int y, int scale, char *s);
+
+void R_AddCharsToList(int x, int y, int scale, unsigned char num, uint64 handle);
+void R_Flush2D();
+
+extern image_t *draw_charsInt;
+extern image_t *draw_chars;
+#define FONT_INTERVAL 0.666
+#define CURSOR_INTERVAL 0.75
 
 //=============================================================================
 // Sound effect ID's:

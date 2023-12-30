@@ -324,7 +324,7 @@ void HelpComputer (edict_t *ent) {
 		else if (skill->value == 2)
 			sk = "hard";
 		else
-			sk = "hard+";
+			sk = "nightmare!";
 
 		// send the layout
 		Com_sprintf(string, sizeof(string),
@@ -333,8 +333,8 @@ void HelpComputer (edict_t *ent) {
 			"xv 0 yv 24 cstring2 \"%s\" "		// level name
 			"xv 0 yv 54 cstring2 \"%s\" "		// help 1
 			"xv 0 yv 110 cstring2 \"%s\" "		// help 2
-			"xv 50 yv 164 string2 \" kills     goals    secrets\" "
-			"xv 50 yv 172 string2 \"%3i/%3i     %i/%i       %i/%i\" ",
+			"xv 50 yv 164 string2 \"   kills           goals         secrets\" "
+			"xv 50 yv 172 string2 \" %3i/%3i            %i/%i            %i/%i\" ",
 			sk,
 			level.level_name,
 			game.helpmessage1,

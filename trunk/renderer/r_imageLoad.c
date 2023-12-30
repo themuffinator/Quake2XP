@@ -103,9 +103,20 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	else
 		image->numMips = 1;
 
-	glTextureStorage2D(image->texnum, image->numMips, intFormat, width, height);
-	glTextureSubImage2D(image->texnum, 0, 0, 0, width, height, format, imageType, pixdata);
+	if(image->flags & IF_SHADOW)
+		glTextureParameteri(image->texnum, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 
+	if (targetTex == GL_TEXTURE_CUBE_MAP) {
+		int face;
+		for (face = 0; face < 6; face++) {
+			glTextureStorage2D(image->texnum, 1, intFormat, width, height);
+			glTextureSubImage3D(image->texnum, 0, 0, 0, face, width, height, 1, format, imageType, pixdata);
+		}
+	}
+	else {
+		glTextureStorage2D(image->texnum, image->numMips, intFormat, width, height);
+		glTextureSubImage2D(image->texnum, 0, 0, 0, width, height, format, imageType, pixdata);
+	}
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
 

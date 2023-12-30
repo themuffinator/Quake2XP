@@ -27,18 +27,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-int	num_shadow_surfaces, shadowTimeStamp;
+int	numShadowSurf, shadowTimeStamp;
 
 msurface_t* shadow_surfaces[MAX_MAP_FACES];
-vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+vec4_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 
-char	triangleFacingLight[MAX_INDICES];
+char	triangleFacingLight[MAX_VERTICES];
 vec4_t	s_lerped[MAX_VERTS];
-vec4_t	vcacheMd2[MAX_INDICES];
+
+vec4_t	vcacheMd2[MAX_VERTICES];
 uint	icacheMd2[MAX_INDICES];
 
-float	shadowVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
+float	vcacheMd3[MD3_MAX_VERTS * MD3_MAX_MESHES];
 
 
 /*
@@ -75,7 +76,7 @@ void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOr
 }
 
 void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
-	dtriangle_t		*oldTris, *tris;
+	dtriangle_t		*tris;
 	neighbors_t		*neighbours;
 	vec4_t			v0, v1, v2;
 	daliasframe_t	*frame;
@@ -84,15 +85,17 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 
 	frame = (daliasframe_t *)((byte *)hdr + hdr->ofs_frames + currententity->frame * hdr->framesize);
 	verts = frame->verts;
-	oldTris = tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
+	tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
 
 	R_MarkShadowTriangles(hdr, tris, lightOrg);
 
-	for (i = 0, tris = oldTris, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
+	for (i = 0, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
 
 		if (!triangleFacingLight[i])
 			continue;
 
+		//	draw sil edges
+		//  transforms verts with w = 1 normally and sends verts with w = 0 to infinity away from the light.
 		if (neighbours->n[0] < 0 || !triangleFacingLight[neighbours->n[0]]) {
 
 			for (j = 0; j < 3; j++) {
@@ -100,7 +103,6 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 				v1[j] = s_lerped[tris->index_xyz[0]][j];
 			}
 
-			//  transforms points with w = 1 normally and sends points with w = 0 to infinity away from the light.
 			VA_SetElem4(vcacheMd2[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
 			VA_SetElem4(vcacheMd2[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
 			VA_SetElem4(vcacheMd2[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
@@ -156,13 +158,8 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 			icacheMd2[id++] = numVerts + 2;
 			numVerts += 4;
 		}
-	}
-
-	// build shadows caps
-	for (i = 0, tris = oldTris; i < hdr->num_tris; i++, tris++) {
-		if (!triangleFacingLight[i])
-			continue;
-
+	
+		// build shadows caps
 		for (j = 0; j < 3; j++) {
 			v0[j] = s_lerped[tris->index_xyz[0]][j];
 			v1[j] = s_lerped[tris->index_xyz[1]][j];
@@ -194,8 +191,11 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 		icacheMd2[id++] = numVerts + 1;
 		icacheMd2[id++] = numVerts + 0;
 		numVerts += 3;
+	
 	}
-//	qglBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(vec4_t), NULL, GL_STREAM_DRAW);
+
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), vcacheMd2);
 	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icacheMd2);
 
@@ -387,28 +387,27 @@ void R_DrawMD3ShadowVolume(){
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 
-			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
-			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
-			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
+			tess.position[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			tess.position[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			tess.position[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 
 		idx = mesh->indexes;
 		for (j = 0; j < mesh->num_tris; j++){
 
 			//Calculate shadow volume triangle normals
-			VectorSubtract(md3VertexCache[*idx], md3VertexCache[*(idx + 1)], v1);
-			VectorSubtract(md3VertexCache[*(idx + 2)], md3VertexCache[*(idx + 1)], v2);
+			VectorSubtract(tess.position[*idx], tess.position[*(idx + 1)], v1);
+			VectorSubtract(tess.position[*(idx + 2)], tess.position[*(idx + 1)], v2);
 			CrossProduct(v2, v1, normal);
 			VectorScale(normal, 1 / VectorLength(normal), trinormal);
 
 			// Find front facing triangles
-			if (DotProduct(trinormal, lightOrg) <= DotProduct(md3VertexCache[*idx], trinormal))
+			if (DotProduct(trinormal, lightOrg) <= DotProduct(tess.position[*idx], trinormal))
 				triangleFacingLight[j] = 0;	
 			else
 				triangleFacingLight[j] = 1;
 
 			idx += 3;
-
 		}
 
 		idx = mesh->indexes;
@@ -430,36 +429,36 @@ void R_DrawMD3ShadowVolume(){
 						index0 = idx + k;
 						index1 = idx + ((k + 1) % 3);
 
-						//  transforms points with w = 1 normally and sends points with w = 0 to infinity away from the light.
-						shadowVerts[numVerts++] = md3VertexCache[*index0][0];
-						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
-						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
-						shadowVerts[numVerts++] = 1.0;
+						//  transforms verts with w = 1 normally and sends verts with w = 0 to infinity away from the light.
+						vcacheMd3[numVerts++] = tess.position[*index0][0];
+						vcacheMd3[numVerts++] = tess.position[*index0][1];
+						vcacheMd3[numVerts++] = tess.position[*index0][2];
+						vcacheMd3[numVerts++] = 1.0;
 
-						shadowVerts[numVerts++] = md3VertexCache[*index0][0];
-						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
-						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
-						shadowVerts[numVerts++] = 0.0;
+						vcacheMd3[numVerts++] = tess.position[*index0][0];
+						vcacheMd3[numVerts++] = tess.position[*index0][1];
+						vcacheMd3[numVerts++] = tess.position[*index0][2];
+						vcacheMd3[numVerts++] = 0.0;
 
-						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
-						shadowVerts[numVerts++] = md3VertexCache[*index1][1];
-						shadowVerts[numVerts++] = md3VertexCache[*index1][2];
-						shadowVerts[numVerts++] = 0.0;
+						vcacheMd3[numVerts++] = tess.position[*index1][0];
+						vcacheMd3[numVerts++] = tess.position[*index1][1];
+						vcacheMd3[numVerts++] = tess.position[*index1][2];
+						vcacheMd3[numVerts++] = 0.0;
 
-						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
-						shadowVerts[numVerts++] = md3VertexCache[*index1][1];
-						shadowVerts[numVerts++] = md3VertexCache[*index1][2];
-						shadowVerts[numVerts++] = 0.0;
+						vcacheMd3[numVerts++] = tess.position[*index1][0];
+						vcacheMd3[numVerts++] = tess.position[*index1][1];
+						vcacheMd3[numVerts++] = tess.position[*index1][2];
+						vcacheMd3[numVerts++] = 0.0;
 
-						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
-						shadowVerts[numVerts++] = md3VertexCache[*index1][1];
-						shadowVerts[numVerts++] = md3VertexCache[*index1][2];
-						shadowVerts[numVerts++] = 1.0;
+						vcacheMd3[numVerts++] = tess.position[*index1][0];
+						vcacheMd3[numVerts++] = tess.position[*index1][1];
+						vcacheMd3[numVerts++] = tess.position[*index1][2];
+						vcacheMd3[numVerts++] = 1.0;
 
-						shadowVerts[numVerts++] = md3VertexCache[*index0][0];
-						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
-						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
-						shadowVerts[numVerts++] = 1.0;
+						vcacheMd3[numVerts++] = tess.position[*index0][0];
+						vcacheMd3[numVerts++] = tess.position[*index0][1];
+						vcacheMd3[numVerts++] = tess.position[*index0][2];
+						vcacheMd3[numVerts++] = 1.0;
 					}
 				}
 			}
@@ -468,26 +467,26 @@ void R_DrawMD3ShadowVolume(){
 		}
 
 		idx = mesh->indexes;
-		for (j = 0; j < mesh->num_tris; j++)
-		{
-			if (triangleFacingLight[j])
-			{
-				for (k = 0; k<3; k++)
-				{
+		for (j = 0; j < mesh->num_tris; j++){
+
+			if (triangleFacingLight[j]){
+
+				for (k = 0; k<3; k++){
+
 					index0 = idx + k;
-					shadowVerts[numVerts++] = md3VertexCache[*index0][0];
-					shadowVerts[numVerts++] = md3VertexCache[*index0][1];
-					shadowVerts[numVerts++] = md3VertexCache[*index0][2];
-					shadowVerts[numVerts++] = 1.0;
+					vcacheMd3[numVerts++] = tess.position[*index0][0];
+					vcacheMd3[numVerts++] = tess.position[*index0][1];
+					vcacheMd3[numVerts++] = tess.position[*index0][2];
+					vcacheMd3[numVerts++] = 1.0;
 				}
 
-				for (k = 2; k >= 0; k--)
-				{
+				for (k = 2; k >= 0; k--){
+
 					index0 = idx + k;
-					shadowVerts[numVerts++] = md3VertexCache[*index0][0];
-					shadowVerts[numVerts++] = md3VertexCache[*index0][1];
-					shadowVerts[numVerts++] = md3VertexCache[*index0][2];
-					shadowVerts[numVerts++] = 0.0;
+					vcacheMd3[numVerts++] = tess.position[*index0][0];
+					vcacheMd3[numVerts++] = tess.position[*index0][1];
+					vcacheMd3[numVerts++] = tess.position[*index0][2];
+					vcacheMd3[numVerts++] = 0.0;
 				}
 			}
 
@@ -495,8 +494,8 @@ void R_DrawMD3ShadowVolume(){
 		}
 	}
 	c_numDynamicShadowsTris += numVerts / 4;
-//	qglBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(float), NULL, GL_STREAM_DRAW);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), vcacheMd3);
 	GL_DrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	c_numDynamicShadows++;
 }
@@ -525,7 +524,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	glBindVertexArray(vao.md2Shadow);
+	GL_BindVao(md2shadowVao);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
 
 	if (player) {
@@ -566,7 +565,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
 
-	glBindVertexArray(vao.md3Shadow);
+	GL_BindVao(md3shadowVao);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
 
 	if (player) {
@@ -605,7 +604,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CW);
 
-	glBindVertexArray(0);
+	GL_BindNullVao();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GL_Enable(GL_CULL_FACE);
@@ -626,6 +625,9 @@ qboolean R_MarkShadowSurf (msurface_t *surf) {
 	float		dist, lbbox[6], pbbox[6];
 
 	if (surf->texInfo->flags & (SURF_NODRAW)) // rogue hack
+		return qfalse;
+	
+	if (surf->flags & MSURF_ALPHA)
 		return qfalse;
 
 	// add sky surfaces to shadow marking
@@ -702,7 +704,7 @@ void R_MarkBrushModelShadowSurfaces () {
 	for (i = 0; i < clmodel->numModelSurfaces; i++, psurf++) {
 
 		if (R_MarkShadowSurf (psurf))
-			shadow_surfaces[num_shadow_surfaces++] = psurf;
+			shadow_surfaces[numShadowSurf++] = psurf;
 	}
 }
 
@@ -730,13 +732,13 @@ void R_DrawBrushModelVolumes () {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	shadowTimeStamp++;
-	num_shadow_surfaces = 0;
+	numShadowSurf = 0;
 	R_MarkBrushModelShadowSurfaces ();
 
 	scale = currentShadowLight->maxRad * 2;
 
 	// generate vertex buffer
-	for (i = 0; i < num_shadow_surfaces; i++) {
+	for (i = 0; i < numShadowSurf; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
@@ -755,7 +757,7 @@ void R_DrawBrushModelVolumes () {
 	}
 
 	// generate index buffer
-	for (i = 0; i < num_shadow_surfaces; i++) {
+	for (i = 0; i < numShadowSurf; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
@@ -803,7 +805,9 @@ void R_DrawBrushModelVolumes () {
 	}
 
 	if (ib) {
-		qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec3_t), vcache);
+		qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec4_t), vcache);
 		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 
 		GL_DrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
@@ -838,7 +842,7 @@ void R_MarkShadowCasting (mnode_t *node) {
 
 			if (R_MarkShadowSurf ((*surf))) {
 
-				shadow_surfaces[num_shadow_surfaces++] = (*surf);
+				shadow_surfaces[numShadowSurf++] = (*surf);
 			}
 		}
 		return;
@@ -878,13 +882,13 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 		light = NULL;
 
 	shadowTimeStamp++;
-	num_shadow_surfaces = 0;
+	numShadowSurf = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
 
 	scale = currentShadowLight->maxRad * 10;
 
 	// generate vertex buffer
-	for (i = 0; i < num_shadow_surfaces; i++) {
+	for (i = 0; i < numShadowSurf; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
@@ -904,7 +908,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	}
 
 	// generate index buffer
-	for (i = 0; i < num_shadow_surfaces; i++) {
+	for (i = 0; i < numShadowSurf; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
@@ -963,7 +967,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 
 		qglGenBuffers(1, &currentShadowLight->vboId);
 		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
-		qglBufferData(GL_ARRAY_BUFFER, surfBase * sizeof(vec3_t), vcache, GL_STATIC_DRAW);
+		qglBufferData(GL_ARRAY_BUFFER, surfBase * sizeof(vec4_t), vcache, GL_STATIC_DRAW);
 		qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		qglGenBuffers(1, &currentShadowLight->iboId);
@@ -981,16 +985,16 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 
 		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+		qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
 		glBindVertexArray(0);
-		qglBindBuffer(GL_ARRAY_BUFFER, 0);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		numPreCachedLights++;
 	}
 	else {
-		if (ib) {
-			qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec3_t), vcache);
+		if (ib) {			
+			qglInvalidateBufferData(GL_ARRAY_BUFFER);
+			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec4_t), vcache);
 			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 			
 			GL_DrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
@@ -1032,7 +1036,7 @@ void R_CastBspShadowVolumes (void) {
 		glBindVertexArray(0);
 	}
 
-	glBindVertexArray(vao.dynamic);
+	GL_BindVao(dynamicVao);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 
 	if (!currentShadowLight->isStatic)	
@@ -1048,7 +1052,8 @@ void R_CastBspShadowVolumes (void) {
 		if (currentmodel->type == mod_brush)
 			R_DrawBrushModelVolumes ();
 	}
-	glBindVertexArray(0);
+
+	GL_BindNullVao();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GL_Enable (GL_CULL_FACE);

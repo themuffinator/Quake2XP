@@ -24,10 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 int alphaSurfSort(const msurface_t** a, const msurface_t** b) {
-	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
+	return	(((*a)->texInfo->albedo->texnum)) - (((*b)->texInfo->albedo->texnum));
 }
 int waterSurfSort(const msurface_t** a, const msurface_t** b) {
-	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
+	return	(((*a)->texInfo->albedo->texnum)) - (((*b)->texInfo->albedo->texnum));
 }
 
 msurface_t* interactionTranSurf[MAX_MAP_FACES/4];
@@ -36,7 +36,7 @@ int			numInteractionTransSurfs;
 void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	int i;
 	uint numIndices;
-	float scroll = 0.0, scale[2];
+	float scroll = 0.0;
 	qboolean scrolling = qfalse;
 	int nv = s->polys->numVerts;
 
@@ -51,7 +51,6 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 				scroll = -64.0;
 
 			scrolling = qtrue;
-
 			qglUniform1f(U_SCROLL, scroll);
 		}
 		else
@@ -62,14 +61,8 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 		else
 			GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
 
-		GL_SetBindlessTexture(U_TMU1, s->texInfo->image->handle);
-		GL_SetBindlessTexture(U_TMU4, s->texInfo->addTexture->handle);
-
-
-		scale[0] = r_parallaxScale->value / s->texInfo->image->width;
-		scale[1] = r_parallaxScale->value / s->texInfo->image->height;
-
-		qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->image->upload_width, s->texInfo->image->upload_height);
+		GL_SetBindlessTexture(U_TMU1, s->texInfo->albedo->handle);
+		GL_SetBindlessTexture(U_TMU4, s->texInfo->emissive->handle);
 	}
 
 	for (i = 0; i < nv - 2; i++) {
@@ -112,7 +105,7 @@ void R_DrawAlphaSurfaces() {
 
 		s = r_alphaSurfaces[i];
 
-		if (s->texInfo->image->texnum != oldTex) {
+		if (s->texInfo->albedo->texnum != oldTex) {
 			if (numIndices) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
@@ -120,7 +113,7 @@ void R_DrawAlphaSurfaces() {
 				R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.0, 1.0, glassProgram);
 				numIndices = 0;
 			}
-			oldTex = s->texInfo->image->texnum;
+			oldTex = s->texInfo->albedo->texnum;
 			newTex = qtrue;
 		}
 		else
@@ -128,7 +121,7 @@ void R_DrawAlphaSurfaces() {
 
 		R_AddAlphaSurceces(s, &numIndices, newTex);
 
-		if (numIndices >= MAX_IDX) { //overflow
+		if (numIndices >= MAX_INDICES) { //overflow
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brushTris += numIndices / 3;
 
@@ -160,7 +153,7 @@ void R_AddWaterSurceces(msurface_t* s, uint* indeces, qboolean update) {
 			qglUniform1i(U_WATER_TRANS, 1);
 		else
 			qglUniform1i(U_WATER_TRANS, 0);
-		GL_SetBindlessTexture(U_TMU0, s->texInfo->image->handle);
+		GL_SetBindlessTexture(U_TMU0, s->texInfo->albedo->handle);
 	}
 
 	for (i = 0; i < nv - 2; i++) {
@@ -207,7 +200,7 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 	for (int i = 0; i < numReflectiveSurfaces; i++) {
 		s = r_reflectiveSurfaces[i];
 
-		if (s->texInfo->image->texnum != oldTex) {
+		if (s->texInfo->albedo->texnum != oldTex) {
 			if (numIndices) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
@@ -216,7 +209,7 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 
 				numIndices = 0;
 			}
-			oldTex = s->texInfo->image->texnum;
+			oldTex = s->texInfo->albedo->texnum;
 			newTex = qtrue;
 		}
 		else
@@ -224,7 +217,7 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 
 		R_AddWaterSurceces(s, &numIndices, newTex);
 
-		if (numIndices >= MAX_IDX) { //overflow
+		if (numIndices >= MAX_INDICES) { //overflow
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brushTris += numIndices / 3;
 			
@@ -283,7 +276,7 @@ void R_DrawHeatHazeSurfaces() {
 
 		R_AddHeatHazeSurceces(s, &numIndices);
 
-		if (numIndices >= MAX_IDX) { //overflow
+		if (numIndices >= MAX_INDICES) { //overflow
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brushTris += numIndices / 3;
 			numIndices = 0;
@@ -303,7 +296,7 @@ void R_DrawSurfacesRA(qboolean bmodel) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	glBindVertexArray(vao.bsp);
+	GL_BindVao(bspVao);
 	
 	R_CaptureColorBuffer();
 	R_DrawHeatHazeSurfaces();
@@ -314,7 +307,7 @@ void R_DrawSurfacesRA(qboolean bmodel) {
 	R_CaptureColorBuffer();
 	R_DrawWaterSurfaces(bmodel);
 
-	glBindVertexArray(0);
+	GL_BindNullVao();
 }
 
 qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t* light) {
@@ -456,10 +449,10 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	else
 		qglUniform1f(U_SCROLL, 0.0);
 	
-	scale[0] = r_parallaxScale->value / s->texInfo->image->width;
-	scale[1] = r_parallaxScale->value / s->texInfo->image->height;
+	scale[0] = r_parallaxScale->value / s->texInfo->albedo->width;
+	scale[1] = r_parallaxScale->value / s->texInfo->albedo->height;
 
-	qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->image->upload_width, s->texInfo->image->upload_height);
+	qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->albedo->upload_width, s->texInfo->albedo->upload_height);
 
 	if (s->texInfo->flags & SURF_TRANS33)
 		alpha = 0.33f;
@@ -468,11 +461,10 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	qglUniform1f(U_PARAM_FLOAT_3, alpha);
 
 	if (update) {
-		GL_SetBindlessTexture(U_TMU0, s->texInfo->image->handle);
+		GL_SetBindlessTexture(U_TMU0, s->texInfo->albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, s->texInfo->normalmap->handle);
 		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
-
 	}
 
 	for (i = 0; i < nv - 2; i++) {
@@ -544,13 +536,13 @@ void R_DrawLightAlphaSurfaces() {
 		if ((s->visframe != r_framecount) || (s->ent))
 			continue;
 
-		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag) {
+		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag) {
 			if (numIndices) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_lightBrushTris += numIndices / 3;
 				numIndices = 0;
 			}
-			oldTex	= s->texInfo->image->texnum;
+			oldTex	= s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
 			newTex	= qtrue;
 		}
@@ -559,7 +551,7 @@ void R_DrawLightAlphaSurfaces() {
 
 		R_AddLightAlphaSurceces(s, &numIndices, newTex);
 
-		if (numIndices >= MAX_IDX) { //overflow
+		if (numIndices >= MAX_INDICES) { //overflow
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_lightBrushTris += numIndices / 3;
 			numIndices = 0;
@@ -597,13 +589,13 @@ void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
 		if ((poly->lightTimestampRA != r_lightTimestampRA) || (s->visframe != r_framecount))
 			continue;
 
-		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust) {
+		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust) {
 			if (numIndices) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
 				numIndices = 0;
 			}
-			oldTex = s->texInfo->image->texnum;
+			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
 			oldCaust = caustics;
 			newTex = qtrue;
@@ -613,7 +605,7 @@ void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
 
 		R_AddLightAlphaSurceces(s, &numIndices, newTex);
 
-		if (numIndices >= MAX_IDX) { //overflow
+		if (numIndices >= MAX_INDICES) { //overflow
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_lightBrushTris += numIndices / 3;
 			numIndices = 0;
@@ -753,7 +745,8 @@ void R_DrawLightWorldRA(void){
 	GL_BlendFunc(GL_ONE, GL_ONE);
 	
 	GL_BindProgram(lightGlassProgram);
-	glBindVertexArray(vao.bsp);
+	
+	GL_BindVao(bspVao);
 
 	R_PrepareShadowLightFrame(qfalse);
 
@@ -779,6 +772,6 @@ void R_DrawLightWorldRA(void){
 		}
 	}
 
-	glBindVertexArray(0);
+	GL_BindNullVao();
 	GL_Disable(GL_BLEND);
 }

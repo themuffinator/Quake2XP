@@ -165,7 +165,7 @@ void R_CreateScreenFbo() {
 
 	qglGenRenderbuffers(1, &rbId);
 	qglBindRenderbuffer(GL_RENDERBUFFER, rbId);
-	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
+	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, vid.width, vid.height);
 
 	qglObjectLabel(GL_RENDERBUFFER, rbId, strlen("***rbo_HdrRenderBuffer***"), "***rbo_HdrRenderBuffer***");
 
@@ -189,7 +189,7 @@ void R_CreateScreenFbo() {
 	qglGenFramebuffers(1, &fbo._hdr);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 	
-	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, GL_RENDERBUFFER, rbId);
+	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbId);
 
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE,			r_hdrScreen->texnum, 0);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE,			r_hdrScreenCopy->texnum, 0);
