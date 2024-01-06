@@ -1289,8 +1289,7 @@ void CL_InitLocal (void) {
 
 	ui_drawHud = Cvar_Get("ui_drawHud", "1", CVAR_ARCHIVE);
 	ui_3dHud = Cvar_Get("ui_3dHud", "1", CVAR_ARCHIVE);
-	ui_fontScale->value = ClampCvar(2.0, 3.0, ui_fontScale->value);
-	ui_drawTime = Cvar_Get("ui_drawTime", "0", CVAR_ARCHIVE);
+	ui_fontScale->integer = ClampCvarInteger(2.0, 3.0, ui_fontScale->integer);
 	ui_fontScale = Cvar_Get("ui_fontScale", "3", 0);
 	ui_drawFPS = Cvar_Get("ui_drawFPS", "0", CVAR_ARCHIVE);
 

@@ -524,8 +524,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	GL_BindVao(md2shadowVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
+	GL_BindVAO(vao.md2shadow);
+	GL_BindVBO(vbo.aliasShadowVbo);
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -564,9 +564,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	================*/
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
-
-	GL_BindVao(md3shadowVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
+	GL_BindVAO(vao.md3shadow);
+	GL_BindVBO(vbo.aliasShadowVbo);
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -581,7 +580,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 			if (currentmodel->type == mod_alias_md3)
 				R_DrawMD3ShadowVolume();
-
 		}
 	}
 	else
@@ -604,8 +602,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CW);
 
-	GL_BindNullVao();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 
 	GL_Enable(GL_CULL_FACE);
 	GL_ColorMask(1, 1, 1, 1);
@@ -956,37 +954,16 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	}
 
 	if (precalc) {
-
-		// del old data
-		if(currentShadowLight->vboId);
-			qglDeleteBuffers(1, &currentShadowLight->vboId);
-		if (currentShadowLight->iboId);
-			qglDeleteBuffers(1, &currentShadowLight->iboId);
-		if (currentShadowLight->vao);
-			glDeleteVertexArrays(1, &currentShadowLight->vao);
-
-		qglGenBuffers(1, &currentShadowLight->vboId);
-		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
-		qglBufferData(GL_ARRAY_BUFFER, surfBase * sizeof(vec4_t), vcache, GL_STATIC_DRAW);
-		qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		qglGenBuffers(1, &currentShadowLight->iboId);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW);
+		currentShadowLight->vbo = R_Alloc_VBO(va("sl_vbo_%i", numPreCachedLights), GL_ARRAY_BUFFER, surfBase * sizeof(vec4_t), vcache, GL_STATIC_DRAW);
+		currentShadowLight->ibo = R_Alloc_VBO(va("sl_ibo_%i", numPreCachedLights), GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW);
 		currentShadowLight->iboNumIndices = ib;
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		currentShadowLight->numStaticShadowTis = ib / 3;
+		currentShadowLight->numStaticShadowTris = ib / 3;
 
-		// gen vao
-		glGenVertexArrays(1, &currentShadowLight->vao);
-		glBindVertexArray(currentShadowLight->vao);
-		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-
-		qglEnableVertexAttribArray(ATT_POSITION);
+		currentShadowLight->vao = R_Alloc_VAO(va("sl_vao_%i", numPreCachedLights), ATTF_POS);
+		GL_BindVBO(currentShadowLight->vbo);
+		GL_BindVBO(currentShadowLight->ibo);
 		qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
-		glBindVertexArray(0);
+		GL_BindNullVAO();
 
 		numPreCachedLights++;
 	}
@@ -1011,7 +988,7 @@ void R_CastBspShadowVolumes (void) {
 	if (!r_shadows->integer)
 		return;
 
-	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient)
+	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->area <0)
 		return;
 
 	// setup program
@@ -1029,15 +1006,14 @@ void R_CastBspShadowVolumes (void) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	if (currentShadowLight->isStatic) { // draw vbo shadow
-
-		glBindVertexArray(currentShadowLight->vao);
+	if (currentShadowLight->isStatic) { // draw prechached shadow
+		GL_BindVAO(currentShadowLight->vao);
 		GL_DrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
-		glBindVertexArray(0);
 	}
 
-	GL_BindVao(dynamicVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	GL_BindVAO(vao.dynamic);
+	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVBO(vbo.dynamicIbo);
 
 	if (!currentShadowLight->isStatic)	
 		R_DrawBspModelVolumes(qfalse, NULL); 	
@@ -1053,8 +1029,9 @@ void R_CastBspShadowVolumes (void) {
 			R_DrawBrushModelVolumes ();
 	}
 
-	GL_BindNullVao();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
+	GL_BindNullIBO();
 
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);

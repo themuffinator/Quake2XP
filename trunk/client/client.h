@@ -229,7 +229,6 @@ cvar_t* cl_blood;
 cvar_t* deathmatch;
 cvar_t* cl_itemsBobbing;
 cvar_t* cl_crossHairHealth;
-cvar_t* ui_drawTime;
 cvar_t* ui_drawFPS;
 
 cvar_t* ui_3dHud;
@@ -269,14 +268,14 @@ void CL_RefreshCmd(void);
 void CL_RefreshMove(void);
 
 void CL_AddHUDString(float x, float y, int scale, int centerwidth, int xor, char *string);
-void CL_AddString(int x, int y, int scale, char *s, uint64 handle);
+void CL_AddString(int x, int y, int scale, char *s, image_t *inTex);
 void CL_AddAltString(int x, int y, int scale, char *s);
 
-void R_AddCharsToList(int x, int y, int scale, unsigned char num, uint64 handle);
+void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex);
 void R_Flush2D();
 
-extern image_t *draw_charsInt;
-extern image_t *draw_chars;
+extern image_t *consFont;
+extern image_t *menuFont;
 #define FONT_INTERVAL 0.666
 #define CURSOR_INTERVAL 0.75
 
@@ -739,7 +738,6 @@ void CL_ParticleArmorSpark (vec3_t org, vec3_t dir, int count,
 void CL_ParticleGibBlood (vec3_t org);
 void CL_ParticleGunSmoke (vec3_t org, vec3_t dir, int count);
 
-void Draw_CharScaledRus(int x, int y, float scale_x, float scale_y, unsigned char num);
 //=================================================
 extern vec3_t dclAng;
 

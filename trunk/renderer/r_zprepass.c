@@ -259,13 +259,13 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
 
-	GL_BindVao(depthBspVao);
+	GL_BindVAO(vao.depthBsp);
 
 	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
 
-	GL_BindNullVao();
+	GL_BindNullVAO();
 }
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
@@ -436,7 +436,7 @@ void R_DrawDepthScene (void) {
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
-		GL_BindVao(depthBspVao);
+		GL_BindVAO(vao.depthBsp);
 
 		numDepthSurfaces = 0;
 		R_RecursiveDepthWorldNode(r_worldmodel->nodes);
@@ -452,11 +452,11 @@ void R_DrawDepthScene (void) {
 			if (currentmodel->type == mod_brush)
 				R_DrawDepthBrushModel();
 		}
-		GL_BindNullVao();
+		GL_BindNullVAO();
 	}
 
-	GL_BindVao(dynamicVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	GL_BindVAO(vao.dynamic);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -480,7 +480,7 @@ void R_DrawDepthScene (void) {
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawDepthMD3Model();
 	}
-	GL_BindNullVao();
+	GL_BindNullVAO();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GL_DepthFunc(GL_LEQUAL);

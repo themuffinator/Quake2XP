@@ -249,7 +249,7 @@ higher res screens.
 void M_DrawCharacter(int cx, int cy, int num) {
 	int	fontscale = ui_fontScale->integer;
 
-	R_AddCharsToList(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, num, draw_chars->handle);
+	R_AddCharsToList(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, num, menuFont);
 }
 
 void M_Print(int cx, int cy, char *str) {
@@ -527,15 +527,17 @@ void Multiplayer_MenuInit(void) {
 	s_join_network_server_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_join_network_server_action.generic.x = 0;
 	s_join_network_server_action.generic.y = 0;
-	s_join_network_server_action.generic.name = "join network server";
+	s_join_network_server_action.generic.name = " join network server";
 	s_join_network_server_action.generic.callback = JoinNetworkServerFunc;
+	s_join_network_server_action.generic.statusbar = "Connect To Network Game";
 
 	s_start_network_server_action.generic.type = MTYPE_ACTION;
 	s_start_network_server_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_start_network_server_action.generic.x = 0;
 	s_start_network_server_action.generic.y = 10 * ui_fontScale->value;
-	s_start_network_server_action.generic.name = "start network server";
+	s_start_network_server_action.generic.name = " start network server";
 	s_start_network_server_action.generic.callback = StartNetworkServerFunc;
+	s_start_network_server_action.generic.statusbar = "Create New Network Game";
 
 	s_player_setup_action.generic.type = MTYPE_ACTION;
 	s_player_setup_action.generic.flags = QMF_LEFT_JUSTIFY;
@@ -663,7 +665,7 @@ static void M_FindKeysForCommand(char *command, int *twokeys) {
 static void KeyCursorDrawFunc(menuframework_s * menu) {
 	R_AddCharsToList(menu->x,
 		menu->y + menu->cursor * 9 * ui_fontScale->value,
-		ui_fontScale->integer, bind_grab ? '=' : 12 + ((int)(Sys_Milliseconds() / 250) & 1), draw_chars->handle);
+		ui_fontScale->integer, bind_grab ? '=' : 12 + ((int)(Sys_Milliseconds() / 250) & 1), menuFont);
 }
 
 static void DrawKeyBindingFunc(void *self) {
@@ -676,7 +678,7 @@ static void DrawKeyBindingFunc(void *self) {
 
 	if (keys[0] == -1) {
 		CL_AddString(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->integer, a->generic.y + a->generic.parent->y,
-			ui_fontScale->integer, "???", draw_chars->handle);
+			ui_fontScale->integer, "???", menuFont);
 	}
 	else {
 		size_t x;
@@ -696,7 +698,7 @@ static void DrawKeyBindingFunc(void *self) {
 
 
 		CL_AddString(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->integer,
-			a->generic.y + a->generic.parent->y, ui_fontScale->integer, name, draw_chars->handle);
+			a->generic.y + a->generic.parent->y, ui_fontScale->integer, name, menuFont);
 
 		x = strlen(name) * 8 * ui_fontScale->value;
 
@@ -706,7 +708,7 @@ static void DrawKeyBindingFunc(void *self) {
 			RE_SetColor(colorWhite);
 
 			CL_AddString(a->generic.x + a->generic.parent->x + 24 + x,
-				a->generic.y + a->generic.parent->y, ui_fontScale->integer, "  ", draw_chars->handle);
+				a->generic.y + a->generic.parent->y, ui_fontScale->integer, "  ", menuFont);
 
 			if (strstr(name2, "XPAD_"))
 				RE_SetColor(colorGold);
@@ -720,7 +722,7 @@ static void DrawKeyBindingFunc(void *self) {
 				RE_SetColor(colorYellow);
 
 			CL_AddString(a->generic.x + a->generic.parent->x + 48 + x,
-				a->generic.y + a->generic.parent->y, ui_fontScale->integer, name2, draw_chars->handle);
+				a->generic.y + a->generic.parent->y, ui_fontScale->integer, name2, menuFont);
 		}
 	}
 	RE_SetColor(colorWhite);
@@ -1041,7 +1043,6 @@ static menulist_s s_options_hrtf;
 static menulist_s s_options_console_action;
 static menulist_s s_options_cpuUtil_box;
 static menulist_s s_options_fps_box;
-static menulist_s s_options_time_box;
 
 extern cvar_t	*ui_drawHud;
 extern cvar_t	*ui_3dHud;
@@ -1092,10 +1093,6 @@ static void CpuUtilFunc(void* unused) {
 	Cvar_SetValue("sys_cpuUtilization", s_options_cpuUtil_box.curInteger);
 }
 
-static void TimeFunc(void *unused) {
-	Cvar_SetValue("ui_drawTime", s_options_time_box.curInteger);
-}
-
 static void ControlsSetMenuItemValues(void) {
 
 	s_options_effectsVolume_slider.curvalue = Cvar_VariableValue("s_effectsVolume") * 10;
@@ -1132,10 +1129,6 @@ static void ControlsSetMenuItemValues(void) {
 
 	Cvar_SetValue("ui_drawFPS", ClampCvarInteger(0, 2, ui_drawFPS->integer));
 	s_options_fps_box.curInteger = ui_drawFPS->integer;
-
-	Cvar_SetValue("ui_drawTime", ClampCvarInteger(0, 1, ui_drawTime->integer));
-	s_options_time_box.curInteger = ui_drawTime->integer;
-
 }
 
 static void ControlsResetDefaultsFunc(void *unused) {
@@ -1492,7 +1485,7 @@ void Options_MenuInit(void) {
 	s_options_effectsVolume_slider.minvalue = 0;
 	s_options_effectsVolume_slider.maxvalue = 10;
 	s_options_effectsVolume_slider.curvalue = s_effectsVolume->value * 10.0;
-
+	s_options_effectsVolume_slider.generic.statusbar = "Set FX Volume";
 
 	s_options_musicvolume_slider.generic.type = MTYPE_SLIDER;
 	s_options_musicvolume_slider.generic.x = 0;
@@ -1502,7 +1495,7 @@ void Options_MenuInit(void) {
 	s_options_musicvolume_slider.minvalue = 0;
 	s_options_musicvolume_slider.maxvalue = 10;
 	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicVolume") * 10;
-
+	s_options_musicvolume_slider.generic.statusbar = "Set Music Volume";
 
 	s_options_musicsrc_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_musicsrc_list.generic.x = 0;
@@ -1511,14 +1504,14 @@ void Options_MenuInit(void) {
 	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
 	s_options_musicsrc_list.itemnames = s_musicsrc_items;
 	s_options_musicsrc_list.curInteger = Cvar_VariableInteger("s_musicSrc");
-
+	s_options_musicsrc_list.generic.statusbar = "Select Music Source CD or Hdd Tracks";
 
 	s_options_aldev_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_aldev_box.generic.x = 0;
 	s_options_aldev_box.generic.y = 50 * ui_fontScale->value;
 	s_options_aldev_box.generic.name = "Sound Device";
 	s_options_aldev_box.generic.callback = AlDevice;
-
+	s_options_aldev_box.generic.statusbar = "Select Your Output Device";
 	if (alGetStringiSOFT) {
 		
 		if (ru_loc) {
@@ -1556,7 +1549,7 @@ void Options_MenuInit(void) {
 	s_options_alResempler_box.itemnames = not_found;
 #endif
 
-	s_options_alResempler_box.generic.statusbar = "Sources Resampling Algorithms";
+	s_options_alResempler_box.generic.statusbar = "Audio Sources Resampling Algorithms";
 
 #ifdef _WIN32
 	s_options_alResempler_box.curInteger = 0;
@@ -1591,11 +1584,11 @@ void Options_MenuInit(void) {
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x = 0;
 	s_options_sensitivity_slider.generic.y = 100 * ui_fontScale->value;
-	s_options_sensitivity_slider.generic.name = "Mouse Speed";
+	s_options_sensitivity_slider.generic.name = "Mice Speed";
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
 	s_options_sensitivity_slider.minvalue = 2;
 	s_options_sensitivity_slider.maxvalue = 22;
-
+	s_options_sensitivity_slider.generic.statusbar = "Adjust Mice Sensitivity";
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x = 0;
@@ -1603,15 +1596,15 @@ void Options_MenuInit(void) {
 	s_options_alwaysrun_box.generic.name = "Always Run";
 	s_options_alwaysrun_box.generic.callback = AlwaysRunFunc;
 	s_options_alwaysrun_box.itemnames = yesno_names;
-
+	s_options_alwaysrun_box.generic.statusbar = "Run Mode On/Off";
 
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x = 0;
 	s_options_invertmouse_box.generic.y = 120 * ui_fontScale->value;
-	s_options_invertmouse_box.generic.name = "Invert Mouse";
+	s_options_invertmouse_box.generic.name = "Invert Mice";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
-
+	s_options_invertmouse_box.generic.statusbar = "Invert Z Mice Direction";
 	/*
 	s_options_noalttab_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_noalttab_box.generic.x	= 0;
@@ -1638,9 +1631,10 @@ void Options_MenuInit(void) {
 	s_options_cpuUtil_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_cpuUtil_box.generic.x = 0;
 	s_options_cpuUtil_box.generic.y = 150 * ui_fontScale->value;
-	s_options_cpuUtil_box.generic.name = "Draw CPU Utilization";
+	s_options_cpuUtil_box.generic.name = "CPU Utilization";
 	s_options_cpuUtil_box.generic.callback = CpuUtilFunc;
 	s_options_cpuUtil_box.itemnames = yesno_names;
+	s_options_cpuUtil_box.generic.statusbar = "Show CPU Usage";
 
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
@@ -1648,14 +1642,7 @@ void Options_MenuInit(void) {
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
-
-
-	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_time_box.generic.x = 0;
-	s_options_time_box.generic.y = 170 * ui_fontScale->value;
-	s_options_time_box.generic.name = "Draw Date / Time";
-	s_options_time_box.generic.callback = TimeFunc;
-	s_options_time_box.itemnames = yesno_names;
+	s_options_fps_box.generic.statusbar = "Show FPS Short/Full";
 	//-------------------------
 
 	s_options_advanced_options_action.generic.type = MTYPE_ACTION;
@@ -1663,13 +1650,14 @@ void Options_MenuInit(void) {
 	s_options_advanced_options_action.generic.y = 190 * ui_fontScale->value;
 	s_options_advanced_options_action.generic.name = "Advanced Settings";
 	s_options_advanced_options_action.generic.callback = AdvancedSettingsFunc;
-
+	s_options_advanced_options_action.generic.statusbar = "Ui Setting And More";
 
 	s_options_customize_options_action.generic.type = MTYPE_ACTION;
 	s_options_customize_options_action.generic.x = 0;
 	s_options_customize_options_action.generic.y = 200 * ui_fontScale->value;
 	s_options_customize_options_action.generic.name = "Customize Controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
+	s_options_customize_options_action.generic.statusbar = "Configure Controls";
 	//-------------------------
 
 	s_options_defaults_action.generic.type = MTYPE_ACTION;
@@ -1677,13 +1665,14 @@ void Options_MenuInit(void) {
 	s_options_defaults_action.generic.y = 220 * ui_fontScale->value;
 	s_options_defaults_action.generic.name = "Reset Defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
-
+	s_options_defaults_action.generic.statusbar = "Set Default Values";
 
 	s_options_console_action.generic.type = MTYPE_ACTION;
 	s_options_console_action.generic.x = 0;
 	s_options_console_action.generic.y = 230 * ui_fontScale->value;
 	s_options_console_action.generic.name = "go to console";
 	s_options_console_action.generic.callback = ConsoleFunc;
+	s_options_console_action.generic.statusbar = "Open Console";
 
 	ControlsSetMenuItemValues();
 
@@ -1703,7 +1692,6 @@ void Options_MenuInit(void) {
 
 	Menu_AddItem(&s_options_menu, (void *)&s_options_cpuUtil_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_fps_box);
-	Menu_AddItem(&s_options_menu, (void *)&s_options_time_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_advanced_options_action);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_customize_options_action);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_defaults_action);
@@ -2187,7 +2175,7 @@ void M_Credits_MenuDraw(void) {
 		{
 			x = (viddef.width - strlen(credits[i]) * i6s - stringoffset * i6s) / 2 + (j + stringoffset) * i6s;
 
-			R_AddCharsToList(x, y, ui_fontScale->integer, credits[i][j + stringoffset] + bold, draw_chars->handle);
+			R_AddCharsToList(x, y, ui_fontScale->integer, credits[i][j + stringoffset] + bold, menuFont);
 		}
 	}
 
@@ -2572,7 +2560,7 @@ void Game_MenuInit(void) {
 	s_mod_game_action.generic.y = 80 * ui_fontScale->value;
 	s_mod_game_action.generic.name = "Select Mod";
 	s_mod_game_action.generic.callback = SelectModFunc;
-	s_mod_game_action.generic.statusbar = "Load Game Modifications or Missions Pak";
+	s_mod_game_action.generic.statusbar = "Load Game Modifications or Mission Packs";
 	s_blankline.generic.type = MTYPE_SEPARATOR;
 
 	s_credits_action.generic.type = MTYPE_ACTION;
@@ -2818,7 +2806,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5)-7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], draw_chars->handle);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], menuFont);
 		}
 	else {
 
@@ -2847,7 +2835,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], draw_chars->handle);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], menuFont);
 		}
 	}
 	else {
@@ -2855,7 +2843,7 @@ void DrawSavedShot(void* m)
 		aspect = (float)w / (float)h;
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, qfalse);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Save Data") * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Save Data", draw_chars->handle);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Save Data", menuFont);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
 	}
 
@@ -2891,14 +2879,14 @@ void DrawQuickSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_quickSavesInfos) * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_quickSavesInfos, draw_chars->handle);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_quickSavesInfos, menuFont);
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
 		aspect = (float)w / (float)h;
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, qfalse);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Quick Save Data") * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Quick Save Data", draw_chars->handle);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Quick Save Data", menuFont);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
 	}
 }	
@@ -3292,16 +3280,18 @@ void DMOptionsFunc(void *self) {
 void RulesChangeFunc(void *self) {
 	// DM
 	if (s_rules_box.curInteger == 0) {
-		s_maxclients_field.generic.statusbar = NULL;
-		s_startserver_dmoptions_action.generic.statusbar = NULL;
+	//	s_maxclients_field.generic.statusbar = NULL;
+		s_maxclients_field.generic.statusbar = "Maximum Of Peoples on a Server";
+	//	s_startserver_dmoptions_action.generic.statusbar = NULL;
+		s_startserver_dmoptions_action.generic.statusbar = "DeathMatch Configuration";
 	}
 	else if (s_rules_box.curInteger == 1)	// coop // PGM
 	{
-		s_maxclients_field.generic.statusbar = "4 maximum for cooperative";
+		s_maxclients_field.generic.statusbar = "4 Maximum For Cooperative";
 		if (atoi(s_maxclients_field.buffer) > 4)
 			strcpy(s_maxclients_field.buffer, "4");
 		s_startserver_dmoptions_action.generic.statusbar =
-			"N/A for cooperative";
+			"N/A For Cooperative";
 	}
 	//=====
 	//PGM
@@ -3489,13 +3479,15 @@ void StartServer_MenuInit(void) {
 	s_startmap_list.generic.type = MTYPE_SPINCONTROL;
 	s_startmap_list.generic.x = 0;
 	s_startmap_list.generic.y = 0;
-	s_startmap_list.generic.name = "initial map";
+	s_startmap_list.generic.name = "Initial Map";
 	s_startmap_list.itemnames = mapnames;
+	s_startmap_list.generic.statusbar = "Startup Map";
 
 	s_rules_box.generic.type = MTYPE_SPINCONTROL;
 	s_rules_box.generic.x = 0;
 	s_rules_box.generic.y = 20 * ui_fontScale->value;
-	s_rules_box.generic.name = "rules";
+	s_rules_box.generic.name = "Rules";
+	s_rules_box.generic.statusbar = "Game Type - DeathMatch or Cooperative";
 
 	//PGM - rogue games only available with rogue DLL.
 	if (Developer_searchpath(2) == 2)
@@ -3511,7 +3503,7 @@ void StartServer_MenuInit(void) {
 	s_rules_box.generic.callback = RulesChangeFunc;
 
 	s_timelimit_field.generic.type = MTYPE_FIELD;
-	s_timelimit_field.generic.name = "time limit";
+	s_timelimit_field.generic.name = "Time Limit";
 	s_timelimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_timelimit_field.generic.x = 0;
 	s_timelimit_field.generic.y = 36 * ui_fontScale->value;
@@ -3521,7 +3513,7 @@ void StartServer_MenuInit(void) {
 	strcpy(s_timelimit_field.buffer, Cvar_VariableString("timelimit"));
 
 	s_fraglimit_field.generic.type = MTYPE_FIELD;
-	s_fraglimit_field.generic.name = "frag limit";
+	s_fraglimit_field.generic.name = "Frag Limit";
 	s_fraglimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_fraglimit_field.generic.x = 0;
 	s_fraglimit_field.generic.y = 54 * ui_fontScale->value;
@@ -3537,11 +3529,10 @@ void StartServer_MenuInit(void) {
 	** Clamping will be done when the server is actually started.
 	*/
 	s_maxclients_field.generic.type = MTYPE_FIELD;
-	s_maxclients_field.generic.name = "max players";
+	s_maxclients_field.generic.name = "Max Players";
 	s_maxclients_field.generic.flags = QMF_NUMBERSONLY;
 	s_maxclients_field.generic.x = 0;
 	s_maxclients_field.generic.y = 72 * ui_fontScale->value;
-	s_maxclients_field.generic.statusbar = NULL;
 	s_maxclients_field.length = 3;
 	s_maxclients_field.visible_length = 3;
 	if (Cvar_VariableInteger("maxclients") == 1)
@@ -3550,29 +3541,30 @@ void StartServer_MenuInit(void) {
 		strcpy(s_maxclients_field.buffer, Cvar_VariableString("maxclients"));
 
 	s_hostname_field.generic.type = MTYPE_FIELD;
-	s_hostname_field.generic.name = "hostname";
+	s_hostname_field.generic.name = "Hostname";
 	s_hostname_field.generic.flags = 0;
 	s_hostname_field.generic.x = 0;
 	s_hostname_field.generic.y = 90 * ui_fontScale->value;
-	s_hostname_field.generic.statusbar = NULL;
+	s_hostname_field.generic.statusbar = "Game Server Name";
 	s_hostname_field.length = 12;
 	s_hostname_field.visible_length = 12;
 	strcpy(s_hostname_field.buffer, Cvar_VariableString("hostname"));
 
 	s_startserver_dmoptions_action.generic.type = MTYPE_ACTION;
-	s_startserver_dmoptions_action.generic.name = " deathmatch flags";
+	s_startserver_dmoptions_action.generic.name = " Deathmatch Flags";
 	s_startserver_dmoptions_action.generic.flags = QMF_LEFT_JUSTIFY;
-	s_startserver_dmoptions_action.generic.x = 24;
+	s_startserver_dmoptions_action.generic.x = 0;
 	s_startserver_dmoptions_action.generic.y = 108 * ui_fontScale->value;
-	s_startserver_dmoptions_action.generic.statusbar = NULL;
 	s_startserver_dmoptions_action.generic.callback = DMOptionsFunc;
+	s_startserver_dmoptions_action.generic.statusbar = "DM Configuration";
 
 	s_startserver_start_action.generic.type = MTYPE_ACTION;
-	s_startserver_start_action.generic.name = " begin";
+	s_startserver_start_action.generic.name = " Begin";
 	s_startserver_start_action.generic.flags = QMF_LEFT_JUSTIFY;
-	s_startserver_start_action.generic.x = 24;
+	s_startserver_start_action.generic.x = 0;
 	s_startserver_start_action.generic.y = 128 * ui_fontScale->value;
 	s_startserver_start_action.generic.callback = StartServerActionFunc;
+	s_startserver_start_action.generic.statusbar = "Start Server";
 
 	Menu_AddItem(&s_startserver_menu, &s_startmap_list);
 	Menu_AddItem(&s_startserver_menu, &s_rules_box);
@@ -4075,7 +4067,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_box.generic.x = 0;
 	s_allow_download_box.generic.y = y += 20 * ui_fontScale->value;
-	s_allow_download_box.generic.name = "allow downloading";
+	s_allow_download_box.generic.name = "Allow Downloading";
 	s_allow_download_box.generic.callback = DownloadCallback;
 	s_allow_download_box.itemnames = yes_no_names;
 	s_allow_download_box.curInteger =
@@ -4084,7 +4076,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_maps_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_maps_box.generic.x = 0;
 	s_allow_download_maps_box.generic.y = y += 20 * ui_fontScale->value;
-	s_allow_download_maps_box.generic.name = "maps";
+	s_allow_download_maps_box.generic.name = "Maps";
 	s_allow_download_maps_box.generic.callback = DownloadCallback;
 	s_allow_download_maps_box.itemnames = yes_no_names;
 	s_allow_download_maps_box.curInteger =
@@ -4093,7 +4085,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_players_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_players_box.generic.x = 0;
 	s_allow_download_players_box.generic.y = y += 10 * ui_fontScale->value;
-	s_allow_download_players_box.generic.name = "player models/skins";
+	s_allow_download_players_box.generic.name = "Player Models/Skins";
 	s_allow_download_players_box.generic.callback = DownloadCallback;
 	s_allow_download_players_box.itemnames = yes_no_names;
 	s_allow_download_players_box.curInteger =
@@ -4102,7 +4094,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_models_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_models_box.generic.x = 0;
 	s_allow_download_models_box.generic.y = y += 10 * ui_fontScale->value;
-	s_allow_download_models_box.generic.name = "models";
+	s_allow_download_models_box.generic.name = "Models";
 	s_allow_download_models_box.generic.callback = DownloadCallback;
 	s_allow_download_models_box.itemnames = yes_no_names;
 	s_allow_download_models_box.curInteger =
@@ -4111,7 +4103,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_sounds_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_sounds_box.generic.x = 0;
 	s_allow_download_sounds_box.generic.y = y += 10 * ui_fontScale->value;
-	s_allow_download_sounds_box.generic.name = "sounds";
+	s_allow_download_sounds_box.generic.name = "Sounds";
 	s_allow_download_sounds_box.generic.callback = DownloadCallback;
 	s_allow_download_sounds_box.itemnames = yes_no_names;
 	s_allow_download_sounds_box.curInteger =
@@ -4473,6 +4465,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_name_field.visible_length = 26;
 	strcpy(s_player_name_field.buffer, name->string);
 	s_player_name_field.cursor = strlen(name->string);
+	s_player_name_field.generic.statusbar = "Enter Your InGame Name";
 
 	s_player_model_title.generic.type = MTYPE_SEPARATOR;
 	s_player_model_title.generic.name = "model";
@@ -4486,6 +4479,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_model_box.generic.cursor_offset = -48;
 	s_player_model_box.curInteger = currentdirectoryindex;
 	s_player_model_box.itemnames = s_pmnames;
+	s_player_model_box.generic.statusbar = "Select Player Model";
 
 	s_player_skin_title.generic.type = MTYPE_SEPARATOR;
 	s_player_skin_title.generic.name = "skin";
@@ -4501,6 +4495,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_skin_box.curInteger = currentskinindex;
 	s_player_skin_box.itemnames =
 		s_pmi[currentdirectoryindex].skindisplaynames;
+	s_player_skin_box.generic.statusbar = "Select Skin";
 
 	s_player_hand_title.generic.type = MTYPE_SEPARATOR;
 	s_player_hand_title.generic.name = "handedness";
@@ -4515,13 +4510,14 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_handedness_box.generic.callback = HandednessCallback;
 	s_player_handedness_box.curInteger = Cvar_VariableValue("hand");
 	s_player_handedness_box.itemnames = handedness;
+	s_player_handedness_box.generic.statusbar = "Your Favorive Hand";
 
 	for (i = 0; i < sizeof(rate_tbl) / sizeof(*rate_tbl) - 1; i++)
 		if (Cvar_VariableInteger("rate") == rate_tbl[i])
 			break;
 
 	s_player_rate_title.generic.type = MTYPE_SEPARATOR;
-	s_player_rate_title.generic.name = "connect speed";
+	s_player_rate_title.generic.name = "Network Speed";
 	s_player_rate_title.generic.x = 56 * ui_fontScale->value;
 	s_player_rate_title.generic.y = 156 * ui_fontScale->value;
 
@@ -4533,6 +4529,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_rate_box.generic.callback = RateCallback;
 	s_player_rate_box.curInteger = i;
 	s_player_rate_box.itemnames = rate_names;
+	s_player_rate_box.generic.statusbar = "Connection Speed";
 
 	s_player_download_action.generic.type = MTYPE_ACTION;
 	s_player_download_action.generic.name = "download options";
@@ -4541,6 +4538,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_download_action.generic.y = 186 * ui_fontScale->value;
 	s_player_download_action.generic.statusbar = NULL;
 	s_player_download_action.generic.callback = DownloadOptionsFunc;
+	s_player_download_action.generic.statusbar = "Downloadable Components";
 
 	Menu_AddItem(&s_player_config_menu, &s_player_name_field);
 	Menu_AddItem(&s_player_config_menu, &s_player_model_title);

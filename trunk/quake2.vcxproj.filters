@@ -341,7 +341,7 @@
     <ClCompile Include="qcommon\files.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\r_vo.c">
+    <ClCompile Include="renderer\r_vertexObjects.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

@@ -296,9 +296,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-	GL_BindVao(md2Vao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
+	GL_BindVAO(vao.md2);
+	GL_BindVBO(vbo.dynamicVbo);	
+	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, numVerts * sizeof(vec4_t), tess.position);
@@ -343,9 +343,11 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		GL_Enable(GL_DEPTH_TEST);
 	}
 
-	GL_BindNullVao();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GL_BindNullVAO();
+//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GL_BindNullVBO();
+	GL_BindNullIBO();
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
@@ -443,9 +445,9 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 		} while (--count);
 	}
 
-	GL_BindVao(md2Vao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
+	GL_BindVAO(vao.md2);
+	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, numVerts * sizeof(vec4_t), tess.position);
@@ -453,9 +455,9 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
 
-	GL_BindNullVao();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
+	GL_BindNullIBO();
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
@@ -629,14 +631,11 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	
 	qglUniform1i(U_PARAM_INT_1, 0);
 	qglUniform1i(U_PARAM_INT_2, 0);
-//	qglUniform1i(U_PARAM_INT_3, 0);
 	qglUniform1i(U_PARAM_INT_4, 0);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
-
-	GL_BindVao(md2Vao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentmodel->iboId);
+	GL_BindVAO(vao.md2);
+	GL_BindVBO(vbo.dynamicVbo);	
+	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	numVerts * sizeof(vec4_t), tess.position);
@@ -649,9 +648,9 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
 
-	GL_BindNullVao();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
+	GL_BindNullIBO();
 }
 
 

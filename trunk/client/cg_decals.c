@@ -94,7 +94,6 @@ void CL_FreeDecal (decals_t * dl) {
 CL_AddDecalToScene
 ===============
 */
-
 void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 	float red, float green, float blue, float alpha,
 	float endRed, float endGreen, float endBlue,
@@ -121,25 +120,26 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		trace_t	trace;
 		vec3_t	end,
 			dirs[6] = {
-				{ 1.0, 0.0, 0.0 },
-				{ -1.0, 0.0, 0.0 },
-				{ 0.0, 1.0, 0.0 },
-				{ 0.0, -1.0, 0.0 },
-				{ 0.0, 0.0, 1.0 },
-				{ 0.0, 0.0, -1.0 }
+				{  1.0,  0.0,  0.0 },
+				{ -1.0,  0.0,  0.0 },
+				{  0.0,  1.0,  0.0 },
+				{  0.0, -1.0,  0.0 },
+				{  0.0,  0.0,  1.0 },
+				{  0.0,  0.0, -1.0 }
 		};
 
 		for (i = 0; i < 6; i++) {
 
 			VectorMA (origin, scale, dirs[i], end);
 			trace = CL_PMTraceWorld (origin, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-			if (trace.fraction != 1.0)
-				CL_AddDecalToScene (origin, trace.plane.normal,
-				red, green, blue, alpha,
-				endRed, endGreen, endBlue,
-				endAlpha, size,
-				endTime, type, flags, angle,
-				sFactor, dFactor);
+			if (trace.fraction != 1.0) {
+				CL_AddDecalToScene(origin, trace.plane.normal,
+					red, green, blue, alpha,
+					endRed, endGreen, endBlue,
+					endAlpha, size,
+					endTime, type, flags, angle,
+					sFactor, dFactor);				
+			}
 		}
 		return;
 	}
@@ -200,5 +200,6 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 			d->stcoords[j][1] = DotProduct (v, axis[2]) + 0.5f;
 		}
 	}
+
 }
 

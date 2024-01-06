@@ -107,6 +107,90 @@ winScreenModes_t winScreenModes[64];
 #define NUM_WINSCREENMODES ( sizeof( winSreenModes ) / sizeof( winSreenModes[0] ) )
 char** vid_winModes;
 
+typedef struct vertexObject_s {
+
+	char	name[MAX_QPATH];
+	GLuint	id;
+} vertexObject_t;
+
+typedef struct vertexBuffer_s {
+
+	char	name[MAX_QPATH];
+	GLuint	id;
+	GLuint	size;
+	const void *data;
+	GLuint	usage;
+	GLuint	target;
+} vertexBuffer_t;
+
+#define MAX_VERTEX_OBJECTS 2048
+vertexObject_t	r_vertexObject[MAX_VERTEX_OBJECTS];
+int	r_numVertexObject;
+
+vertexBuffer_t	r_vertexBuffer[MAX_VERTEX_OBJECTS];
+int	r_numVertexBuffers;
+
+typedef struct {
+	vertexObject_t *sky;
+	vertexObject_t *md2;
+	vertexObject_t *consoleText;
+	vertexObject_t *tessStream;
+	vertexObject_t *tessStreamVaoQuad;
+	vertexObject_t *tess2dArray;
+	vertexObject_t *tess2d;
+	vertexObject_t *textArray;
+	vertexObject_t *fsq;
+	vertexObject_t *md3shadow;
+	vertexObject_t *md2shadow;
+	vertexObject_t *dynamic;
+	vertexObject_t *bsp;
+	vertexObject_t *depthBsp;
+}vao_t;
+vao_t vao;
+
+vertexObject_t *R_Alloc_VAO(const char *name, int flags);
+void GL_BindVAO(vertexObject_t *va);
+void GL_BindNullVAO(void);
+void R_DeleteVAO(vertexObject_t *vain);
+void R_VaoListing_f(void);
+void R_ShotdownVAO(void);
+int  GL_GetVaoBinding();
+
+vertexBuffer_t *R_Alloc_VBO(const char *name, GLuint target, GLuint size, const void *data, GLuint usage);
+void GL_BindNullVBO();
+void GL_BindNullIBO();
+void GL_BindVBO(vertexBuffer_t *vb);
+void R_VboListing_f(void);
+void R_DeleteVBO(vertexBuffer_t *vbin);
+void R_ShotdownVBO(void);
+char *q_pretifymem(float value);
+
+typedef struct {
+
+	vertexBuffer_t *quadIbo;
+	vertexBuffer_t *quadStringIbo;
+	vertexBuffer_t *tess2dVbo;
+	vertexBuffer_t *tess2dArrayVbo;
+	vertexBuffer_t *fsqVbo;
+	vertexBuffer_t *aliasShadowVbo;
+	vertexBuffer_t *md2ShadowIbo;
+	vertexBuffer_t *md3ShadowIbo;
+	vertexBuffer_t *dynamicVbo;
+	vertexBuffer_t *dynamicIbo;
+	vertexBuffer_t *cubeIbo;
+	vertexBuffer_t *skyBoxVbo;
+	vertexBuffer_t *bspVbo;
+
+	int xyz_offset;
+	int st_offset;
+	int lm_offset;
+	int tg_offset;
+	int bn_offset;
+	int nm_offset;
+	int col_offset;
+}vbo_t;
+vbo_t vbo;
+
 #include "r_model.h"
 
 void GL_SetDefaultState (void);
@@ -167,7 +251,7 @@ image_t *r_decalTexture[DECAL_MAX];
 image_t	*r_rail_normal;
 image_t	*r_laser_normal;
 
-image_t *draw_chars, *draw_charsRu, *draw_charsInt;
+image_t *menuFont, *consFont;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;
@@ -454,10 +538,7 @@ void R_ResetFlarePos_f (void);
 void R_Copy_Light_Properties_f (void);
 void R_Paste_Light_Properties_f (void);
 
-extern qboolean flareEdit, occEdit;
-
-void R_OccBBoxEdit_f(void);
-void R_ResetOccBBox_f(void);
+extern qboolean flareEdit;
 
 void R_CalcCubeMapMatrix (qboolean model);
 void DeleteShadowVertexBuffers (void);
@@ -685,6 +766,8 @@ typedef struct {
 	int			numFormats, binaryFormats;
 	int			programId;
 	int			vaoId;
+	int			vboId;
+	int			vboType;
 	GLenum		matrixMode;
 
 	mat4_t		projectionMatrix;
@@ -773,37 +856,6 @@ lightUniforms_t lightUniforms;
 void GL_UpdateLightPos(vec3_t pos);
 void GL_UpdateLightColor(vec3_t color);
 
-typedef struct {
-
-GLuint	vbo_fullScreenQuadF;
-GLuint	vbo_fullScreenQuad;
-GLuint	ibo_quadString;
-GLuint	ibo_quad;
-
-GLuint	vbo_BSP;
-GLuint	vbo_aliasShadow;
-GLuint	ibo_md2Shadow;
-GLuint	ibo_md3Shadow;
-GLuint	vbo_dynamic;
-GLuint	ibo_dynamic;
-GLuint	ibo_cube;
-GLuint	vbo_draw2d;
-GLuint	vbo_draw2dArray;
-GLuint	vbo_skyBox;
-
-int xyz_offset;
-
-int st_offset;
-int lm_offset;
-
-int tg_offset;
-int bn_offset;
-int nm_offset;
-
-int col_offset;
-}vbo_t;
-
-vbo_t vbo;
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
@@ -851,6 +903,7 @@ extern glstate_t gl_state;
 #define MAX_STREAM_IBO_IDX	 MAX_STREAM_VBO_VERTS *3
 
 #define CUBE_INDICES 36
+#define QUAD_VERTICES 6
 
 #define MAX_VERTICES	65536
 #define MAX_INDICES		MAX_VERTICES * 3
@@ -919,10 +972,11 @@ typedef struct {
 tess2dArray_t tess2dArray;
 
 
-void CL_AddString(int x, int y, int scale, char *s, uint64 handle);
+void CL_AddString(int x, int y, int scale, char *s, image_t *inTex);
 
-void R_AddCharsToList(int x, int y, int scale, unsigned char num, uint64 handle);
+void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex);
 void R_Flush2D();
+void R_DrawTexturedQuad();
 
 #define VID_CENTER_W (vid.width * 0.5)
 #define VID_CENTER_H (vid.height * 0.5)
@@ -1044,36 +1098,7 @@ void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
 
-typedef struct vertexObject_s {
 
-	char	name[MAX_QPATH];
-	GLuint	id;
-} vertexObject_t;
-
-#define MAX_VERTEX_OBJECTS 2048
-vertexObject_t	r_vertexObject[MAX_VERTEX_OBJECTS];
-int	r_numVertexObject;
-
-vertexObject_t *skyVao;
-vertexObject_t *md2Vao;
-vertexObject_t *consoleTextVao;
-vertexObject_t *tessStreamVao;
-vertexObject_t *tess2dArrayVao;
-vertexObject_t *tess2dVao;
-vertexObject_t *textArrayVao;
-vertexObject_t *fsqVao;
-vertexObject_t *md3shadowVao;
-vertexObject_t *md2shadowVao;
-vertexObject_t *dynamicVao;
-vertexObject_t *bspVao;
-vertexObject_t *depthBspVao;
-
-vertexObject_t *R_Alloc_VAO(const char *name, int flags);
-void GL_BindVao(vertexObject_t *va);
-void GL_BindNullVao(void);
-void R_DeleteVao(char *name);
-void R_VaoListing_f(void);
-int  GL_GetVaoBinding();
 
 void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
 

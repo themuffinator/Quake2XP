@@ -558,7 +558,7 @@ void R_DrawLightScene (void)
 	}
 
 	if (!currentShadowLight->isAmbient && currentShadowLight->isShadow)
-			c_staticShadowTris += currentShadowLight->numStaticShadowTis;
+			c_staticShadowTris += currentShadowLight->numStaticShadowTris;
 	
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(qtrue);	// player shadow
@@ -1112,26 +1112,26 @@ void R_RenderFrame(refdef_t * fd) {
 	
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
-		CL_AddString(0, VID_CENTER_H,       3, buff0, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, draw_charsInt->handle);
-		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H,       3, buff0, consFont);
+		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, consFont);
+		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, consFont);
+		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, consFont);
+		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, consFont);
+		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, consFont);
+		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, consFont);
+		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, consFont);
+		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, consFont);
+		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, consFont);
+		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, consFont);
+		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, consFont);
+		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, consFont);
+		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, consFont);
+		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, consFont);
+		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, consFont);
 
 //		Draw_StringScaled(0, VID_CENTER_H + 325, 2, 2, buff16, qtrue);
 	//	Draw_StringScaled(0, VID_CENTER_H + 345, 2, 2, buff17, qtrue);
-		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, draw_charsInt->handle);
+		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, consFont);
 		RE_SetColor(colorWhite);
 	}
 }
@@ -1500,17 +1500,15 @@ bind v			"paste"
 	Cmd_AddCommand("moveLight_z",				R_MoveLightUpDown_f);
 	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
 	Cmd_AddCommand("cloneLight",				R_Light_Clone_f);
-//	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
 	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
 	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
 	Cmd_AddCommand("editFlare",					R_FlareEdit_f);
 	Cmd_AddCommand("resetFlarePos",				R_ResetFlarePos_f);
 	Cmd_AddCommand("copy",						R_Copy_Light_Properties_f);
 	Cmd_AddCommand("paste",						R_Paste_Light_Properties_f);
-	Cmd_AddCommand("occEdit",					R_OccBBoxEdit_f);
-	Cmd_AddCommand("occReset",					R_ResetOccBBox_f);
 	Cmd_AddCommand("scaleLightColor",			R_ScaleLightColor_f);
 	Cmd_AddCommand("vaoList",					R_VaoListing_f);
+	Cmd_AddCommand("vboList",					R_VboListing_f);
 }
 
 /*
@@ -1952,7 +1950,6 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("=====================================\n");
 
 	flareEdit = (qboolean)qfalse;
-	occEdit = (qboolean)qfalse;
 	return 0;
 }
 
@@ -1981,7 +1978,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("spawnLightToCamera");
 	Cmd_RemoveCommand("changeLightRadius");
 	Cmd_RemoveCommand("cloneLight");
-//	Cmd_RemoveCommand("changeLightCone");
 	Cmd_RemoveCommand("clearWorldLights");
 	Cmd_RemoveCommand("unselectLight");
 	Cmd_RemoveCommand("editFlare");
@@ -1991,9 +1987,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("moveLight_right");
 	Cmd_RemoveCommand("moveLight_forward");
 	Cmd_RemoveCommand("moveLight_z");
-
-	Cmd_RemoveCommand("occEdit");
-	Cmd_RemoveCommand("occReset");
 	Cmd_RemoveCommand("scaleLightColor");
 
 	Cmd_RemoveCommand("glsl");
@@ -2008,6 +2001,7 @@ void R_Shutdown(void)
 #endif
 	
 	Cmd_RemoveCommand("vaoList");
+	Cmd_RemoveCommand("vboList");
 
 	qglDeleteFramebuffers(1, &fbo._hdr);
 	qglDeleteFramebuffers(1, &fbo._final);
@@ -2020,7 +2014,6 @@ void R_Shutdown(void)
 	for (int i = 0; i < 2; i++)
 		qglDeleteFramebuffers(1, &fbo._hdrLum[i]);
 
-	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();
 
 	Mod_FreeAll();

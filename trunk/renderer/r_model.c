@@ -1251,20 +1251,14 @@ void Mod_BuildVertexCache() {
 
 	}
 
-	if(vbo.vbo_BSP)
-		qglDeleteBuffers(1, &vbo.vbo_BSP);
-	qglGenBuffers(1, &vbo.vbo_BSP);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-	qglObjectLabel(GL_VERTEX_ARRAY, vbo.vbo_BSP, strlen("***vboBsp***"), "***vboBsp***");
-	qglBufferData(GL_ARRAY_BUFFER, vbo_size, buf, GL_STATIC_DRAW);
-	Com_Printf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	R_DeleteVBO(vbo.bspVbo);
+	vbo.bspVbo = R_Alloc_VBO("bspVbo", GL_ARRAY_BUFFER, vbo_size, buf, GL_STATIC_DRAW);
+	GL_BindNullVBO();
 	free(buf);
 
-	// Gen VAO
-	R_DeleteVao("bspVao");
-	bspVao = R_Alloc_VAO("bspVao", ATTF_POS | ATTF_ST0 | ATTF_ST1 | ATTF_COLOR | ATTF_TANGENT | ATTF_BINORMAL | ATTF_NORMAL);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
+	R_DeleteVAO(vao.bsp);
+	vao.bsp = R_Alloc_VAO("bspVao", ATTF_POS | ATTF_ST0 | ATTF_ST1 | ATTF_COLOR | ATTF_TANGENT | ATTF_BINORMAL | ATTF_NORMAL);
+	GL_BindVBO(vbo.bspVbo);
 
 	qglVertexAttribPointer(ATT_POSITION,	3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
@@ -1276,13 +1270,11 @@ void Mod_BuildVertexCache() {
 
 //----------------------------------------------
 //setup z world
-	R_DeleteVao("depthBspVao");
-	depthBspVao = R_Alloc_VAO("depthBspVao", ATTF_POS);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-
+	R_DeleteVAO(vao.depthBsp);
+	vao.depthBsp = R_Alloc_VAO("depthBspVao", ATTF_POS);
+	GL_BindVBO(vbo.bspVbo);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-
-	GL_BindNullVao();
+	GL_BindNullVAO();
 }
 
 void Mod_UpdateLoadingBar(float percent, char* text);
@@ -2346,12 +2338,20 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 	mod->numVertexes = numVerts;
 	mod->indexArray = Hunk_Alloc(index * sizeof(int));
 	memcpy(mod->indexArray, tess.indices, index * sizeof(int));
+	
+	char pname[64];
+	strcpy(pname, mod->name);
+	if (strstr(pname, "models")) {
+		memmove(pname, pname + 7, strlen(pname));
+		pname[strlen(pname) - 9] = 0;
+	}
+	if (strstr(pname, "players")) {
+		memmove(pname, pname + 8, strlen(pname));
+		pname[strlen(pname) - 4] = 0;
+	}
 
-	qglGenBuffers(1, &mod->iboId);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mod->iboId);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(int), mod->indexArray, GL_STATIC_DRAW);
-	qglObjectLabel(GL_BUFFER, mod->iboId, strlen("***ibo_md2***"), "***ibo_md2***");
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(int), mod->indexArray, GL_STATIC_DRAW);
+	GL_BindNullIBO();
 }
 
 
@@ -2650,7 +2650,6 @@ void R_BeginRegistration(char *model) {
 	else
 		xhargar2hack = qfalse;
 
-
 	// explicitly free the old map if different
 	// this guarantees that mod_known[0] is the world map
 	flushmap = Cvar_Get("flushmap", "0", 0);
@@ -2661,7 +2660,6 @@ void R_BeginRegistration(char *model) {
 	r_viewcluster = -1;
 	numPreCachedLights = 0;
 	flareEdit = (qboolean)qfalse;
-	occEdit = (qboolean)qfalse;
 }
 
 /*
@@ -2830,7 +2828,7 @@ void Mod_Free(model_t * mod) {
 		if (mod->neighbours)
 			free(mod->neighbours);
 
-		qglDeleteBuffers(1, &mod->iboId);
+	R_DeleteVBO(mod->ibo);
 	}
 	memset(mod, 0, sizeof(*mod));
 }

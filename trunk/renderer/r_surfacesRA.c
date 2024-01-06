@@ -296,7 +296,7 @@ void R_DrawSurfacesRA(qboolean bmodel) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_BindVao(bspVao);
+	GL_BindVAO(vao.bsp);
 	
 	R_CaptureColorBuffer();
 	R_DrawHeatHazeSurfaces();
@@ -307,7 +307,7 @@ void R_DrawSurfacesRA(qboolean bmodel) {
 	R_CaptureColorBuffer();
 	R_DrawWaterSurfaces(bmodel);
 
-	GL_BindNullVao();
+	GL_BindNullVAO();
 }
 
 qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t* light) {
@@ -746,7 +746,7 @@ void R_DrawLightWorldRA(void){
 	
 	GL_BindProgram(lightGlassProgram);
 	
-	GL_BindVao(bspVao);
+	GL_BindVAO(vao.bsp);
 
 	R_PrepareShadowLightFrame(qfalse);
 
@@ -772,6 +772,6 @@ void R_DrawLightWorldRA(void){
 		}
 	}
 
-	GL_BindNullVao();
+	GL_BindNullVAO();
 	GL_Disable(GL_BLEND);
 }

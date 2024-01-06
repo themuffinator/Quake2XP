@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // draw.c   test
 
 #include "r_local.h"
-index_t quadIndeces[] = { 0, 1, 2, 0, 2, 3 };
+
 /*
 ===============
 R_LoadFont
@@ -34,30 +34,29 @@ R_LoadFont
 
 void R_Init2D(void)
 {
-	draw_chars = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
+	menuFont = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
 
-	if (!draw_chars)
-		draw_chars = GL_FindImage("pics/conchars.pcx", it_nomips);
+	if (!menuFont)
+		menuFont = GL_FindImage("pics/conchars.pcx", it_nomips);
 
-	if (!draw_chars)
+	if (!menuFont)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	draw_charsInt = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
-	if (!draw_charsInt)
-		draw_charsInt = r_missingTexture;
+	consFont = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
+	if (!consFont)
+		consFont = r_missingTexture;
 }
 
 void R_DrawTexturedQuad() {
 
-	GL_BindVao(tess2dVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-
+	GL_BindVAO(vao.tess2d);
+	GL_BindVBO(vbo.tess2dVbo);
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	GL_BindNullVao();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 }
 
 void R_Flush2D() {
@@ -73,8 +72,8 @@ void R_Flush2D() {
 
 	GL_SetBindlessTexture(U_TMU0, tess2dArray.handle);
 
-	GL_BindVao(tess2dArrayVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2dArray);
+	GL_BindVAO(vao.tess2dArray);
+	GL_BindVBO(vbo.tess2dArrayVbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2dArray), &tess2dArray);
@@ -84,44 +83,45 @@ void R_Flush2D() {
 	tess2dArray.numVerts = 0;
 	tess2dArray.numSymbols = 0;
 
-	GL_BindNullVao();
+	GL_BindNullVAO();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void R_AddCharsToList(int x, int y, int scale, unsigned char num, uint64 handle) {
-	int row, col;
+void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex) {
+	int row, col, x1, y1;
 	float frow, fcol, size;
 
-	if (tess2dArray.numVerts >= MAX_VERTICES || (tess2dArray.numVerts && tess2dArray.handle != handle)) {
+	if (tess2dArray.numVerts >= MAX_VERTICES || (tess2dArray.numVerts && tess2dArray.handle != inTex->handle)) {
 		R_Flush2D();
 	}
 
 	if ((num & 127) == 32)
-		return;					// space
+		return;				// space
 
 	if (y <= -8 * scale)
-		return;					// totally off screen
+		return;				// totally off screen
 	
-	tess2dArray.handle = handle;
+	tess2dArray.handle = inTex->handle;
 
-	row = num >> 4;
-	col = num & 15;
-
-	frow = row * 0.0625;
-	fcol = col * 0.0625;
-	size = 0.0625;
+	row		= num >> 4;
+	col		= num & 15;
+	frow	= row * 0.0625;
+	fcol	= col * 0.0625;
+	size	= 0.0625;
+	x1		= x + 8 * scale;
+	y1		= y + 8 * scale;
 
 	tess2dArray.numVerts = tess2dArray.numSymbols << 2;
 
 	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 0].tc, fcol, frow);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 1].tc, fcol + size, frow);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 2].tc, fcol + size, frow + size);
+	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 1].tc, fcol +size, frow);
+	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 2].tc, fcol +size, frow + size);
 	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 3].tc, fcol, frow + size);
 
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 0].pos, x, y);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 1].pos, x + 8 * scale, y);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 2].pos, x + 8 * scale, y + 8 * scale);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 3].pos, x, y + 8 * scale);
+	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 0].pos, x,	y);
+	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 1].pos, x1, y);
+	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 2].pos, x1, y1);
+	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 3].pos, x,	y1);
 
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(tess2dArray.data[tess2dArray.numVerts + i].color, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
@@ -420,8 +420,8 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	if (strstr(gl->name, "chx"))
 		return;
 
-	w = gl->width * sX * gl->picScale_w;
-	h = gl->height * sY * gl->picScale_h;
+	w = gl->width	* sX * gl->picScale_w;
+	h = gl->height	* sY * gl->picScale_h;
 
 	GL_BlendFunc(GL_ONE, GL_ONE); // use addative alpha blending
 
@@ -578,7 +578,6 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, q
 		VA_SetElem4(tess2d.data[2].color, 0.0, 0.5, 0.0, 0.75);
 		VA_SetElem4(tess2d.data[3].color, 0.5, 0.0, 0.0, 0.25);
 	}
-
 	R_DrawTexturedQuad();
 }
 

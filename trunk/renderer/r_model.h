@@ -89,7 +89,7 @@ typedef struct worldShadowLight_s {
 	int			isFog;
 	int			scissor[4];
 	int			start_off;
-	uint		numStaticShadowTis;
+	uint		numStaticShadowTris;
 
 	qboolean	spherical;
 	qboolean	castCaustics, castCaustics2;
@@ -105,23 +105,11 @@ typedef struct worldShadowLight_s {
 
 	byte		vis[MAX_MAP_LEAFS / 8];
 
-	GLuint		vboId;
-	GLuint		iboId;
-	GLuint		vao;
+	vertexBuffer_t	*vbo;
+	vertexBuffer_t	*ibo;
+	vertexObject_t	*vao;
+
 	int			iboNumIndices;
-
-	GLuint		vboMD2;
-	GLuint		iboMD2;
-
-	GLuint		vboMD3;
-	GLuint		iboMD3;
-
-	GLuint		vboBoxId;
-	GLuint		vaoBoxId;
-
-	int			occId;
-	uint		queryAvailable;
-	vec3_t		occOrigin, occRadius;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
@@ -347,7 +335,7 @@ typedef struct model_s {
 	int *indexArray;
 	int	numIndices;
 
-	GLuint	iboId;
+	vertexBuffer_t	*ibo;
 	mat3_t	axis;
 } model_t;
 

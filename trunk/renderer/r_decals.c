@@ -86,8 +86,8 @@ void R_RenderDecals(qboolean twoside)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_BindVao(tessStreamVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	GL_BindVAO(vao.tessStream);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	GL_BindProgram(colorProgram);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -217,7 +217,7 @@ void R_RenderDecals(qboolean twoside)
 		c_decalsTris += numIndices/3;
 	 }
 
-	GL_BindNullVao();
+	GL_BindNullVAO();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GL_Disable(GL_BLEND);

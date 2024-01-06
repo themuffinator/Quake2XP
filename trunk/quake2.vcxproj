@@ -444,7 +444,7 @@
     <ClCompile Include="renderer\r_shadows.c" />
     <ClCompile Include="renderer\r_sky.c" />
     <ClCompile Include="renderer\r_surfacesRA.c" />
-    <ClCompile Include="renderer\r_vo.c" />
+    <ClCompile Include="renderer\r_vertexObjects.c" />
     <ClCompile Include="renderer\r_vertexCache.c" />
     <ClCompile Include="renderer\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">

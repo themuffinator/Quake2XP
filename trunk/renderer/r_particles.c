@@ -55,8 +55,8 @@ void R_DrawParticles (void) {
 
 	GL_Enable(GL_BLEND);
 
-	GL_BindVao(tessStreamVao);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+	GL_BindVAO(vao.tessStream);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	// setup program
 	GL_BindProgram(particlesProgram);
@@ -593,6 +593,6 @@ void R_DrawParticles (void) {
 	}
 
 	GL_Disable (GL_BLEND);
-	GL_BindNullVao();
+	GL_BindNullVAO();
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }

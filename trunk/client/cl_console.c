@@ -539,8 +539,8 @@ void Con_DrawInput (void) {
 	}
 
 	for (i = 0; i < con.lineWidth; i++) {
-		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, output[i], draw_charsInt->handle);
-		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, cursor[i], draw_charsInt->handle);
+		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, output[i], consFont);
+		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, cursor[i], consFont);
 	}
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
@@ -593,7 +593,7 @@ void Con_DrawNotify (void) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
-			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), v, fontscale, text[x], draw_charsInt->handle);
+			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), v, fontscale, text[x], consFont);
 		}
 
 		v += 8 * fontscale;
@@ -603,11 +603,11 @@ void Con_DrawNotify (void) {
 
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
-			CL_AddString(0, v, fontscale, "say_team:", draw_charsInt->handle);
+			CL_AddString(0, v, fontscale, "say_team:", consFont);
 			skip = 9;
 		}
 		else {
-			CL_AddString(0, v, fontscale, "say:", draw_charsInt->handle);
+			CL_AddString(0, v, fontscale, "say:", consFont);
 			skip = 4; 
 		}
 
@@ -619,15 +619,58 @@ void Con_DrawNotify (void) {
 		x = 0;
 		while (s[x])
 		{
-			R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, s[x], draw_charsInt->handle);
+			R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, s[x], consFont);
 			x++;
 		}
-		R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, 10 + ((cls.realTime >> 8) & 1), draw_charsInt->handle);
+		R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, 10 + ((cls.realTime >> 8) & 1), consFont);
 		v += 8;
 	}
 	RE_SetColor		(colorWhite);
 }
 
+void CL_ConsoleClock(float position) {
+	char	timebuf[20];
+	char	tmpbuf[24];
+	char	datebuf[20];
+	char	tmpdatebuf[24];
+	int		lines;
+
+	if (position == 1.0)
+		lines = 8 * ui_fontScale->integer;
+	else
+		lines = viddef.height * position - (viddef.height * position - 8 * ui_fontScale->integer);
+
+	if (lines <= 0)
+		return;
+
+	if (lines > viddef.height)
+		lines = viddef.height;
+
+#ifndef _WIN32
+	struct tm *tm;
+	time_t aclock;
+
+	time(&aclock);
+	tm = localtime(&aclock);
+	strftime(timebuf, sizeof(timebuf), "%T", tm);
+	strftime(datebuf, sizeof(datebuf), "%D", tm);
+#else
+	_strtime(timebuf);
+	_strdate(datebuf);
+#endif
+
+	sprintf(tmpbuf, "Time %s", timebuf);
+	sprintf(tmpdatebuf, "Date %s", datebuf);
+
+	int timebufLengh = strlen(tmpbuf);
+	timebufLengh += 1;
+	int datebufLengh = strlen(tmpdatebuf);
+	datebufLengh += 1;
+	int		scale = 8 * ui_fontScale->integer * FONT_INTERVAL;
+	RE_SetColor(colorWhite);
+	CL_AddString(viddef.width - timebufLengh * scale, lines, ui_fontScale->integer, tmpbuf, consFont);
+	CL_AddString(viddef.width - datebufLengh * scale, lines - 8 * ui_fontScale->integer, ui_fontScale->integer, tmpdatebuf, consFont);
+}
 /*
 ================
 Con_DrawConsole
@@ -645,7 +688,7 @@ void Con_DrawConsole (float frac) {
 	char		version[64];
 	char		dlbar[1024];
 	int			currentColor;
-	float		fontscale = ui_fontScale->value;
+	int			fontscale = ui_fontScale->integer;
 
 	if (cls.menuActive)
 		return;
@@ -665,15 +708,16 @@ void Con_DrawConsole (float frac) {
 	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
+	
+	CL_ConsoleClock(frac);
 
-	Com_sprintf (version, sizeof(version), "q2xp %s (%s)", VERSION, __DATE__);
+	Com_sprintf(version, sizeof(version), "q2xp %s (%s)", VERSION, __DATE__);
 	RE_SetColor(colorGreen);
 	int len = strlen(version);
-//	Draw_StringScaled (viddef.width - len * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version, qtrue);
 
 	for (x = 0; x < len; x++)
-		R_AddCharsToList((viddef.width - len * 8 * FONT_INTERVAL * (int)fontscale) + (x * 8 * FONT_INTERVAL * (int)fontscale), lines - 12 * (int)fontscale, (int)fontscale, version[x], draw_charsInt->handle);
-
+		R_AddCharsToList((viddef.width - len * 8 * FONT_INTERVAL * fontscale) + (x * 8 * FONT_INTERVAL * fontscale), 
+							lines - 12 * fontscale, fontscale, version[x], consFont);
 	// draw the text
 	con.vislines = lines;
 
@@ -685,7 +729,7 @@ void Con_DrawConsole (float frac) {
 		// draw arrows to show the buffer is backscrolled
 		RE_SetColor (colorCyan);
 		for (x = 0; x < con.lineWidth; x += 4)
-			R_AddCharsToList((x * fontscale + 1) * 8, y, fontscale, '^', draw_charsInt->handle);
+			R_AddCharsToList((x * fontscale + 1) * 8, y, fontscale, '^', consFont);
 		RE_SetColor (colorWhite);
 		y -= 8 * fontscale;
 		rows--;
@@ -721,7 +765,7 @@ void Con_DrawConsole (float frac) {
 				//Reset Current font color
 				RE_SetColor(ColorTable[currentColor]);
 
-			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), y, (int)fontscale, text[x], draw_charsInt->handle);
+			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), y, (int)fontscale, text[x], consFont);
 
 			if (text[x] < 190)
 				currentColor = oldColor;
@@ -777,7 +821,7 @@ void Con_DrawConsole (float frac) {
 		for (i = 0; i < strlen (dlbar); i++)
 			//	Draw_Char((i + 1) << 3, y, dlbar[i]);
 		//	Draw_CharScaled ((i*fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
-			R_AddCharsToList((i * fontscale + 1) * 8, y, fontscale, dlbar[i], draw_chars->handle);
+			R_AddCharsToList((i * fontscale + 1) * 8, y, fontscale, dlbar[i], menuFont);
 	}
 	//ZOID
 

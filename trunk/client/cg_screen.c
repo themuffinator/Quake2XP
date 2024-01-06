@@ -92,16 +92,16 @@ int scr_erase_center;
 void CL_AddAltString(int x, int y, int scale, char *s) {
 
 	while (*s) {
-		R_AddCharsToList(x, y, scale, *s ^ 0x80, draw_chars->handle);
+		R_AddCharsToList(x, y, scale, *s ^ 0x80, menuFont);
 		x += 8 * scale * FONT_INTERVAL;
 		s++;
 	}
 }
 
-void CL_AddString(int x, int y, int scale, char *s, uint64 handle) {
+void CL_AddString(int x, int y, int scale, char *s, image_t *inTex) {
 
 	while (*s) {
-		R_AddCharsToList(x, y, scale, *s, handle);
+		R_AddCharsToList(x, y, scale, *s, inTex);
 		x += 8 * scale * FONT_INTERVAL;
 		s++;
 	}
@@ -198,7 +198,7 @@ void SCR_DrawCenterString (void) {
 
 		for (j = 0; j < l; j++, x += 6 * ui_fontScale->integer) {
 			
-			R_AddCharsToList(x, y, ui_fontScale->integer, start[j], draw_charsInt->handle);
+			R_AddCharsToList(x, y, ui_fontScale->integer, start[j], consFont);
 
 			if (!remaining--)
 				return;
@@ -417,13 +417,13 @@ void SCR_DrawLoading (void) {
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 6;
 		RE_SetColor(colorGreen);
 
-		CL_AddString(center, 20 * fontscale, fontscale * 2, mapname, draw_charsInt->handle);
+		CL_AddString(center, 20 * fontscale, fontscale * 2, mapname, consFont);
 		
 		RE_SetColor (colorYellow);
-		CL_AddString(0, 44 * fontscale, fontscale, va ("%s", loadingMessages[0]), draw_charsInt->handle);
-		CL_AddString(0, 54 * fontscale, fontscale, va ("%s", loadingMessages[1]), draw_charsInt->handle);
-		CL_AddString(0, 64 * fontscale, fontscale, va ("%s", loadingMessages[2]), draw_charsInt->handle);
-		CL_AddString(0, 74 * fontscale, fontscale, va ("%s", loadingMessages[3]), draw_charsInt->handle);
+		CL_AddString(0, 44 * fontscale, fontscale, va ("%s", loadingMessages[0]), consFont);
+		CL_AddString(0, 54 * fontscale, fontscale, va ("%s", loadingMessages[1]), consFont);
+		CL_AddString(0, 64 * fontscale, fontscale, va ("%s", loadingMessages[2]), consFont);
+		CL_AddString(0, 74 * fontscale, fontscale, va ("%s", loadingMessages[3]), consFont);
 		RE_SetColor (colorWhite);
 	}
 }
@@ -797,9 +797,9 @@ void CL_AddHUDString(float x, float y, int scale, int centerwidth, int xor, char
 
 		for (i = 0; i < width; i++) {
 			if(xor)
-				R_AddCharsToList(x, y, scale, line[i] ^ xor, draw_chars->handle);
+				R_AddCharsToList(x, y, scale, line[i] ^ xor, menuFont);
 			else
-				R_AddCharsToList(x, y, scale, line[i] ^ xor, draw_charsInt->handle);
+				R_AddCharsToList(x, y, scale, line[i] ^ xor, consFont);
 			x += 8 * scale * FONT_INTERVAL;
 		}
 		if (*string) {
@@ -931,17 +931,17 @@ void SCR_DrawSpeeds(void) {
 
 	RE_SetColor(colorGreen);
 
-	CL_AddString(viddef.width - ((int)strlen(bspTris) + 1)		* scale, heightScale, fontScale, bspTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(litBspTris) + 1)	* scale, heightScale + 10 * fontScale, fontScale, litBspTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(aliasTris) + 1)	* scale, heightScale + 20 * fontScale, fontScale, aliasTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(litAliasTris) + 1) * scale, heightScale + 30 * fontScale, fontScale, litAliasTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(dynamicShadowTris) + 1)	* scale, heightScale + 40 * fontScale, fontScale, dynamicShadowTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(staticShadowTris) + 1)		* scale, heightScale + 50 * fontScale, fontScale, staticShadowTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(numDynShadow) + 1) * scale, heightScale + 60 * fontScale, fontScale, numDynShadow, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(numVisLights) + 1) * scale, heightScale + 70 * fontScale, fontScale, numVisLights, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(partTris) + 1)		* scale, heightScale + 80 * fontScale, fontScale, partTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(decalTris) + 1)	* scale, heightScale + 90 * fontScale, fontScale, decalTris, draw_charsInt->handle);
-	CL_AddString(viddef.width - ((int)strlen(numDips) + 1)		* scale, heightScale + 100 * fontScale, fontScale, numDips, draw_charsInt->handle);
+	CL_AddString(viddef.width - ((int)strlen(bspTris) + 1)		* scale, heightScale, fontScale, bspTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(litBspTris) + 1)	* scale, heightScale + 10 * fontScale, fontScale, litBspTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(aliasTris) + 1)	* scale, heightScale + 20 * fontScale, fontScale, aliasTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(litAliasTris) + 1) * scale, heightScale + 30 * fontScale, fontScale, litAliasTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(dynamicShadowTris) + 1)	* scale, heightScale + 40 * fontScale, fontScale, dynamicShadowTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(staticShadowTris) + 1)		* scale, heightScale + 50 * fontScale, fontScale, staticShadowTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(numDynShadow) + 1) * scale, heightScale + 60 * fontScale, fontScale, numDynShadow, consFont);
+	CL_AddString(viddef.width - ((int)strlen(numVisLights) + 1) * scale, heightScale + 70 * fontScale, fontScale, numVisLights, consFont);
+	CL_AddString(viddef.width - ((int)strlen(partTris) + 1)		* scale, heightScale + 80 * fontScale, fontScale, partTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(decalTris) + 1)	* scale, heightScale + 90 * fontScale, fontScale, decalTris, consFont);
+	CL_AddString(viddef.width - ((int)strlen(numDips) + 1)		* scale, heightScale + 100 * fontScale, fontScale, numDips, consFont);
 
 	RE_SetColor (colorWhite);
 }
@@ -975,7 +975,7 @@ void SCR_DrawCpuUtilization() {
 		int cpuUtilLengh = (int)strlen(cpuUtil);
 		cpuUtilLengh += 1;
 
-		CL_AddString(viddef.width - cpuUtilLengh * scale, viddef.height * 0.65 - 60, fontScale, cpuUtil, draw_charsInt->handle);
+		CL_AddString(viddef.width - cpuUtilLengh * scale, viddef.height * 0.65 - 60, fontScale, cpuUtil, consFont);
 
 	}
 #endif
@@ -1021,54 +1021,13 @@ void SCR_DrawFPS (void) {
 	if (ui_drawFPS->integer && (cls.state == ca_active)) {
 		
 		if (ui_drawFPS->integer == 2) {
-			CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65 - 40, fontScale, avrfps, draw_charsInt->handle);
-			CL_AddString(viddef.width - minFpsLengh * scale, viddef.height * 0.65 - 20, fontScale, minfps, draw_charsInt->handle);
+			CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65 - 40, fontScale, avrfps, consFont);
+			CL_AddString(viddef.width - minFpsLengh * scale, viddef.height * 0.65 - 20, fontScale, minfps, consFont);
 		} else
-			CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65, fontScale, avrfps, draw_charsInt->handle);
+			CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65, fontScale, avrfps, consFont);
 	}
 }
 
-void SCR_DrawClock (void) {
-	char	timebuf[20];
-	char	tmpbuf[24];
-	char	datebuf[20];
-	char	tmpdatebuf[24];
-	int		fontScale = ui_fontScale->integer;
-	int		scale = 8 * ui_fontScale->integer * FONT_INTERVAL;
-	
-	if (ui_drawTime->integer && (cls.state == ca_active)) {
-
-#ifndef _WIN32
-		struct tm *tm;
-		time_t aclock;
-
-		time(&aclock);
-		tm = localtime(&aclock);
-		strftime(timebuf, sizeof(timebuf), "%T", tm);
-		strftime(datebuf, sizeof(datebuf), "%D", tm);
-#else
-		_strtime(timebuf);
-		_strdate(datebuf);
-#endif
-
-		sprintf(tmpbuf, "Time %s", timebuf);
-		sprintf(tmpdatebuf, "Date %s", datebuf);
-
-		int timebufLengh = strlen(tmpbuf);
-		timebufLengh += 1;
-		int datebufLengh = strlen(tmpdatebuf);
-		datebufLengh += 1;
-
-		if (!ui_drawFPS->integer) {
-			CL_AddString(viddef.width - timebufLengh * scale, viddef.height * 0.65, fontScale, tmpbuf, draw_charsInt->handle);
-			CL_AddString(viddef.width - datebufLengh * scale, viddef.height * 0.65 + 10 * fontScale, fontScale, tmpdatebuf, draw_charsInt->handle);
-		}
-		else {
-			CL_AddString(viddef.width - timebufLengh * scale, viddef.height * 0.65 + 10 * fontScale, fontScale, tmpbuf, draw_charsInt->handle);
-			CL_AddString(viddef.width - datebufLengh * scale, viddef.height * 0.65 + 20 * fontScale, fontScale, tmpdatebuf, draw_charsInt->handle);
-		}
-	}
-}
 
 const char *CL_NameForCompileFlags(int compileFlags)
 {
@@ -1145,8 +1104,8 @@ void SCR_ShowTexNames() {
 
 		Com_sprintf(texName, sizeof(texName), "Texture Name: %s", trace.surface->name);
 		Com_sprintf(surfFlags, sizeof(surfFlags), "Flags: %s", CL_GetCompileFlags(trace.surface->flags));
-		CL_AddString(0, viddef.height / 2 - 50, ui_fontScale->integer,texName, draw_charsInt->handle);
-		CL_AddString(0, viddef.height / 2 - 25, ui_fontScale->integer, surfFlags, draw_charsInt->handle);
+		CL_AddString(0, viddef.height / 2 - 50, ui_fontScale->integer,texName, consFont);
+		CL_AddString(0, viddef.height / 2 - 25, ui_fontScale->integer, surfFlags, consFont);
 	}
 
 	RE_SetColor(colorWhite);
@@ -1256,7 +1215,6 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawFPS ();
 		SCR_DrawCpuUtilization();
 		SCR_ShowTexNames();
-		SCR_DrawClock ();
 
 		int stop = Sys_Milliseconds();
 
@@ -1275,14 +1233,20 @@ void SCR_UpdateScreen (void) {
 			Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
 			int frameTimeLenght = (int)strlen(frameTime);
 			frameTimeLenght += 1;
-			CL_AddString(viddef.width - frameTimeLenght * scale, viddef.height * 0.65, ui_fontScale->integer, frameTime, draw_charsInt->handle);
+			CL_AddString(viddef.width - frameTimeLenght * scale, viddef.height * 0.65, ui_fontScale->integer, frameTime, consFont);
 		}
 
 		SCR_DrawConsole ();
 		M_Draw ();
 		SCR_DrawLoading ();
 		SCR_DrawSpeeds();
-		
+	
+	//	if (cls.state == ca_active) {
+	//		char pos[128];
+	//		Com_sprintf(pos, sizeof(pos), "%i %i %i", (int)cl.refdef.vieworg[0], (int)cl.refdef.vieworg[1], (int)cl.refdef.vieworg[2]);
+	//		CL_AddString(0, 8 * ui_fontScale->integer, ui_fontScale->integer, pos, consFont);
+	//	}
+
 		R_Flush2D();
 
 	}

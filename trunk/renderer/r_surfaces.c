@@ -930,7 +930,7 @@ void R_DrawLightWorld(void)
 
 	GL_BindProgram(lightWorldProgram);
 
-	GL_BindVao(bspVao);
+	GL_BindVAO(vao.bsp);
 
 	if (!currentShadowLight->isStatic) {
 		r_lightTimestamp++;
@@ -942,7 +942,7 @@ void R_DrawLightWorld(void)
 	else
 		GL_DrawStaticLightPass();
 
-	GL_BindNullVao();
+	GL_BindNullVAO();
 }
 
 
@@ -973,9 +973,9 @@ void R_DrawBSP (void) {
 
 	numSceneSurfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
-	GL_BindVao(bspVao);
+	GL_BindVAO(vao.bsp);
 	GL_DrawLightmappedPoly(qfalse);
-	GL_BindNullVao();
+	GL_BindNullVAO();
 
 
 }
@@ -1113,13 +1113,13 @@ void R_DrawBrushModel (void) {
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
-	GL_BindVao(bspVao);
+	GL_BindVAO(vao.bsp);
 
 	numSceneSurfaces = 0;
 	R_AddAmbientBmodelSurfaces();
 	GL_DrawLightmappedPoly(qtrue);
 	
-	GL_BindNullVao();
+	GL_BindNullVAO();
 }
 
 /*
@@ -1277,7 +1277,7 @@ void R_DrawLightBrushModel (void) {
 
 	GL_BindProgram(lightWorldProgram);
 
-	GL_BindVao(bspVao);
+	GL_BindVAO(vao.bsp);
 
 	r_lightTimestamp++;
 	numInteractionSurfs = 0;
@@ -1287,7 +1287,7 @@ void R_DrawLightBrushModel (void) {
 	if(numInteractionSurfs > 0)
 		GL_DrawDynamicLightPass(qtrue, caustics);
 	
-	GL_BindNullVao();
+	GL_BindNullVAO();
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 }

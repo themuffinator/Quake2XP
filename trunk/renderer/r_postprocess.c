@@ -32,9 +32,9 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
-	GL_BindVao(fsqVao);
+	GL_BindVAO(vao.fsq);
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-	GL_BindNullVao();
+	GL_BindNullVAO();
 }
 
 void R_RestoreViewPortAndScissor() {
