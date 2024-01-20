@@ -671,20 +671,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	R_SetupEntityMatrix(currententity);
 
-//	qglEnableVertexAttribArray(ATT_POSITION);
-//	qglEnableVertexAttribArray(ATT_TEX0);
-//	qglEnableVertexAttribArray(ATT_COLOR);
-
-//	qglEnableVertexAttribArray(ATT_TANGENT);
-//	qglEnableVertexAttribArray(ATT_BINORMAL);
-//	qglEnableVertexAttribArray(ATT_NORMAL);
-
-//	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
-//	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, tess.color);
-//	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
-//	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
-//	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
-	
 	GL_BindVAO(vao.md3);
 	GL_BindVBO(vbo.dynamicVbo);
 
@@ -806,8 +792,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 		}
-
-	//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
@@ -940,8 +924,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 
-		//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
-
 			qglInvalidateBufferData(GL_ARRAY_BUFFER);
 			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, mesh->num_verts * sizeof(vec4_t), tess.position);
@@ -992,15 +974,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		}
 		GL_Disable(GL_BLEND);
 
-/*	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
-	qglDisableVertexAttribArray(ATT_NORMAL);
-
-	qglDisableVertexAttribArray(ATT_TANGENT);
-	qglDisableVertexAttribArray(ATT_BINORMAL);
-	qglDisableVertexAttribArray(ATT_NORMAL);
-*/
 	GL_BindNullVAO();
 	GL_BindNullVBO();
 
@@ -1128,17 +1101,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	GL_PolygonOffset(-1.0, -1.0);
 
-/*	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglEnableVertexAttribArray(ATT_TEX0);
-
-	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
-	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
-	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
-	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
-*/
 	GL_BindVAO(vao.md3);
 	GL_BindVBO(vbo.dynamicVbo);
 
@@ -1247,7 +1209,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 		}
 
-	//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	mesh->num_verts * sizeof(vec4_t), tess.position);
@@ -1281,12 +1242,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
-/*	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TANGENT);
-	qglDisableVertexAttribArray(ATT_BINORMAL);
-	qglDisableVertexAttribArray(ATT_NORMAL);
-	qglDisableVertexAttribArray(ATT_TEX0);
-*/
 	GL_BindNullVAO();
 	GL_BindNullVBO();
 	VectorCopy(oldLight, currentShadowLight->origin);
@@ -1342,10 +1297,8 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	R_SetupEntityMatrix(currententity);
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
-	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
+	GL_BindVAO(vao.md3);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, viewOrg);
@@ -1395,11 +1348,17 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 			tess.normal[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
 		}
 
-		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, mesh->num_verts * sizeof(vec4_t), tess.position);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, mesh->num_verts * sizeof(vec3_t), tess.normal);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
+		
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_NORMAL);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
