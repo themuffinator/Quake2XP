@@ -301,13 +301,13 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, numVerts * sizeof(vec4_t), tess.position);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, numVerts * sizeof(vec2_t), tess.texCoord);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color, numVerts * sizeof(vec4_t), tess.color);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	numVerts * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	numVerts * sizeof(vec2_t), tess.texCoord);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		numVerts * sizeof(vec4_t), tess.color);
 
 	if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent, numVerts * sizeof(vec3_t), tess.tangent);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal, numVerts * sizeof(vec3_t), tess.binormal);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent,		numVerts * sizeof(vec3_t), tess.tangent);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,	numVerts * sizeof(vec3_t), tess.binormal);
 	}
 
 	if (currentmodel->envMap || r_debugTbn->integer)
@@ -332,7 +332,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 		GL_Disable(GL_DEPTH_TEST);
 		qglLineWidth(1.5);
-		qglPolygonMode(GL_FRONT, GL_LINE);
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		GL_BindProgram(showTrisProgram);
 		qglUniform3f(U_COLOR, 0.0, 1.0, 1.0);
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
@@ -344,8 +344,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 
 	GL_BindNullVAO();
-//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_BindNullVBO();
 	GL_BindNullIBO();
 

@@ -65,6 +65,8 @@ void R_InitVertexBuffers() {
 	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
 	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
 
+	index_t	ibo_2pl[] = { 0, 1 };
+
 	vbo.quadIbo			= R_Alloc_VBO("QuadIbo", GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
 	vbo.quadStringIbo	= R_Alloc_VBO("Quad_String_Ibo", GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quadString), ibo_quadString, GL_STATIC_DRAW);
 	vbo.tess2dVbo		= R_Alloc_VBO("Tess2D_Vbo", GL_ARRAY_BUFFER, sizeof(tess2d), &tess2d, GL_DYNAMIC_DRAW);
@@ -77,11 +79,9 @@ void R_InitVertexBuffers() {
 	vbo.dynamicIbo		= R_Alloc_VBO("Dynamic_Ibo", GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
 	vbo.cubeIbo			= R_Alloc_VBO("Cube_Ibo", GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_idx), cube_idx, GL_STATIC_DRAW);
 	vbo.skyBoxVbo		= R_Alloc_VBO("Sky_Box_Vbo", GL_ARRAY_BUFFER, sizeof(vec3_t) * 8, v, GL_STATIC_DRAW);
+	vbo.twoPointLineIbo = R_Alloc_VBO("twoPointLineIbo", GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_2pl), ibo_2pl, GL_STATIC_DRAW);
 
-	GL_BindNullVBO();
-	GL_BindNullIBO();
-
-// Gen VAOs
+	// Gen VAOs
 	vao.sky = R_Alloc_VAO("skyVao", ATTF_POS);
 	GL_BindVBO(vbo.skyBoxVbo);
 	GL_BindVBO(vbo.cubeIbo);
@@ -144,7 +144,27 @@ void R_InitVertexBuffers() {
 	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->tangent);
 	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->binormal);
 	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->normal);
-	
+
+	vao.md3 = R_Alloc_VAO("md3Vao", ATTF_POS | ATTF_ST0 | ATTF_COLOR | ATTF_TANGENT | ATTF_BINORMAL | ATTF_NORMAL);
+	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVBO(vbo.dynamicIbo);
+	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->position);
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, ((tess_t *)0)->texCoord);
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->color);
+	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->tangent);
+	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->binormal);
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, ((tess_t *)0)->normal);
+
+	vao.dynamicCube_verts = R_Alloc_VAO("dynamicCube_verts", ATTF_POS );
+	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVBO(vbo.cubeIbo);
+	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->position);
+
+	vao.drawLine = R_Alloc_VAO("drawLine", ATTF_POS);
+	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVBO(vbo.twoPointLineIbo);
+	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->position);
+
 	GL_BindNullVAO();
 	Com_Printf(S_COLOR_GREEN"ok\n\n");	
 }

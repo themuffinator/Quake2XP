@@ -671,19 +671,22 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	R_SetupEntityMatrix(currententity);
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
+//	qglEnableVertexAttribArray(ATT_POSITION);
+//	qglEnableVertexAttribArray(ATT_TEX0);
+//	qglEnableVertexAttribArray(ATT_COLOR);
 
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-	qglEnableVertexAttribArray(ATT_NORMAL);
+//	qglEnableVertexAttribArray(ATT_TANGENT);
+//	qglEnableVertexAttribArray(ATT_BINORMAL);
+//	qglEnableVertexAttribArray(ATT_NORMAL);
 
-	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
-	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, tess.color);
-	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
-	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
-	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
+//	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
+//	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, tess.color);
+//	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
+//	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
+//	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
+	
+	GL_BindVAO(vao.md3);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
@@ -804,7 +807,20 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			}
 		}
 
-		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+	//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+
+		qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	mesh->num_verts * sizeof(vec4_t), tess.position);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	mesh->num_verts * sizeof(vec2_t), mesh->stcoords);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		mesh->num_verts * sizeof(vec4_t), tess.color);
+
+		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent,	mesh->num_verts * sizeof(vec3_t), tess.tangent);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,mesh->num_verts * sizeof(vec3_t), tess.binormal);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,	mesh->num_verts * sizeof(vec3_t), tess.normal);
+		}
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
 
 		GL_SetBindlessTexture(U_TMU0, albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, emissive->handle);
@@ -813,7 +829,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		GL_SetBindlessTexture(U_TMU5, ao->handle);
 
-		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	
 		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 			GL_BindProgram(tbnDebugProgram);
@@ -822,7 +838,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 			else
 				qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
-			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 			GL_BindProgram(md3AmbientProgram);
 		}
 
@@ -830,12 +846,12 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			GL_Disable(GL_DEPTH_TEST);
 			qglLineWidth(1.5);
-			qglPolygonMode(GL_FRONT, GL_LINE);
+			qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			GL_BindProgram(showTrisProgram);
 			qglUniform3f(U_COLOR, 1.0, 1.0, 0.0);
 			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 			GL_BindProgram(md3AmbientProgram);
 
 			qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -924,14 +940,27 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 
-			qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+		//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+
+			qglInvalidateBufferData(GL_ARRAY_BUFFER);
+			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, mesh->num_verts * sizeof(vec4_t), tess.position);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, mesh->num_verts * sizeof(vec2_t), mesh->stcoords);
+			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color, mesh->num_verts * sizeof(vec4_t), tess.color);
+
+			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent, mesh->num_verts * sizeof(vec3_t), tess.tangent);
+				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal, mesh->num_verts * sizeof(vec3_t), tess.binormal);
+				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, mesh->num_verts * sizeof(vec3_t), tess.normal);
+			}
+			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
 			
 			GL_SetBindlessTexture(U_TMU0, albedo->handle);
 			GL_SetBindlessTexture(U_TMU1, r_blackTexture1x1->handle);
 			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
 
-			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 
 			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 				GL_Disable(GL_BLEND);
@@ -941,7 +970,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 					qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 				else
 					qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
-				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 				GL_BindProgram(md3AmbientProgram);
 			}
 
@@ -949,12 +978,12 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 				GL_Disable(GL_DEPTH_TEST);
 				qglLineWidth(1.5);
-				qglPolygonMode(GL_FRONT, GL_LINE);
+				qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				GL_BindProgram(showTrisProgram);
 				qglUniform3f(U_COLOR, 1.0, 1.0, 0.5);
 				qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 				GL_BindProgram(md3AmbientProgram);
 
 				qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -963,7 +992,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		}
 		GL_Disable(GL_BLEND);
 
-	qglDisableVertexAttribArray(ATT_POSITION);
+/*	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_COLOR);
 	qglDisableVertexAttribArray(ATT_NORMAL);
@@ -971,6 +1000,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_NORMAL);
+*/
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
@@ -1096,7 +1128,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	GL_PolygonOffset(-1.0, -1.0);
 
-	qglEnableVertexAttribArray(ATT_POSITION);
+/*	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 	qglEnableVertexAttribArray(ATT_NORMAL);
@@ -1106,6 +1138,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, tess.tangent);
 	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, tess.binormal);
 	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, tess.normal);
+*/
+	GL_BindVAO(vao.md3);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	// setup program
 	GL_BindProgram(aliasBumpProgram);
@@ -1212,7 +1247,17 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 		}
 
-		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+	//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+		qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	mesh->num_verts * sizeof(vec4_t), tess.position);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	mesh->num_verts * sizeof(vec2_t), mesh->stcoords);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		mesh->num_verts * sizeof(vec4_t), tess.color);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent,		mesh->num_verts * sizeof(vec3_t), tess.tangent);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,	mesh->num_verts * sizeof(vec3_t), tess.binormal);
+		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,		mesh->num_verts * sizeof(vec3_t), tess.normal);
+		
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
 		
 		GL_SetBindlessTexture(U_TMU0, normal->handle);
 		GL_SetBindlessTexture(U_TMU1, albedo->handle);
@@ -1233,15 +1278,17 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			qglUniform1i(U_USE_RGH_MAP, 1);
 		}
 
-		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
-	qglDisableVertexAttribArray(ATT_POSITION);
+/*	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TEX0);
-
+*/
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);
 

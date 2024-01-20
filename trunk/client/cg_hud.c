@@ -352,7 +352,7 @@ void SCR_ExecuteLayoutString (char *s) {
 	int width;
 	int index;
 	clientinfo_t *ci;
-	float scale, hud_sx, hud_sy;
+	float scale, hud_sx, hud_sy, scale2;
 	float screenAspect, scaledHeight;
 
 	if (cls.state != ca_active || !cl.refresh_prepped)
@@ -368,6 +368,7 @@ void SCR_ExecuteLayoutString (char *s) {
 	scaledHeight = 320.0 / screenAspect;
 
 	scale = 0.5;
+	scale2 = 0.8;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;

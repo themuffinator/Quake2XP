@@ -1292,7 +1292,7 @@ char buff16[128];
 char buff17[128];
 char buff18[128];
 
-void R_DrawCube(vec3_t v[8], vec3_t org, int size) {
+void R_DrawCube(vec4_t v[8], vec3_t org, int size) {
 
 	VectorSet(v[0], org[0] - size, org[1] - size, org[2] + size);
 	VectorSet(v[1], org[0] + size, org[1] - size, org[2] + size);
@@ -1303,12 +1303,20 @@ void R_DrawCube(vec3_t v[8], vec3_t org, int size) {
 	VectorSet(v[5], org[0] + size, org[1] - size, org[2] - size);
 	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
 	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
+	
+	GL_BindVAO(vao.dynamicCube_verts);
+	GL_BindVBO(vbo.dynamicVbo);
+
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
 
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 }
 
-void R_DrawLightBox(vec3_t v[8], vec3_t org, vec3_t radius) {
+void R_DrawLightBBox(vec4_t v[8], vec3_t org, vec3_t radius) {
 
 	VectorSet(v[0], org[0] - radius[0], org[1] - radius[1], org[2] + radius[2]);
 	VectorSet(v[1], org[0] + radius[0], org[1] - radius[1], org[2] + radius[2]);
@@ -1320,14 +1328,22 @@ void R_DrawLightBox(vec3_t v[8], vec3_t org, vec3_t radius) {
 	VectorSet(v[6], org[0] + radius[0], org[1] + radius[1], org[2] - radius[2]);
 	VectorSet(v[7], org[0] - radius[0], org[1] + radius[1], org[2] - radius[2]);
 
+	GL_BindVAO(vao.dynamicCube_verts);
+	GL_BindVBO(vbo.dynamicVbo);
+
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
+
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 }
 
 void UpdateLightEditor(void) {
 
 	vec3_t		end_trace, mins = { -5.0f, -5.0f, -5.0f }, maxs = { 5.0f, 5.0f, 5.0f };
-	vec3_t		tmpOrg, tmpRad, v[8];
+	vec3_t		tmpOrg, tmpRad;
 	float		fraction = 1.0;
 	trace_t		trace_light, trace_bsp;
 	unsigned	headNode;
@@ -1374,14 +1390,9 @@ void UpdateLightEditor(void) {
 	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
-	GL_BindVBO(vbo.cubeIbo);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, v);
-
 	if (currentShadowLight != selectedShadowLight) {
-
 		qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-		R_DrawCube(v, currentShadowLight->origin, 5);
+		R_DrawCube(tess.position, currentShadowLight->origin, 5);
 	}
 
 	if (selectedShadowLight) {
@@ -1427,7 +1438,7 @@ void UpdateLightEditor(void) {
 
 		VectorCopy(selectedShadowLight->origin, tmpOrg);
 		VectorCopy(selectedShadowLight->radius, tmpRad);
-		R_DrawLightBox(v, tmpOrg, tmpRad);
+		R_DrawLightBBox(tess.position, tmpOrg, tmpRad);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		
@@ -1435,12 +1446,9 @@ void UpdateLightEditor(void) {
 
 			VectorCopy(selectedShadowLight->origin, tmpOrg);
 			qglUniform4f(U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
-			R_DrawCube(v, tmpOrg, 3);
+			R_DrawCube(tess.position, tmpOrg, 3);
 		}
 	}
-
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
@@ -2509,6 +2517,9 @@ void R_DrawLightFlare () {
 
 	if (currentShadowLight->isAmbient)
 		return;
+	
+	if (currentShadowLight->area < 0)
+		return;
 
 	if (!r_drawFlares->integer)
 		return;
@@ -2566,7 +2577,6 @@ void R_DrawLightFlare () {
 		VA_SetElem4(tess.color[i], color[0], color[1], color[2], 1.0);
 
 	GL_BindVAO(vao.tessStreamVaoQuad);
-//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 	GL_BindVBO(vbo.dynamicVbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
@@ -2577,7 +2587,7 @@ void R_DrawLightFlare () {
 	GL_DrawElements(GL_TRIANGLES, QUAD_VERTICES, GL_UNSIGNED_SHORT, NULL);
 
 	GL_BindNullVAO();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	GL_BindNullVBO();
 
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
@@ -2606,9 +2616,6 @@ void R_LightFlareOutLine() { //flare editing highlights
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_CULL_FACE);
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, tess.position);
-
 	// setup program
 	GL_BindProgram(colorProgram);
 	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
@@ -2622,26 +2629,20 @@ void R_LightFlareOutLine() { //flare editing highlights
 	VA_SetElem3(tess.position[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
 	VA_SetElem3(tess.position[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
 
-	GL_DrawArrays(GL_LINES, 0, 2);
-	GL_Disable(GL_LINE_SMOOTH);
+	GL_BindVAO(vao.drawLine);
+	GL_BindVBO(vbo.dynamicVbo);
 
-//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
-	GL_BindVBO(vbo.cubeIbo);
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, 2 * sizeof(vec4_t), tess.position);
+	GL_DrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, NULL);
+
+	GL_BindNullVAO();
+	GL_BindNullVBO();
+	GL_Disable(GL_LINE_SMOOTH);
 
 	// draw center of flare
 	VectorCopy(currentShadowLight->flareOrigin, tmpOrg);
-	VectorSet(tess.position[0], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] + 1);
-	VectorSet(tess.position[1], tmpOrg[0] + 1, tmpOrg[1] - 1, tmpOrg[2] + 1);
-	VectorSet(tess.position[2], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] + 1);
-	VectorSet(tess.position[3], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] + 1);
-
-	VectorSet(tess.position[4], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] - 1);
-	VectorSet(tess.position[5], tmpOrg[0] + 1, tmpOrg[1] - 1, tmpOrg[2] - 1);
-	VectorSet(tess.position[6], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
-	VectorSet(tess.position[7], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
-
-	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	R_DrawCube(tess.position, tmpOrg, 1);
 
 	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
@@ -2654,7 +2655,6 @@ void R_LightFlareOutLine() { //flare editing highlights
 
 void R_DrawLightBounds(void) {
 
-	vec3_t		v[8];
 	vec3_t		tmpOrg;
 
 	if (!r_debugLights->integer)
@@ -2684,16 +2684,9 @@ void R_DrawLightBounds(void) {
 	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
-//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
-	GL_BindVBO(vbo.cubeIbo);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, v);
-
 	VectorCopy(currentShadowLight->origin, tmpOrg);
-	R_DrawCube(v, tmpOrg, 5);
+	R_DrawCube(tess.position, tmpOrg, 5);
 
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
 
@@ -2756,14 +2749,13 @@ void R_UpdateLightAliasUniforms()
 	mat4_t	entAttenMatrix, entSpotMatrix;
 
 	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);//
-//	qglUniform1f(U_SPECULAR_SCALE, 1.0);
 	
 	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);//
 	if (currententity->flags & RF_WEAPONMODEL)
 		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity * 8.0);//
 	else
 		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);//
-//	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
+
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);//
 	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);//
 

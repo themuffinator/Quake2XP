@@ -219,7 +219,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	float		*up, *right;
 	dsprite_t	*psprite;
 	int			len, scaled = 1;
-	uchar		quadIdx[] = { 0, 1, 2, 0, 2, 3 };
 
 	psprite = (dsprite_t *) currentmodel->extraData;
 	e->frame %= psprite->numFrames;
@@ -252,14 +251,18 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	VectorMA (tess.position[2],	frame->width * scaled - frame->origin_x * scaled, right, tess.position[2]);
 	
 	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess.position[3]);
-	VectorMA (tess.position[3],	frame->width	* scaled - frame->origin_x * scaled, right, tess.position[3]);
+	VectorMA (tess.position[3],	 frame->width * scaled - frame->origin_x * scaled, right, tess.position[3]);
 	
 	VA_SetElem2(tess.texCoord[0], 0, 1);
 	VA_SetElem2(tess.texCoord[1], 0, 0);
 	VA_SetElem2(tess.texCoord[2], 1, 0);
 	VA_SetElem2(tess.texCoord[3], 1, 1);
 
-	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
+	qglInvalidateBufferData(GL_ARRAY_BUFFER);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, QUAD_VERTICES * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, QUAD_VERTICES * sizeof(vec2_t), tess.texCoord);
+
+	GL_DrawElements(GL_TRIANGLES, QUAD_VERTICES, GL_UNSIGNED_SHORT, NULL);
 }
 
 //==================================================================================
@@ -751,12 +754,6 @@ void R_RenderSprites(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-
-	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, qfalse, 0, tess.position);
-	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, tess.texCoord);
-
 	// setup program
 	GL_BindProgram(spriteProgram);
 
@@ -771,7 +768,9 @@ void R_RenderSprites(void)
 
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_REFR_MASK, 0.0, 1.0);
-//	qglUniform1i(U_REFR_ALPHA_MASK, 1);
+
+	GL_BindVAO(vao.tessStreamVaoQuad);
+	GL_BindVBO(vbo.dynamicVbo);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -784,8 +783,8 @@ void R_RenderSprites(void)
 			R_DrawDistortSpriteModel(currententity);
 	}
 
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
+	GL_BindNullVAO();
+	GL_BindNullVBO();
 }
 
 // draws ambient opaque entities
@@ -1418,8 +1417,8 @@ void R_RegisterCvars(void)
 
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);
-	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "5", CVAR_ARCHIVE);
-	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "0", 0);
+	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "6", CVAR_ARCHIVE);
+	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "1", CVAR_ARCHIVE);
 	r_contextNoError =					Cvar_Get("r_contextNoError", "0", CVAR_ARCHIVE);
 	r_debug =							Cvar_Get("r_debug", "0", 0);
 

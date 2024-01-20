@@ -251,9 +251,9 @@ void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, 
 		GL_Disable(GL_DEPTH_TEST);
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		qglLineWidth(1.5);
+		qglLineWidth(1.0);
 
-		qglPolygonMode(GL_FRONT, GL_LINE);
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		GL_BindProgram(showTrisProgram);
 		
 		if (bmodel) {

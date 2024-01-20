@@ -135,6 +135,7 @@ typedef struct {
 	vertexObject_t *md2;
 	vertexObject_t *consoleText;
 	vertexObject_t *tessStream;
+	vertexObject_t *md3;
 	vertexObject_t *tessStreamVaoQuad;
 	vertexObject_t *tess2dArray;
 	vertexObject_t *tess2d;
@@ -145,6 +146,8 @@ typedef struct {
 	vertexObject_t *dynamic;
 	vertexObject_t *bsp;
 	vertexObject_t *depthBsp;
+	vertexObject_t *dynamicCube_verts;
+	vertexObject_t *drawLine;
 }vao_t;
 vao_t vao;
 
@@ -180,6 +183,7 @@ typedef struct {
 	vertexBuffer_t *cubeIbo;
 	vertexBuffer_t *skyBoxVbo;
 	vertexBuffer_t *bspVbo;
+	vertexBuffer_t *twoPointLineIbo;
 
 	int xyz_offset;
 	int st_offset;
@@ -822,14 +826,6 @@ typedef struct {
 	GLfloat			depthBoundsMins;
 	GLfloat			depthBoundsMax;
 
-	qboolean		att_position, 
-					att_normal, 
-					att_tangent, 
-					att_bitangent, 
-					att_tex0, 
-					att_tex1, 
-					att_tex2, 
-					att_color;
 	int				viewportX,
 					viewportY,
 					viewportWidth,
@@ -902,13 +898,14 @@ extern glstate_t gl_state;
 #define MAX_STREAM_VBO_VERTS MD3_MAX_VERTS * MD3_MAX_MESHES
 #define MAX_STREAM_IBO_IDX	 MAX_STREAM_VBO_VERTS *3
 
-#define CUBE_INDICES 36
-#define QUAD_VERTICES 6
+#define CUBE_INDICES	36
+#define CUBE_VERTS		8
+#define QUAD_VERTICES	6
 
 #define MAX_VERTICES	65536
 #define MAX_INDICES		MAX_VERTICES * 3
 
-#define MAX_POLY_VERT		128
+#define MAX_POLY_VERT	128
 uint	indexArray[MAX_INDICES];
 
 typedef struct tess_s {
@@ -924,20 +921,29 @@ typedef struct tess_s {
 } tess_t;
 tess_t tess;
 
-typedef struct tess2_s {
+typedef struct {
+	vec4_t pos;
+	vec2_t tc;
+	vec4_t color;
+	vec3_t tangent;
+	vec3_t binormal;
+	vec3_t normal;
+}vertex_t;
 
-	vec3_t	position[MAX_VERTICES];
-	vec2_t	texCoord[MAX_VERTICES];
-	vec4_t	color[MAX_VERTICES];
-	uint	numSymbols, numVerts;
-} tess2_t;
+typedef struct {
+	vertex_t v[MAX_VERTICES];
+	uint	indices[MAX_INDICES];
+}tesselator_t;
+tesselator_t tess2;
 
-tess2_t tess2;
-
+#define	TESS_OFFSET_POS			((byte *)(NULL)+0)  
+#define	TESS_OFFSET_TC			((byte *)(NULL)+sizeof(vec4_t))
+#define	TESS_OFFSET_COLOR		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t))
+#define	TESS_OFFSET_TANHENT		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t))
+#define	TESS_OFFSET_BINORMAL	((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t))
+#define	TESS_OFFSET_NORMAL		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t)+sizeof(vec3_t))
 
 // 2D VBO stuff
-#define MAX_DRAW_STRING_LENGTH 512
-
 #define MAX_VERTICES_2D 16384
 #define MAX_INDICES_2D MAX_VERTICES_2D * 3
 
