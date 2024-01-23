@@ -343,10 +343,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		GL_Enable(GL_DEPTH_TEST);
 	}
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
-	GL_BindNullIBO();
-
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
 		GL_DepthMask(1);
@@ -452,10 +448,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, numVerts * sizeof(vec3_t), tess.normal);
 	
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
-
-	GL_BindNullVAO();
-	GL_BindNullVBO();
-	GL_BindNullIBO();
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
@@ -645,10 +637,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,		numVerts * sizeof(vec3_t), tess.normal);
 
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
-
-	GL_BindNullVAO();
-	GL_BindNullVBO();
-	GL_BindNullIBO();
 }
 
 

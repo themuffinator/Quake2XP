@@ -2181,8 +2181,6 @@ void M_Credits_MenuDraw(void) {
 
 	if (y < 0)
 		credits_start_time = cls.realTime;
-	
-	R_Flush2D();
 }
 
 int M_Credits_Key(int key) {
@@ -4815,8 +4813,6 @@ void M_Init(void) {
 	Cmd_AddCommand("menu_advanced", M_Menu_Advanced_f);
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
-
-void SCR_TileClear(void);
 
 void M_DrawBackgroundModel() {
 	refdef_t	refdef;

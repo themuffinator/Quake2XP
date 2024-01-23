@@ -1159,7 +1159,7 @@ void CL_DrawInventory (void) {
 		else{
 		// draw a blinky cursor by the selected item
 		if ( (int)(cls.realTime >> 8) & 1 ) 
-			CL_AddString(x - 8, y, ui_fontScale->integer, ".", consFont);
+			CL_AddString(x - 8, y+8 * ui_fontScale->integer, ui_fontScale->integer, ".", consFont);
 		}
 		CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, string, menuFont);
 		y += 8 * ui_fontScale->integer;

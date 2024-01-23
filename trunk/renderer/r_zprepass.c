@@ -265,7 +265,7 @@ void R_DrawDepthBrushModel (void) {
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
 
-	GL_BindNullVAO();
+//	GL_BindNullVAO();
 }
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
@@ -453,7 +453,6 @@ void R_DrawDepthScene (void) {
 			if (currentmodel->type == mod_brush)
 				R_DrawDepthBrushModel();
 		}
-		GL_BindNullVAO();
 	}
 
 	GL_BindVAO(vao.dynamic);
@@ -481,9 +480,6 @@ void R_DrawDepthScene (void) {
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawDepthMD3Model();
 	}
-	GL_BindNullVAO();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthMask(0);
 	SetFarClip();

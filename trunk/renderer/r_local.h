@@ -160,8 +160,6 @@ void R_ShotdownVAO(void);
 int  GL_GetVaoBinding();
 
 vertexBuffer_t *R_Alloc_VBO(const char *name, GLuint target, GLuint size, const void *data, GLuint usage);
-void GL_BindNullVBO();
-void GL_BindNullIBO();
 void GL_BindVBO(vertexBuffer_t *vb);
 void R_VboListing_f(void);
 void R_DeleteVBO(vertexBuffer_t *vbin);
@@ -874,8 +872,6 @@ void GL_DepthBoundsTest (GLfloat mins, GLfloat maxs);
 
 void GL_Enable (GLenum cap);
 void GL_Disable (GLenum cap);
-void GL_EnableVertexAttribArray(GLenum cap);
-void GL_DisableVertexAttribArray(GLenum cap);
 void GL_Viewport(GLint x, GLint y, GLint w, GLint h);
 void GL_DrawBuffers(int num);
 
@@ -966,12 +962,12 @@ typedef struct {
 }vertex2d_t;
 
 typedef struct {
-	vertex2d_t data[4];
+	vertex2d_t v[4];
 }tess2d_t;
 tess2d_t tess2d;
 
 typedef struct {
-	vertex2d_t data[MAX_VERTICES_2D];
+	vertex2d_t v[MAX_VERTICES_2D];
 	int numVerts, numSymbols;
 	uint64 handle;
 }tess2dArray_t;

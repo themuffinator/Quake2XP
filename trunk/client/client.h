@@ -229,6 +229,8 @@ cvar_t* cl_blood;
 cvar_t* deathmatch;
 cvar_t* cl_itemsBobbing;
 cvar_t* cl_crossHairHealth;
+cvar_t *cl_playerPosition;
+
 cvar_t* ui_drawFPS;
 
 cvar_t* ui_3dHud;

@@ -54,9 +54,7 @@ void R_DrawTexturedQuad() {
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
 	GL_BindNullVAO();
-	GL_BindNullVBO();
 }
 
 void R_Flush2D() {
@@ -84,14 +82,13 @@ void R_Flush2D() {
 	tess2dArray.numSymbols = 0;
 
 	GL_BindNullVAO();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex) {
 	int row, col, x1, y1;
 	float frow, fcol, size;
 
-	if (tess2dArray.numVerts >= MAX_VERTICES || (tess2dArray.numVerts && tess2dArray.handle != inTex->handle)) {
+	if (tess2dArray.numVerts >= MAX_VERTICES_2D || (tess2dArray.numVerts && tess2dArray.handle != inTex->handle)) {
 		R_Flush2D();
 	}
 
@@ -113,18 +110,18 @@ void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex
 
 	tess2dArray.numVerts = tess2dArray.numSymbols << 2;
 
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 0].tc, fcol, frow);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 1].tc, fcol +size, frow);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 2].tc, fcol +size, frow + size);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 3].tc, fcol, frow + size);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 0].tc, fcol, frow);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 1].tc, fcol +size, frow);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 2].tc, fcol +size, frow + size);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 3].tc, fcol, frow + size);
 
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 0].pos, x,	y);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 1].pos, x1, y);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 2].pos, x1, y1);
-	VA_SetElem2(tess2dArray.data[tess2dArray.numVerts + 3].pos, x,	y1);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 0].pos, x,	y);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 1].pos, x1, y);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 2].pos, x1, y1);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 3].pos, x,	y1);
 
 	for (int i = 0; i < 4; i++)
-		VA_SetElem4(tess2dArray.data[tess2dArray.numVerts + i].color, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(tess2dArray.v[tess2dArray.numVerts + i].color, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
 	tess2dArray.numSymbols++;
 }
@@ -255,18 +252,18 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 	GL_SetBindlessTexture(U_TMU1, r_conBump->handle);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 		
-	VA_SetElem2(tess2d.data[0].tc, gl->sl + offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.data[1].tc, gl->sh - offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.data[2].tc, gl->sh - offsX, gl->th - offsY);
-	VA_SetElem2(tess2d.data[3].tc, gl->sl + offsX, gl->th - offsY);
+	VA_SetElem2(tess2d.v[0].tc, gl->sl + offsX, gl->tl + offsY);
+	VA_SetElem2(tess2d.v[1].tc, gl->sh - offsX, gl->tl + offsY);
+	VA_SetElem2(tess2d.v[2].tc, gl->sh - offsX, gl->th - offsY);
+	VA_SetElem2(tess2d.v[3].tc, gl->sl + offsX, gl->th - offsY);
 
 	for (int i = 0; i < 4; i++)
-		VA_SetElem4(tess2d.data[i].color, 1.0, 1.0, 1.0, 1.0);
+		VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
 
 	R_DrawTexturedQuad();
 }
@@ -321,15 +318,15 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t* gl)
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 
-	VA_SetElem2(tess2d.data[0].tc, gl->sl + offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.data[1].tc, gl->sh - offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.data[2].tc, gl->sh - offsX, gl->th - offsY);
-	VA_SetElem2(tess2d.data[3].tc, gl->sl + offsX, gl->th - offsY);
+	VA_SetElem2(tess2d.v[0].tc, gl->sl + offsX, gl->tl + offsY);
+	VA_SetElem2(tess2d.v[1].tc, gl->sh - offsX, gl->tl + offsY);
+	VA_SetElem2(tess2d.v[2].tc, gl->sh - offsX, gl->th - offsY);
+	VA_SetElem2(tess2d.v[3].tc, gl->sl + offsX, gl->th - offsY);
 
 	R_DrawTexturedQuad();
 }
@@ -380,22 +377,22 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 
-	VA_SetElem2(tess2d.data[0].tc, gl->sl, gl->tl);
-	VA_SetElem2(tess2d.data[1].tc, gl->sh, gl->tl);
-	VA_SetElem2(tess2d.data[2].tc, gl->sh, gl->th);
-	VA_SetElem2(tess2d.data[3].tc, gl->sl, gl->th);
+	VA_SetElem2(tess2d.v[0].tc, gl->sl, gl->tl);
+	VA_SetElem2(tess2d.v[1].tc, gl->sh, gl->tl);
+	VA_SetElem2(tess2d.v[2].tc, gl->sh, gl->th);
+	VA_SetElem2(tess2d.v[3].tc, gl->sl, gl->th);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 
 
 	for (int i = 0; i < 4; i++) {
 		if (strstr(gl->name, "chx"))
-			VA_SetElem4(tess2d.data[i].color, hColor[0], hColor[1], hColor[2], 1.0);
+			VA_SetElem4(tess2d.v[i].color, hColor[0], hColor[1], hColor[2], 1.0);
 		else
-			VA_SetElem4(tess2d.data[i].color, 1.0, 1.0, 1.0, 1.0);
+			VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
 	}
 
 	R_DrawTexturedQuad();
@@ -447,15 +444,15 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 	GL_SetBindlessTexture(U_TMU1, gl2->handle);
 
-	VA_SetElem2(tess2d.data[0].tc, gl->sl, gl->tl);
-	VA_SetElem2(tess2d.data[1].tc, gl->sh, gl->tl);
-	VA_SetElem2(tess2d.data[2].tc, gl->sh, gl->th);
-	VA_SetElem2(tess2d.data[3].tc, gl->sl, gl->th);
+	VA_SetElem2(tess2d.v[0].tc, gl->sl, gl->tl);
+	VA_SetElem2(tess2d.v[1].tc, gl->sh, gl->tl);
+	VA_SetElem2(tess2d.v[2].tc, gl->sh, gl->th);
+	VA_SetElem2(tess2d.v[3].tc, gl->sl, gl->th);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 
 	R_DrawTexturedQuad();
 
@@ -516,18 +513,18 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t* image)
 
 	GL_SetBindlessTexture(U_TMU0, image->handle);
 
-	VA_SetElem2(tess2d.data[0].tc, x / 64.0, y / 64.0);
-	VA_SetElem2(tess2d.data[1].tc, (x + w) / 64.0, y / 64.0);
-	VA_SetElem2(tess2d.data[2].tc, (x + w) / 64.0, y / 64.0);
-	VA_SetElem2(tess2d.data[3].tc, x / 64.0, (y + h) / 64.0);
+	VA_SetElem2(tess2d.v[0].tc, x / 64.0, y / 64.0);
+	VA_SetElem2(tess2d.v[1].tc, (x + w) / 64.0, y / 64.0);
+	VA_SetElem2(tess2d.v[2].tc, (x + w) / 64.0, y / 64.0);
+	VA_SetElem2(tess2d.v[3].tc, x / 64.0, (y + h) / 64.0);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 
 	for (int i = 0; i < 4; i++)
-		VA_SetElem4(tess2d.data[i].color, 1.0, 1.0, 1.0, 1.0);
+		VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
 
 	R_DrawTexturedQuad();
 }
@@ -561,22 +558,22 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, q
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 
 	if (!loading) {
-		VA_SetElem4(tess2d.data[0].color, r, g, b, a);
-		VA_SetElem4(tess2d.data[1].color, r, g, b, a);
-		VA_SetElem4(tess2d.data[2].color, r, g, b, a);
-		VA_SetElem4(tess2d.data[3].color, r, g, b, a);
+		VA_SetElem4(tess2d.v[0].color, r, g, b, a);
+		VA_SetElem4(tess2d.v[1].color, r, g, b, a);
+		VA_SetElem4(tess2d.v[2].color, r, g, b, a);
+		VA_SetElem4(tess2d.v[3].color, r, g, b, a);
 	}
 	else {
-		VA_SetElem4(tess2d.data[0].color, 0.5, 0.0, 0.0, 0.25);
-		VA_SetElem4(tess2d.data[1].color, 0.0, 0.5, 0.0, 0.75);
-		VA_SetElem4(tess2d.data[2].color, 0.0, 0.5, 0.0, 0.75);
-		VA_SetElem4(tess2d.data[3].color, 0.5, 0.0, 0.0, 0.25);
+		VA_SetElem4(tess2d.v[0].color, 0.5, 0.0, 0.0, 0.25);
+		VA_SetElem4(tess2d.v[1].color, 0.0, 0.5, 0.0, 0.75);
+		VA_SetElem4(tess2d.v[2].color, 0.0, 0.5, 0.0, 0.75);
+		VA_SetElem4(tess2d.v[3].color, 0.5, 0.0, 0.0, 0.25);
 	}
 	R_DrawTexturedQuad();
 }
@@ -635,15 +632,15 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
-	VA_SetElem2(tess2d.data[0].pos, x, y);
-	VA_SetElem2(tess2d.data[1].pos, x + w, y);
-	VA_SetElem2(tess2d.data[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.data[3].pos, x, y + h);
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
 
-	VA_SetElem2(tess2d.data[0].tc, 0.0, 0.0);
-	VA_SetElem2(tess2d.data[1].tc, 1.0, 0.0);
-	VA_SetElem2(tess2d.data[2].tc, 1.0, 1.0);
-	VA_SetElem2(tess2d.data[3].tc, 0.0, 1.0);
+	VA_SetElem2(tess2d.v[0].tc, 0.0, 0.0);
+	VA_SetElem2(tess2d.v[1].tc, 1.0, 0.0);
+	VA_SetElem2(tess2d.v[2].tc, 1.0, 1.0);
+	VA_SetElem2(tess2d.v[3].tc, 0.0, 1.0);
 
 	R_DrawTexturedQuad();
 }

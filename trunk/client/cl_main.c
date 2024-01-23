@@ -1277,6 +1277,8 @@ void CL_InitLocal (void) {
 	cl_railspiral_blue = Cvar_Get ("cl_railspiral_blue", "1", CVAR_ARCHIVE);
 */
 	cl_railSpiral = Cvar_Get("cl_railSpiral", "1", CVAR_ARCHIVE);
+	
+	cl_playerPosition = Cvar_Get("cl_playerPosition", "0", 0);
 
 	cl_decals = Cvar_Get ("cl_decals", "1", CVAR_ARCHIVE);
 	cl_thirdPerson = Cvar_Get ("cl_thirdPerson", "0", CVAR_ARCHIVE);

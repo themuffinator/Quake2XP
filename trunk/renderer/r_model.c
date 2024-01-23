@@ -1253,7 +1253,6 @@ void Mod_BuildVertexCache() {
 
 	R_DeleteVBO(vbo.bspVbo);
 	vbo.bspVbo = R_Alloc_VBO("bspVbo", GL_ARRAY_BUFFER, vbo_size, buf, GL_STATIC_DRAW);
-	GL_BindNullVBO();
 	free(buf);
 
 	R_DeleteVAO(vao.bsp);
@@ -1274,7 +1273,7 @@ void Mod_BuildVertexCache() {
 	vao.depthBsp = R_Alloc_VAO("depthBspVao", ATTF_POS);
 	GL_BindVBO(vbo.bspVbo);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-	GL_BindNullVAO();
+//	GL_BindNullVAO();
 }
 
 void Mod_UpdateLoadingBar(float percent, char* text);
@@ -2351,7 +2350,6 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 	}
 
 	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(int), mod->indexArray, GL_STATIC_DRAW);
-	GL_BindNullIBO();
 }
 
 

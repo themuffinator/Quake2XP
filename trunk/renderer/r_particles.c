@@ -593,6 +593,4 @@ void R_DrawParticles (void) {
 	}
 
 	GL_Disable (GL_BLEND);
-	GL_BindNullVAO();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }

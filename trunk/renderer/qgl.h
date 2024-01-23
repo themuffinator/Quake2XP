@@ -826,6 +826,14 @@ extern PFNGLGETINTEGERI_VPROC					qglGetIntegeri_v;
 extern PFNGLMEMORYBARRIERPROC					qglMemoryBarrier;
 extern PFNGLBINDIMAGETEXTUREPROC				qglBindImageTexture;
 extern PFNGLDISPATCHCOMPUTEPROC					qglDispatchCompute;
+
+//vbo dsa
+extern PFNGLCREATEBUFFERSPROC					qglCreateBuffers;
+extern PFNGLNAMEDBUFFERSTORAGEPROC				qglNamedBufferStorage;
+
+extern PFNGLNAMEDBUFFERDATAPROC					qglNamedBufferData;
+extern PFNGLNAMEDBUFFERSUBDATAPROC				qglNamedBufferSubData;
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;

@@ -165,7 +165,6 @@ void R_InitVertexBuffers() {
 	GL_BindVBO(vbo.twoPointLineIbo);
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->position);
 
-	GL_BindNullVAO();
 	Com_Printf(S_COLOR_GREEN"ok\n\n");	
 }
 

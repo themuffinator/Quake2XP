@@ -53,7 +53,6 @@ void R_DrawSkyBox(){
 
 	GL_BindVAO(vao.sky);
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
-	GL_BindNullVAO();
 }
 
 // convert q2 skybox sides to ogl cubemap faces

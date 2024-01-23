@@ -1312,8 +1312,8 @@ void R_DrawCube(vec4_t v[8], vec3_t org, int size) {
 
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
+//	GL_BindNullVAO();
+//	GL_BindNullVBO();
 }
 
 void R_DrawLightBBox(vec4_t v[8], vec3_t org, vec3_t radius) {
@@ -1335,9 +1335,6 @@ void R_DrawLightBBox(vec4_t v[8], vec3_t org, vec3_t radius) {
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
 
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
-
-	GL_BindNullVAO();
-	GL_BindNullVBO();
 }
 
 void UpdateLightEditor(void) {
@@ -1626,6 +1623,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	float				x, y;
 	vec3_t				tmp;
 	mat4_t				tmpMatrix, mvMatrix;
+	
+	if (CL_PMpointcontents(origin) & CONTENTS_SOLID)
+		return NULL;
 
 	light = (worldShadowLight_t*)malloc (sizeof(worldShadowLight_t));
 	if (!light)
@@ -2153,7 +2153,10 @@ void R_MarkLightCasting(mnode_t *node, qboolean precalc, worldShadowLight_t *lig
 void R_MarkLightCastingRA(mnode_t* node, qboolean precalc, worldShadowLight_t* light);
 
 void R_AddLightInteraction(worldShadowLight_t *light) {
-	
+
+	if (CL_PMpointcontents(light->origin) & CONTENTS_SOLID)
+		return;
+
 	r_lightTimestamp++;
 	light->numInteractionSurfs = 0; // set to zero for ingame editor
 	
@@ -2586,9 +2589,6 @@ void R_DrawLightFlare () {
 
 	GL_DrawElements(GL_TRIANGLES, QUAD_VERTICES, GL_UNSIGNED_SHORT, NULL);
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
-
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
@@ -2636,8 +2636,6 @@ void R_LightFlareOutLine() { //flare editing highlights
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, 2 * sizeof(vec4_t), tess.position);
 	GL_DrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, NULL);
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
 	GL_Disable(GL_LINE_SMOOTH);
 
 	// draw center of flare

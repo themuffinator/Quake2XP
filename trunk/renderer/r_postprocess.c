@@ -34,7 +34,6 @@ void R_DrawFullScreenQuad () {
 
 	GL_BindVAO(vao.fsq);
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-	GL_BindNullVAO();
 }
 
 void R_RestoreViewPortAndScissor() {

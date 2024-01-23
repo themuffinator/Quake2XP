@@ -217,9 +217,6 @@ void R_RenderDecals(qboolean twoside)
 		c_decalsTris += numIndices/3;
 	 }
 
-	GL_BindNullVAO();
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	GL_Disable(GL_BLEND);
 	GL_Disable(GL_POLYGON_OFFSET_FILL);
 	GL_Enable(GL_CULL_FACE);

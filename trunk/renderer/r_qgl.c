@@ -556,6 +556,13 @@ PFNGLGETPROGRAMBINARYPROC				glGetProgramBinary = NULL;
 PFNGLPROGRAMBINARYPROC					glProgramBinary = NULL;
 PFNGLPROGRAMPARAMETERIPROC				glProgramParameteri = NULL;
 
+// vbo dsa
+PFNGLCREATEBUFFERSPROC					qglCreateBuffers = NULL;
+PFNGLNAMEDBUFFERSTORAGEPROC				qglNamedBufferStorage = NULL;
+
+PFNGLNAMEDBUFFERDATAPROC				qglNamedBufferData = NULL;
+PFNGLNAMEDBUFFERSUBDATAPROC				qglNamedBufferSubData = NULL;
+
 //
 // GL_ARB_framebuffer_object
 //

@@ -974,8 +974,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		}
 		GL_Disable(GL_BLEND);
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
+//	GL_BindNullVAO();
+//	GL_BindNullVBO();
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
@@ -1242,8 +1242,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
+//	GL_BindNullVAO();
+//	GL_BindNullVBO();
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);
 
@@ -1357,8 +1357,8 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
-	GL_BindNullVAO();
-	GL_BindNullVBO();
+//	GL_BindNullVAO();
+//	GL_BindNullVBO();
 
 	GL_BlendFunc(GL_ONE, GL_ONE);
 

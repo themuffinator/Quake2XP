@@ -782,9 +782,6 @@ void R_RenderSprites(void)
 		if (currentmodel->type == mod_sprite)
 			R_DrawDistortSpriteModel(currententity);
 	}
-
-	GL_BindNullVAO();
-	GL_BindNullVBO();
 }
 
 // draws ambient opaque entities
@@ -1436,7 +1433,7 @@ void R_RegisterCvars(void)
 	r_fixFovDistroctionRatio->help =	"cylindrical distortion ratio";
 
 	r_screenBlend =						Cvar_Get("r_screenBlend", "1", CVAR_ARCHIVE);
-	r_screenBlendIntensity = Cvar_Get("r_screenBlendIntensity", "0.75", CVAR_ARCHIVE);
+	r_screenBlendIntensity =			Cvar_Get("r_screenBlendIntensity", "0.75", CVAR_ARCHIVE);
 	r_globalFog =						Cvar_Get("r_globalFog", "1", CVAR_ARCHIVE);
 	r_fogEditor =						Cvar_Get("r_fogEditor", "0", 0);
 	r_fogEditor->help =					 "type fogEdit ? for help list.";
@@ -1446,7 +1443,7 @@ void R_RegisterCvars(void)
 
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
-	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_colorTempK->integer =				ClampCvarInteger(1000, 40000, r_colorTempK->integer);
 
 	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);
 	r_nsightDebug =						Cvar_Get("r_nsightDebug", "0", 0);
@@ -1831,6 +1828,12 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglObjectLabel =	(PFNGLOBJECTLABELPROC)		qwglGetProcAddress("glObjectLabel");
 	qglGetObjectLabel = (PFNGLGETOBJECTLABELPROC)	qwglGetProcAddress("glGetObjectLabel");
+
+	// vbo dsa
+	qglCreateBuffers		= (PFNGLCREATEBUFFERSPROC)		qwglGetProcAddress("glCreateBuffers");
+	qglNamedBufferStorage	= (PFNGLNAMEDBUFFERSTORAGEPROC)	qwglGetProcAddress("glNamedBufferStorage");
+	qglNamedBufferData		= (PFNGLNAMEDBUFFERDATAPROC)	qwglGetProcAddress("glNamedBufferData");
+	qglNamedBufferSubData	= (PFNGLNAMEDBUFFERSUBDATAPROC)	qwglGetProcAddress("glNamedBufferSubData");
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);

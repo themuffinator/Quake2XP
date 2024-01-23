@@ -941,8 +941,6 @@ void R_DrawLightWorld(void)
 	}
 	else
 		GL_DrawStaticLightPass();
-
-	GL_BindNullVAO();
 }
 
 
@@ -975,9 +973,6 @@ void R_DrawBSP (void) {
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_BindVAO(vao.bsp);
 	GL_DrawLightmappedPoly(qfalse);
-	GL_BindNullVAO();
-
-
 }
 
 /*
@@ -1118,8 +1113,6 @@ void R_DrawBrushModel (void) {
 	numSceneSurfaces = 0;
 	R_AddAmbientBmodelSurfaces();
 	GL_DrawLightmappedPoly(qtrue);
-	
-	GL_BindNullVAO();
 }
 
 /*
@@ -1286,8 +1279,6 @@ void R_DrawLightBrushModel (void) {
 
 	if(numInteractionSurfs > 0)
 		GL_DrawDynamicLightPass(qtrue, caustics);
-	
-	GL_BindNullVAO();
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 }

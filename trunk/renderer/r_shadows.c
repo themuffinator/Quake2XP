@@ -601,10 +601,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	}
 
 	GL_FrontFace(GL_CW);
-
-	GL_BindNullVAO();
-	GL_BindNullVBO();
-
 	GL_Enable(GL_CULL_FACE);
 	GL_ColorMask(1, 1, 1, 1);
 }
@@ -952,8 +948,12 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 		}
 		surfBase += surf->numEdges * 2;
 	}
+	if (ib <= 0) {
+		Com_DPrintf("No Shadow Verts For %.3f %.3f %.3f \n", currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
+		currentShadowLight->isShadow = 0;
+	}
 
-	if (precalc) {
+	if (precalc && ib) {
 		currentShadowLight->vbo = R_Alloc_VBO(va("sl_vbo_%i", numPreCachedLights), GL_ARRAY_BUFFER, surfBase * sizeof(vec4_t), vcache, GL_STATIC_DRAW);
 		currentShadowLight->ibo = R_Alloc_VBO(va("sl_ibo_%i", numPreCachedLights), GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW);
 		currentShadowLight->iboNumIndices = ib;
@@ -1006,7 +1006,7 @@ void R_CastBspShadowVolumes (void) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	if (currentShadowLight->isStatic) { // draw prechached shadow
+	if (currentShadowLight->isStatic && currentShadowLight->iboNumIndices) { // draw prechached shadow
 		GL_BindVAO(currentShadowLight->vao);
 		GL_DrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
 	}
@@ -1028,12 +1028,6 @@ void R_CastBspShadowVolumes (void) {
 		if (currentmodel->type == mod_brush)
 			R_DrawBrushModelVolumes ();
 	}
-
-	GL_BindNullVAO();
-	GL_BindNullVBO();
-	GL_BindNullIBO();
-
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
-
 }

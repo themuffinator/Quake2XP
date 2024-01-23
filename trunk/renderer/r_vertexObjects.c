@@ -63,20 +63,11 @@ int GL_GetVaoBinding(){
 
 void GL_BindVAO(vertexObject_t *va) {
 	int	id = va->id;
-
-//	if (gl_state.vaoId != id) { // fix me
-		glBindVertexArray(id);
-//		gl_state.vaoId = id;
-//		return;
-//	}
+	glBindVertexArray(id);
 }
 
 void GL_BindNullVAO(void) {
-
-//	if (gl_state.vaoId) {
-		glBindVertexArray(0);
-//		gl_state.programId = -1;
-//	}
+	glBindVertexArray(0);
 }
 
 void R_DeleteVAO(vertexObject_t *in) {
@@ -149,21 +140,8 @@ vertexBuffer_t *R_Alloc_VBO(const char *name, GLuint target, GLuint size, const 
 }
 
 void GL_BindVBO(vertexBuffer_t *vb) {
-//	int	id = vb->id;
-
-	//	if (gl_state.vboId != id) { // fix me
+	int	id = vb->id;
 	qglBindBuffer(vb->target, vb->id);
-	//		gl_state.vboId = id;
-	//		return;
-	//	}
-}
-
-void GL_BindNullVBO() {
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void GL_BindNullIBO() {
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_DeleteVBO(vertexBuffer_t *in) {

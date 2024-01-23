@@ -86,9 +86,6 @@ void Action_Draw (menuaction_s * a) {
 	}
 	if (a->generic.ownerdraw)
 		a->generic.ownerdraw (a);
-	
-	R_Flush2D();
-
 }
 
 qboolean Field_DoEnter (menufield_s * f) {
@@ -173,9 +170,6 @@ void Field_Draw (menufield_s * f) {
 				' ', menuFont);
 		}
 	}
-
-	R_Flush2D();
-
 }
 
 qboolean Field_Key (menufield_s * f, int key) {
@@ -359,8 +353,6 @@ void Menu_AdjustCursor (menuframework_s * m, int dir) {
 				m->cursor = m->nitems - 1;
 		}
 	}
-
-	R_Flush2D();
 }
 
 void Menu_Center (menuframework_s * menu) {
@@ -440,8 +432,6 @@ void Menu_Draw (menuframework_s * menu) {
 	else {
 		Menu_DrawStatusBar (menu->statusbar);
 	}
-
-	R_Flush2D();
 }
 
 void Menu_DrawStatusBar (const char *string) {

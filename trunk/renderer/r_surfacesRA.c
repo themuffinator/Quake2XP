@@ -306,8 +306,6 @@ void R_DrawSurfacesRA(qboolean bmodel) {
 
 	R_CaptureColorBuffer();
 	R_DrawWaterSurfaces(bmodel);
-
-	GL_BindNullVAO();
 }
 
 qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t* light) {
@@ -772,6 +770,6 @@ void R_DrawLightWorldRA(void){
 		}
 	}
 
-	GL_BindNullVAO();
+//	GL_BindNullVAO();
 	GL_Disable(GL_BLEND);
 }
