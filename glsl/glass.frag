@@ -22,7 +22,7 @@ in vec4		v_color;
 void main (void) {
 
 	vec2 N = texture(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
-	vec4 diffuse  = texture(u_colorMap,  v_deformTexCoord.xy);
+	vec4 diffuse  = pow(texture(u_colorMap,  v_deformTexCoord.xy), vec4(2.2));
 	vec3 emmisive =  texture(u_emmisiveMap,  v_deformTexCoord.xy).rgb;
 	// Z-feather
 	float depth = texture(g_depthBufferMap, gl_FragCoord.xy).x;
@@ -41,7 +41,7 @@ void main (void) {
 
     fragData = mix (bluredGlass, clearGlass, diffuse.a);
     // blend glass texture
-	diffuse.rgb *= u_ambientScale;
+//	diffuse.rgb *= u_ambientScale;
 	fragData.rgb += (diffuse.rgb + emmisive) * ((v_color.rgb * 2.0) * v_color.a);
 
     fragData.a = 1.0;

@@ -1,5 +1,5 @@
 //!#include "include/global.inc"
-layout(location = 0) in vec3 att_position;
+layout(location = 0) in vec4 att_position;
 layout(location = 1) in vec3 att_normal;
 layout(location = 2) in vec3 att_tangent;
 layout(location = 3) in vec3 att_binormal;
@@ -16,5 +16,5 @@ void main(){
   v.biNormal  = att_binormal;
   v.normal    = att_normal;
   
-  gl_Position = vec4 (att_position, 1.0);
+  gl_Position = vec4 (att_position.xyz, 1.0);
 }

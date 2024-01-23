@@ -1,5 +1,5 @@
 //!#include "include/global.inc"
-layout(location = 0) in vec3 att_position;
+layout(location = 0) in vec4 att_position;
 layout(location = 4) in vec4 att_color4f;
 layout(location = 5) in vec4 att_texCoordDiffuse;
 
@@ -18,11 +18,11 @@ void main (void) {
 	v_texCoord0 = u_texRotateMatrix * att_texCoordDiffuse;
 	v_color = att_color4f;
 	// soft depth
-	v_depthS = -(u_modelViewMatrix * vec4(att_position, 1.0)).z;
+	v_depthS = -(u_modelViewMatrix * vec4(att_position.xyz, 1.0)).z;
 
 	//-------------------------------------------------------------
 	// compute view space depth
-	vec4 positionVS = u_modelViewMatrix * vec4(att_position, 1.0);
+	vec4 positionVS = u_modelViewMatrix * vec4(att_position.xyz, 1.0);
 	positionVS = vec4(1.0, 0.0, positionVS.z, 1.0);
 	v_depth = -positionVS.z;
 
@@ -31,5 +31,5 @@ void main (void) {
 	d.x /= max(d.y, 1.0);
 	v_deformMul = min(d.xx, 0.02); // mul by deform mul
 
-	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
+	gl_Position = u_modelViewProjectionMatrix * vec4(att_position.xyz, 1.0);
 }

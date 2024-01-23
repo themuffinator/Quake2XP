@@ -100,7 +100,7 @@ Sub Surface Scattering
 */
 vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
-    float MaterialThickness = 0.075;
+    float MaterialThickness = 0.1;
     vec3 ExtinctionCoefficient = vec3(0.45, 0.25, 0.15);
     float backFaceSpecularIntens = 0.666;
 

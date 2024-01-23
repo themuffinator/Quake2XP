@@ -26,11 +26,11 @@ layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_USE_SSAO)			uniform int		u_ssao;
 layout(location = U_PARAM_INT_5)		uniform bool	u_nwm;
+layout(location = U_COLOR)				uniform vec4	u_lightColor;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
 in vec3			v_lightVec;
-in vec4         v_lightColor;
 in vec4			v_CubeCoord;
 in vec3			v_positionVS;
 in vec3			v_lightAtten;
@@ -180,7 +180,7 @@ void main (void) {
 	vec3 dt = texture(u_bumpBlend, v_texCoord * 3.0).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
 	vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
 	vec3 blendNormal =  r * 0.5 + 0.5;
-	vec4 skin_color = SkinLighting(V, L, blendNormal, v_lightColor.rgb, diffuseMap, attenMap, specular.r);
+	vec4 skin_color = SkinLighting(V, L, blendNormal, u_lightColor.rgb, diffuseMap, attenMap, specular.r);
 
 
 	if (u_isCaustics == 1){
@@ -192,7 +192,7 @@ void main (void) {
 	if (u_isAmbient == 1) {
 		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS); 
     vec3 ambient = Diffuse_Lambert(diffuseMap.rgb);
-		fragData = vec4(ambient, 1.0)/*diffuseMap * LambertLighting(curNormal, L)*/ * v_lightColor * attenMap;
+		fragData = vec4(ambient, 1.0)/*diffuseMap * LambertLighting(curNormal, L)*/ * u_lightColor * attenMap;
 		return;
 	}
 	
@@ -221,10 +221,10 @@ void main (void) {
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-			vec3 tmp =  (Diffuse_Lambert(diffuseMap.rgb) * v_lightColor.rgb) * (normalMap.z * 0.5 + 0.5); //  multiplied by fake AO
+			vec3 tmp =  (Diffuse_Lambert(diffuseMap.rgb) * u_lightColor.rgb) * (normalMap.z * 0.5 + 0.5); //  multiplied by fake AO
 
 	//		vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
-			fragData = mix(v_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
+			fragData = mix(u_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
 			if(u_nwm)
 				fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 			return;
@@ -233,15 +233,15 @@ void main (void) {
 			skin_color *= cubeFilter;
 			vec3 metall_color;
 			if(u_useSSS == 1)
-				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * u_lightColor.rgb * cubeFilter.rgb * attenMap;
 			else{
 			if(u_blinnPhong == 1)
-				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * v_lightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_lightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)  {
 			if(u_useSSLR == 1)
-			    metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+			    metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * u_lightColor.rgb * cubeFilter.rgb * attenMap;
 			if(u_useSSLR != 1) 
-				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * u_lightColor.rgb * cubeFilter.rgb * attenMap;
       } 
 			}		
 

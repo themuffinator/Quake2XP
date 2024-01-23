@@ -1,5 +1,5 @@
 //!#include "include/global.inc"
-layout(location = 0) in vec3 att_position;
+layout(location = 0) in vec4 att_position;
 layout(location = 4) in vec4 att_color4f;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
@@ -13,5 +13,5 @@ void main (void)
 	v_texCoord	= att_texCoordDiffuse;
 	v_color		= att_color4f;
 
-	gl_Position = u_orthoMatrix * vec4(att_position, 1.0);
+	gl_Position = u_orthoMatrix * vec4(att_position.xyz, 1.0);
 }

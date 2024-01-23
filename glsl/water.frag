@@ -54,9 +54,10 @@ void main (void) {
 	vec2 texOff = offset.xy / 4.0;
 
 	vec3 diffuse;
-	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.x).r * u_ambientScale; 
-	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.y).g * u_ambientScale;
-	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.z).b * u_ambientScale;	
+	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.x).r; //* u_ambientScale; 
+	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.y).g; //* u_ambientScale;
+	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.z).b; //* u_ambientScale;	
+	diffuse = pow(diffuse, vec3(2.2));
 
 	vec3 N = vec3(0.0, 0.0, 1.0);  // shutup compiler
 	vec2 tc;

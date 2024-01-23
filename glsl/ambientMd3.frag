@@ -28,7 +28,7 @@ void main ()
 	}
 	
 	if(u_isTransluscent == 1){
-		vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
+		vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color; 
 		vec4 env = texture(u_env,  v_shellCoord);
 		vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
 		env *= u_envScale;
@@ -40,7 +40,7 @@ void main ()
 		return;
 	}
 
-	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
+	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color; 
 	vec3 glow = texture(u_Add, v_texCoord).rgb;
 	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
 	float bakedAO = texture(u_rgh, v_texCoord).b;
