@@ -259,10 +259,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	VA_SetElem2(tess.texCoord[3], 1, 1);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, QUAD_VERTICES * sizeof(vec4_t), tess.position);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, QUAD_VERTICES * sizeof(vec2_t), tess.texCoord);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, QUAD_INDICES * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, QUAD_INDICES * sizeof(vec2_t), tess.texCoord);
 
-	GL_DrawElements(GL_TRIANGLES, QUAD_VERTICES, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
 }
 
 //==================================================================================
@@ -697,7 +697,6 @@ void R_DrawPlayerWeapon(void)
 
 	R_DrawPlayerWeaponAmbient();
 
-	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
@@ -739,7 +738,6 @@ void R_DrawPlayerWeapon(void)
 		}
 	}
 
-	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)

@@ -259,7 +259,7 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
 
-	GL_BindVAO(vao.depthBsp);
+//	GL_BindVAO(vao.depthBsp);
 
 	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
@@ -428,7 +428,6 @@ void R_DrawDepthScene (void) {
 	VectorCopy (r_newrefdef.vieworg, modelorg);
 
 	GL_DepthFunc(GL_LESS);
-	GL_DepthMask(1);
 
 	R_DrawSkyBox();
 

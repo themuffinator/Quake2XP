@@ -14084,11 +14084,11 @@ NVAPI_INTERFACE NvAPI_D3D12_GetCopyableFootprints(__in                          
                                                   __in const                         NV_RESOURCE_PARAMS                  *pNVResourceParams,
                                                   __in                               UINT                                 FirstSubresource,
                                                   __in                               UINT                                 NumSubresources,
-                                                  __in                               UINT64                               BaseOffset,
+                                                  __in                               uint64_t                               BaseOffset,
                                                   __out_ecount_opt(NumSubresources)  D3D12_PLACED_SUBRESOURCE_FOOTPRINT  *pLayouts,
                                                   __out_ecount_opt(NumSubresources)  UINT                                *pNumRows,
-                                                  __out_ecount_opt(NumSubresources)  UINT64                              *pRowSizeInBytes,
-                                                  __out_opt                          UINT64                              *pTotalBytes);
+                                                  __out_ecount_opt(NumSubresources)  uint64_t                              *pRowSizeInBytes,
+                                                  __out_opt                          uint64_t                              *pTotalBytes);
 
 #endif //defined(__cplusplus) && defined(__d3d12_h__)
 
@@ -14452,8 +14452,8 @@ DECLARE_INTERFACE(ID3D11MultiGPUDevice_V1)
 #endif
 
     STDMETHOD_(NvAPI_Status,CreateFences)(THIS_ __in UINT count, __out void **ppFences) PURE;
-    STDMETHOD_(NvAPI_Status,SetFence)(THIS_ __in UINT GPUIndex, __in void *hFence, __in UINT64 value) PURE;
-    STDMETHOD_(NvAPI_Status,WaitForFence)(THIS_ __in UINT GPUIMask, __in void *hFence, __in UINT64 value) PURE;
+    STDMETHOD_(NvAPI_Status,SetFence)(THIS_ __in UINT GPUIndex, __in void *hFence, __in uint64_t value) PURE;
+    STDMETHOD_(NvAPI_Status,WaitForFence)(THIS_ __in UINT GPUIMask, __in void *hFence, __in uint64_t value) PURE;
     STDMETHOD_(NvAPI_Status,FreeFences)(THIS_ __in UINT count, __in void **ppFences) PURE;
     STDMETHOD_(NvAPI_Status,PresentCompositingConfig )(THIS_ __in IUnknown *pSwapChain, __in UINT GPUMask, 
                                          __in const D3D11_RECT *pRects, __in UINT flags) PURE;

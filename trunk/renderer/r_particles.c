@@ -37,7 +37,7 @@ int SortPart (particle_t *a, particle_t *b) {
 
 void R_DrawParticles (void) {
 	particle_t *p;
-	uint64		texId, bumpId, texture = 0;
+	uint64_t		texId, bumpId, texture = 0;
 	uint		flagId, flags = 0;
 	int			i, len, loc, partVert = 0, index = 0;
 	vec3_t		point, width;

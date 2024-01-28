@@ -18,7 +18,7 @@ int VectorCompareEpsilon(vec3_t v1, vec3_t v2, float epsilon)
 	return 1;
 }
 
-void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal){
+void CalcTangent4MD3(uint16_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal){
 	float	*v0, *v1, *v2;
 	float	*st0, *st1, *st2;
 	vec3_t	vec1, vec2;
@@ -64,7 +64,7 @@ void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec
 }
 
 
-int R_FindTriangleWithEdge(index_t *indexes, int numtris, index_t start, index_t end, int ignore)
+int R_FindTriangleWithEdge(uint16_t *indexes, int numtris, uint16_t start, uint16_t end, int ignore)
 {
 	int i;
 	int match, count;
@@ -103,11 +103,11 @@ int R_FindTriangleWithEdge(index_t *indexes, int numtris, index_t start, index_t
 R_BuildTriangleNeighbors
 ===============
 */
-void R_BuildTriangleNeighbors(neighbours_t *neighbors, index_t *indexes, int numtris)
+void R_BuildTriangleNeighbors(neighbours_t *neighbors, uint16_t *indexes, int numtris)
 {
 	int				i;
 	neighbours_t	*n;
-	index_t			*index;
+	uint16_t			*index;
 
 	for (i = 0, index = indexes, n = neighbors; i < numtris; i++, index += 3, n++)
 	{
@@ -134,7 +134,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	dmd3vertex_t		*inVerts;
 	uint				*inIndex;
 
-	index_t				*outIndex;
+	uint16_t				*outIndex;
 	md3Vertex_t			*outVerts;
 	md3ST_t				*outCoord;
 	md3Mesh_t			*outMesh;
@@ -324,13 +324,13 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// load the indexes
 		//
 		inIndex = (unsigned *)((byte *)inMesh + LittleLong(inMesh->ofs_tris));
-		outIndex = outMesh->indexes = (index_t*)Hunk_Alloc(sizeof(index_t) * outMesh->num_tris * 3);
+		outIndex = outMesh->indexes = (uint16_t*)Hunk_Alloc(sizeof(uint16_t) * outMesh->num_tris * 3);
 
 		for (j = 0; j < outMesh->num_tris; j++, inIndex += 3, outIndex += 3)
 		{
-			outIndex[0] = (index_t)LittleLong(inIndex[0]);
-			outIndex[1] = (index_t)LittleLong(inIndex[1]);
-			outIndex[2] = (index_t)LittleLong(inIndex[2]);
+			outIndex[0] = (uint16_t)LittleLong(inIndex[0]);
+			outIndex[1] = (uint16_t)LittleLong(inIndex[1]);
+			outIndex[2] = (uint16_t)LittleLong(inIndex[2]);
 		}
 
 		//
@@ -844,7 +844,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		if (mesh->muzzle) {
 			GL_Disable(GL_BLEND);
-			GL_DepthMask(1);
+		//	GL_DepthMask(1);
 			GL_Enable(GL_CULL_FACE);
 			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
@@ -973,9 +973,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			}
 		}
 		GL_Disable(GL_BLEND);
-
-//	GL_BindNullVAO();
-//	GL_BindNullVBO();
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);

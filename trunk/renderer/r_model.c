@@ -952,7 +952,7 @@ void GL_CalcBspIndeces(msurface_t *surf) {
 	int index, i;
 
 	surf->numIndices = (surf->numVertices - 2) * 3;
-	surf->indices = (index_t*)Hunk_Alloc(surf->numIndices * sizeof(int));
+	surf->indices = (uint16_t*)Hunk_Alloc(surf->numIndices * sizeof(int));
 
 	for (i = 0, index = 2; i < surf->numIndices; i += 3, index++) {
 		surf->indices[i + 0] = 0;
@@ -1273,7 +1273,7 @@ void Mod_BuildVertexCache() {
 	vao.depthBsp = R_Alloc_VAO("depthBspVao", ATTF_POS);
 	GL_BindVBO(vbo.bspVbo);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-//	GL_BindNullVAO();
+	GL_BindNullVAO();
 }
 
 void Mod_UpdateLoadingBar(float percent, char* text);
@@ -2291,14 +2291,14 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
-	int		*order, count, numVerts = 0,
-			index = 0, i, n;
+	int		*order, count, numVerts = 0, i, n;
+	uint16_t indices[MAX_VERTICES], index = 0;
 
 	order = (int *)((byte *)pheader + pheader->ofs_glcmds);
 
 	while (count = *order++){
 
-		if (index > MAX_INDICES - 6)
+		if (index > MAX_VERTICES - 6)
 			break;
 
 		if (count < 0){
@@ -2308,9 +2308,9 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 			for (i = 0; i < n; i++){
 
-				tess.indices[index++] = numVerts;
-				tess.indices[index++] = numVerts + i + 1;
-				tess.indices[index++] = numVerts + i + 2;
+				indices[index++] = numVerts;
+				indices[index++] = numVerts + i + 1;
+				indices[index++] = numVerts + i + 2;
 			}
 		}
 		else if (count > 0){
@@ -2319,9 +2319,9 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 			for (i = 0; i < n; i++){
 
-				tess.indices[index++] = numVerts + i + (i & 1);
-				tess.indices[index++] = numVerts + i + ((i & 1) ^ 1);
-				tess.indices[index++] = numVerts + i + 2;
+				indices[index++] = numVerts + i + (i & 1);
+				indices[index++] = numVerts + i + ((i & 1) ^ 1);
+				indices[index++] = numVerts + i + 2;
 			}
 		}
 		else
@@ -2333,10 +2333,10 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 		numVerts += count;
 	}
 
-	mod->numIndices = index;
-	mod->numVertexes = numVerts;
-	mod->indexArray = Hunk_Alloc(index * sizeof(int));
-	memcpy(mod->indexArray, tess.indices, index * sizeof(int));
+	mod->numIndices		= index;
+	mod->numVertexes	= numVerts;
+	mod->indexArray		= Hunk_Alloc(index * sizeof(ushort));
+	memcpy(mod->indexArray, indices, index * sizeof(ushort));
 	
 	char pname[64];
 	strcpy(pname, mod->name);
@@ -2349,7 +2349,7 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 		pname[strlen(pname) - 4] = 0;
 	}
 
-	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(int), mod->indexArray, GL_STATIC_DRAW);
+	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(ushort), mod->indexArray, GL_STATIC_DRAW);
 }
 
 

@@ -74,7 +74,7 @@ void R_RenderDecals(qboolean twoside)
 {
     decals_t    *dl, *next, *active; 
     vec3_t		decalColor;
-	uint64	    texId, texture = 0;
+	uint64_t	    texId, texture = 0;
     int			x, i;
     int			numIndices = 0, numVertices = 0;
 	uint		oldFlag = 0;

@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 // bindless cache
-void GL_SetBindlessTexture(int loc, uint64 handle) {
+void GL_SetBindlessTexture(int loc, uint64_t handle) {
 
 	if (gl_state.bindlessCache[gl_state.currentBindlessLocation] == loc &&
 		gl_state.bindlessCache[gl_state.currentBindlessHandle] == handle)

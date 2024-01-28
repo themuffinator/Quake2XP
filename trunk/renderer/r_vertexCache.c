@@ -4,7 +4,7 @@
 */
 #include "r_local.h"
  
-ushort cube_idx[] = {
+int8_t cube_idx[] = {
 	// front
 	0, 1, 2,
 	2, 3, 0,
@@ -24,7 +24,7 @@ ushort cube_idx[] = {
 	3, 2, 6,
 	6, 7, 3
 };
-uint	ibo_md3Shadow[MD3_MAX_VERTS * MD3_MAX_MESHES];
+uint	ibo_md3Shadow[MD3_MAX_VERTICES];
 
 void R_InitVertexBuffers() {
 
@@ -32,8 +32,10 @@ void R_InitVertexBuffers() {
 	int			i, idx = 0;
 
 	Com_Printf("Initializing Vertex Buffers: ");
-
-	index_t	ibo_quad[] = { 0, 1, 2, 0, 2, 3 };
+	
+	int8_t	ibo_2pl[]	= { 0, 1 };
+	int8_t	ibo_quad[]	= { 0, 1, 2, 0, 2, 3 };
+	
 	for (i = 0; i < MAX_VERTICES_2D; i += 4) {
 
 		ibo_quadString[idx++] = i + 0;
@@ -49,7 +51,7 @@ void R_InitVertexBuffers() {
 	VA_SetElem2(tmpVerts[2], vid.width, 0);
 	VA_SetElem2(tmpVerts[3], 0, 0);
 	
-	for (i = 0; i < MD3_MAX_VERTS * MD3_MAX_MESHES; i++)
+	for (i = 0; i < MD3_MAX_VERTICES; i++)
 		ibo_md3Shadow[i] = i;
 
 	vec3_t v[8];
@@ -65,21 +67,19 @@ void R_InitVertexBuffers() {
 	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
 	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
 
-	index_t	ibo_2pl[] = { 0, 1 };
-
-	vbo.quadIbo			= R_Alloc_VBO("QuadIbo", GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
-	vbo.quadStringIbo	= R_Alloc_VBO("Quad_String_Ibo", GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quadString), ibo_quadString, GL_STATIC_DRAW);
-	vbo.tess2dVbo		= R_Alloc_VBO("Tess2D_Vbo", GL_ARRAY_BUFFER, sizeof(tess2d), &tess2d, GL_DYNAMIC_DRAW);
-	vbo.tess2dArrayVbo	= R_Alloc_VBO("Tess2D_Array_Vbo", GL_ARRAY_BUFFER, sizeof(tess2dArray), &tess2dArray, GL_DYNAMIC_DRAW);
-	vbo.fsqVbo			= R_Alloc_VBO("Full_Screen_Quad_Vbo", GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
-	vbo.aliasShadowVbo	= R_Alloc_VBO("Alias_Shadow_Vbo", GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW);
-	vbo.md2ShadowIbo	= R_Alloc_VBO("Md2_Shadow_Ibo", GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
-	vbo.md3ShadowIbo	= R_Alloc_VBO("Md3_Shadow_Ibo", GL_ELEMENT_ARRAY_BUFFER, i * sizeof(uint), ibo_md3Shadow, GL_DYNAMIC_DRAW);
-	vbo.dynamicVbo		= R_Alloc_VBO("Dynamic_Vbo", GL_ARRAY_BUFFER, sizeof(tess_t), 0, GL_DYNAMIC_DRAW);
-	vbo.dynamicIbo		= R_Alloc_VBO("Dynamic_Ibo", GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
-	vbo.cubeIbo			= R_Alloc_VBO("Cube_Ibo", GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_idx), cube_idx, GL_STATIC_DRAW);
-	vbo.skyBoxVbo		= R_Alloc_VBO("Sky_Box_Vbo", GL_ARRAY_BUFFER, sizeof(vec3_t) * 8, v, GL_STATIC_DRAW);
-	vbo.twoPointLineIbo = R_Alloc_VBO("twoPointLineIbo", GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_2pl), ibo_2pl, GL_STATIC_DRAW);
+	vbo.tess2dVbo		= R_Alloc_VBO("Tess2D_Vbo",				GL_ARRAY_BUFFER,			sizeof(tess2d), &tess2d, GL_DYNAMIC_DRAW);
+	vbo.tess2dArrayVbo	= R_Alloc_VBO("Tess2D_Array_Vbo",		GL_ARRAY_BUFFER,			sizeof(tess2dArray), &tess2dArray, GL_DYNAMIC_DRAW);
+	vbo.fsqVbo			= R_Alloc_VBO("Full_Screen_Quad_Vbo",	GL_ARRAY_BUFFER,			sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
+	vbo.aliasShadowVbo	= R_Alloc_VBO("Alias_Shadow_Vbo",		GL_ARRAY_BUFFER,			MD3_MAX_VERTICES * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW);
+	vbo.dynamicVbo		= R_Alloc_VBO("Dynamic_Vbo",			GL_ARRAY_BUFFER,			sizeof(tess_t), 0, GL_DYNAMIC_DRAW);
+	vbo.skyBoxVbo		= R_Alloc_VBO("Sky_Box_Vbo",			GL_ARRAY_BUFFER,			sizeof(vec3_t) * 8, v, GL_STATIC_DRAW);
+	vbo.quadIbo			= R_Alloc_VBO("QuadIbo",				GL_ELEMENT_ARRAY_BUFFER,	sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
+	vbo.quadStringIbo	= R_Alloc_VBO("Quad_String_Ibo",		GL_ELEMENT_ARRAY_BUFFER,	sizeof(ibo_quadString), ibo_quadString, GL_STATIC_DRAW);
+	vbo.md2ShadowIbo	= R_Alloc_VBO("Md2_Shadow_Ibo",			GL_ELEMENT_ARRAY_BUFFER,	MD3_MAX_INDICES * sizeof(uint), 0, GL_DYNAMIC_DRAW);
+	vbo.md3ShadowIbo	= R_Alloc_VBO("Md3_Shadow_Ibo",			GL_ELEMENT_ARRAY_BUFFER,	i * sizeof(uint), ibo_md3Shadow, GL_DYNAMIC_DRAW);
+	vbo.dynamicIbo		= R_Alloc_VBO("Dynamic_Ibo",			GL_ELEMENT_ARRAY_BUFFER,	MD3_MAX_INDICES * sizeof(uint), 0, GL_DYNAMIC_DRAW);
+	vbo.cubeIbo			= R_Alloc_VBO("Cube_Ibo",				GL_ELEMENT_ARRAY_BUFFER,	sizeof(cube_idx), cube_idx, GL_STATIC_DRAW);
+	vbo.twoPointLineIbo = R_Alloc_VBO("twoPointLineIbo",		GL_ELEMENT_ARRAY_BUFFER,	sizeof(ibo_2pl), ibo_2pl, GL_STATIC_DRAW);
 
 	// Gen VAOs
 	vao.sky = R_Alloc_VAO("skyVao", ATTF_POS);
@@ -164,6 +164,8 @@ void R_InitVertexBuffers() {
 	GL_BindVBO(vbo.dynamicVbo);
 	GL_BindVBO(vbo.twoPointLineIbo);
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, ((tess_t *)0)->position);
+	
+	GL_BindNullVAO();
 
 	Com_Printf(S_COLOR_GREEN"ok\n\n");	
 }

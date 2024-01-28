@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __REF_H
 
 #include "../qcommon/qcommon.h"
+#include <stdint.h>
+#include <limits.h>
 
 // Uncle Mike
 #define FBitSet( iBitVector, bit )	((iBitVector) & (bit))
@@ -144,8 +146,7 @@ typedef enum {
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
 typedef unsigned long		ulong;
-typedef ushort				index_t;
-typedef uint				index32_t;
+
 typedef const char			cchar;
 typedef unsigned char		uchar;
 
@@ -309,10 +310,7 @@ typedef enum {
 
 vec3_t hColor;
 
-typedef unsigned long long uint64;
-
 typedef struct image_s {
-
 	char		name[MAX_QPATH];		// game path, including extension
 	char		bare_name[MAX_QPATH];	// filename only, as called when searching
 	imagetype_t type;
@@ -347,7 +345,7 @@ typedef struct image_s {
 				rghScale;
 
 	//bindless graphics
-	uint64		handle;
+	uint64_t		handle;
 	
 	//lut description
 //	float		lutSize;
@@ -460,7 +458,7 @@ typedef struct msurface_s {
 
 	int	numIndices;
 	int	numVertices;
-	index_t	*indices;
+	uint16_t	*indices;
 	unsigned int sort;
 
 	//vbo
@@ -510,7 +508,7 @@ typedef struct decals_t {
 
 	int numverts;
 	int numIndices;
-	index_t	*indices;
+	uint16_t	*indices;
 
 	vec3_t verts[MAX_DECAL_VERTS];
 	vec2_t stcoords[MAX_DECAL_VERTS];

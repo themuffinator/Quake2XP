@@ -473,17 +473,12 @@ SCR_DrawConsole
 void SCR_DrawConsole (void) {
 	Con_CheckResize ();
 	
-	if (cls.state == ca_disconnected || cls.state == ca_connecting) {	// forced
-		// full
-		// screen
-		// console
+	if (cls.state == ca_disconnected || cls.state == ca_connecting) {	// forced  full screen console
 		Con_DrawConsole (1.0);
 		return;
 	}
 
-	if (cls.state != ca_active || !cl.refresh_prepped) {	// connected,
-		// but can't
-		// render
+	if (cls.state != ca_active || !cl.refresh_prepped) {	// connected, but can't render
 		float size = 0.5;
 		Con_DrawConsole (size);
 		Draw_Fill (0, viddef.height * size, viddef.width, viddef.height * size, 0.0, 0.0, 0.0, 1.0, qfalse);
@@ -825,7 +820,7 @@ void SCR_DrawSpeeds(void) {
 	int	scale = ui_fontScale->integer * 8 * FONT_INTERVAL;
 	int fontScale = ui_fontScale->integer;
 
-	if (!r_speeds->integer)
+	if (!r_speeds->integer || !cl.refresh_prepped)
 		return;
 
 	sprintf(bspTris, "%i Bsp Tris", c_brushTris);
@@ -869,7 +864,7 @@ void SCR_DrawCpuUtilization() {
 	int		fontScale = ui_fontScale->integer;
 	int		scale = 8 * fontScale * FONT_INTERVAL;
 
-	if (!sys_cpuUtilization->integer)
+	if (!sys_cpuUtilization->integer || !cl.refresh_prepped)
 		return;
 
 #ifdef _WIN32
@@ -900,6 +895,9 @@ void SCR_DrawFPS (void) {
 	static	int		fpsAvg = 0;
 	int	fontScale = ui_fontScale->integer;
 	int scale = 8 * ui_fontScale->integer * FONT_INTERVAL;
+	
+	if (cls.state != ca_active || !cl.refresh_prepped || !ui_drawFPS->integer)
+		return;
 
 	fps++;
 
@@ -929,14 +927,11 @@ void SCR_DrawFPS (void) {
 	avrFpsLengh += 1;
 	minFpsLengh += 1;
 
-	if (ui_drawFPS->integer && (cls.state == ca_active)) {
-		
-		if (ui_drawFPS->integer == 2) {
-			CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65 - 40, fontScale, avrfps, consFont);
-			CL_AddString(viddef.width - minFpsLengh * scale, viddef.height * 0.65 - 20, fontScale, minfps, consFont);
-		} else
-			CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65, fontScale, avrfps, consFont);
-	}
+	if (ui_drawFPS->integer == 2) {
+		CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65 - 40, fontScale, avrfps, consFont);
+		CL_AddString(viddef.width - minFpsLengh * scale, viddef.height * 0.65 - 20, fontScale, minfps, consFont);
+	} else
+		CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65, fontScale, avrfps, consFont);
 }
 
 
@@ -1000,7 +995,7 @@ void SCR_ShowTexNames() {
 	if (!cl_showMaterials->integer)
 		return;
 
-	if (cls.state != ca_active)
+	if (cls.state != ca_active || !cl.refresh_prepped)
 		return;
 
 	AngleVectors(cl.refdef.viewangles, forward, right, up);
@@ -1130,7 +1125,7 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawLoading ();
 		SCR_DrawSpeeds();
 	
-		if (cls.state == ca_active && cl_playerPosition->integer) {
+		if (cls.state == ca_active && cl_playerPosition->integer && cl.refresh_prepped) {
 			char pos[128];
 			Com_sprintf(pos, sizeof(pos), "%i %i %i", (int)cl.refdef.vieworg[0], (int)cl.refdef.vieworg[1], (int)cl.refdef.vieworg[2]);
 			CL_AddString(0, 8 * ui_fontScale->integer, ui_fontScale->integer, pos, consFont);
@@ -1138,7 +1133,7 @@ void SCR_UpdateScreen (void) {
 
 		int stop = Sys_Milliseconds();
 
-		if (ui_drawFPS->integer == 2 && (cls.state == ca_active)) {
+		if (ui_drawFPS->integer == 2 && (cls.state == ca_active) && cl.refresh_prepped) {
 			static char	frameTime[22] = { 0 };
 			static int frame = 0, lastUpdate, delta = 4;
 			static float msec;

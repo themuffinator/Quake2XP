@@ -316,7 +316,7 @@ typedef struct model_s {
 	neighbors_t *neighbours;
 
 	int		num_tris;
-	index_t *indexes;
+	uint16_t *indexes;
 
 	float		ambient;
 	float		diffuse;
@@ -332,8 +332,8 @@ typedef struct model_s {
 	byte	*binormals;
 	byte	*tangents;
 
-	int *indexArray;
-	int	numIndices;
+	uint16_t	*indexArray;
+	uint16_t	numIndices;
 
 	vertexBuffer_t	*ibo;
 	mat3_t	axis;

@@ -475,7 +475,7 @@ void CreateThermalBuffer(void);
 void CreateLinearDepthBuffer(void);
 void R_LinearDepth(void);
 void R_DrawLightWorldRA(void);
-void GL_SetBindlessTexture(int loc, uint64 handle);
+void GL_SetBindlessTexture(int loc, uint64_t handle);
 void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray);
 void GL_DrawArrays(int mode, int first, int count);
 void R_HdrLumFbo();
@@ -754,8 +754,8 @@ typedef struct {
 
 	int prev_mode;
 
-	uint64	bindlessCache[8192];
-	uint64	currentBindlessHandle;
+	uint64_t	bindlessCache[8192];
+	uint64_t	currentBindlessHandle;
 	int		currentBindlessLocation;
 
 	qboolean	texture_compression_bptc;
@@ -891,18 +891,16 @@ extern glstate_t gl_state;
 #define VA_SetElem3v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2])
 #define VA_SetElem4v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2],(v)[3]=(a)[3])
 
-#define MAX_STREAM_VBO_VERTS MD3_MAX_VERTS * MD3_MAX_MESHES
-#define MAX_STREAM_IBO_IDX	 MAX_STREAM_VBO_VERTS *3
-
 #define CUBE_INDICES	36
 #define CUBE_VERTS		8
-#define QUAD_VERTICES	6
+#define QUAD_INDICES	6
 
 #define MAX_VERTICES	65536
 #define MAX_INDICES		MAX_VERTICES * 3
 
-#define MAX_POLY_VERT	128
 uint	indexArray[MAX_INDICES];
+
+#define MAX_POLY_VERT	128
 
 typedef struct tess_s {
 
@@ -927,8 +925,8 @@ typedef struct {
 }vertex_t;
 
 typedef struct {
-	vertex_t v[MAX_VERTICES];
-	uint	indices[MAX_INDICES];
+	vertex_t	v[MAX_VERTICES];
+	uint		indices[MAX_INDICES];
 }tesselator_t;
 tesselator_t tess2;
 
@@ -942,8 +940,7 @@ tesselator_t tess2;
 // 2D VBO stuff
 #define MAX_VERTICES_2D 16384
 #define MAX_INDICES_2D MAX_VERTICES_2D * 3
-
-uint ibo_quadString[MAX_INDICES_2D];
+uint16_t ibo_quadString[MAX_INDICES_2D];
 
 #define	VERT2D_POS		((byte *)(NULL)+0)
 #define	VERT2D_TC		((byte *)(NULL)+8)
@@ -969,7 +966,7 @@ tess2d_t tess2d;
 typedef struct {
 	vertex2d_t v[MAX_VERTICES_2D];
 	int numVerts, numSymbols;
-	uint64 handle;
+	uint64_t handle;
 }tess2dArray_t;
 tess2dArray_t tess2dArray;
 
@@ -1008,7 +1005,7 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 typedef struct {
 	// Atlas texId for each vector.
 	int		texnum[3];
-	uint64	handle[3];
+	uint64_t	handle[3];
 
 	// The lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly.

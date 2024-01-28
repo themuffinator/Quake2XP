@@ -53,7 +53,7 @@ void R_DrawTexturedQuad() {
 	GL_BindVBO(vbo.tess2dVbo);
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
-	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
 	GL_BindNullVAO();
 }
 
@@ -76,7 +76,7 @@ void R_Flush2D() {
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2dArray), &tess2dArray);
 
-	GL_DrawElements(GL_TRIANGLES, 6 * tess2dArray.numSymbols, GL_UNSIGNED_INT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6 * tess2dArray.numSymbols, GL_UNSIGNED_SHORT, NULL);
 
 	tess2dArray.numVerts = 0;
 	tess2dArray.numSymbols = 0;
@@ -115,10 +115,10 @@ void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 2].tc, fcol +size, frow + size);
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 3].tc, fcol, frow + size);
 
-	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 0].pos, x,	y);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 0].pos, x,	 y);
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 1].pos, x1, y);
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 2].pos, x1, y1);
-	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 3].pos, x,	y1);
+	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 3].pos, x,	 y1);
 
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(tess2dArray.v[tess2dArray.numVerts + i].color, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);

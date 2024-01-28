@@ -343,7 +343,7 @@ void R_DrawMD3ShadowVolume(){
 	md3Vertex_t		*v, *ov;
 	vec3_t			move, v1, v2, normal, trinormal, temp,
 					delta, vectors[3], lightOrg;
-	index_t			*idx, *index0, *index1;
+	uint16_t			*idx, *index0, *index1;
 
 	if (!R_EntityCastShadow())
 		return;

@@ -1527,8 +1527,6 @@ void CL_AddPlayerBeams (void) {
 		//PMM
 		if (cl_mod_heatbeam && (b->model == cl_mod_heatbeam)
 			&& (b->entity == cl.playernum + 1)) {
-			vec_t len;
-
 			len = VectorLength (dist);
 			VectorScale (f, len, dist);
 			VectorMA (dist, (hand_multiplier * b->offset[0]), r, dist);

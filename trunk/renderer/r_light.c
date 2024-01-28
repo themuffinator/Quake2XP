@@ -1310,7 +1310,7 @@ void R_DrawCube(vec4_t v[8], vec3_t org, int size) {
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
 
-	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 
 //	GL_BindNullVAO();
 //	GL_BindNullVBO();
@@ -1334,7 +1334,7 @@ void R_DrawLightBBox(vec4_t v[8], vec3_t org, vec3_t radius) {
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
 
-	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 }
 
 void UpdateLightEditor(void) {
@@ -2583,11 +2583,11 @@ void R_DrawLightFlare () {
 	GL_BindVBO(vbo.dynamicVbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	QUAD_VERTICES * sizeof(vec4_t), tess.position);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	QUAD_VERTICES * sizeof(vec2_t), tess.texCoord);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		QUAD_VERTICES * sizeof(vec4_t), tess.color);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	QUAD_INDICES * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	QUAD_INDICES * sizeof(vec2_t), tess.texCoord);
+	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		QUAD_INDICES * sizeof(vec4_t), tess.color);
 
-	GL_DrawElements(GL_TRIANGLES, QUAD_VERTICES, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
 
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
@@ -2634,7 +2634,7 @@ void R_LightFlareOutLine() { //flare editing highlights
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, 2 * sizeof(vec4_t), tess.position);
-	GL_DrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, NULL);
 
 	GL_Disable(GL_LINE_SMOOTH);
 

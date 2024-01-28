@@ -114,7 +114,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Disable(GL_CULL_FACE);
-		GL_DepthMask(0);
 	}
 
 	if (currententity->flags & (RF_WEAPONMODEL))
@@ -313,7 +312,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	if (currentmodel->envMap || r_debugTbn->integer)
 		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, numVerts * sizeof(vec3_t), tess.normal);
 
-	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 	if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
 		GL_BindProgram(tbnDebugProgram);
@@ -325,7 +324,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		else
 			qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
 
-		GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+		GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 	}
 
 	if (r_showTris->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
@@ -337,7 +336,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		qglUniform3f(U_COLOR, 0.0, 1.0, 1.0);
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-		GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+		GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		GL_Enable(GL_DEPTH_TEST);
@@ -345,7 +344,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
-		GL_DepthMask(1);
 	}
 
 	if (currententity->flags & (RF_WEAPONMODEL))
@@ -447,7 +445,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, numVerts * sizeof(vec4_t), tess.position);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, numVerts * sizeof(vec3_t), tess.normal);
 	
-	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
@@ -636,7 +634,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,	numVerts * sizeof(vec3_t), tess.binormal);
 	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,		numVerts * sizeof(vec3_t), tess.normal);
 
-	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, NULL);
+	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 }
 
 
