@@ -30,8 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int	numShadowSurf, shadowTimeStamp;
 
 msurface_t* shadow_surfaces[MAX_MAP_FACES];
-vec4_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
-uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+vec4_t		vcache[MAX_MAP_FACES];
+uint		icache[MAX_MAP_FACES * 3];
 
 char	triangleFacingLight[MAX_VERTICES];
 vec4_t	s_lerped[MAX_VERTS];
@@ -39,7 +39,7 @@ vec4_t	s_lerped[MAX_VERTS];
 vec4_t	vcacheMd2[MAX_VERTICES];
 uint	icacheMd2[MAX_INDICES];
 
-float	vcacheMd3[MD3_MAX_VERTS * MD3_MAX_MESHES];
+float	vcacheMd3[MD3_MAX_VERTICES];
 
 
 /*

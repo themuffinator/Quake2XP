@@ -90,10 +90,12 @@ typedef struct {
 typedef struct {
 	menucommon_s generic;
 
-	float minvalue;
-	float maxvalue;
-	float curvalue;
+	float minValue;
+	float maxValue;
+	float curValue;
+	float divRange;
 	int		intVal;
+	qboolean percent;
 	float range;
 } menuslider_s;
 

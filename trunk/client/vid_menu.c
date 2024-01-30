@@ -96,7 +96,7 @@ static	menufield_s		s_menuColorTemp;
 /////////////////////////////////////////////////////////
 
 static void ambientLevelCallback (void *s) {
-	float ambient = s_ambientLevel_slider.curvalue / 20;
+	float ambient = s_ambientLevel_slider.curValue / 20;
 	Cvar_SetValue ("r_lightmapScale", ambient);
 }
 
@@ -114,7 +114,7 @@ static void ParallaxCallback (void *s) {
 
 static void reliefScaleCallback(void *s) {
 	menuslider_s *slider = (menuslider_s *)s;
-	Cvar_SetValue("r_parallaxScale", slider->curvalue * 1);
+	Cvar_SetValue("r_parallaxScale", slider->curValue * 1);
 }
 
 static void reliefShadowCallback(void *s) {
@@ -136,42 +136,42 @@ static void AnisoCallback (void *s) {
 
 static void BrightnessCallback (void *s) {
 	float brt;
-	brt = s_brightness_slider.curvalue / 10;
+	brt = s_brightness_slider.curValue / 10;
 
 	Cvar_SetValue ("r_brightness", brt);
 }
 
 static void ContrastCallback(void *s) {
 	float contr;
-	contr = s_contrast_slider.curvalue / 10;
+	contr = s_contrast_slider.curValue / 10;
 
 	Cvar_SetValue("r_contrast", contr);
 }
 
 static void SaturationCallback(void *s) {
 	float sat;
-	sat = s_saturation_slider.curvalue / 10;
+	sat = s_saturation_slider.curValue / 10;
 
 	Cvar_SetValue("r_saturation", sat);
 }
 
 static void GammaCallback(void *s) {
 	float gm;
-	gm = s_gamma_slider.curvalue / 10;
+	gm = s_gamma_slider.curValue / 10;
 
 	Cvar_SetValue("r_gamma", gm);
 }
 
 static void VibranceCallback(void *s) {
 	float vb;
-	vb = s_vibrance_slider.curvalue / 10;
+	vb = s_vibrance_slider.curValue / 10;
 
 	Cvar_SetValue("r_colorVibrance", vb);
 }
 
 static void FixFovCallback(void *s) {
 	float vb;
-	vb = s_fixfov_slider.curvalue / 10;
+	vb = s_fixfov_slider.curValue / 10;
 
 	Cvar_SetValue("r_fixFovStrength", vb);
 }
@@ -214,12 +214,12 @@ static void mbCallback (void *s) {
 }
 
 static void bloomLevelCallback(void *s) {
-	float intens = s_bloomIntens_slider.curvalue / 10;
+	float intens = s_bloomIntens_slider.curValue / 10;
 	Cvar_SetValue("r_hdrGlareIntens", intens);
 }
 
 static void bloomLevelCallback2(void* s) {
-	float intens = s_bloomIntens2_slider.curvalue / 10;
+	float intens = s_bloomIntens2_slider.curValue / 10;
 	Cvar_SetValue("r_hdrBloomIntens", intens);
 }
 
@@ -233,7 +233,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_fullScreen", s_fs_box.curInteger);
 	Cvar_SetValue ("r_drawFlares", s_flare_box.curInteger);
 	Cvar_SetValue ("r_mode", s_mode_list.curInteger);
-	Cvar_SetValue ("r_parallaxScale", s_reliefScale_slider.curvalue);
+	Cvar_SetValue ("r_parallaxScale", s_reliefScale_slider.curValue);
 	Cvar_SetValue ("r_parallaxMapping", s_parallax_box.curInteger);
 
 	Cvar_SetValue("r_selfShadowingParallax", s_parallax_shadow.curInteger);
@@ -246,7 +246,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_vsync", s_finish_box.curInteger);
 	Cvar_SetValue ("r_filmicFx", s_film_grain.curInteger);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curInteger);
-	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curvalue);
+	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curValue);
 
 	switch (s_aniso_list.curInteger)
 	{
@@ -429,9 +429,10 @@ void M_ColorInit() {
 	s_gamma_slider.generic.y = 10 * ui_fontScale->value;
 	s_gamma_slider.generic.name = "Gamma";
 	s_gamma_slider.generic.callback = GammaCallback;
-	s_gamma_slider.minvalue = 15;
-	s_gamma_slider.maxvalue = 22;
-	s_gamma_slider.curvalue = r_gamma->value * 10;
+	s_gamma_slider.minValue = 15;
+	s_gamma_slider.maxValue = 22;
+	s_gamma_slider.curValue = r_gamma->value * 10;
+	s_gamma_slider.divRange = 10;
 	s_gamma_slider.generic.statusbar = "Screen Gamma";
 
 	s_brightness_slider.generic.type = MTYPE_SLIDER;
@@ -439,9 +440,10 @@ void M_ColorInit() {
 	s_brightness_slider.generic.y = 20 * ui_fontScale->value;
 	s_brightness_slider.generic.name = "Brightness";
 	s_brightness_slider.generic.callback = BrightnessCallback;
-	s_brightness_slider.minvalue = 1;
-	s_brightness_slider.maxvalue = 20;
-	s_brightness_slider.curvalue = r_brightness->value * 10;
+	s_brightness_slider.minValue = 1;
+	s_brightness_slider.maxValue = 20;
+	s_brightness_slider.curValue = r_brightness->value * 10;
+	s_brightness_slider.divRange = 10;
 	s_brightness_slider.generic.statusbar = "Screen Brightness";
 
 	s_contrast_slider.generic.type = MTYPE_SLIDER;
@@ -449,9 +451,10 @@ void M_ColorInit() {
 	s_contrast_slider.generic.y = 30 * ui_fontScale->value;
 	s_contrast_slider.generic.name = "Contrast";
 	s_contrast_slider.generic.callback = ContrastCallback;
-	s_contrast_slider.minvalue = 1;
-	s_contrast_slider.maxvalue = 20;
-	s_contrast_slider.curvalue = r_contrast->value * 10;
+	s_contrast_slider.minValue = 1;
+	s_contrast_slider.maxValue = 20;
+	s_contrast_slider.curValue = r_contrast->value * 10;
+	s_contrast_slider.divRange = 10;
 	s_contrast_slider.generic.statusbar = "Screen Contrast";
 
 	s_saturation_slider.generic.type = MTYPE_SLIDER;
@@ -459,9 +462,10 @@ void M_ColorInit() {
 	s_saturation_slider.generic.y = 40 * ui_fontScale->value;
 	s_saturation_slider.generic.name = "Saturation";
 	s_saturation_slider.generic.callback = SaturationCallback;
-	s_saturation_slider.minvalue = 1;
-	s_saturation_slider.maxvalue = 20;
-	s_saturation_slider.curvalue = r_saturation->value * 10;
+	s_saturation_slider.minValue = 1;
+	s_saturation_slider.maxValue = 20;
+	s_saturation_slider.curValue = r_saturation->value * 10;
+	s_saturation_slider.divRange = 10;
 	s_saturation_slider.generic.statusbar = "Screen Saturation";
 
 	s_vibrance_slider.generic.type = MTYPE_SLIDER;
@@ -469,9 +473,10 @@ void M_ColorInit() {
 	s_vibrance_slider.generic.y = 50 * ui_fontScale->value;
 	s_vibrance_slider.generic.name = "Vibrance";
 	s_vibrance_slider.generic.callback = VibranceCallback;
-	s_vibrance_slider.minvalue = -10;
-	s_vibrance_slider.maxvalue = 10;
-	s_vibrance_slider.curvalue = r_colorVibrance->value * 10;
+	s_vibrance_slider.minValue = -10;
+	s_vibrance_slider.maxValue = 10;
+	s_vibrance_slider.curValue = r_colorVibrance->value * 10;
+	s_vibrance_slider.divRange = 10;
 	s_vibrance_slider.generic.statusbar = "Color Vibrance";
 
 
@@ -480,9 +485,10 @@ void M_ColorInit() {
 	s_bloomIntens_slider.generic.y = 70 * ui_fontScale->value;
 	s_bloomIntens_slider.generic.name = "Glare Intensity";
 	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
-	s_bloomIntens_slider.minvalue = 12;
-	s_bloomIntens_slider.maxvalue = 20;
-	s_bloomIntens_slider.curvalue = r_hdrGlareIntens->value * 10;
+	s_bloomIntens_slider.minValue = 12;
+	s_bloomIntens_slider.maxValue = 20;
+	s_bloomIntens_slider.curValue = r_hdrGlareIntens->value * 10;
+	s_bloomIntens_slider.divRange = 10;
 	s_bloomIntens_slider.generic.statusbar = "Lens Glare Intensity";
 
 	s_bloomIntens2_slider.generic.type = MTYPE_SLIDER;
@@ -490,9 +496,10 @@ void M_ColorInit() {
 	s_bloomIntens2_slider.generic.y = 80 * ui_fontScale->value;
 	s_bloomIntens2_slider.generic.name = "Bloom Intensity";
 	s_bloomIntens2_slider.generic.callback = bloomLevelCallback2;
-	s_bloomIntens2_slider.minvalue = 1;
-	s_bloomIntens2_slider.maxvalue = 10;
-	s_bloomIntens2_slider.curvalue = r_hdrBloomIntens->value * 10;
+	s_bloomIntens2_slider.minValue = 1;
+	s_bloomIntens2_slider.maxValue = 10;
+	s_bloomIntens2_slider.curValue = r_hdrBloomIntens->value * 10;
+	s_bloomIntens2_slider.divRange = 10;
 	s_bloomIntens2_slider.generic.statusbar = "Bloom Intensity";
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
@@ -500,9 +507,10 @@ void M_ColorInit() {
 	s_fixfov_slider.generic.y = 100 * ui_fontScale->value;
 	s_fixfov_slider.generic.name = "Hi-FOV Corection";
 	s_fixfov_slider.generic.callback = FixFovCallback;
-	s_fixfov_slider.minvalue = 0;
-	s_fixfov_slider.maxvalue = 10;
-	s_fixfov_slider.curvalue = r_fixFovStrength->value * 10;
+	s_fixfov_slider.minValue = 0;
+	s_fixfov_slider.maxValue = 10;
+	s_fixfov_slider.curValue = r_fixFovStrength->value * 10;
+	s_fixfov_slider.divRange = 10;
 	s_fixfov_slider.generic.statusbar = "Reducing Field Of View Distortion";
 
 /*	s_lut_list.generic.type = MTYPE_SPINCONTROL;
@@ -510,7 +518,7 @@ void M_ColorInit() {
 	s_lut_list.generic.x = 0;
 	s_lut_list.generic.y = 130 * ui_fontScale->value;
 	s_lut_list.itemnames = lut_table;
-	s_lut_list.curvalue = r_lutId->integer;
+	s_lut_list.curValue = r_lutId->integer;
 	s_lut_list.generic.callback = lutCallBack;
 	s_lut_list.generic.statusbar = "Add Color Filters";
 	*/
@@ -784,10 +792,11 @@ void VID_MenuInit (void) {
 	s_reliefScale_slider.generic.x = 0;
 	s_reliefScale_slider.generic.y = 80 * ui_fontScale->value;
 	s_reliefScale_slider.generic.name = "Relief Scale";
-	s_reliefScale_slider.minvalue = 1;
-	s_reliefScale_slider.maxvalue = 6;
-	s_reliefScale_slider.curvalue = r_parallaxScale->value;
+	s_reliefScale_slider.minValue = 1;
+	s_reliefScale_slider.maxValue = 6;
+	s_reliefScale_slider.curValue = r_parallaxScale->value;
 	s_reliefScale_slider.generic.callback = reliefScaleCallback;
+	s_reliefScale_slider.divRange = 1;
 	s_reliefScale_slider.generic.statusbar = "Virtual Displacement Depth";
 
 
@@ -796,9 +805,11 @@ void VID_MenuInit (void) {
 	s_ambientLevel_slider.generic.y = 90 * ui_fontScale->value;
 	s_ambientLevel_slider.generic.name = "Lightmap Brightness";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
-	s_ambientLevel_slider.minvalue = 0;
-	s_ambientLevel_slider.maxvalue = 20;
-	s_ambientLevel_slider.curvalue = r_lightmapScale->value * 20;
+	s_ambientLevel_slider.minValue = 0;
+	s_ambientLevel_slider.maxValue = 20;
+	s_ambientLevel_slider.curValue = r_lightmapScale->value * 20;
+	s_ambientLevel_slider.divRange = 20;
+	s_ambientLevel_slider.percent = qtrue;
 	s_ambientLevel_slider.generic.statusbar = "Ambient Lighting Level";
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;

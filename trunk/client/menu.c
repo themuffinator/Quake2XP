@@ -1074,7 +1074,7 @@ static void AlwaysRunFunc(void *unused) {
 
 static void MouseSpeedFunc(void *unused) {
 	Cvar_SetValue("sensitivity",
-		s_options_sensitivity_slider.curvalue / 2.0F);
+		s_options_sensitivity_slider.curValue / 2.0F);
 }
 
 static void NoAltTabFunc(void *unused) {
@@ -1095,14 +1095,14 @@ static void CpuUtilFunc(void* unused) {
 
 static void ControlsSetMenuItemValues(void) {
 
-	s_options_effectsVolume_slider.curvalue = Cvar_VariableValue("s_effectsVolume") * 10;
-	s_options_musicvolume_slider.curvalue	= Cvar_VariableValue("s_musicVolume") * 10;
+	s_options_effectsVolume_slider.curValue = Cvar_VariableValue("s_effectsVolume") * 10;
+	s_options_musicvolume_slider.curValue	= Cvar_VariableValue("s_musicVolume") * 10;
 	s_options_musicsrc_list.curInteger		= Cvar_VariableInteger("s_musicSrc");
 	s_options_useEFX_list.curInteger		= Cvar_VariableInteger("s_useEfx");
 	s_options_hrtf.curInteger				= Cvar_VariableInteger("s_useHRTF");
 	
 
-	s_options_sensitivity_slider.curvalue = (sensitivity->value) * 2;
+	s_options_sensitivity_slider.curValue = (sensitivity->value) * 2;
 
 	Cvar_SetValue("cl_run", ClampCvar(0, 1, cl_run->integer));
 	s_options_alwaysrun_box.curInteger = cl_run->integer;
@@ -1149,12 +1149,12 @@ static void InvertMouseFunc(void *unused) {
 
 static void UpdateVolumeFunc(void *unused) {
 	
-	float vol = s_options_effectsVolume_slider.curvalue / 10.0;
+	float vol = s_options_effectsVolume_slider.curValue / 10.0;
 	Cvar_SetValue("s_effectsVolume", vol);
 }
 
 static void UpdateMusicVolumeFunc(void *unused) {
-	Cvar_SetValue("s_musicVolume", s_options_musicvolume_slider.curvalue / 10);
+	Cvar_SetValue("s_musicVolume", s_options_musicvolume_slider.curValue / 10);
 }
 
 char *al_device[] = {
@@ -1268,11 +1268,11 @@ static menulist_s s_aoptions_drawHud_box;
 static menulist_s s_aoptions_3dhud_box;
 
 static void UpdateCrossScaleFunc(void* unused) {
-	Cvar_SetValue("crossHairScale", s_aoptions_crossHairScale_slider.curvalue / 10);
+	Cvar_SetValue("crossHairScale", s_aoptions_crossHairScale_slider.curValue / 10);
 }
 
 static void UpdateFontScaleFunc(void *unused) {
-	Cvar_SetValue("ui_fontScale", s_aoptions_fontScale_slider.curvalue / 10 + 1);
+	Cvar_SetValue("ui_fontScale", s_aoptions_fontScale_slider.curValue / 10 + 1);
 }
 
 static void UpdateRailSpiralFunc(void* unused) {
@@ -1345,11 +1345,12 @@ void M_AdvancedInit(void) {
 	s_aoptions_railSpiral_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_railSpiral_box.generic.x = 0;
 	s_aoptions_railSpiral_box.generic.y = menu_y;
-	s_aoptions_railSpiral_box.generic.name = "Draw Rail Gun Spiral";
+	s_aoptions_railSpiral_box.generic.name = "Draw RailGun Spiral";
 	s_aoptions_railSpiral_box.generic.callback = UpdateRailSpiralFunc;
 	s_aoptions_railSpiral_box.itemnames = yesno_names;
 	s_aoptions_railSpiral_box.curInteger = Cvar_VariableInteger("cl_railSpiral");
 	s_aoptions_railSpiral_box.curInteger = cl_railSpiral->integer;
+	s_aoptions_railSpiral_box.generic.statusbar = "Spiral/Smoke RailGun Trail";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_blood_box.generic.type = MTYPE_SPINCONTROL;
@@ -1360,6 +1361,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_blood_box.itemnames = yesno_names;
 	s_aoptions_blood_box.curInteger = Cvar_VariableInteger("cl_blood");
 	s_aoptions_blood_box.curInteger = cl_blood->integer;
+	s_aoptions_blood_box.generic.statusbar = "Parental Advisory";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_decals_box.generic.type = MTYPE_SPINCONTROL;
@@ -1370,16 +1372,18 @@ void M_AdvancedInit(void) {
 	s_aoptions_decals_box.itemnames = yesno_names;
 	s_aoptions_decals_box.curInteger = Cvar_VariableInteger("cl_decals");
 	s_aoptions_decals_box.curInteger = cl_decals->integer;
+	s_aoptions_decals_box.generic.statusbar = "Draw Weapon Hit Marks";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dcam_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_3dcam_box.generic.x = 0;
 	s_aoptions_3dcam_box.generic.y = menu_y;
-	s_aoptions_3dcam_box.generic.name = "Third Person view";
+	s_aoptions_3dcam_box.generic.name = "Third Person";
 	s_aoptions_3dcam_box.generic.callback = Update3dCamFunc;
 	s_aoptions_3dcam_box.itemnames = yesno_names;
 	s_aoptions_3dcam_box.curInteger = Cvar_VariableInteger("cl_thirdPepson");
 	s_aoptions_3dcam_box.curInteger = cl_thirdPerson->integer;
+	s_aoptions_3dcam_box.generic.statusbar = "Third Person Camera View";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_drawHud_box.generic.type = MTYPE_SPINCONTROL;
@@ -1390,6 +1394,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_drawHud_box.itemnames = yesno_names;
 	s_aoptions_drawHud_box.curInteger = Cvar_VariableInteger("ui_drawHud");
 	s_aoptions_drawHud_box.curInteger = ui_drawHud->integer;
+	s_aoptions_drawHud_box.generic.statusbar = "Show Head-Up Display";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dhud_box.generic.type = MTYPE_SPINCONTROL;
@@ -1399,6 +1404,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dhud_box.generic.callback = Update3dHud;
 	s_aoptions_3dhud_box.itemnames = yesno_names;
 	s_aoptions_3dhud_box.curInteger = Cvar_VariableInteger("ui_3dHud");
+	s_aoptions_3dhud_box.generic.statusbar = "HUD Mode - Models/Pictorgams";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
@@ -1408,6 +1414,7 @@ void M_AdvancedInit(void) {
 	s_options_crosshair_box.generic.callback = CrosshairFunc;
 	s_options_crosshair_box.itemnames = crosshair_names;
 	s_options_crosshair_box.generic.statusbarfunc = DrawCrossHairPic;
+	s_options_crosshair_box.generic.statusbar = "Select Your Crosshair";
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_crossHairScale_slider.generic.type = MTYPE_SLIDER;
@@ -1415,10 +1422,12 @@ void M_AdvancedInit(void) {
 	s_aoptions_crossHairScale_slider.generic.y = menu_y;
 	s_aoptions_crossHairScale_slider.generic.name = "Crosshair Scale";
 	s_aoptions_crossHairScale_slider.generic.callback = UpdateCrossScaleFunc;
-	s_aoptions_crossHairScale_slider.minvalue = 2;
-	s_aoptions_crossHairScale_slider.maxvalue = 5;
-	s_aoptions_crossHairScale_slider.curvalue = crossHairScale->value * 10;
+	s_aoptions_crossHairScale_slider.minValue = 2;
+	s_aoptions_crossHairScale_slider.maxValue = 5;
+	s_aoptions_crossHairScale_slider.curValue = crossHairScale->value * 10;
+	s_aoptions_crossHairScale_slider.divRange = 10;
 	s_aoptions_crossHairScale_slider.generic.statusbarfunc = DrawCrossHairPic;
+	s_aoptions_crossHairScale_slider.generic.statusbar = "Ajust Crosshair Size";
 	menu_y += 10 * ui_fontScale->value;
 
 	Menu_AddItem(&s_options_menu, (void*)&s_aoptions_railSpiral_box);
@@ -1482,9 +1491,10 @@ void Options_MenuInit(void) {
 	s_options_effectsVolume_slider.generic.y = 10 * ui_fontScale->value;
 	s_options_effectsVolume_slider.generic.name = "Effects Volume";
 	s_options_effectsVolume_slider.generic.callback = UpdateVolumeFunc;
-	s_options_effectsVolume_slider.minvalue = 0;
-	s_options_effectsVolume_slider.maxvalue = 10;
-	s_options_effectsVolume_slider.curvalue = s_effectsVolume->value * 10.0;
+	s_options_effectsVolume_slider.minValue = 0;
+	s_options_effectsVolume_slider.maxValue = 10;
+	s_options_effectsVolume_slider.curValue = s_effectsVolume->value * 10.0;
+	s_options_effectsVolume_slider.divRange = 10;
 	s_options_effectsVolume_slider.generic.statusbar = "Set FX Volume";
 
 	s_options_musicvolume_slider.generic.type = MTYPE_SLIDER;
@@ -1492,9 +1502,10 @@ void Options_MenuInit(void) {
 	s_options_musicvolume_slider.generic.y = 20 * ui_fontScale->value;
 	s_options_musicvolume_slider.generic.name = "Music Volume";
 	s_options_musicvolume_slider.generic.callback = UpdateMusicVolumeFunc;
-	s_options_musicvolume_slider.minvalue = 0;
-	s_options_musicvolume_slider.maxvalue = 10;
-	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicVolume") * 10;
+	s_options_musicvolume_slider.minValue = 0;
+	s_options_musicvolume_slider.maxValue = 10;
+	s_options_musicvolume_slider.curValue = Cvar_VariableValue("s_musicVolume") * 10;
+	s_options_musicvolume_slider.divRange = 10;
 	s_options_musicvolume_slider.generic.statusbar = "Set Music Volume";
 
 	s_options_musicsrc_list.generic.type = MTYPE_SPINCONTROL;
@@ -1586,8 +1597,9 @@ void Options_MenuInit(void) {
 	s_options_sensitivity_slider.generic.y = 100 * ui_fontScale->value;
 	s_options_sensitivity_slider.generic.name = "Mice Speed";
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
-	s_options_sensitivity_slider.minvalue = 2;
-	s_options_sensitivity_slider.maxvalue = 22;
+	s_options_sensitivity_slider.minValue = 2;
+	s_options_sensitivity_slider.maxValue = 22;
+	s_options_sensitivity_slider.divRange = 2;
 	s_options_sensitivity_slider.generic.statusbar = "Adjust Mice Sensitivity";
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
@@ -3301,7 +3313,7 @@ void RulesChangeFunc(void *self) {
 			s_startserver_dmoptions_action.generic.statusbar = NULL;
 		}
 		/*
-		else if(s_rules_box.curvalue == 3)		// deathball
+		else if(s_rules_box.curValue == 3)		// deathball
 		{
 		s_maxclients_field.generic.statusbar = NULL;
 		s_startserver_dmoptions_action.generic.statusbar = NULL;
@@ -3331,8 +3343,8 @@ void StartServerActionFunc(void *self) {
 	Cvar_SetValue("timelimit", ClampCvar(0, timelimit, timelimit));
 	Cvar_SetValue("fraglimit", ClampCvar(0, fraglimit, fraglimit));
 	Cvar_Set("hostname", s_hostname_field.buffer);
-	//	Cvar_SetValue ("deathmatch", !s_rules_box.curvalue );
-	//	Cvar_SetValue ("coop", s_rules_box.curvalue );
+	//	Cvar_SetValue ("deathmatch", !s_rules_box.curValue );
+	//	Cvar_SetValue ("coop", s_rules_box.curValue );
 
 	//PGM
 	if ((s_rules_box.curInteger < 2) || (Developer_searchpath(2) != 2)) {

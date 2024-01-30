@@ -593,12 +593,12 @@ void Separator_Draw (menuseparator_s * s) {
 }
 
 void Slider_DoSlide (menuslider_s * s, int dir) {
-	s->curvalue += dir;
+	s->curValue += dir;
 
-	if (s->curvalue > s->maxvalue)
-		s->curvalue = s->maxvalue;
-	else if (s->curvalue < s->minvalue)
-		s->curvalue = s->minvalue;
+	if (s->curValue > s->maxValue)
+		s->curValue = s->maxValue;
+	else if (s->curValue < s->minValue)
+		s->curValue = s->minValue;
 
 	if (s->generic.callback)
 		s->generic.callback (s);
@@ -618,30 +618,28 @@ void Slider_Draw (menuslider_s * s) {
 		s->generic.name);
 
 	s->range =
-		(s->curvalue - s->minvalue) / (float)(s->maxvalue - s->minvalue);
+		(s->curValue - s->minValue) / (float)(s->maxValue - s->minValue);
 
 	if (s->range < 0)
 		s->range = 0;
 	if (s->range > 1)
 		s->range = 1;
 
-	//front cap
-	//	Draw_CharScaled(s->generic.x + s->generic.parent->x + RCOLUMN_OFFSET,
-	//			  		s->generic.y + s->generic.parent->y, 
-	//					fontscale, fontscale, 128);
 	// slider line
 	for (i = 0; i < SLIDER_RANGE; i++)
 		R_AddCharsToList (RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x,
 		s->generic.y + s->generic.parent->y, fontscale, 129, menuFont);
 
-	// back cap
-	//	Draw_CharScaled(RCOLUMN_OFFSET + s->generic.x + i * 8*fontscale +
-	//					s->generic.parent->x + 8,
-	//					s->generic.y + s->generic.parent->y, fontscale, fontscale, 130);
 	//slider	
 	R_AddCharsToList((int)(RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x + (SLIDER_RANGE - 1) * 8 * s->range * fontscale),
 					s->generic.y + s->generic.parent->y, fontscale, 131, menuFont);
 
+	char data[8];
+	if (s->percent) {
+		Com_sprintf(data, sizeof(data), " %.0f%%", (s->curValue / s->divRange) * 100);
+	} else
+		Com_sprintf(data, sizeof(data), " %.1f", s->curValue / s->divRange);
+	CL_AddString(RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8, s->generic.y + s->generic.parent->y, fontscale-1, data, consFont);
 }
 
 void SpinControl_DoEnter (menulist_s * s) {
