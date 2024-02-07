@@ -56,15 +56,6 @@ extern "C" {
  * Extensions removed: _nomatch_^
  */
 
-#ifndef GL_EXT_depth_bounds_test
-#define GL_EXT_depth_bounds_test 1
-#define GL_DEPTH_BOUNDS_TEST_EXT          0x8890
-#define GL_DEPTH_BOUNDS_EXT               0x8891
-    typedef void (APIENTRYP PFNGLDEPTHBOUNDSEXTPROC) (GLclampd zmin, GLclampd zmax);
-#ifdef GL_GLEXT_PROTOTYPES
-    GLAPI void APIENTRY glDepthBoundsEXT(GLclampd zmin, GLclampd zmax);
-#endif
-#endif /* GL_EXT_depth_bounds_test */
 
 #ifndef GL_VERSION_1_0
 #define GL_VERSION_1_0 1
@@ -5999,3 +5990,13 @@ GLAPI void APIENTRY glFramebufferTextureMultiviewOVR (GLenum target, GLenum atta
 #endif
 
 #endif
+
+#ifndef GL_EXT_depth_bounds_test
+#define GL_EXT_depth_bounds_test 1
+#define GL_DEPTH_BOUNDS_TEST_EXT          0x8890
+#define GL_DEPTH_BOUNDS_EXT               0x8891
+typedef void (APIENTRYP PFNGLDEPTHBOUNDSEXTPROC) (GLclampd zmin, GLclampd zmax);
+#ifdef GL_GLEXT_PROTOTYPES
+GLAPI void APIENTRY glDepthBoundsEXT(GLclampd zmin, GLclampd zmax);
+#endif
+#endif /* GL_EXT_depth_bounds_test */

@@ -617,8 +617,7 @@ void Slider_Draw (menuslider_s * s) {
 		s->generic.y + s->generic.parent->y,
 		s->generic.name);
 
-	s->range =
-		(s->curValue - s->minValue) / (float)(s->maxValue - s->minValue);
+	s->range = (s->curValue - s->minValue) / (float)(s->maxValue - s->minValue);
 
 	if (s->range < 0)
 		s->range = 0;

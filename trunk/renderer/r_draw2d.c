@@ -192,7 +192,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 {
 	float		offsX, offsY;
 	float		woh = (float)vid.width / (float)vid.height;
-	qboolean	console, menu;
+	qboolean	console;
 
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_StretchPic\n");
@@ -202,10 +202,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 		console = qtrue;
 	else
 		console = qfalse;
-	if (strstr(gl->name, "menuback"))
-		menu = qtrue;
-	else
-		menu = qfalse;
 
 	GL_BindProgram(genericProgram);
 

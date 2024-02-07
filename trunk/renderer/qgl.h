@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef _WIN32
 #  include <windows.h>
-#else
-#  include <GL/glx.h>
+//#else
+//#  include <GL/glx.h>
 #endif
 
 qboolean QGL_Init ();
@@ -920,6 +920,7 @@ extern void (*qfxMesaSwapBuffers)(void);
 */
 
 //GLX Functions
+/*
 extern XVisualInfo *(*qglXChooseVisual) (Display * dpy, int screen,
 	int *attribList);
 extern GLXContext(*qglXCreateContext) (Display * dpy, XVisualInfo * vis,
@@ -935,7 +936,7 @@ extern void (*qglXSwapBuffers) (Display * dpy, GLXDrawable drawable);
 void Fake_glColorTableEXT(GLenum target, GLenum internalformat,
 	GLsizei width, GLenum format, GLenum type,
 	const GLvoid * table);
-
+*/
 #endif							// GLX
 
 /*

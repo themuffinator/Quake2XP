@@ -89,6 +89,15 @@ typedef enum {
 	DF_TWOSIDE		= BIT(2)
 } cDecalsFlagss_t;
 
+typedef enum {
+	PF_SCANLINE		= BIT(0),	// crt effect
+	PF_LIGHT		= BIT(1),	// phong lighting
+	PF_PANSCAN		= BIT(3),	// panscan 16:9 images on 3:4 monitors
+	PF_CROSSHAIR	= BIT(4),	// crosshair flag
+	PF_VIGNETTE		= BIT(5)
+} pictureFlags_t;
+
+
 #define	MAX_DLIGHTS		32
 #define	MAX_ENTITIES	128
 #define	MAX_PARTICLES	4096
