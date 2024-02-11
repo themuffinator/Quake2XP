@@ -122,7 +122,6 @@ void CreateBloomBuffer(void) {
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._bloom);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrBloomImage->texnum, 0);
 
-
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
 		Com_Printf(S_COLOR_RED"Failed!");

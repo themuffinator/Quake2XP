@@ -259,17 +259,12 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
 
-//	GL_BindVAO(vao.depthBsp);
-
 	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
-
-//	GL_BindNullVAO();
 }
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
-extern vec3_t	tempVertexArray[MAX_VERTICES * 4];
 
 void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	int					index_xyz;
@@ -291,7 +286,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
-			VectorCopy(tempVertexArray[index_xyz], tess.position[jj]);
+			VectorCopy(s_lerped[index_xyz], tess.position[jj]);
 		}
 	}
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
@@ -408,7 +403,7 @@ void R_DrawDepthMD3Model(void) {
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vec4_t), tess.position);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
 	}
 

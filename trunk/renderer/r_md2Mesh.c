@@ -26,8 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-vec3_t	tempVertexArray	[MAX_VERTICES  * 4];
-
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t	*v, *ov, *verts;
@@ -70,7 +68,7 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 		backv[i] = backlerp*oldframe->scale[i];
 	}
 
-	lerp = tempVertexArray[0];
+	lerp = s_lerped[0];
 	
 	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
 		for (i = 0; i < paliashdr->num_xyz; i++, v++, ov++, lerp += 3) {
@@ -220,9 +218,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		do {
 			index_xyz = order[2];
 
-			tess.position[numVerts][0] = tempVertexArray[index_xyz][0];
-			tess.position[numVerts][1] = tempVertexArray[index_xyz][1];
-			tess.position[numVerts][2] = tempVertexArray[index_xyz][2];
+			tess.position[numVerts][0] = s_lerped[index_xyz][0];
+			tess.position[numVerts][1] = s_lerped[index_xyz][1];
+			tess.position[numVerts][2] = s_lerped[index_xyz][2];
 
 			tess.texCoord[numVerts][0] = ((float *)order)[0];
 			tess.texCoord[numVerts][1] = ((float *)order)[1];
@@ -423,9 +421,9 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 		do {
 			index_xyz = order[2];
 
-			tess.position[numVerts][0] = tempVertexArray[index_xyz][0];
-			tess.position[numVerts][1] = tempVertexArray[index_xyz][1];
-			tess.position[numVerts][2] = tempVertexArray[index_xyz][2];
+			tess.position[numVerts][0] = s_lerped[index_xyz][0];
+			tess.position[numVerts][1] = s_lerped[index_xyz][1];
+			tess.position[numVerts][2] = s_lerped[index_xyz][2];
 
 			tess.normal[numVerts][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
 			tess.normal[numVerts][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
@@ -545,9 +543,9 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		do {
 			index_xyz = order[2];
 
-			tess.position[numVerts][0] = tempVertexArray[index_xyz][0];
-			tess.position[numVerts][1] = tempVertexArray[index_xyz][1];
-			tess.position[numVerts][2] = tempVertexArray[index_xyz][2];
+			tess.position[numVerts][0] = s_lerped[index_xyz][0];
+			tess.position[numVerts][1] = s_lerped[index_xyz][1];
+			tess.position[numVerts][2] = s_lerped[index_xyz][2];
 
 			tess.texCoord[numVerts][0] = ((float *)order)[0];
 			tess.texCoord[numVerts][1] = ((float *)order)[1];

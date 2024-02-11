@@ -12,8 +12,8 @@
 #define MD3_MAX_PATH		64
 #define MD3_MAX_SKINS		32
 
-#define MD3_MAX_VERTICES	MD3_MAX_VERTS * MD3_MAX_MESHES
-#define MD3_MAX_INDICES		MD3_MAX_VERTS * MD3_MAX_MESHES * 3
+#define MD3_MAX_MODEL_VERTICES	MD3_MAX_VERTS * MD3_MAX_MESHES
+#define MD3_MAX_INDICES			MD3_MAX_VERTS * MD3_MAX_MESHES * 3
 #ifndef M_TWOPI
 #define M_TWOPI		6.28318530717958647692
 #endif
@@ -151,7 +151,7 @@ typedef struct
 	md3ST_t			*stcoords;
 
 	int				num_tris;
-	uint16_t			*indexes;
+	uint16_t		*indexes;
 	neighbours_t	*triangles;
 
 	int				num_skins;

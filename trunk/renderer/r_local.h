@@ -157,7 +157,8 @@ typedef struct {
 	vertexBuffer_t *tess2dVbo;
 	vertexBuffer_t *tess2dArrayVbo;
 	vertexBuffer_t *fsqVbo;
-	vertexBuffer_t *aliasShadowVbo;
+	vertexBuffer_t *md3ShadowVbo;
+	vertexBuffer_t *md2ShadowVbo;
 	vertexBuffer_t *md2ShadowIbo;
 	vertexBuffer_t *md3ShadowIbo;
 	vertexBuffer_t *dynamicVbo;
@@ -883,6 +884,7 @@ extern glstate_t gl_state;
 #define MAX_INDICES		MAX_VERTICES * 3
 
 uint	indexArray[MAX_INDICES];
+vec3_t	s_lerped[MAX_VERTS];
 
 #define MAX_POLY_VERT	128
 

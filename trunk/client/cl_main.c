@@ -1683,10 +1683,10 @@ void CL_Frame_Async(int msec)
 	//	CL_PredictMovement ();
 
 		// update the screen
-		if (host_speeds->value)
+		if (host_speeds->integer)
 			time_before_ref = Sys_Milliseconds();
 		SCR_UpdateScreen();
-		if (host_speeds->value)
+		if (host_speeds->integer)
 			time_after_ref = Sys_Milliseconds();
 
 		Music_Update();
@@ -1707,7 +1707,7 @@ void CL_Frame_Async(int msec)
 
 		cls.frameCount++;
 
-		if (log_stats->value)
+		if (log_stats->integer)
 		{
 			if (cls.state == ca_active)
 			{
