@@ -39,7 +39,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 // =======================================================================
 // Load a sound
 // =======================================================================
-
+/*
 static int _ov_header_fseek_wrap(FILE* f, ogg_int64_t off, int whence) {
 	if (f == NULL)return(-1);
 
@@ -58,7 +58,7 @@ static ov_callbacks OV_CALLBACKS_NOCLOSE = {
   (int (*)(void*))                             NULL,
   (long (*)(void*))                            ftell
 };
-
+*/
 qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorbis_info* vi) {
 	byte* buffer;
 	OggVorbis_File vf;
