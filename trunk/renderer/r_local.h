@@ -152,6 +152,7 @@ char *q_pretifymem(float value);
 
 typedef struct {
 
+	vertexBuffer_t *md2AliasVbo;
 	vertexBuffer_t *quadIbo;
 	vertexBuffer_t *quadStringIbo;
 	vertexBuffer_t *tess2dVbo;
@@ -911,8 +912,8 @@ typedef struct {
 }vertex_t;
 
 typedef struct {
-	vertex_t	v[MAX_VERTICES];
-	uint		indices[MAX_INDICES];
+	vertex_t	v[4096];
+	uint		indices[4096*3];
 }tesselator_t;
 tesselator_t tess2;
 

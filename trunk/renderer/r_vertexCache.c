@@ -67,6 +67,8 @@ void R_InitVertexBuffers() {
 	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
 	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
 
+	vbo.md2AliasVbo		= R_Alloc_VBO("Md2Alias_Vbo",			GL_ARRAY_BUFFER,			sizeof(tesselator_t), &tess2, GL_DYNAMIC_DRAW);
+
 	vbo.tess2dVbo		= R_Alloc_VBO("Tess2D_Vbo",				GL_ARRAY_BUFFER,			sizeof(tess2d_t), &tess2d, GL_DYNAMIC_DRAW);
 	vbo.tess2dArrayVbo	= R_Alloc_VBO("Tess2D_Array_Vbo",		GL_ARRAY_BUFFER,			sizeof(tess2dArray_t), &tess2dArray, GL_DYNAMIC_DRAW);
 	vbo.fsqVbo			= R_Alloc_VBO("Full_Screen_Quad_Vbo",	GL_ARRAY_BUFFER,			sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);

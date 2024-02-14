@@ -253,6 +253,7 @@ typedef struct {
 	
 	ALint numResamplers;
 	ALint defResampler;
+	ALint numHrtfs;
 
 } alConfig_t;
 

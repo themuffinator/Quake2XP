@@ -1035,10 +1035,10 @@ static menuslider_s s_options_effectsVolume_slider;
 static menuslider_s s_options_musicvolume_slider;
 static menulist_s s_options_musicsrc_list;
 static menulist_s s_options_useEFX_list;
-static menulist_s s_options_unlimited_ambient_list;
+
 static menulist_s s_options_aldev_box;
 static menulist_s s_options_alResempler_box;
-static menulist_s s_options_alquality_list;
+static menulist_s s_options_hrtf_list;
 static menulist_s s_options_hrtf;
 static menulist_s s_options_console_action;
 static menulist_s s_options_cpuUtil_box;
@@ -1187,6 +1187,19 @@ char* al_resemplers[] = {
 	0
 };
 
+char* al_hrtfs[] = {
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0
+};
+
 static void AlDevice(void *unused) {
 	if (s_options_aldev_box.curInteger > 0)
 		Cvar_Set("s_device", al_device[s_options_aldev_box.curInteger]);
@@ -1213,7 +1226,7 @@ static void UpdateEFX(void *unused) {
 
 static void UpdateHRTF(void *unused) {
 	Cvar_SetValue("s_useHRTF", s_options_hrtf.curInteger);
-
+	Cvar_SetValue("s_hrtfIndex", s_options_hrtf_list.curInteger);
 #ifdef _WIN32
 		extern LPALCRESETDEVICESOFT alcResetDeviceSOFT;
 		#endif
@@ -1235,6 +1248,7 @@ static void UpdateHRTF(void *unused) {
 		Com_Printf("update hrtf filter to: " S_COLOR_GREEN "%s\n", selected);
 	}
 }
+
 
 static void ConsoleFunc(void *unused) {
 	/*
@@ -1583,18 +1597,38 @@ void Options_MenuInit(void) {
 	s_options_hrtf.curInteger = Cvar_VariableValue("s_useHRTF");
 	s_options_hrtf.generic.statusbar = "Enable HRTF function for headphones";
 
+	s_options_hrtf_list.generic.type = MTYPE_SPINCONTROL;
+	s_options_hrtf_list.generic.x = 0;
+	s_options_hrtf_list.generic.y = 80 * ui_fontScale->value;
+	s_options_hrtf_list.generic.name = "HRTF Preset";
+	s_options_hrtf_list.generic.callback = UpdateHRTF;
+	if (alGetStringiSOFT)
+		s_options_hrtf_list.itemnames = al_hrtfs;
+	else
+		s_options_hrtf_list.itemnames = not_found;
+	
+	s_options_hrtf_list.curInteger = Cvar_VariableValue("s_hrtfIndex");
+	s_options_hrtf_list.generic.statusbar = "Select HRTF Preset For Headphones";
+#ifdef _WIN32
+	s_options_hrtf_list.curInteger = 0;
+	for (i = 1; i <= alConfig.numHrtfs; i++)
+		if (s_hrtfIndex->integer == i) {
+			s_options_hrtf_list.curInteger = i;
+			break;
+		}
+#endif
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_useEFX_list.generic.x = 0;
-	s_options_useEFX_list.generic.y = 80 * ui_fontScale->value;
+	s_options_useEFX_list.generic.y = 90 * ui_fontScale->value;
 	s_options_useEFX_list.generic.name = "Use EFX Reverbation";
 	s_options_useEFX_list.generic.callback = UpdateEFX;
 	s_options_useEFX_list.itemnames = yesno_names;
 	s_options_useEFX_list.curInteger = Cvar_VariableInteger("s_openal_efx");
-	s_options_useEFX_list.generic.statusbar = "Enable room and underwater reverberation effects";
+	s_options_useEFX_list.generic.statusbar = "Enable Reverberation Effects";
 
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x = 0;
-	s_options_sensitivity_slider.generic.y = 100 * ui_fontScale->value;
+	s_options_sensitivity_slider.generic.y = 110 * ui_fontScale->value;
 	s_options_sensitivity_slider.generic.name = "Mice Speed";
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
 	s_options_sensitivity_slider.minValue = 2;
@@ -1604,7 +1638,7 @@ void Options_MenuInit(void) {
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x = 0;
-	s_options_alwaysrun_box.generic.y = 110 * ui_fontScale->value;
+	s_options_alwaysrun_box.generic.y = 120 * ui_fontScale->value;
 	s_options_alwaysrun_box.generic.name = "Always Run";
 	s_options_alwaysrun_box.generic.callback = AlwaysRunFunc;
 	s_options_alwaysrun_box.itemnames = yesno_names;
@@ -1612,7 +1646,7 @@ void Options_MenuInit(void) {
 
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x = 0;
-	s_options_invertmouse_box.generic.y = 120 * ui_fontScale->value;
+	s_options_invertmouse_box.generic.y = 130 * ui_fontScale->value;
 	s_options_invertmouse_box.generic.name = "Invert Mice";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
@@ -1629,7 +1663,7 @@ void Options_MenuInit(void) {
 
 	s_options_gamepad_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_gamepad_box.generic.x = 0;
-	s_options_gamepad_box.generic.y = 130 * ui_fontScale->value;;
+	s_options_gamepad_box.generic.y = 140 * ui_fontScale->value;;
 	s_options_gamepad_box.generic.name = "Gamepad";
 #ifdef _WIN32
 	s_options_gamepad_box.generic.callback = GamePadFunc;
@@ -1642,7 +1676,7 @@ void Options_MenuInit(void) {
 
 	s_options_cpuUtil_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_cpuUtil_box.generic.x = 0;
-	s_options_cpuUtil_box.generic.y = 150 * ui_fontScale->value;
+	s_options_cpuUtil_box.generic.y = 160 * ui_fontScale->value;
 	s_options_cpuUtil_box.generic.name = "CPU Utilization";
 	s_options_cpuUtil_box.generic.callback = CpuUtilFunc;
 	s_options_cpuUtil_box.itemnames = yesno_names;
@@ -1650,7 +1684,7 @@ void Options_MenuInit(void) {
 
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
-	s_options_fps_box.generic.y = 160 * ui_fontScale->value;
+	s_options_fps_box.generic.y = 170 * ui_fontScale->value;
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
@@ -1695,6 +1729,7 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void*)&s_options_alResempler_box);
 	
 	Menu_AddItem(&s_options_menu, (void *)&s_options_hrtf);
+	Menu_AddItem(&s_options_menu, (void*)&s_options_hrtf_list);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_useEFX_list);
 
 	Menu_AddItem(&s_options_menu, (void *)&s_options_sensitivity_slider);

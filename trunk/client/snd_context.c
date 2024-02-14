@@ -251,6 +251,7 @@ static qboolean AL_InitDriver (void) {
 	if (hrtf) {
 		Com_Printf("...using ALC_SOFT_HRTF\n");
 		ALCint	hrtfState;
+		extern const char* al_hrtfs[];
 		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
 		if (!hrtfState)
 			Com_Printf("...HRTF Mode:" S_COLOR_YELLOW " off\n");
@@ -262,6 +263,7 @@ static qboolean AL_InitDriver (void) {
 			Com_Printf("...HRTF Mode:" S_COLOR_GREEN " on\n");
 
 			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &num_hrtf);
+			alConfig.numHrtfs = num_hrtf;
 			Com_Printf("Available HRTFs:\n");
 
 			for (i = 0; i < num_hrtf; i++)
@@ -271,6 +273,7 @@ static qboolean AL_InitDriver (void) {
 					Com_Printf("> %i: %s\n", i, hrtfName);
 				else
 					Com_Printf("  %i: %s\n", i, hrtfName);
+				al_hrtfs[i] = hrtfName;				
 			}
 			Com_Printf("HRTF selected: " S_COLOR_GREEN "%s\n", selected);
 
