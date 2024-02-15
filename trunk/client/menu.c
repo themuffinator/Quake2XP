@@ -1175,30 +1175,9 @@ char* playback1251[] = {
 0,
 0
 };
-char* al_resemplers[] = {
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0
-};
+char** al_resemplers;
 
-char* al_hrtfs[] = {
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0
-};
+char** al_hrtfs;
 
 static void AlDevice(void *unused) {
 	if (s_options_aldev_box.curInteger > 0)
@@ -1211,7 +1190,8 @@ static void AlDevice(void *unused) {
 
 static void AlResempler(void* unused) {
 		Cvar_SetValue("s_resamplerQuality", s_options_alResempler_box.curInteger);
-		CL_Snd_Restart_f();
+		const ALchar* name = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
+		Com_Printf("...Change Sound Resampler to: " S_COLOR_GREEN " %s\n\n", name);
 }
 
 static void UpdateMusicSrcFunc(void *unused) {
@@ -1227,25 +1207,23 @@ static void UpdateEFX(void *unused) {
 static void UpdateHRTF(void *unused) {
 	Cvar_SetValue("s_useHRTF", s_options_hrtf.curInteger);
 	Cvar_SetValue("s_hrtfIndex", s_options_hrtf_list.curInteger);
-#ifdef _WIN32
-		extern LPALCRESETDEVICESOFT alcResetDeviceSOFT;
-		#endif
-	ALCint attrlist[5] =
-	{	ALC_HRTF_SOFT, s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
-		ALC_HRTF_ID_SOFT, s_hrtfIndex->integer,
-	0
+
+	ALCint attrlist[5] = {	
+		ALC_HRTF_SOFT,		s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
+		ALC_HRTF_ID_SOFT,	s_hrtfIndex->integer, 0
 	};
+
 	if (!alcResetDeviceSOFT(alConfig.hDevice, attrlist))
 		Com_Printf("Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
 
 	ALCint	hrtfState;
 	alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
 	if (!hrtfState)
-		Com_Printf("update hrtf status: mode" S_COLOR_YELLOW " off\n");
+		Com_Printf("Hrtf:" S_COLOR_YELLOW " off\n");
 	else {
-		Com_Printf("update hrtf status: mode" S_COLOR_GREEN " on\n");
+		Com_Printf("Hrtf:" S_COLOR_GREEN " on\n");
 		const ALchar *selected = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
-		Com_Printf("update hrtf filter to: " S_COLOR_GREEN "%s\n", selected);
+		Com_Printf("Hrtf filter: " S_COLOR_GREEN "%s\n", selected);
 	}
 }
 
@@ -1485,6 +1463,11 @@ void Options_MenuInit(void) {
 	0
 	};
 
+	static char* hrtf_off[] = {
+	"htrf mode disabled",
+	0
+	};
+
 	unsigned i;
 	extern alConfig_t alConfig;
 
@@ -1602,10 +1585,13 @@ void Options_MenuInit(void) {
 	s_options_hrtf_list.generic.y = 80 * ui_fontScale->value;
 	s_options_hrtf_list.generic.name = "HRTF Preset";
 	s_options_hrtf_list.generic.callback = UpdateHRTF;
-	if (alGetStringiSOFT)
+	if (alGetStringiSOFT && s_useHRTF->integer)
 		s_options_hrtf_list.itemnames = al_hrtfs;
 	else
-		s_options_hrtf_list.itemnames = not_found;
+		if (alGetStringiSOFT && !s_useHRTF->integer)
+			s_options_hrtf_list.itemnames = hrtf_off;
+		else
+			s_options_hrtf_list.itemnames = not_found;
 	
 	s_options_hrtf_list.curInteger = Cvar_VariableValue("s_hrtfIndex");
 	s_options_hrtf_list.generic.statusbar = "Select HRTF Preset For Headphones";

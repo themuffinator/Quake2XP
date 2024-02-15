@@ -423,22 +423,35 @@ qboolean AL_Init (int hardreset) {
 	{
 		Com_Printf(S_COLOR_MAGENTA"...AL_SOFT_source_resampler not found!\n");
 	}else
-		Com_Printf("...using AL_SOFT_source_resampler\n");
+		Com_Printf("...using " S_COLOR_YELLOW "AL_SOFT_source_resampler\n");
 
 	if (alGetStringiSOFT) {
 		alConfig.numResamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
 		alConfig.defResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
-		extern const char* al_resemplers[];
+		extern char** al_resemplers;
+		char* resemplersNames[16] = { 0 };
 		s_resamplerQuality->integer = ClampCvarInteger(0, alConfig.numResamplers, s_resamplerQuality->integer);
+
 		ALint i;
+		const ALchar* currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
+		
 		Com_Printf("...Available Resamplers:\n");
 		for (i = 0; i < alConfig.numResamplers; ++i) {
 
 			const ALchar* name = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, i);
-			Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
-			al_resemplers[i] = name;
+			if (i == s_resamplerQuality->integer)
+				Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
+			else
+				Com_Printf(" " S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
+			(const*)resemplersNames[i] = name;
 		}
-		const ALchar* currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
+		int count = alConfig.numResamplers + 1;
+		memset(&al_resemplers, 0, sizeof(al_resemplers));
+		al_resemplers = malloc(count * sizeof(char*));
+		for (i = 0; i < count; i++) {
+			if (al_resemplers)
+				al_resemplers[i] = resemplersNames[i];
+		}
 		Com_Printf("...selected " S_COLOR_GREEN "%s" S_COLOR_WHITE " resampler\n\n", currName);
 	}
 	// If EFX is enabled, determine if it's available and use it
@@ -500,11 +513,11 @@ qboolean AL_Init (int hardreset) {
 
 			Com_Printf("=====================================\n");
 
-			Com_Printf ("\n%d Auxiliary Effect Slot%s\n", iEffectSlotsGenerated, (iEffectSlotsGenerated == 1) ? "" : "s");
+			Com_Printf ("\n" S_COLOR_GREEN "%d" S_COLOR_WHITE " Auxiliary Effect Slot%s\n", iEffectSlotsGenerated, (iEffectSlotsGenerated == 1) ? "" : "s");
 
 			// Retrieve the number of Auxiliary Effect Slots Sends available on each Source
 			alcGetIntegerv (alConfig.hDevice, ALC_MAX_AUXILIARY_SENDS, 1, &iSends);
-			Com_Printf ("%d Auxiliary Send%s per Source\n", iSends, (iSends == 1) ? "" : "s");
+			Com_Printf ("" S_COLOR_GREEN "%d" S_COLOR_WHITE " Auxiliary Send%s per Source\n", iSends, (iSends == 1) ? "" : "s");
 
 			// To determine which Effects are supported, generate an Effect Object, and try to set its type to
 			// the various Effect enum values
@@ -513,31 +526,31 @@ qboolean AL_Init (int hardreset) {
 			if (alGetError () == AL_NO_ERROR) {
 				// Try setting Effect Type to known Effects
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_REVERB);
-				Com_Printf ("'Reverb' Support            %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Reverb' Support            %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
-				Com_Printf ("'EAX Reverb' Support        %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'EAX Reverb' Support        %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_CHORUS);
-				Com_Printf ("'Chorus' Support            %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Chorus' Support            %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_DISTORTION);
-				Com_Printf ("'Distortion' Support        %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Distortion' Support        %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_ECHO);
-				Com_Printf ("'Echo' Support              %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Echo' Support              %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : " S_COLOR_RED ""NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_FLANGER);
-				Com_Printf ("'Flanger' Support           %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Flanger' Support           %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_FREQUENCY_SHIFTER);
-				Com_Printf ("'Frequency Shifter' Support %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Frequency Shifter' Support %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_VOCAL_MORPHER);
-				Com_Printf ("'Vocal Morpher' Support     %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Vocal Morpher' Support     %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_PITCH_SHIFTER);
-				Com_Printf ("'Pitch Shifter' Support     %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Pitch Shifter' Support     %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_RING_MODULATOR);
-				Com_Printf ("'Ring Modulator' Support    %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Ring Modulator' Support    %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_AUTOWAH);
-				Com_Printf ("'Autowah' Support           %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Autowah' Support           %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_COMPRESSOR);
-				Com_Printf ("'Compressor' Support        %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Compressor' Support        %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alEffecti (uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_EQUALIZER);
-				Com_Printf ("'Equalizer' Support         %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Equalizer' Support         %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 			}
 			// To determine which Filters are supported, generate a Filter Object, and try to set its type to
 			// the various Filter enum values
@@ -547,11 +560,11 @@ qboolean AL_Init (int hardreset) {
 			if (alGetError () == AL_NO_ERROR) {
 				// Try setting the Filter type to known Filters
 				alFilteri (uiFilters[0], AL_FILTER_TYPE, AL_FILTER_LOWPASS);
-				Com_Printf ("'Low Pass'  Support         %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Low Pass'  Support         %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alFilteri (uiFilters[0], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
-				Com_Printf ("'High Pass' Support         %s\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'High Pass' Support         %s\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 				alFilteri (uiFilters[0], AL_FILTER_TYPE, AL_FILTER_BANDPASS);
-				Com_Printf ("'Band Pass' Support         %s\n\n", (alGetError () == AL_NO_ERROR) ? "YES" : "NO");
+				Com_Printf ("'Band Pass' Support         %s\n\n", (alGetError () == AL_NO_ERROR) ? "" S_COLOR_GREEN "YES" : "" S_COLOR_RED "NO");
 			}
 			// Clean-up ...
 			// Delete Filter

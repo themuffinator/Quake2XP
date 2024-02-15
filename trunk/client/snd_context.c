@@ -215,17 +215,16 @@ static qboolean AL_InitDriver (void) {
 		hrtf = qtrue;
 	}
 
-	int quality;
-	#ifdef _WIN32
-		quality = 48000;
-	#else
-		quality = 44100; //wtf? soft al under linux use only 44100hz
-	#endif
+//	int quality;
+//	#ifdef _WIN32
+//		quality = 48000;
+//	#else
+//		quality = 44100; //wtf? soft al under linux use only 44100hz
+//	#endif
 
-		ALCint attrlist[5] = 
-		{	ALC_HRTF_SOFT, s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
-			ALC_HRTF_ID_SOFT, s_hrtfIndex->integer,
-		0 
+		ALCint attrlist[5] = {	
+			ALC_HRTF_SOFT,		s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
+			ALC_HRTF_ID_SOFT,	s_hrtfIndex->integer, 0 
 		};
 		
 		if ((alConfig.hALC =
@@ -242,6 +241,52 @@ static qboolean AL_InitDriver (void) {
 		goto failed;
 	}
 	Com_Printf (S_COLOR_GREEN"succeeded\n");
+
+	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_output_mode"))
+	{
+		const char* modename = "(error)";
+		ALCenum mode = 0;
+
+		alcGetIntegerv(alConfig.hDevice, ALC_OUTPUT_MODE_SOFT, 1, &mode);
+
+		switch (mode)
+		{
+		case ALC_ANY_SOFT: 
+				modename = "Unknown / unspecified"; 
+				break;
+		case ALC_MONO_SOFT: 
+				modename = "Mono"; 
+				break;
+		case ALC_STEREO_SOFT: 
+				modename = "Stereo (unspecified encoding)"; 
+				break;
+		case ALC_STEREO_BASIC_SOFT: 
+				modename = "Stereo (basic)"; 
+				break;
+		case ALC_STEREO_UHJ_SOFT: 
+				modename = "Stereo (UHJ)"; 
+				break;
+		case ALC_STEREO_HRTF_SOFT: 
+				modename = "Stereo (HRTF)"; 
+				break;
+		case ALC_QUAD_SOFT: 
+				modename = "Quadraphonic"; 
+				break;
+		case ALC_SURROUND_5_1_SOFT: 
+				modename = "5.1 Surround"; 
+				break;
+		case ALC_SURROUND_6_1_SOFT: 
+				modename = "6.1 Surround"; 
+				break;
+		case ALC_SURROUND_7_1_SOFT: 
+				modename = "7.1 Surround"; 
+				break;
+		}
+		Com_Printf("...Device output mode: " S_COLOR_GREEN "%s\n", modename);
+	}
+	else
+		Com_Printf(S_COLOR_MAGENTA"...Output mode extension not available\n");
+
 	ALCint srate;
 	alcGetIntegerv(alConfig.hDevice, ALC_FREQUENCY, 1, &srate);
 	Com_Printf("...Sound Frequency: " S_COLOR_GREEN "%i " S_COLOR_WHITE "Hz\n", srate);
@@ -249,33 +294,58 @@ static qboolean AL_InitDriver (void) {
 	Com_Printf("\n=====================================\n\n");
 
 	if (hrtf) {
-		Com_Printf("...using ALC_SOFT_HRTF\n");
-		ALCint	hrtfState;
-		extern const char* al_hrtfs[];
+		Com_Printf("...using " S_COLOR_YELLOW "ALC_SOFT_HRTF\n");
+		ALCint	hrtfState, hrtfStatus;
+		extern char** al_hrtfs;
+		char* hrtfNames[256]={0};
 		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
 		if (!hrtfState)
-			Com_Printf("...HRTF Mode:" S_COLOR_YELLOW " off\n");
-		else
-		{
-			int num_hrtf, i;
-					
+			Com_Printf("...HRTF:" S_COLOR_GREEN " off\n");
+		else {
+
 			const ALchar *selected = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
-			Com_Printf("...HRTF Mode:" S_COLOR_GREEN " on\n");
+			alcGetIntegerv(alConfig.hDevice, ALC_HRTF_STATUS_SOFT, 1, &hrtfStatus);
+			const char* hrtfMode = "(error)";
+			switch (hrtfStatus)
+			{
+			case ALC_HRTF_DISABLED_SOFT:
+				hrtfMode = "Disabled (Generic Response)"; break;
+			case ALC_HRTF_ENABLED_SOFT:
+				hrtfMode = "Enabled (Generic Response)"; break;
+			case ALC_HRTF_DENIED_SOFT:
+				hrtfMode = "Not Allowed"; break;
+			case ALC_HRTF_REQUIRED_SOFT:
+				hrtfMode = "Enabled (Required)"; break;
+			case ALC_HRTF_HEADPHONES_DETECTED_SOFT:
+				hrtfMode = "Enabled (Headphones Detected)"; break;
+			case ALC_HRTF_UNSUPPORTED_FORMAT_SOFT:
+				hrtfMode = "Don't Supported"; break;
+			
+			}
+			Com_Printf("...HRTF Mode: " S_COLOR_GREEN "%s\n", hrtfMode);
 
-			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &num_hrtf);
-			alConfig.numHrtfs = num_hrtf;
-			Com_Printf("Available HRTFs:\n");
+			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &alConfig.numHrtfs);
 
-			for (i = 0; i < num_hrtf; i++)
+			Com_Printf("Found " S_COLOR_GREEN "%i" S_COLOR_WHITE " HRTF Presets.\n", alConfig.numHrtfs);
+			int i;
+			for (i = 0; i < alConfig.numHrtfs; i++)
 			{
 				const ALCchar *hrtfName = alcGetStringiSOFT(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT, i);
 				if(i == s_hrtfIndex->integer)
-					Com_Printf("> %i: %s\n", i, hrtfName);
+					Com_DPrintf("> " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %s\n", i, hrtfName);
 				else
-					Com_Printf("  %i: %s\n", i, hrtfName);
-				al_hrtfs[i] = hrtfName;				
+					Com_DPrintf("  " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %s\n", i, hrtfName);
+				(const*)hrtfNames[i] = hrtfName;
 			}
-			Com_Printf("HRTF selected: " S_COLOR_GREEN "%s\n", selected);
+			Com_Printf("HRTF Selected: " S_COLOR_GREEN "%s\n", selected);
+			
+			int count = alConfig.numHrtfs + 1;
+			memset(&al_hrtfs, 0, sizeof(al_hrtfs));
+			al_hrtfs = malloc(count * sizeof(char*));
+			for (i = 0; i < count; i++) {
+				if (al_hrtfs)
+					al_hrtfs[i] = hrtfNames[i];
+			}
 
 			if (!alcResetDeviceSOFT(alConfig.hDevice, attrlist))
 				Com_Printf("Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
