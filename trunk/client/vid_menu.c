@@ -131,7 +131,7 @@ static void FlareCallback (void *s) {
 static void AnisoCallback (void *s) {
 	menulist_s *box  = (menulist_s*)s;
 
-	Cvar_SetValue ("r_anisotropic", box->curInteger * 1);
+	Cvar_SetValue ("r_textureAnisotropy", box->curInteger * 1);
 }
 
 static void BrightnessCallback (void *s) {
@@ -229,7 +229,7 @@ static void ResetDefaults (void *unused) {
 
 static void ApplyChanges (void *unused) {
 
-	Cvar_SetValue ("r_anisotropic", s_aniso_list.curInteger);
+	Cvar_SetValue ("r_textureAnisotropy", s_aniso_list.curInteger);
 	Cvar_SetValue ("r_fullScreen", s_fs_box.curInteger);
 	Cvar_SetValue ("r_drawFlares", s_flare_box.curInteger);
 	Cvar_SetValue ("r_mode", s_mode_list.curInteger);
@@ -251,23 +251,23 @@ static void ApplyChanges (void *unused) {
 	switch (s_aniso_list.curInteger)
 	{
 	case 0:
-		Cvar_SetValue("r_anisotropic", 1);
+		Cvar_SetValue("r_textureAnisotropy", 1);
 		break;
 	case 1:
-		Cvar_SetValue("r_anisotropic", 2);
+		Cvar_SetValue("r_textureAnisotropy", 2);
 		break;
 	case 2:
-		Cvar_SetValue("r_anisotropic", 4);
+		Cvar_SetValue("r_textureAnisotropy", 4);
 		break;
 	case 3:
-		Cvar_SetValue("r_anisotropic", 8);
+		Cvar_SetValue("r_textureAnisotropy", 8);
 		break;
 	case 4:
-		Cvar_SetValue("r_anisotropic", 16);
+		Cvar_SetValue("r_textureAnisotropy", 16);
 		break;
 	
 	default:
-		Cvar_SetValue("r_anisotropic", 1);
+		Cvar_SetValue("r_textureAnisotropy", 1);
 		break;
 	}
 
@@ -739,7 +739,7 @@ void VID_MenuInit (void) {
 	s_aniso_list.generic.x = 0;
 	s_aniso_list.generic.y = 40 * ui_fontScale->value;
 	s_aniso_list.itemnames = aniso_items;
-	s_aniso_list.curInteger = r_textureAnisotropy->value;
+	s_aniso_list.generic.callback = AnisoCallback;
 	s_aniso_list.generic.statusbar = "Texture Filtering Quality <Requires Restart Video Sub-System>";
 		
 	if (r_textureAnisotropy->value == 1.0)

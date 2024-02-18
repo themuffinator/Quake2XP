@@ -2289,10 +2289,10 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 }
 
-void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
+static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 	int		*order, count, numVerts = 0, i, n;
-	uint16_t indices[MAX_VERTICES], index = 0;
+	uint16_t indices[MAX_VERTS * 3], index = 0;
 
 	order = (int *)((byte *)pheader + pheader->ofs_glcmds);
 
@@ -2300,7 +2300,7 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 		if (index > MAX_VERTICES - 6)
 			break;
-
+		
 		if (count < 0){
 
 			count = -count;
@@ -2337,7 +2337,7 @@ void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 	mod->numVertexes	= numVerts;
 	mod->indexArray		= Hunk_Alloc(index * sizeof(ushort));
 	memcpy(mod->indexArray, indices, index * sizeof(ushort));
-	
+
 	char pname[64];
 	strcpy(pname, mod->name);
 	if (strstr(pname, "models")) {

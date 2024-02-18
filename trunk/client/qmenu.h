@@ -103,6 +103,7 @@ typedef struct {
 	menucommon_s generic;
 
 	int curInteger;
+	float curValue;
 
 	char **itemnames;
 } menulist_s;

@@ -34,10 +34,10 @@ void CalcTangent4MD3(uint16_t *index, md3Vertex_t *vertices, md3ST_t *texcos, ve
 
 	for (i = 0; i<3; i++){
 
-		vec1[0] = v1[i] - v0[i];
+		vec1[0] = v1[i]  - v0[i];
 		vec1[1] = st1[0] - st0[0];
 		vec1[2] = st1[1] - st0[1];
-		vec2[0] = v2[i] - v0[i];
+		vec2[0] = v2[i]  - v0[i];
 		vec2[1] = st2[0] - st0[0];
 		vec2[2] = st2[1] - st0[1];
 		VectorNormalize(vec1);
@@ -134,7 +134,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	dmd3vertex_t		*inVerts;
 	uint				*inIndex;
 
-	uint16_t				*outIndex;
+	uint16_t			*outIndex;
 	md3Vertex_t			*outVerts;
 	md3ST_t				*outCoord;
 	md3Mesh_t			*outMesh;
@@ -595,11 +595,12 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		bbox[8], temp, viewOrg;
 	int			i, j, k;
 	float		frontlerp, backlerp, lum;
-	md3Frame_t	*frame, *oldframe;
+	md3Frame_t	*frame, *oldFrame;
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
 	image_t     *albedo, *emissive, *normal, *ao;
+	qboolean	cacheLerp = qfalse;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -656,7 +657,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	backlerp = currententity->backlerp;
 	frontlerp = 1.0 - backlerp;
 	frame = md3Hdr->frames + currententity->frame;
-	oldframe = md3Hdr->frames + currententity->oldframe;
+	oldFrame = md3Hdr->frames + currententity->oldframe;
 
 	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
@@ -664,7 +665,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] = DotProduct(delta, vectors[2]);	// up
 
-	VectorAdd(move, oldframe->translate, move);
+	VectorAdd(move, oldFrame->translate, move);
 
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
@@ -714,6 +715,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglUniform1i(U_PARAM_INT_1, 1);
 	else
 		qglUniform1i(U_PARAM_INT_1, 0);
+	
+	if (frame == oldFrame)
+		cacheLerp = qtrue;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -722,20 +726,21 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		if (!(mesh->flags & MESH_OPAQUE)) 
 			continue;
 
-		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+		oldVerts	= mesh->vertexes + currententity->oldframe * mesh->num_verts;
 		
 		c_aliasTris += md3Hdr->meshes[i].num_tris;
 
 		if (mesh->muzzle) {
 			GL_Enable(GL_BLEND);
 			GL_DepthMask(0);
-			GL_Disable(GL_CULL_FACE);
 			qglUniform1f(U_COLOR_OFFSET, 1.0);
-			qglUniform1f(U_COLOR_MUL, 2.0);
+			qglUniform1f(U_COLOR_MUL, 4.0);
 			qglUniform1i(U_USE_SSAO, 0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
+		if (currententity->flags & RF_WEAPONMODEL)
+			GL_DepthMask(1);
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!albedo || albedo == r_missingTexture)
@@ -768,28 +773,50 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			else
 				Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
 
-			tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-			tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-			tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			if (cacheLerp) {
+				tess.position[j][0] = move[0] + verts->xyz[0];
+				tess.position[j][1] = move[1] + verts->xyz[1];
+				tess.position[j][2] = move[2] + verts->xyz[2];
+			}
+			else {
+				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			}
 		}
 		
 		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-			oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+			verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+			oldVerts	= mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
 			for (k = 0; k < mesh->num_verts; k++) {
 
-				tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-				tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-				tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+				if (cacheLerp) {
+					tess.tangent[k][0] = verts[k].tangent[0];
+					tess.tangent[k][1] = verts[k].tangent[1];
+					tess.tangent[k][2] = verts[k].tangent[2];
 
-				tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-				tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-				tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+					tess.binormal[k][0] = verts[k].binormal[0];
+					tess.binormal[k][1] = verts[k].binormal[1];
+					tess.binormal[k][2] = verts[k].binormal[2];
 
-				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+					tess.normal[k][0] = verts[k].normal[0];
+					tess.normal[k][1] = verts[k].normal[1];
+					tess.normal[k][2] = verts[k].normal[2];
+				}
+				else {
+					tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+					tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+					tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+
+					tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+					tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+					tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+
+					tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+					tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+					tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+				}
 			}
 		}
 
@@ -844,8 +871,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		if (mesh->muzzle) {
 			GL_Disable(GL_BLEND);
-		//	GL_DepthMask(1);
-			GL_Enable(GL_CULL_FACE);
 			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
 	}
@@ -900,28 +925,49 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				else
 					Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
 
-				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+				if (cacheLerp) {
+					tess.position[j][0] = move[0] + verts->xyz[0];
+					tess.position[j][1] = move[1] + verts->xyz[1];
+					tess.position[j][2] = move[2] + verts->xyz[2];
+				}else{
+					tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+					tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+					tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+				}
 			}
 
 			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
 			oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
 			for (k = 0; k< mesh->num_verts; k++) {
-				
-				if (r_debugTbn->integer) {
-					tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-					tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-					tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+				if (cacheLerp) {
+					if (r_debugTbn->integer) {
+						tess.tangent[k][0] = verts[k].tangent[0];
+						tess.tangent[k][1] = verts[k].tangent[1];
+						tess.tangent[k][2] = verts[k].tangent[2];
 
-					tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-					tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-					tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+						tess.binormal[k][0] = verts[k].binormal[0];
+						tess.binormal[k][1] = verts[k].binormal[1];
+						tess.binormal[k][2] = verts[k].binormal[2];
+					}
+					tess.normal[k][0] = verts[k].normal[0];
+					tess.normal[k][1] = verts[k].normal[1];
+					tess.normal[k][2] = verts[k].normal[2];
 				}
-				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+				else {
+					if (r_debugTbn->integer) {
+						tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+						tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+						tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+
+						tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+						tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+						tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+					}
+					tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+					tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+					tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+				}
 			}
 
 			qglInvalidateBufferData(GL_ARRAY_BUFFER);
@@ -1034,8 +1080,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	vec3_t		move, delta, vectors[3], maxs;
 	md3Vertex_t	*verts, *oldVerts;
 	image_t     *albedo, *pbr, *normal;
-	qboolean inWater;
-	vec3_t tmp, oldLight, oldView;
+	qboolean	inWater, cacheLerp = qfalse;
+	vec3_t		tmp, oldLight, oldView;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -1128,6 +1174,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		qglUniform1i(U_PARAM_INT_4, 0);
 
+	if (frame == oldframe)
+		cacheLerp = qtrue;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -1183,16 +1231,36 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
-			tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-			tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-			tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			if (cacheLerp) {
+				tess.position[j][0] = move[0] + verts->xyz[0];
+				tess.position[j][1] = move[1] + verts->xyz[1];
+				tess.position[j][2] = move[2] + verts->xyz[2];
+			}
+			else {
+				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			}
 		}
 
-		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+		oldVerts	= mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
 		for (k = 0; k< mesh->num_verts; k++) {
+			if(cacheLerp){
+				tess.tangent[k][0] = verts[k].tangent[0];
+				tess.tangent[k][1] = verts[k].tangent[1];
+				tess.tangent[k][2] = verts[k].tangent[2];
 
+				tess.binormal[k][0] = verts[k].binormal[0];
+				tess.binormal[k][1] = verts[k].binormal[1];
+				tess.binormal[k][2] = verts[k].binormal[2];
+
+				tess.normal[k][0] = verts[k].normal[0];
+				tess.normal[k][1] = verts[k].normal[1];
+				tess.normal[k][2] = verts[k].normal[2];
+			}
+			else {
 				tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
 				tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
 				tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
@@ -1204,6 +1272,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
 				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
 				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+			}
 		}
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
@@ -1239,8 +1308,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
-//	GL_BindNullVAO();
-//	GL_BindNullVBO();
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);
 
@@ -1255,9 +1322,10 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	vec3_t			bbox[8];
 	int				i, j;
 	float			frontlerp, backlerp;
-	md3Frame_t		*frame, *oldframe;
+	md3Frame_t		*frame, *oldFrame;
 	vec3_t			move, delta, vectors[3], tmp, viewOrg;
 	md3Vertex_t		*verts, *oldVerts;
+	qboolean		cacheLerp = qfalse;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -1279,7 +1347,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	backlerp = currententity->backlerp;
 	frontlerp = 1.0 - backlerp;
 	frame = md3Hdr->frames + currententity->frame;
-	oldframe = md3Hdr->frames + currententity->oldframe;
+	oldFrame = md3Hdr->frames + currententity->oldframe;
 
 	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
@@ -1287,7 +1355,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] = DotProduct(delta, vectors[2]);	// up
 
-	VectorAdd(move, oldframe->translate, move);
+	VectorAdd(move, oldFrame->translate, move);
 
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
@@ -1322,6 +1390,9 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU0, r_texshell[4]->handle);
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
+	
+	if (frame == oldFrame)
+		cacheLerp = qtrue;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -1336,13 +1407,27 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
-			tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-			tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-			tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			if (cacheLerp) {
+				tess.position[j][0] = move[0] + verts->xyz[0];
+				tess.position[j][1] = move[1] + verts->xyz[1];
+				tess.position[j][2] = move[2] + verts->xyz[2];
+			}
+			else {
+				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+			}
 
-			tess.normal[j][0] = oldVerts->normal[0] * backlerp + verts->normal[0] * frontlerp;
-			tess.normal[j][1] = oldVerts->normal[1] * backlerp + verts->normal[1] * frontlerp;
-			tess.normal[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
+			if(cacheLerp){
+				tess.normal[j][0] = verts->normal[0];
+				tess.normal[j][1] = verts->normal[1];
+				tess.normal[j][2] = verts->normal[2];
+			}
+			else {
+				tess.normal[j][0] = oldVerts->normal[0] * backlerp + verts->normal[0] * frontlerp;
+				tess.normal[j][1] = oldVerts->normal[1] * backlerp + verts->normal[1] * frontlerp;
+				tess.normal[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
+			}
 		}
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
@@ -1353,9 +1438,6 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
-
-//	GL_BindNullVAO();
-//	GL_BindNullVBO();
 
 	GL_BlendFunc(GL_ONE, GL_ONE);
 

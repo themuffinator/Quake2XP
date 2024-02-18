@@ -275,7 +275,7 @@ void R_DrawMD2ShadowVolume () {
 	dmdl_t			*paliashdr;
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*v, *ov, *verts;
-	int				*order, i;
+	int				i;
 	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
 
@@ -294,14 +294,11 @@ void R_DrawMD2ShadowVolume () {
 
 	ov = oldframe->verts;
 
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
-
 	frontlerp = 1.0 - currententity->backlerp;
 
 	// move should be the delta back to the previous frame * backlerp
 	VectorSubtract (currententity->oldorigin, currententity->origin, delta);
-	AngleVectors (currententity->angles, vectors[0], vectors[1],
-		vectors[2]);
+	AngleVectors (currententity->angles, vectors[0], vectors[1], vectors[2]);
 
 	move[0] = DotProduct (delta, vectors[0]);	// forward
 	move[1] = -DotProduct (delta, vectors[1]);	// left
@@ -338,7 +335,7 @@ void R_DrawMD3ShadowVolume(){
 	md3Vertex_t		*v, *ov;
 	vec3_t			move, v1, v2, normal, trinormal, temp,
 					delta, vectors[3], lightOrg;
-	uint16_t			*idx, *index0, *index1;
+	uint16_t		*idx, *index0, *index1;
 
 	if (!R_EntityCastShadow())
 		return;
