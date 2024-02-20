@@ -2143,6 +2143,7 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 Compute Tangent Space
 =====================
 */
+vec3_t	defTBN[3] = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } }; // default tbn vectors
 
 void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st1, float *st2, vec3_t Tangent, vec3_t Binormal) {
 	vec3_t	vec1, vec2;
@@ -2151,24 +2152,33 @@ void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st
 	int		i;
 
 	for (i = 0; i < 3; i++) {
-		vec1[0] = v1[i] - v0[i];
+		vec1[0] = v1[i]	 - v0[i];
 		vec1[1] = st1[0] - st0[0];
 		vec1[2] = st1[1] - st0[1];
-		vec2[0] = v2[i] - v0[i];
+		vec2[0] = v2[i]	 - v0[i];
 		vec2[1] = st2[0] - st0[0];
 		vec2[2] = st2[1] - st0[1];
-		VectorNormalize(vec1);
-		VectorNormalize(vec2);
+
+		VectorNormalizeFast(vec1);
+		VectorNormalizeFast(vec2);
 		CrossProduct(vec1, vec2, planes[i]);
 	}
+	// Berserker's fix: some models could have degenerate triangles (or strongly elongated)
+	// corrected the divisor so that it was not very close to zero, otherwise we get division by zero or +/- INF
+	if (fabs(planes[0][0]) <= DIV_EPSILON) 
+		planes[0][0] = DIV_EPSILON * sign(planes[0][0]);
+	if (fabs(planes[1][0]) <= DIV_EPSILON) 
+		planes[1][0] = DIV_EPSILON * sign(planes[1][0]);
+	if (fabs(planes[2][0]) <= DIV_EPSILON) 
+		planes[2][0] = DIV_EPSILON * sign(planes[2][0]);
 
 	for (i = 0; i < 3; i++) {
 		tmp = 1.0 / planes[i][0];
-		Tangent[i] = -planes[i][1] * tmp;
+		Tangent[i]	= -planes[i][1] * tmp;
 		Binormal[i] = -planes[i][2] * tmp;
 	}
-	VectorNormalize(Tangent);
-	VectorNormalize(Binormal);
+	VectorNormalizeFast2(Tangent,	defTBN[0]);
+	VectorNormalizeFast2(Binormal,	defTBN[1]);
 }
 
 #define md2SmoothAngle cos(DEG2RAD(45.0))
@@ -2179,30 +2189,28 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 	daliasframe_t	*frame;
 	dtrivertx_t		*verts, *v;
 	dtriangle_t		*tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-	int				cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
-	int				cx2 = pheader->num_xyz * pheader->num_frames * sizeof(vec3_t);
-	static vec3_t	binormals_[MAX_VERTS], tangents_[MAX_VERTS], normals_[MAX_VERTS];
-	byte			*tangents = NULL, *binormals = NULL;
-	vec3_t			*normals = NULL;
+	int				sz = pheader->num_xyz * pheader->num_frames * sizeof(vec3_t);
+	static vec3_t	tmpT[MAX_VERTS], tmpB[MAX_VERTS], tmpN[MAX_VERTS];
+	vec3_t			*tangents = NULL, *binormals = NULL, *normals = NULL;
 
-	mod->binormals	= binormals = (byte*)Hunk_Alloc(cx);
-	mod->tangents	= tangents	= (byte*)Hunk_Alloc(cx);
-	mod->normals	= normals	= Hunk_Alloc(cx2);
+	mod->binormals	= binormals = Hunk_Alloc(sz);
+	mod->tangents	= tangents	= Hunk_Alloc(sz);
+	mod->normals	= normals	= Hunk_Alloc(sz);
 
 	//for all frames
 	for (i = 0; i < pheader->num_frames; i++) {
 
 		//set temp to zero
-		memset(tangents_,	0, pheader->num_xyz * sizeof(vec3_t));
-		memset(binormals_,	0, pheader->num_xyz * sizeof(vec3_t));
-		memset(normals_,	0, pheader->num_xyz * sizeof(vec3_t));
+		memset(tmpT, 0, pheader->num_xyz * sizeof(vec3_t));
+		memset(tmpB, 0, pheader->num_xyz * sizeof(vec3_t));
+		memset(tmpN, 0, pheader->num_xyz * sizeof(vec3_t));
 
-		tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-		frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
-		verts = frame->verts;
+		tris	= (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
+		frame	= (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
+		verts	= frame->verts;
 
 		//for all tris
-		for (j = 0; j < pheader->num_tris; j++) {
+		for (j = 0; j < pheader->num_tris; j++){
 			vec3_t	edge0, edge1, edge2;
 			vec3_t	triangle[3], dir0, dir1;
 			vec3_t	tangent, binormal, normal, cross;
@@ -2219,7 +2227,7 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 			VectorSubtract(triangle[2], triangle[1], dir1);
 			CrossProduct(dir1, dir0, normal);
 			VectorInvert(normal);
-			VectorNormalize(normal);
+			VectorNormalizeFast2(normal, defTBN[2]);
 			
 			// calc tangents
 			edge0[0] = (float)verts[tris[j].index_xyz[0]].v[0];
@@ -2247,9 +2255,9 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 			for (k = 0; k < 3; k++) {
 				l = tris[j].index_xyz[k];
-				VectorAdd(tangents_[l],		tangent,	tangents_[l]);
-				VectorAdd(binormals_[l],	binormal,	binormals_[l]);
-				VectorAdd(normals_[l],		normal,		normals_[l]);
+				VectorAdd(tmpT[l],	tangent,	tmpT[l]);
+				VectorAdd(tmpB[l],	binormal,	tmpB[l]);
+				VectorAdd(tmpN[l],	normal,		tmpN[l]);
 			}
 		}
 
@@ -2262,36 +2270,34 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 					if (DotProduct(jnormal, knormal) >= md2SmoothAngle){
 
-						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
-						VectorCopy(tangents_[j], tangents_[k]);
+						VectorAdd(tmpT[j], tmpT[k], tmpT[j]);
+						VectorCopy(tmpT[j], tmpT[k]);
 
-						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
-						VectorCopy(binormals_[j], binormals_[k]);
+						VectorAdd(tmpB[j], tmpB[k], tmpB[j]);
+						VectorCopy(tmpB[j], tmpB[k]);
 
-						VectorAdd(normals_[j], normals_[k], normals_[j]);
-						VectorCopy(normals_[j], normals_[k]);
+						VectorAdd(tmpN[j], tmpN[k], tmpN[j]);
+						VectorCopy(tmpN[j], tmpN[k]);
 					}
 				}
 
 		//normalize averages
 		for (j = 0; j < pheader->num_xyz; j++){
 
-			VectorNormalize(tangents_[j]);
-			VectorNormalize(binormals_[j]);
-			VectorNormalize(normals_[j]);
+			VectorNormalizeFast2(tmpT[j], defTBN[0]);
+			VectorNormalizeFast2(tmpB[j], defTBN[1]);
+			VectorNormalizeFast2(tmpN[j], defTBN[2]);
 
-			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
-			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
-			VectorCopy(normals_[j], normals[i * pheader->num_xyz + j]);
-
+			VectorCopy(tmpT[j],	tangents	[i * pheader->num_xyz + j]);
+			VectorCopy(tmpB[j],	binormals	[i * pheader->num_xyz + j]);
+			VectorCopy(tmpN[j],	normals		[i * pheader->num_xyz + j]);
 		}
 	}
-
 }
 
 static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
-	int		*order, count, numVerts = 0, i, n;
+	int		 *order, count, numVerts = 0, i, n;
 	uint16_t indices[MAX_VERTS * 3], index = 0;
 
 	order = (int *)((byte *)pheader + pheader->ofs_glcmds);
@@ -2328,7 +2334,6 @@ static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 		{
 			break; //done
 		}
-
 		order += 3 * count;
 		numVerts += count;
 	}
@@ -2348,7 +2353,6 @@ static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 		memmove(pname, pname + 8, strlen(pname));
 		pname[strlen(pname) - 4] = 0;
 	}
-
 	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(ushort), mod->indexArray, GL_STATIC_DRAW);
 }
 
@@ -2399,9 +2403,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	if (pheader->num_frames <= 0)
 		VID_Error(ERR_DROP, "model %s has no frames", mod->name);
 
-
 	mod->flags = 0;
-
 	// set default render fx values
 	mod->glowCfg[0] = 0.3;
 	mod->glowCfg[1] = 3.0;
@@ -2426,9 +2428,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		FS_FreeFile(buff);
 	}
 
-	//
 	// load triangle lists
-	//
 	pintri = (dtriangle_t *)((byte *)pinmodel + pheader->ofs_tris);
 	pouttri = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
 

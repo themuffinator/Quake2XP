@@ -4068,10 +4068,10 @@ void CL_AddLasers (void) {
 			p->size = 7.0;
 			p->sizeVel = 0.0;
 			VectorCopy (l->ent.origin, p->org);
-			VectorSubtract (l->ent.oldorigin, l->ent.origin, p->length);
+			VectorSubtract (l->ent.oldOrigin, l->ent.origin, p->length);
 			
 			vec3_t tmp;
-			VectorCopy(l->ent.oldorigin, tmp);
+			VectorCopy(l->ent.oldOrigin, tmp);
 			tmp[2] += l->ent.maxs[2];
 			vec3_t dir;
 			VectorSet(dir, 0.0, 0.0, 1.0);

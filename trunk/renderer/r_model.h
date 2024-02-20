@@ -329,8 +329,8 @@ typedef struct model_s {
 	qboolean	envMap;
 
 	vec3_t	*normals;
-	byte	*binormals;
-	byte	*tangents;
+	vec3_t	*binormals;
+	vec3_t	*tangents;
 
 	uint16_t	*indexArray;
 	uint16_t	numIndices;

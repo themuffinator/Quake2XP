@@ -308,20 +308,18 @@ void R_DrawDepthAliasModel(void){
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 
-	if ((currententity->frame >= paliashdr->num_frames)
-		|| (currententity->frame < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
-			currentmodel->name, currententity->frame);
+	if ((currententity->frame >= paliashdr->num_frames) || (currententity->frame < 0)) {
+
+		Com_Printf("R_DrawAliasModel %s: no such frame %d\n", currentmodel->name, currententity->frame);
 		currententity->frame = 0;
-		currententity->oldframe = 0;
+		currententity->oldFrame = 0;
 	}
 
-	if ((currententity->oldframe >= paliashdr->num_frames)
-		|| (currententity->oldframe < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
-			currentmodel->name, currententity->oldframe);
+	if ((currententity->oldFrame >= paliashdr->num_frames) || (currententity->oldFrame < 0)) {
+		
+		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n", currentmodel->name, currententity->oldFrame);
 		currententity->frame = 0;
-		currententity->oldframe = 0;
+		currententity->oldFrame = 0;
 	}
 
 	R_SetupEntityMatrix(currententity);
@@ -355,12 +353,12 @@ void R_DrawDepthMD3Model(void) {
 
 	CheckEntityFrameMD3(md3Hdr);
 
-	backlerp = currententity->backlerp;
-	frontlerp = 1.0 - backlerp;
-	frame = md3Hdr->frames + currententity->frame;
-	oldframe = md3Hdr->frames + currententity->oldframe;
+	backlerp	= currententity->backLerp;
+	frontlerp	= 1.0 - backlerp;
+	frame		= md3Hdr->frames + currententity->frame;
+	oldframe	= md3Hdr->frames + currententity->oldFrame;
 
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	VectorSubtract(currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
 	move[0] = DotProduct(delta, vectors[0]);	// forward
 	move[1] = -DotProduct(delta, vectors[1]);	// left
@@ -392,7 +390,7 @@ void R_DrawDepthMD3Model(void) {
 			continue;
 
 		v	= mesh->vertexes + currententity->frame		* mesh->num_verts;
-		ov	= mesh->vertexes + currententity->oldframe	* mesh->num_verts;
+		ov	= mesh->vertexes + currententity->oldFrame	* mesh->num_verts;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 

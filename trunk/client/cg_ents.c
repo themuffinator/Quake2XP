@@ -759,8 +759,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 		// pmm
 		//======
-		ent.oldframe = cent->prev.frame;
-		ent.backlerp = 1.0 - cl.lerpfrac;
+		ent.oldFrame = cent->prev.frame;
+		ent.backLerp = 1.0 - cl.lerpfrac;
 
 		// iqm stuff
 		ent.iqmFrameTime = Sys_Milliseconds();
@@ -770,11 +770,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 			// the frames
 			// do the animation properly
 			VectorCopy (cent->current.origin, ent.origin);
-			VectorCopy (cent->current.old_origin, ent.oldorigin);
+			VectorCopy (cent->current.old_origin, ent.oldOrigin);
 		}
 		else {				// interpolate origin
 			for (i = 0; i < 3; i++) {
-				ent.origin[i] = ent.oldorigin[i] =
+				ent.origin[i] = ent.oldOrigin[i] =
 					cent->prev.origin[i] +
 					cl.lerpfrac * (cent->current.origin[i] -
 					cent->prev.origin[i]);
@@ -910,7 +910,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				//bobbing items, q3 style
 				float scale = 0.005 + s1->number * 0.00001;
 				float bob = 4 + cos ((cl.time + 1000) * scale) * 4;
-				ent.oldorigin[2] -= bob;
+				ent.oldOrigin[2] -= bob;
 				ent.origin[2] -= bob;
 			}
 		}
@@ -996,7 +996,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			// fix player shadow origin - restore original EGL code
 			if ((cl_predict->value) && !(cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION)) {
 				VectorCopy(cl.predicted_origin, ent.origin);
-				VectorCopy(cl.predicted_origin, ent.oldorigin);
+				VectorCopy(cl.predicted_origin, ent.oldOrigin);
 			}
 
 			VectorCopy(ent.origin, light_org);
@@ -1175,7 +1175,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 			// Predator Mod Stuff
 			if (predator) {
-				if (!(CL_PMpointcontents (ent.oldorigin) & MASK_WATER))
+				if (!(CL_PMpointcontents (ent.oldOrigin) & MASK_WATER))
 					ent.flags |= RF_DISTORT;
 
 			}
@@ -1264,7 +1264,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 		if (effects & EF_POWERSCREEN) {
 			ent.model = cl_mod_powerscreen;
-			ent.oldframe = 0;
+			ent.oldFrame = 0;
 			ent.frame = 0;
 			ent.flags |= (RF_TRANSLUCENT | RF_SHELL_GREEN);
 			ent.alpha = 0.30;
@@ -1494,20 +1494,20 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 
 	if (gun_frame) {
 		gun.frame = gun_frame;	// development tool
-		gun.oldframe = gun_frame;	// development tool
+		gun.oldFrame = gun_frame;	// development tool
 	}
 	else {
 		gun.frame = ps->gunframe;
 		if (gun.frame == 0)
-			gun.oldframe = 0;	// just changed weapons, don't lerp from
+			gun.oldFrame = 0;	// just changed weapons, don't lerp from
 		// old
 		else
-			gun.oldframe = ops->gunframe;
+			gun.oldFrame = ops->gunframe;
 	}
 
 	gun.flags = RF_MINLIGHT  /* | RF_DEPTHHACK*/ | RF_WEAPONMODEL;
-	gun.backlerp = 1.0 - cl.lerpfrac;
-	VectorCopy (gun.origin, gun.oldorigin);	// don't lerp at all
+	gun.backLerp = 1.0 - cl.lerpfrac;
+	VectorCopy (gun.origin, gun.oldOrigin);	// don't lerp at all
 	VectorCopy (gun.origin, viewweapon);
 
 	if (!cl_thirdPerson->integer)

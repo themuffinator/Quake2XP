@@ -821,6 +821,7 @@ float Q_rsqrt(float number)
 	return y;
 }
 
+
 void VectorNormalizeFast(vec3_t v)
 {
 	float ilength;
@@ -830,6 +831,23 @@ void VectorNormalizeFast(vec3_t v)
 	v[0] *= ilength;
 	v[1] *= ilength;
 	v[2] *= ilength;
+}
+
+void VectorNormalizeFast2(vec3_t v, vec3_t def)
+{
+	float	lengthSquared, lengthInversed;
+
+	lengthSquared = DotProduct(v, v);
+
+	if (lengthSquared > 0.001)
+	{
+		lengthInversed = Q_rsqrt(lengthSquared);
+		v[0] *= lengthInversed;
+		v[1] *= lengthInversed;
+		v[2] *= lengthInversed;
+	}
+	else if (def)
+		VectorCopy(def, v);
 }
 
 vec_t VectorLength (vec3_t v) {

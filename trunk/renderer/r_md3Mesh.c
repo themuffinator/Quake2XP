@@ -4,9 +4,6 @@
 */
 #include "r_local.h"
 
-#define sign(x) ((x)<0 ? (-1) : (1))
-#define DIV_EPSILON 0.00001 
-
 int VectorCompareEpsilon(vec3_t v1, vec3_t v2, float epsilon)
 {
 	if (fabs(v1[0] - v2[0]) > epsilon)
@@ -508,14 +505,14 @@ qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e)
 		Com_DPrintf("R_Cullmd3Model %s: no such frame %d\n", currentmodel->name, e->frame);
 		e->frame = 0;
 	}
-	if ((e->oldframe >= md3Hdr->num_frames) || (e->oldframe < 0))
+	if ((e->oldFrame >= md3Hdr->num_frames) || (e->oldFrame < 0))
 	{
-		Com_DPrintf("R_Cullmd3Model %s: no such oldframe %d\n", currentmodel->name, e->oldframe);
-		e->oldframe = 0;
+		Com_DPrintf("R_Cullmd3Model %s: no such oldFrame %d\n", currentmodel->name, e->oldFrame);
+		e->oldFrame = 0;
 	}
 
 	currFrame = md3Hdr->frames + e->frame;
-	oldFrame = md3Hdr->frames + e->oldframe;
+	oldFrame = md3Hdr->frames + e->oldFrame;
 
 	// compute axially aligned mins and maxs
 	if (currFrame == oldFrame)
@@ -581,10 +578,10 @@ void CheckEntityFrameMD3(md3Model_t *paliashdr)
 		currententity->frame = 0;
 	}
 
-	if ((currententity->oldframe >= paliashdr->num_frames) || (currententity->oldframe < 0))
+	if ((currententity->oldFrame >= paliashdr->num_frames) || (currententity->oldFrame < 0))
 	{
-		Com_Printf("^3CheckEntityFrameMD3, %s: no such oldframe %d\n", currentmodel->name, currententity->oldframe);
-		currententity->oldframe = 0;
+		Com_Printf("^3CheckEntityFrameMD3, %s: no such oldFrame %d\n", currentmodel->name, currententity->oldFrame);
+		currententity->oldFrame = 0;
 	}
 
 }
@@ -600,7 +597,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	md3Vertex_t	*verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
 	image_t     *albedo, *emissive, *normal, *ao;
-	qboolean	cacheLerp = qfalse;
+	qboolean	noLerp = qfalse;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -617,8 +614,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	if (currententity->flags & RF_NOCULL)
 		GL_Disable(GL_CULL_FACE);
-
-	md3Hdr = (md3Model_t *)currentmodel->extraData;
 
 	SetModelsLight();
 
@@ -648,18 +643,19 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			shadelight[2] = 0.0019;
 		}
 	}
-
-	CheckEntityFrameMD3(md3Hdr);
-
+	
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
-	backlerp = currententity->backlerp;
-	frontlerp = 1.0 - backlerp;
-	frame = md3Hdr->frames + currententity->frame;
-	oldFrame = md3Hdr->frames + currententity->oldframe;
+	md3Hdr = (md3Model_t *)currentmodel->extraData;
+	CheckEntityFrameMD3(md3Hdr);
 
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	backlerp	= currententity->backLerp;
+	frontlerp	= 1.0 - backlerp;
+	frame		= md3Hdr->frames + currententity->frame;
+	oldFrame	= md3Hdr->frames + currententity->oldFrame;
+
+	VectorSubtract(currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
 	move[0] = DotProduct(delta, vectors[0]);	// forward
 	move[1] = -DotProduct(delta, vectors[1]);	// left
@@ -717,7 +713,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglUniform1i(U_PARAM_INT_1, 0);
 	
 	if (frame == oldFrame)
-		cacheLerp = qtrue;
+		noLerp = qtrue;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -726,8 +722,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		if (!(mesh->flags & MESH_OPAQUE)) 
 			continue;
 
-		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts	= mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		verts		= mesh->vertexes + currententity->frame		* mesh->num_verts;
+		oldVerts	= mesh->vertexes + currententity->oldFrame	* mesh->num_verts;
 		
 		c_aliasTris += md3Hdr->meshes[i].num_tris;
 
@@ -743,10 +739,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_DepthMask(1);
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!albedo || albedo == r_missingTexture)
-		{
-			if (currententity->skin)
-			{
+		if (!albedo || albedo == r_missingTexture){
+
+			if (currententity->skin){
 				albedo = currententity->skin;	// custom player skin
 			}
 		}
@@ -773,7 +768,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			else
 				Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
 
-			if (cacheLerp) {
+			if (noLerp || md3Hdr->num_frames < 1) {
 				tess.position[j][0] = move[0] + verts->xyz[0];
 				tess.position[j][1] = move[1] + verts->xyz[1];
 				tess.position[j][2] = move[2] + verts->xyz[2];
@@ -787,35 +782,35 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		
 		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 			verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
-			oldVerts	= mesh->vertexes + currententity->oldframe * mesh->num_verts;
+			oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
 			for (k = 0; k < mesh->num_verts; k++) {
 
-				if (cacheLerp) {
-					tess.tangent[k][0] = verts[k].tangent[0];
-					tess.tangent[k][1] = verts[k].tangent[1];
-					tess.tangent[k][2] = verts[k].tangent[2];
+				if (noLerp || md3Hdr->num_frames < 1) {
+					tess.tangent[k][0]	= verts[k].tangent[0];
+					tess.tangent[k][1]	= verts[k].tangent[1];
+					tess.tangent[k][2]	= verts[k].tangent[2];
 
 					tess.binormal[k][0] = verts[k].binormal[0];
 					tess.binormal[k][1] = verts[k].binormal[1];
 					tess.binormal[k][2] = verts[k].binormal[2];
 
-					tess.normal[k][0] = verts[k].normal[0];
-					tess.normal[k][1] = verts[k].normal[1];
-					tess.normal[k][2] = verts[k].normal[2];
+					tess.normal[k][0]	= verts[k].normal[0];
+					tess.normal[k][1]	= verts[k].normal[1];
+					tess.normal[k][2]	= verts[k].normal[2];
 				}
 				else {
-					tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-					tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-					tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+					tess.tangent[k][0]	= verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+					tess.tangent[k][1]	= verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+					tess.tangent[k][2]	= verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
 					tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
 					tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
 					tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-					tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-					tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-					tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+					tess.normal[k][0]	= verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+					tess.normal[k][1]	= verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+					tess.normal[k][2]	= verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 				}
 			}
 		}
@@ -893,8 +888,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 			md3Mesh_t *mesh = &md3Hdr->meshes[i];
-			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-			oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+			verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+			oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
 			c_aliasTris += md3Hdr->meshes[i].num_tris;
 
@@ -905,10 +900,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				continue;
 
 			albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-			if (!albedo || albedo == r_missingTexture)
-			{
-				if (currententity->skin)
-				{
+			if (!albedo || albedo == r_missingTexture){
+
+				if (currententity->skin){
 					albedo = currententity->skin;	// custom player skin
 				}
 			}
@@ -920,12 +914,13 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				normal = r_defBump;
 
 			for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
+				
 				if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 					Vector4Set(tess.color[j], 0.33, 0.33, 0.33, 0.5);
 				else
 					Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
 
-				if (cacheLerp) {
+				if (noLerp || md3Hdr->num_frames < 1) {
 					tess.position[j][0] = move[0] + verts->xyz[0];
 					tess.position[j][1] = move[1] + verts->xyz[1];
 					tess.position[j][2] = move[2] + verts->xyz[2];
@@ -936,29 +931,31 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				}
 			}
 
-			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-			oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+			verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+			oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
 			for (k = 0; k< mesh->num_verts; k++) {
-				if (cacheLerp) {
+				
+				if (noLerp || md3Hdr->num_frames < 1) {
 					if (r_debugTbn->integer) {
-						tess.tangent[k][0] = verts[k].tangent[0];
-						tess.tangent[k][1] = verts[k].tangent[1];
-						tess.tangent[k][2] = verts[k].tangent[2];
+						tess.tangent[k][0]	= verts[k].tangent[0];
+						tess.tangent[k][1]	= verts[k].tangent[1];
+						tess.tangent[k][2]	= verts[k].tangent[2];
 
 						tess.binormal[k][0] = verts[k].binormal[0];
 						tess.binormal[k][1] = verts[k].binormal[1];
 						tess.binormal[k][2] = verts[k].binormal[2];
 					}
+
 					tess.normal[k][0] = verts[k].normal[0];
 					tess.normal[k][1] = verts[k].normal[1];
 					tess.normal[k][2] = verts[k].normal[2];
 				}
 				else {
 					if (r_debugTbn->integer) {
-						tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-						tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-						tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+						tess.tangent[k][0]	= verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+						tess.tangent[k][1]	= verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+						tess.tangent[k][2]	= verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
 						tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
 						tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
@@ -1038,8 +1035,7 @@ qboolean R_Md3InLightBound() {
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	}
-	else
-	{
+	else {
 		VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 		VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
@@ -1048,7 +1044,6 @@ qboolean R_Md3InLightBound() {
 
 		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
 			return qfalse;
-
 	}
 	else if (currentShadowLight->spherical) {
 
@@ -1076,11 +1071,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	vec3_t		bbox[8];
 	int			i, j, k;
 	float		frontlerp, backlerp;
-	md3Frame_t	*frame, *oldframe;
+	md3Frame_t	*frame, *oldFrame;
 	vec3_t		move, delta, vectors[3], maxs;
 	md3Vertex_t	*verts, *oldVerts;
 	image_t     *albedo, *pbr, *normal;
-	qboolean	inWater, cacheLerp = qfalse;
+	qboolean	inWater, noLerp = qfalse;
 	vec3_t		tmp, oldLight, oldView;
 
 	if (!r_drawEntities->integer)
@@ -1093,7 +1088,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (!(currententity->flags & RF_WEAPONMODEL)) {
+	if (!(currententity->flags & RF_WEAPONMODEL)){
+
 		if (R_CullMD3Model(bbox, currententity))
 			return;
 	}
@@ -1101,11 +1097,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (!R_Md3InLightBound())
 		return;
 
-	md3Hdr = (md3Model_t *)currentmodel->extraData;
-
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
-
 
 	R_SetupEntityMatrix(currententity);
 
@@ -1118,21 +1111,21 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
 
-
+	md3Hdr = (md3Model_t *)currentmodel->extraData;
 	CheckEntityFrameMD3(md3Hdr);
 
-	backlerp = currententity->backlerp;
-	frontlerp = 1.0 - backlerp;
-	frame = md3Hdr->frames + currententity->frame;
-	oldframe = md3Hdr->frames + currententity->oldframe;
+	backlerp	= currententity->backLerp;
+	frontlerp	= 1.0 - backlerp;
+	frame		= md3Hdr->frames + currententity->frame;
+	oldFrame	= md3Hdr->frames + currententity->oldFrame;
 
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	VectorSubtract(currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
 	move[0] = DotProduct(delta, vectors[0]);	// forward
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] = DotProduct(delta, vectors[2]);	// up
 
-	VectorAdd(move, oldframe->translate, move);
+	VectorAdd(move, oldFrame->translate, move);
 
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
@@ -1160,7 +1153,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	qglUniform1i(U_USE_AUTOBUMP, 0);
 	
-	if ((inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) || (!inWater && currentShadowLight->castCaustics2 && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)))
+	if ((inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) 
+		|| (!inWater && currentShadowLight->castCaustics2 && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)))
 		qglUniform1i(U_USE_CAUSTICS, 1);
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
@@ -1174,14 +1168,14 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		qglUniform1i(U_PARAM_INT_4, 0);
 
-	if (frame == oldframe)
-		cacheLerp = qtrue;
+	if (frame == oldFrame)
+		noLerp = qtrue;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
-		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+		oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 		
 		if (mesh->muzzle)
 			continue;
@@ -1211,10 +1205,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		c_litAliasTris += md3Hdr->meshes[i].num_tris;
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!albedo || albedo == r_missingTexture)
-		{
-			if (currententity->skin)
-			{
+		if (!albedo || albedo == r_missingTexture){
+
+			if (currententity->skin){
 				albedo = currententity->skin;	// custom player skin
 			}
 		}
@@ -1231,7 +1224,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
-			if (cacheLerp) {
+			if (noLerp || md3Hdr->num_frames < 1) {
 				tess.position[j][0] = move[0] + verts->xyz[0];
 				tess.position[j][1] = move[1] + verts->xyz[1];
 				tess.position[j][2] = move[2] + verts->xyz[2];
@@ -1244,10 +1237,12 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		}
 
 		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts	= mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
 		for (k = 0; k< mesh->num_verts; k++) {
-			if(cacheLerp){
+
+			if(noLerp || md3Hdr->num_frames < 1){
+
 				tess.tangent[k][0] = verts[k].tangent[0];
 				tess.tangent[k][1] = verts[k].tangent[1];
 				tess.tangent[k][2] = verts[k].tangent[2];
@@ -1325,7 +1320,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	md3Frame_t		*frame, *oldFrame;
 	vec3_t			move, delta, vectors[3], tmp, viewOrg;
 	md3Vertex_t		*verts, *oldVerts;
-	qboolean		cacheLerp = qfalse;
+	qboolean		noLerp = qfalse;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -1344,12 +1339,12 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
-	backlerp = currententity->backlerp;
-	frontlerp = 1.0 - backlerp;
-	frame = md3Hdr->frames + currententity->frame;
-	oldFrame = md3Hdr->frames + currententity->oldframe;
+	backlerp	= currententity->backLerp;
+	frontlerp	= 1.0 - backlerp;
+	frame		= md3Hdr->frames + currententity->frame;
+	oldFrame	= md3Hdr->frames + currententity->oldFrame;
 
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	VectorSubtract(currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
 	move[0] = DotProduct(delta, vectors[0]);	// forward
 	move[1] = -DotProduct(delta, vectors[1]);	// left
@@ -1392,7 +1387,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
 	
 	if (frame == oldFrame)
-		cacheLerp = qtrue;
+		noLerp = qtrue;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -1402,12 +1397,12 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 			continue;
 
 		c_aliasTris += md3Hdr->meshes[i].num_tris;
-		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
+		oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
-			if (cacheLerp) {
+			if (noLerp || md3Hdr->num_frames < 1) {
 				tess.position[j][0] = move[0] + verts->xyz[0];
 				tess.position[j][1] = move[1] + verts->xyz[1];
 				tess.position[j][2] = move[2] + verts->xyz[2];
@@ -1418,7 +1413,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 			}
 
-			if(cacheLerp){
+			if(noLerp || md3Hdr->num_frames < 1){
 				tess.normal[j][0] = verts->normal[0];
 				tess.normal[j][1] = verts->normal[1];
 				tess.normal[j][2] = verts->normal[2];

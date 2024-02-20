@@ -33,19 +33,17 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	vec3_t			move, vectors[3];
 	vec3_t			frontv, backv;
 	int				i;
-	qboolean		cacheLerp = qfalse;
-	
-	backlerp = currententity->backlerp;
+	qboolean		noLerp = qfalse;
 
 	frame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts		= v = frame->verts;
-	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	ov			= oldFrame->verts;
-
-	frontlerp = 1.0 - backlerp;
+	backlerp	= currententity->backLerp;
+	frontlerp	= 1.0 - backlerp;
 
 	// move should be the delta back to the previous frame * backlerp
-	VectorSubtract (currententity->oldorigin, currententity->origin, move);
+	VectorSubtract (currententity->oldOrigin, currententity->origin, move);
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		vec3_t	temp;
@@ -59,20 +57,20 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	VectorAdd (move, oldFrame->translate, move);
 
 	for (i = 0; i < 3; i++) {
-		move[i] = backlerp*move[i] + frontlerp*frame->translate[i];
-		frontv[i] = frontlerp*frame->scale[i];
-		backv[i] = backlerp*oldFrame->scale[i];
+		move[i]		= backlerp	* move[i] + frontlerp * frame->translate[i];
+		frontv[i]	= frontlerp * frame->scale[i];
+		backv[i]	= backlerp	* oldFrame->scale[i];
 	}
 
 	lerp = s_lerped[0];
 	
 	if (frame == oldFrame)
-		cacheLerp = qtrue;
+		noLerp = qtrue;
 
 	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
 		for (i = 0; i < paliashdr->num_xyz; i++, v++, ov++, lerp += 3) {
 			float *normal = q_byteDirs[verts[i].lightnormalindex];
-			if(cacheLerp){
+			if(noLerp){
 				lerp[0] = move[0] + v->v[0] * frame->scale[0] + normal[0] * shellScale;
 				lerp[1] = move[1] + v->v[1] * frame->scale[1] + normal[1] * shellScale;
 				lerp[2] = move[2] + v->v[2] * frame->scale[2] + normal[2] * shellScale;
@@ -82,12 +80,11 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 				lerp[1] = move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1] + normal[1] * shellScale;
 				lerp[2] = move[2] + ov->v[2] * backv[2] + v->v[2] * frontv[2] + normal[2] * shellScale;
 			}
-
 		}
 	}
 	else {
 		for (i = 0; i < paliashdr->num_xyz; i++, v++, ov++, lerp += 3) {
-			if(cacheLerp){
+			if(noLerp){
 				lerp[0] = move[0] + v->v[0] * frame->scale[0];
 				lerp[1] = move[1] + v->v[1] * frame->scale[1];
 				lerp[2] = move[2] + v->v[2] * frame->scale[2];
@@ -97,7 +94,6 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 				lerp[1] = move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1];
 				lerp[2] = move[2] + ov->v[2] * backv[2] + v->v[2] * frontv[2];
 			}
-
 		}
 	}
 }
@@ -108,13 +104,13 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	int				index_xyz, *order,	count, numVerts = 0;
 	image_t			*albedo, *normalMap, *emissive;
 	float			alphaShift, s, os, shade, backlerp, frontlerp;
-	qboolean		cacheLerp = qfalse;
+	qboolean		noLerp = qfalse;
 	dtriangle_t		*tris;
 	daliasframe_t	*frame,		*oldFrame;
 	dtrivertx_t		*verts,		*oldVerts;
 	vec3_t			*normals,	*oldNormals;
-	byte			*tangents,	*oldTangents;
-	byte			*binormals,	*oldBinormals;
+	vec3_t			*tangents,	*oldTangents;
+	vec3_t			*binormals,	*oldBinormals;
 	uint			offs;
 
 	alphaShift = sin (ref_realtime * 5.666);
@@ -202,9 +198,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	c_aliasTris += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 
-	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts		= oldFrame->verts;
-	offs			= paliashdr->num_xyz * currententity->oldframe;
+	offs			= paliashdr->num_xyz * currententity->oldFrame;
 	oldNormals		= currentmodel->normals + offs;
 	oldTangents		= currentmodel->tangents + offs;
 	oldBinormals	= currentmodel->binormals + offs;
@@ -216,11 +212,11 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	tangents	= currentmodel->tangents + offs;
 	binormals	= currentmodel->binormals + offs;
 
-	backlerp	= currententity->backlerp;
+	backlerp	= currententity->backLerp;
 	frontlerp	= 1 - backlerp;
 
 	if (frame == oldFrame)
-		cacheLerp = qtrue;
+		noLerp = qtrue;
 
 	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
@@ -242,9 +238,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			tess.texCoord[numVerts][0] = ((float *)order)[0];
 			tess.texCoord[numVerts][1] = ((float *)order)[1];
 
-			s = shadedots[verts[index_xyz].lightnormalindex];
-			os = shadedots[oldVerts[index_xyz].lightnormalindex];
-			shade = os * backlerp + s * frontlerp;
+			s		= shadedots[verts[index_xyz].lightnormalindex];
+			os		= shadedots[oldVerts[index_xyz].lightnormalindex];
+			shade	= os * backlerp + s * frontlerp;
 
 			tess.color[numVerts][0] = shade * lightColor[0];
 			tess.color[numVerts][1] = shade * lightColor[1];
@@ -253,31 +249,28 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 				
-				if (cacheLerp) {
-					tess.tangent[numVerts][0] = q_byteDirs[tangents[index_xyz]][0];
-					tess.tangent[numVerts][1] = q_byteDirs[tangents[index_xyz]][1];
-					tess.tangent[numVerts][2] = q_byteDirs[tangents[index_xyz]][2];
+				if (noLerp) {
+					tess.tangent[numVerts][0]	= tangents[index_xyz][0];
+					tess.tangent[numVerts][1]	= tangents[index_xyz][1];
+					tess.tangent[numVerts][2]	= tangents[index_xyz][2];
 
-					tess.binormal[numVerts][0] = q_byteDirs[binormals[index_xyz]][0];
-					tess.binormal[numVerts][1] = q_byteDirs[binormals[index_xyz]][1];
-					tess.binormal[numVerts][2] = q_byteDirs[binormals[index_xyz]][2];
+					tess.binormal[numVerts][0]	= binormals[index_xyz][0];
+					tess.binormal[numVerts][1]	= binormals[index_xyz][1];
+					tess.binormal[numVerts][2]	= binormals[index_xyz][2];
 				}
 				else {
-					tess.tangent[numVerts][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
-					tess.tangent[numVerts][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
-					tess.tangent[numVerts][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
+					tess.tangent[numVerts][0]	= oldTangents[index_xyz][0] * backlerp + tangents[index_xyz][0] * frontlerp;
+					tess.tangent[numVerts][1]	= oldTangents[index_xyz][1] * backlerp + tangents[index_xyz][1] * frontlerp;
+					tess.tangent[numVerts][2]	= oldTangents[index_xyz][2] * backlerp + tangents[index_xyz][2] * frontlerp;
 
-					tess.binormal[numVerts][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
-					tess.binormal[numVerts][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
-					tess.binormal[numVerts][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
+					tess.binormal[numVerts][0]	= oldBinormals[index_xyz][0] * backlerp + binormals[index_xyz][0] * frontlerp;
+					tess.binormal[numVerts][1]	= oldBinormals[index_xyz][1] * backlerp + binormals[index_xyz][1] * frontlerp;
+					tess.binormal[numVerts][2]	= oldBinormals[index_xyz][2] * backlerp + binormals[index_xyz][2] * frontlerp;
 				}
 			}
 			if (currentmodel->envMap || r_debugTbn->integer) {
 
-			//	tess.normal[numVerts][0] = q_byteDirs[oldVerts[index_xyz].lightnormalindex][0] * backlerp + q_byteDirs[verts[index_xyz].lightnormalindex][0] * frontlerp;
-			//	tess.normal[numVerts][1] = q_byteDirs[oldVerts[index_xyz].lightnormalindex][1] * backlerp + q_byteDirs[verts[index_xyz].lightnormalindex][1] * frontlerp;
-			//	tess.normal[numVerts][2] = q_byteDirs[oldVerts[index_xyz].lightnormalindex][2] * backlerp + q_byteDirs[verts[index_xyz].lightnormalindex][2] * frontlerp;
-				if(cacheLerp){
+				if(noLerp){
 					tess.normal[numVerts][0] = normals[index_xyz][0];
 					tess.normal[numVerts][1] = normals[index_xyz][1];
 					tess.normal[numVerts][2] = normals[index_xyz][2];
@@ -387,7 +380,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	int				index_xyz, *order, count, numVerts = 0;
 	dtriangle_t		*tris;
 	float			backlerp, frontlerp;
-	qboolean		cacheLerp = qfalse;
+	qboolean		noLerp = qfalse;
 	daliasframe_t	*frame, *oldFrame;
 	dtrivertx_t		*verts, *oldVerts;
 	vec3_t			*normals, *oldNormals;
@@ -406,9 +399,9 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	c_aliasTris += paliashdr->num_tris;
 
 	tris		= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
-	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts	= oldFrame->verts;
-	offs		= paliashdr->num_xyz * currententity->oldframe;
+	offs		= paliashdr->num_xyz * currententity->oldFrame;
 	oldNormals	= currentmodel->normals + offs;
 
 	frame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
@@ -416,13 +409,11 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	offs	= paliashdr->num_xyz * currententity->frame;
 	normals = currentmodel->normals + offs;
 
-	backlerp	= currententity->backlerp;
+	backlerp	= currententity->backLerp;
 	frontlerp	= 1 - backlerp;
 	
 	if (frame == oldFrame)
-		cacheLerp = qtrue;
-
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
+		noLerp = qtrue;
 
 	// setup program
 	GL_BindProgram (aliasAmbientProgram);
@@ -449,6 +440,8 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);	
 
+	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
+
 	while (count = *order++) {
 
 		if (!count)
@@ -463,7 +456,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 			tess.position[numVerts][0] = s_lerped[index_xyz][0];
 			tess.position[numVerts][1] = s_lerped[index_xyz][1];
 			tess.position[numVerts][2] = s_lerped[index_xyz][2];
-			if (cacheLerp) {
+			if (noLerp) {
 				tess.normal[numVerts][0] = normals[index_xyz][0];
 				tess.normal[numVerts][1] = normals[index_xyz][1];
 				tess.normal[numVerts][2] = normals[index_xyz][2];
@@ -492,8 +485,8 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	int				index_xyz,	*order, count, numVerts = 0;
-	byte			*binormals, *oldBinormals;
-	byte			*tangents,	*oldTangents;
+	vec3_t			*binormals, *oldBinormals;
+	vec3_t			*tangents,	*oldTangents;
 	vec3_t			*normals,	*oldNormals;
 	dtriangle_t		*tris;
 	daliasframe_t	*frame, *oldFrame;
@@ -502,7 +495,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	uint			offs;
 	vec3_t			maxs;
 	image_t			*albedo, *normalMap, *pbr;
-	qboolean		inWater, cacheLerp = qfalse;
+	qboolean		inWater, noLerp = qfalse;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
@@ -510,9 +503,10 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	if (currentmodel->noSelfShadow && r_shadows->integer)
 		GL_Disable(GL_STENCIL_TEST);
 
-	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	tris			= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts		= oldFrame->verts;
-	offs			= paliashdr->num_xyz * currententity->oldframe;
+	offs			= paliashdr->num_xyz * currententity->oldFrame;
 	oldBinormals	= currentmodel->binormals + offs;
 	oldTangents		= currentmodel->tangents + offs;
 	oldNormals		= currentmodel->normals + offs;
@@ -523,15 +517,12 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	binormals		= currentmodel->binormals + offs;
 	tangents		= currentmodel->tangents + offs;
 	normals			= currentmodel->normals + offs;
-
-	tris	= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
-	order	= (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 	
-	backlerp	= currententity->backlerp;
+	backlerp	= currententity->backLerp;
 	frontlerp	= 1 - backlerp;
 	
 	if (frame = oldFrame)
-		cacheLerp = qtrue;
+		noLerp = qtrue;
 
 	// select skin
 	if (currententity->skin)
@@ -552,7 +543,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	if (!albedo)
 		albedo = r_missingTexture;
 
-//	// select skin
+	// select skin
 	if (currententity->bump)
 		normalMap = currententity->bump;	// custom player skin
 	else {
@@ -578,6 +569,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
 	c_litAliasTris += paliashdr->num_tris;
+	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
 	while (count = *order++) {
 
@@ -597,36 +589,34 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 			tess.texCoord[numVerts][0] = ((float *)order)[0];
 			tess.texCoord[numVerts][1] = ((float *)order)[1];
 
-			if (cacheLerp) {
-				tess.tangent[numVerts][0] = q_byteDirs[tangents[index_xyz]][0];
-				tess.tangent[numVerts][1] = q_byteDirs[tangents[index_xyz]][1];
-				tess.tangent[numVerts][2] = q_byteDirs[tangents[index_xyz]][2];
+			if (noLerp) {
+				tess.tangent[numVerts][0]	= tangents[index_xyz][0];
+				tess.tangent[numVerts][1]	= tangents[index_xyz][1];
+				tess.tangent[numVerts][2]	= tangents[index_xyz][2];
 
-				tess.binormal[numVerts][0] = q_byteDirs[binormals[index_xyz]][0];
-				tess.binormal[numVerts][1] = q_byteDirs[binormals[index_xyz]][1];
-				tess.binormal[numVerts][2] = q_byteDirs[binormals[index_xyz]][2];
+				tess.binormal[numVerts][0]	= binormals[index_xyz][0];
+				tess.binormal[numVerts][1]	= binormals[index_xyz][1];
+				tess.binormal[numVerts][2]	= binormals[index_xyz][2];
 
-				tess.normal[numVerts][0] = normals[index_xyz][0];
-				tess.normal[numVerts][1] = normals[index_xyz][1];
-				tess.normal[numVerts][2] = normals[index_xyz][2];
+				tess.normal[numVerts][0]	= normals[index_xyz][0];
+				tess.normal[numVerts][1]	= normals[index_xyz][1];
+				tess.normal[numVerts][2]	= normals[index_xyz][2];
 			}
 			else {
-				tess.tangent[numVerts][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
-				tess.tangent[numVerts][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
-				tess.tangent[numVerts][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
+				tess.tangent[numVerts][0]	= oldTangents[index_xyz][0] * backlerp + tangents[index_xyz][0] * frontlerp;
+				tess.tangent[numVerts][1]	= oldTangents[index_xyz][1] * backlerp + tangents[index_xyz][1] * frontlerp;
+				tess.tangent[numVerts][2]	= oldTangents[index_xyz][2] * backlerp + tangents[index_xyz][2] * frontlerp;
 
-				tess.binormal[numVerts][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
-				tess.binormal[numVerts][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
-				tess.binormal[numVerts][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
+				tess.binormal[numVerts][0]	= oldBinormals[index_xyz][0] * backlerp + binormals[index_xyz][0] * frontlerp;
+				tess.binormal[numVerts][1]	= oldBinormals[index_xyz][1] * backlerp + binormals[index_xyz][1] * frontlerp;
+				tess.binormal[numVerts][2]	= oldBinormals[index_xyz][2] * backlerp + binormals[index_xyz][2] * frontlerp;
 
-				tess.normal[numVerts][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
-				tess.normal[numVerts][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
-				tess.normal[numVerts][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
+				tess.normal[numVerts][0]	= oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
+				tess.normal[numVerts][1]	= oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
+				tess.normal[numVerts][2]	= oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
 			}
-
 			numVerts++;
 			order += 3;
-
 		} while (--count);
 	}
 
@@ -673,9 +663,8 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	if (pbr == r_blackTexture1x1)
 		qglUniform1i(U_USE_RGH_MAP, 0);
-	else {
+	else 
 		qglUniform1i(U_USE_RGH_MAP, 1);
-	}
 	
 	qglUniform1i(U_PARAM_INT_1, 0);
 	qglUniform1i(U_PARAM_INT_2, 0);
@@ -730,19 +719,14 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 			currentmodel->name, e->frame);
 		e->frame = 0;
 	}
-	if ((e->oldframe >= paliashdr->num_frames) || (e->oldframe < 0)) {
-		Com_Printf("R_CullAliasModel %s: no such oldframe %d\n",
-			currentmodel->name, e->oldframe);
-		e->oldframe = 0;
+	if ((e->oldFrame >= paliashdr->num_frames) || (e->oldFrame < 0)) {
+		Com_Printf("R_CullAliasModel %s: no such oldframe %d\n", currentmodel->name, e->oldFrame);
+		e->oldFrame = 0;
 	}
 
-	pframe = (daliasframe_t *)((byte *)paliashdr +
-		paliashdr->ofs_frames +
-		e->frame * paliashdr->framesize);
+	pframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + e->frame * paliashdr->framesize);
 
-	poldframe = (daliasframe_t *)((byte *)paliashdr +
-		paliashdr->ofs_frames +
-		e->oldframe * paliashdr->framesize);
+	poldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + e->oldFrame * paliashdr->framesize);
 
 	if (pframe == poldframe) {
 		for (i = 0; i < 3; i++) {
@@ -786,8 +770,6 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 		bbox[i][2] = vectors[0][2] * tmp[0] + vectors[1][2] * tmp[1] + vectors[2][2] * tmp[2] + e->origin[2];
 	}
 
-	//=========================
-
 	{
 		int p, f, aggregatemask = ~0;
 
@@ -819,8 +801,8 @@ void SetModelsLight()
 	float mid;
 
 	if (currententity->flags & (RF_FULLBRIGHT | RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE
-		| RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
-	{
+		| RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
+
 		for (i = 0; i < 3; i++)
 			shadelight[i] = 1.0;
 	}
@@ -828,9 +810,11 @@ void SetModelsLight()
 		R_LightPoint(currententity->origin, shadelight);
 
 	if (currententity->flags & RF_MINLIGHT) {
+		
 		for (i = 0; i < 3; i++)
 			if (shadelight[i] > 0.0019)
 				break;
+
 		if (i == 3) {
 			shadelight[0] = 0.0019;
 			shadelight[1] = 0.0019;
@@ -872,7 +856,6 @@ void R_DrawAliasModel(entity_t *e)
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
 
-
 	if (!(e->flags & RF_WEAPONMODEL)) {
 		if (R_CullAliasModel(bbox, e))
 			return;
@@ -890,20 +873,17 @@ void R_DrawAliasModel(entity_t *e)
 
 	SetModelsLight();
 
-	if ((currententity->frame >= paliashdr->num_frames)
-		|| (currententity->frame < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
-			currentmodel->name, currententity->frame);
+	if ((currententity->frame >= paliashdr->num_frames) || (currententity->frame < 0)) {
+
+		Com_Printf("R_DrawAliasModel %s: no such frame %d\n", currentmodel->name, currententity->frame);
 		currententity->frame = 0;
-		currententity->oldframe = 0;
+		currententity->oldFrame = 0;
 	}
 
-	if ((currententity->oldframe >= paliashdr->num_frames)
-		|| (currententity->oldframe < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
-			currentmodel->name, currententity->oldframe);
+	if ((currententity->oldFrame >= paliashdr->num_frames) || (currententity->oldFrame < 0)) {
+		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n", currentmodel->name, currententity->oldFrame);
 		currententity->frame = 0;
-		currententity->oldframe = 0;
+		currententity->oldFrame = 0;
 	}
 
 	R_SetupEntityMatrix(e);
@@ -961,20 +941,18 @@ visible:
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
-	if ((currententity->frame >= paliashdr->num_frames)
-		|| (currententity->frame < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
-			currentmodel->name, currententity->frame);
+	if ((currententity->frame >= paliashdr->num_frames) || (currententity->frame < 0)) {
+
+		Com_Printf("R_DrawAliasModel %s: no such frame %d\n", currentmodel->name, currententity->frame);
 		currententity->frame = 0;
-		currententity->oldframe = 0;
+		currententity->oldFrame = 0;
 	}
 
-	if ((currententity->oldframe >= paliashdr->num_frames)
-		|| (currententity->oldframe < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
-			currentmodel->name, currententity->oldframe);
+	if ((currententity->oldFrame >= paliashdr->num_frames) || (currententity->oldFrame < 0)) {
+
+		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n", currentmodel->name, currententity->oldFrame);
 		currententity->frame = 0;
-		currententity->oldframe = 0;
+		currententity->oldFrame = 0;
 	}
 
 	R_SetupEntityMatrix(currententity);

@@ -78,7 +78,7 @@ void V_AddEntity (entity_t * ent) {
 		int i;
 
 		for (i = 0; i < 3; i++)
-			ent->oldorigin[i] = ent->origin[i] = cl.predicted_origin[i];
+			ent->oldOrigin[i] = ent->origin[i] = cl.predicted_origin[i];
 
 		if (cl_thirdPerson->integer)
 			ent->flags &= ~RF_VIEWERMODEL;

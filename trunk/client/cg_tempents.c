@@ -440,7 +440,7 @@ void CL_ParseLaser (int colors) {
 		if (l->endtime < cl.time) {
 			l->ent.flags = RF_TRANSLUCENT | RF_BEAM;
 			VectorCopy (start, l->ent.origin);
-			VectorCopy (end, l->ent.oldorigin);
+			VectorCopy (end, l->ent.oldOrigin);
 			l->ent.alpha = 0.30;
 			l->ent.skinnum = (colors >> ((rand () % 4) * 8)) & 0xff;
 			l->ent.model = NULL;
@@ -1755,13 +1755,13 @@ void CL_AddExplosions (void) {
 				ex->lightcolor[2], vec3_origin, 0, 0);
 		}
 
-		VectorCopy (ent->origin, ent->oldorigin);
+		VectorCopy (ent->origin, ent->oldOrigin);
 
 		if (f < 0)
 			f = 0;
 		ent->frame = ex->baseframe + f + 1;
-		ent->oldframe = ex->baseframe + f;
-		ent->backlerp = 1.0 - cl.lerpfrac;
+		ent->oldFrame = ex->baseframe + f;
+		ent->backLerp = 1.0 - cl.lerpfrac;
 
 		V_AddEntity (ent);
 	}

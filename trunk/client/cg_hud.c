@@ -310,8 +310,8 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	entity.model = model;
 	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;
 	entity.frame = 0;
-	entity.oldframe = 0;
-	entity.backlerp = 0.0;
+	entity.oldFrame = 0;
+	entity.backLerp = 0.0;
 	
 	if (net_compatibility->integer) {
 		if (stopRotation) {

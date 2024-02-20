@@ -273,7 +273,7 @@ void GL_LerpShadowVerts (int numVerts, dtrivertx_t *v, dtrivertx_t *ov, float *l
 
 void R_DrawMD2ShadowVolume () {
 	dmdl_t			*paliashdr;
-	daliasframe_t	*frame, *oldframe;
+	daliasframe_t	*frame, *oldFrame;
 	dtrivertx_t		*v, *ov, *verts;
 	int				i;
 	float			frontlerp;
@@ -282,34 +282,28 @@ void R_DrawMD2ShadowVolume () {
 	if (!R_EntityCastShadow())
 		return;
 
-	paliashdr = (dmdl_t *)currentmodel->extraData;
+	paliashdr	= (dmdl_t *)currentmodel->extraData;
+	frame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	verts		= v = frame->verts;
+	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
+	ov			= oldFrame->verts;
 
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
-		+ currententity->frame * paliashdr->framesize);
-
-	verts = v = frame->verts;
-
-	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames +
-		currententity->oldframe * paliashdr->framesize);
-
-	ov = oldframe->verts;
-
-	frontlerp = 1.0 - currententity->backlerp;
+	frontlerp	= 1.0 - currententity->backLerp;
 
 	// move should be the delta back to the previous frame * backlerp
-	VectorSubtract (currententity->oldorigin, currententity->origin, delta);
+	VectorSubtract (currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors (currententity->angles, vectors[0], vectors[1], vectors[2]);
 
 	move[0] = DotProduct (delta, vectors[0]);	// forward
 	move[1] = -DotProduct (delta, vectors[1]);	// left
 	move[2] = DotProduct (delta, vectors[2]);	// up
 
-	VectorAdd (move, oldframe->translate, move);
+	VectorAdd (move, oldFrame->translate, move);
 
 	for (i = 0; i < 3; i++) {
-		move[i] = currententity->backlerp * move[i] + frontlerp * frame->translate[i];
+		move[i] = currententity->backLerp * move[i] + frontlerp * frame->translate[i];
 		frontv[i] = frontlerp * frame->scale[i];
-		backv[i] = currententity->backlerp * oldframe->scale[i];
+		backv[i] = currententity->backLerp * oldFrame->scale[i];
 	}
 
 	GL_LerpShadowVerts (paliashdr->num_xyz, v, ov, shadow_lerped[0], move, frontv, backv);
@@ -330,7 +324,7 @@ void R_DrawMD3ShadowVolume(){
 	int				i, j, k, numVerts = 0, id = 0;
 	float			frontlerp, backlerp;
 	md3Model_t		*paliashdr;
-	md3Frame_t		*frame, *oldframe;
+	md3Frame_t		*frame, *oldFrame;
 	md3Mesh_t		*mesh;
 	md3Vertex_t		*v, *ov;
 	vec3_t			move, v1, v2, normal, trinormal, temp,
@@ -351,18 +345,18 @@ void R_DrawMD3ShadowVolume(){
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 	qglUniform3fv(U_LIGHT_POS, 1, lightOrg);
 
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	VectorSubtract(currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
 	move[0] =  DotProduct(delta, vectors[0]);	// forward
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] =  DotProduct(delta, vectors[2]);	// up
 
-	backlerp = currententity->backlerp;
+	backlerp = currententity->backLerp;
 	frontlerp = 1.0 - backlerp;
 	frame = paliashdr->frames + currententity->frame;
-	oldframe = paliashdr->frames + currententity->oldframe;
+	oldFrame = paliashdr->frames + currententity->oldFrame;
 
-	VectorAdd(move, oldframe->translate, move);
+	VectorAdd(move, oldFrame->translate, move);
 
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
@@ -375,7 +369,7 @@ void R_DrawMD3ShadowVolume(){
 			continue;
 
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
-		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		ov = mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 

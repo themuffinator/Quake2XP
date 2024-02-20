@@ -343,11 +343,11 @@ void M_Main_DrawQuad(float x, float y) {
 	entity.origin[0] = 55;
 	entity.origin[1] = -3;
 	entity.origin[2] = -17;
-	VectorCopy(entity.origin, entity.oldorigin);
+	VectorCopy(entity.origin, entity.oldOrigin);
 
 	entity.frame = 0;
-	entity.oldframe = 0;
-	entity.backlerp = 0.0;
+	entity.oldFrame = 0;
+	entity.backLerp = 0.0;
 	entity.angles[1] = anglemod(cl.time / 16);
 	entity.angleMod = qtrue;
 
@@ -4645,7 +4645,7 @@ void PlayerConfig_MenuDraw(void) {
 		entity[0].origin[2] = -8;
 		entity[0].flags = RF_NOSHADOW | RF_DEPTHHACK;
 
-		VectorCopy(entity[0].origin, entity[0].oldorigin);
+		VectorCopy(entity[0].origin, entity[0].oldOrigin);
 
 		if (pose_rot_angle[pose_rot] == -1) {
 			entity[0].angles[1] = anglemod(cls.realTime >> 4);
@@ -4656,8 +4656,8 @@ void PlayerConfig_MenuDraw(void) {
 			entity[0].angles[1] = pose_rot_angle[pose_rot];
 
 		entity[0].frame = pose_start[pose] + ((cls.realTime >> 8) % (pose_end[pose] - pose_start[pose] + 1));
-		entity[0].oldframe = pose_start[pose] + (((cls.realTime >> 8) - 1) % (pose_end[pose] - pose_start[pose] + 1));
-		entity[0].backlerp = 1.0 - ((float)(cls.realTime & 0xff)) / 255.0;
+		entity[0].oldFrame = pose_start[pose] + (((cls.realTime >> 8) - 1) % (pose_end[pose] - pose_start[pose] + 1));
+		entity[0].backLerp = 1.0 - ((float)(cls.realTime & 0xff)) / 255.0;
 
 		// player weapon model
 
@@ -4681,12 +4681,12 @@ void PlayerConfig_MenuDraw(void) {
 			entity[1].origin[1] = 0;
 			entity[1].origin[2] = -8;
 
-			VectorCopy(entity[1].origin, entity[1].oldorigin);
+			VectorCopy(entity[1].origin, entity[1].oldOrigin);
 
 			entity[1].angles[1] = entity[0].angles[1];
 			entity[1].frame = entity[0].frame;
-			entity[1].oldframe = entity[0].oldframe;
-			entity[1].backlerp = entity[0].backlerp;
+			entity[1].oldFrame = entity[0].oldFrame;
+			entity[1].backLerp = entity[0].backLerp;
 			entity[1].flags = RF_NOSHADOW | RF_DEPTHHACK;
 			refdef.num_entities++;
 		}
@@ -4882,8 +4882,8 @@ void M_DrawBackgroundModel() {
 
 	entity.flags = RF_NOSHADOW  | RF_DEPTHHACK;
 	entity.frame = 0;
-	entity.oldframe = 0;
-	entity.backlerp = 0.0;
+	entity.oldFrame = 0;
+	entity.backLerp = 0.0;
 
 	entity.angles[1] = anglemod(cl.time / 32);
 	entity.angleMod = qtrue;

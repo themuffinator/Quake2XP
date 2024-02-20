@@ -129,7 +129,7 @@ typedef enum {
 	MSURF_WATER				= BIT(8),
 	MSURF_SLIME				= BIT(9),
 	MSURF_LAVA				= BIT(10),
-	MSURF_ALPHA = BIT(11)
+	MSURF_ALPHA				= BIT(11)
 }msurfFlag_t;
 
 
@@ -160,8 +160,10 @@ typedef const char			cchar;
 typedef unsigned char		uchar;
 
 typedef struct entity_s {
+	
 	struct model_s *model;		// opaque type outside refresh
-	float angles[3];
+	
+	float	angles[3];
 	mat3_t	axis;			// entity -> world space
 	mat4_t	orMatrix, matrix;
 
@@ -176,65 +178,61 @@ typedef struct entity_s {
 	/*
 	 ** previous data for lerping
 	 */
-	float oldorigin[3];			// also used as RF_BEAM's "to"
-	int oldframe;
+	float	oldOrigin[3];			// also used as RF_BEAM's "to"
+	int		oldFrame;
 	
 	// iqm
-	int iqmFrameTime;
+	int		iqmFrameTime;
 	/*
 	 ** misc
 	 */
-	float backlerp;				// 0.0 = current, 1.0 = old
-	int skinnum;				// also used as RF_BEAM's palette index
+	float	backLerp;				// 0.0 = current, 1.0 = old
+	int		skinnum;				// also used as RF_BEAM's palette index
 
-	int lightstyle;				// for flashing entities
-	float alpha;				// ignore if RF_TRANSLUCENT isn't set
+	int		lightStyle;			// for flashing entities
+	float	alpha;				// ignore if RF_TRANSLUCENT isn't set
 
-	struct image_s *skin;		// NULL for inline skin
-	int flags;
-	vec3_t color;
-	
-	uint shadowVbo, shadowIbo;
+	int		flags;
+	vec3_t	color;
 
-	vec3_t lightvector;
+	struct	image_s *skin;		// NULL for inline skin
 	struct	image_s	*bump;
-	float shadelight[3];
-	float minmax[6];
-	vec3_t mins;
-	vec3_t maxs;
-	qboolean lightVised;
-	byte vis[MAX_MAP_LEAFS / 8];
+	
+	float	minmax[6];
+	vec3_t	mins;
+	vec3_t	maxs;
+	byte	vis[MAX_MAP_LEAFS / 8];
 
 } entity_t;
 
 #define ENTITY_FLAGS  68
 
 typedef struct {
-	vec3_t origin, color, angles;
-	float intensity, _cone;
-	int filter, style;
-	qboolean spotlight;
+	vec3_t		origin, color, angles;
+	float		intensity, _cone;
+	int			filter, style;
+	qboolean	spotlight;
 
 } dlight_t;
 
 typedef struct {
-	vec3_t origin;
-	vec3_t mins;
-	vec3_t maxs;
-	vec3_t color;
-	vec3_t length;
-	vec3_t angle;
-	vec3_t oldOrg;
-	vec3_t dir;
-	float alpha;
-	int type;
-	float orient;
-	float len;
-	int flags;
-	float size;
-	int sFactor;
-	int dFactor;
-	float time;
+	vec3_t	origin;
+	vec3_t	mins;
+	vec3_t	maxs;
+	vec3_t	color;
+	vec3_t	length;
+	vec3_t	angle;
+	vec3_t	oldOrg;
+	vec3_t	dir;
+	float	alpha;
+	int		type;
+	float	orient;
+	float	len;
+	int		flags;
+	float	size;
+	int		sFactor;
+	int		dFactor;
+	float	time;
 } particle_t;
 
 typedef enum {

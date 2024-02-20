@@ -70,6 +70,10 @@ extern viddef_t vid;
 #define	IMAGE_HASH_SIZE		MAX_GLTEXTURES
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
+#define sign(x) ((x)<0 ? (-1) : (1))
+#define DIV_EPSILON 0.00001 
+void VectorNormalizeFast2(vec3_t v, vec3_t def);  // for tbn normalize
+
 // ===================================================================
 
 typedef enum {
