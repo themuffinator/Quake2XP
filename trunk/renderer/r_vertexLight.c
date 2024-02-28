@@ -154,7 +154,7 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 //	trace_t trace;
 	
 	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel) {
-		color[0] = color[1] = color[2] = 1.0 * r_lightmapScale->value;
+		color[0] = color[1] = color[2] = 0.1 * r_lightmapScale->value;
 		return;
 	}
 	

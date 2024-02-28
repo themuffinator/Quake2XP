@@ -159,6 +159,16 @@ typedef unsigned long		ulong;
 typedef const char			cchar;
 typedef unsigned char		uchar;
 
+// status bar head
+float		headYaw;
+float		headEndPitch;
+float		headEndYaw;
+int			headEndTime;
+float		headStartPitch;
+float		headStartYaw;
+int			headStartTime;
+
+
 typedef struct entity_s {
 	
 	struct model_s *model;		// opaque type outside refresh
@@ -166,6 +176,7 @@ typedef struct entity_s {
 	float	angles[3];
 	mat3_t	axis;			// entity -> world space
 	mat4_t	orMatrix, matrix;
+	vec3_t	addColor;
 
 	qboolean angleMod;
 	/*

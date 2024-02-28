@@ -662,6 +662,13 @@ void MSG_WriteDeltaEntity (entity_state_t * from, entity_state_t * to,
 	if (to->solid != from->solid)
 		bits |= U_SOLID;
 
+	if (to->lightOffset != from->lightOffset)
+		bits |= U_LIGHTOFFS;
+	if (to->color != from->color)
+		bits |= U_LIGHTRGB;
+	if (to->lightParams != from->lightParams)
+		bits |= U_LIGHTDATA;
+
 	// event is not delta compressed, just 0 compressed
 	if (to->event)
 		bits |= U_EVENT;
@@ -780,6 +787,13 @@ void MSG_WriteDeltaEntity (entity_state_t * from, entity_state_t * to,
 		MSG_WriteByte (msg, to->event);
 	if (bits & U_SOLID)
 		MSG_WriteShort (msg, to->solid);
+
+	if (bits & U_LIGHTOFFS)
+		MSG_WriteShort(msg, to->lightOffset);
+	if (bits & U_LIGHTRGB)
+		MSG_WriteLong(msg, to->color);
+	if (bits & U_LIGHTDATA)
+		MSG_WriteLong(msg, to->lightParams);
 }
 
 

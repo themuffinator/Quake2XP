@@ -1082,6 +1082,8 @@ glslProgram_t		*tonemapProgram;
 glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
 glslProgram_t		*showTrisProgram;
+glslProgram_t		*fsqProgram;
+glslProgram_t		*blurComputeProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();

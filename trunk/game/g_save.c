@@ -1515,6 +1515,7 @@ field_t fields[] = {
 { "checkattack", FOFS(monsterinfo.checkattack), F_FUNCTION, FFL_NOSPAWN },
 { "currentmove", FOFS(monsterinfo.currentmove), F_MMOVE, FFL_NOSPAWN },
 { "endfunc", FOFS(moveinfo.endfunc), F_FUNCTION, FFL_NOSPAWN },
+//spawn_temp_t
 { "lip", STOFS(lip), F_INT, FFL_SPAWNTEMP },
 { "distance", STOFS(distance), F_INT, FFL_SPAWNTEMP },
 { "height", STOFS(height), F_INT, FFL_SPAWNTEMP },
@@ -1531,6 +1532,11 @@ field_t fields[] = {
 { "minpitch", STOFS(minpitch), F_FLOAT, FFL_SPAWNTEMP },
 { "maxpitch", STOFS(maxpitch), F_FLOAT, FFL_SPAWNTEMP },
 { "nextmap", STOFS(nextmap), F_LSTRING, FFL_SPAWNTEMP },
+
+{ "ligthOffs", STOFS(ligthOffs), F_INT, FFL_SPAWNTEMP },
+{ "color", STOFS(color), F_VECTOR, FFL_SPAWNTEMP },
+{ "radius", STOFS(radius), F_INT, FFL_SPAWNTEMP },
+{ "lStyle", STOFS(lStyle), F_INT, FFL_SPAWNTEMP },
 
 { "collision_model", FOFS(collision_model), F_EDICT, FFL_NOSPAWN },
 { "old_contentmask", FOFS(old_contentmask), F_EDICT, FFL_NOSPAWN },

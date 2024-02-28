@@ -146,7 +146,13 @@ void SP_turret_breach (edict_t *self);
 void SP_turret_base (edict_t *self);
 void SP_turret_driver (edict_t *self);
 
+void SP_light_swing(edict_t *self);
+
+
 spawn_t	spawns[] = {
+	
+	{ "light_swing", SP_light_swing },
+
 	{ "item_health", SP_item_health },
 	{ "item_health_small", SP_item_health_small },
 	{ "item_health_large", SP_item_health_large },

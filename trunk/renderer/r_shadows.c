@@ -488,7 +488,7 @@ void R_DrawMD3ShadowVolume(){
 }
 
 
-void R_CastAliasShadowVolumes(qboolean player) {
+void R_CastAliasShadowVolumes(qboolean selfShadow) {
 	int	i;
 
 	if (!r_shadows->integer || !r_drawEntities->integer)
@@ -514,12 +514,13 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	GL_BindVAO(vao.md2shadow);
 	GL_BindVBO(vbo.md2ShadowVbo);
 
-	if (player) {
+	if (selfShadow) {
+
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
 
-			if (!(currententity->flags & RF_VIEWERMODEL)) 
+			if (!(currententity->flags & (RF_SELFSHADOW | RF_VIEWERMODEL)))
 				continue;
 
 				if (!currentmodel)
@@ -527,7 +528,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 				if (currentmodel->type == mod_alias)
 					R_DrawMD2ShadowVolume();
-
 		}
 	}
 	else {
@@ -535,7 +535,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
 
-			if (currententity->flags & RF_VIEWERMODEL)
+			if (currententity->flags & (RF_SELFSHADOW | RF_VIEWERMODEL))
 				continue;
 
 			if (!currentmodel)
@@ -554,12 +554,13 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	GL_BindVAO(vao.md3shadow);
 	GL_BindVBO(vbo.md3ShadowVbo);
 
-	if (player) {
+	if (selfShadow) {
+
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
 
-			if (!(currententity->flags & RF_VIEWERMODEL))
+			if (!(currententity->flags & (RF_SELFSHADOW | RF_VIEWERMODEL)))
 				continue;
 
 			if (!currentmodel)
@@ -575,7 +576,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
 
-			if (currententity->flags & RF_VIEWERMODEL)
+			if (currententity->flags & (RF_SELFSHADOW | RF_VIEWERMODEL))
 				continue;
 
 			if (!currentmodel)

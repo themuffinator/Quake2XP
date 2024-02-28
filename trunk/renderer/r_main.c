@@ -564,7 +564,7 @@ void R_DrawLightScene (void)
 			c_staticShadowTris += currentShadowLight->numStaticShadowTris;
 	
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
-	R_CastAliasShadowVolumes(qtrue);	// player shadow
+	R_CastAliasShadowVolumes(qtrue);	// player shadow and self shadowing models
 
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 

@@ -250,7 +250,7 @@ void CL_AddParticles (void) {
 		lightradius = p->lightradius;
 		VectorCopy (p->lcolor, lcol);
 		if (p->flags & PARTICLE_LIGHTING) {
-			V_AddLight (org, lightradius, lcol[0], lcol[1], lcol[2], vec3_origin, 0, 0);
+			V_AddLight (org, lightradius, lcol[0], lcol[1], lcol[2], vec3_origin, 0, 0, 0);
 		}
 		VectorSet (kls, org[0], org[1], org[2] + size * 2); //killed particle origin -  in air, water
 
@@ -3449,7 +3449,7 @@ void CL_ParticleRailRick (vec3_t org, vec3_t dir) {
 		p->accel[2] = -PARTICLE_GRAVITY*1.5;
 
 		VectorCopy (p->org, p->oldOrg);
-		V_AddLight(p->oldOrg, 10.0, 1.0, 0.5, 1.0, vec3_origin, 0, 0);
+		V_AddLight(p->oldOrg, 10.0, 1.0, 0.5, 1.0, vec3_origin, 0, 0, 0);
 	}
 
 

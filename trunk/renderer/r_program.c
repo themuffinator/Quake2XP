@@ -177,6 +177,7 @@ static const char * glslGlobals =
 typedef enum {
 	S_TESSELATION	= 1,
 	S_GEO			= 2,
+	S_COMP			= 4,
 }shaderType;
 
 
@@ -390,14 +391,15 @@ R_CreateProgram
 ==============
 */
 
-static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSource, const char *fragmentSource, const char *tessControlSource, const char *tessEvalSource, const char *geoSource) {
+static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSource, const char *fragmentSource, 
+						const char *tessControlSource, const char *tessEvalSource, const char *geoSource, const char *compSource) {
 	char			log[MAX_INFO_LOG];
 	unsigned		hash;
 	glslProgram_t	*program;
 	const char		*strings[MAX_PROGRAM_DEFS * 3 + 2];
 	int				numStrings;
 	int				numLinked = 0;
-	int				id, vertexId, fragmentId, geoId, controlId, evalId;
+	int				id, vertexId, fragmentId, geoId, controlId, evalId, compId;
 	int				status;
 	int				i;
 
@@ -433,8 +435,10 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		controlId = 0;
 		evalId = 0;
 		geoId = 0;
+		compId = 0;
 
-		strings[numStrings++] = glslGlobals;
+		if(!compSource)
+			strings[numStrings++] = glslGlobals;
 
 		// compile vertex shader
 		if (vertexSource) {
@@ -539,6 +543,27 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			}
 		}
 
+		// compile fragment shader
+		if (compSource) {
+			// link includes
+			compSource = R_LoadIncludes((char *)compSource);
+			strings[numStrings] = compSource;
+			compId = qglCreateShader(GL_COMPUTE_SHADER);
+
+			//Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
+
+			qglShaderSource(compId, numStrings + 1, strings, NULL);
+			qglCompileShader(compId);
+			qglGetShaderiv(compId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(compId, log, qfalse);
+				qglDeleteShader(compId);
+				Com_Printf("program '%s': error(s) in compute shader:\n-----------\n%s\n-----------\n", program->name, log);
+				return NULL;
+			}
+		}
+
 		//
 		// link the program
 		//
@@ -566,6 +591,11 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		if (fragmentId) {
 			qglAttachShader(id, fragmentId);
 			qglDeleteShader(fragmentId);
+		}
+
+		if (compId) {
+			qglAttachShader(id, compId);
+			qglDeleteShader(compId);
 		}
 
 		qglLinkProgram(id);
@@ -630,32 +660,45 @@ R_FindProgram
 glslProgram_t *R_FindProgram (const char *name, int flags) {
 	char			filename[MAX_QPATH];
 	glslProgram_t	*program;
-	char			*vertexSource = NULL, *fragmentSource = NULL, *geoSource = NULL, *tessEvalSource = NULL, *tessControlSource = NULL;
+	char			*vertexSource = NULL, *fragmentSource = NULL, *geoSource = NULL, *tessEvalSource = NULL, *tessControlSource = NULL, *compSource = NULL;
 
-	Q_snprintfz (filename, sizeof(filename), "glsl/%s.vert", name);
-	FS_LoadFile (filename, (void **)&vertexSource);
-	Q_snprintfz (filename, sizeof(filename), "glsl/%s.frag", name);
-	FS_LoadFile (filename, (void **)&fragmentSource);
-
-	if (flags & S_TESSELATION) {
-		Q_snprintfz(filename, sizeof(filename), "glsl/%s.tesc", name);
-		FS_LoadFile(filename, (void **)&tessControlSource);
-		Q_snprintfz(filename, sizeof(filename), "glsl/%s.tese", name);
-		FS_LoadFile(filename, (void **)&tessEvalSource);
+	if (flags & S_COMP) {
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.comp", name);
+		FS_LoadFile(filename, (void **)&compSource);
+		
+		if (!compSource)
+			return &r_nullProgram;
+		
+		program = R_CreateProgram(name, NULL, NULL, NULL, NULL, NULL, compSource);
 	}
+	else {
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.vert", name);
+		FS_LoadFile(filename, (void **)&vertexSource);
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.frag", name);
+		FS_LoadFile(filename, (void **)&fragmentSource);
 
-	if (flags & S_GEO) {
-		Q_snprintfz(filename, sizeof(filename), "glsl/%s.geom", name);
-		FS_LoadFile(filename, (void **)&geoSource);
+		if (flags & S_TESSELATION) {
+			Q_snprintfz(filename, sizeof(filename), "glsl/%s.tesc", name);
+			FS_LoadFile(filename, (void **)&tessControlSource);
+			Q_snprintfz(filename, sizeof(filename), "glsl/%s.tese", name);
+			FS_LoadFile(filename, (void **)&tessEvalSource);
+		}
+
+		if (flags & S_GEO) {
+			Q_snprintfz(filename, sizeof(filename), "glsl/%s.geom", name);
+			FS_LoadFile(filename, (void **)&geoSource);
+		}
+
+
+		if (!vertexSource | !fragmentSource)
+			return &r_nullProgram;		// no appropriate shaders found
+		
+		program = R_CreateProgram(name, vertexSource, fragmentSource,
+			flags & S_TESSELATION ? tessControlSource : NULL,
+			flags & S_TESSELATION ? tessEvalSource : NULL,
+			flags & S_GEO ? geoSource : NULL,
+			NULL);
 	}
-
-	if (!vertexSource | !fragmentSource)
-		return &r_nullProgram;		// no appropriate shaders found
-
-		program = R_CreateProgram (	name, vertexSource, fragmentSource, 
-									flags & S_TESSELATION ? tessControlSource : NULL,
-									flags & S_TESSELATION ? tessEvalSource : NULL,
-									flags & S_GEO ? geoSource : NULL);
 
 	if (vertexSource)
 		FS_FreeFile (vertexSource);
@@ -668,6 +711,9 @@ glslProgram_t *R_FindProgram (const char *name, int flags) {
 		FS_FreeFile(tessEvalSource);
 	if (geoSource)
 		FS_FreeFile(geoSource);
+
+	if (compSource)
+		FS_FreeFile(compSource);
 
 	if (!program || !program->valid)
 		return &r_nullProgram;
@@ -1128,6 +1174,26 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"final pass program"S_COLOR_WHITE" ");
 	finalPassProgram = R_FindProgram("finalPass", 0);
 	if (finalPassProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"full screen quad program"S_COLOR_WHITE" ");
+	fsqProgram = R_FindProgram("drawFsq", 0);
+	if (fsqProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"blur compute program"S_COLOR_WHITE" ");
+	blurComputeProgram = R_FindProgram("blur", S_COMP);
+	if (blurComputeProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

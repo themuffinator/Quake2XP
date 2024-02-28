@@ -350,11 +350,15 @@ typedef struct {
 	float		pausetime;
 	char		*item;
 	char		*gravity;
-
 	float		minyaw;
 	float		maxyaw;
 	float		minpitch;
 	float		maxpitch;
+
+	int			ligthOffs;
+	vec3_t		color;
+	int			radius;
+	int			lStyle;
 } spawn_temp_t;
 
 
@@ -1025,7 +1029,6 @@ struct edict_s {
 	char		*message;
 	char		*classname;
 	int			spawnflags;
-
 	float		timestamp;
 
 	float		angle;			// set in qe3, -1 = up, -2 = down

@@ -138,7 +138,7 @@ V_AddLight
 
 =====================
 */
-void V_AddLight (vec3_t org, float intensity, float r, float g, float b, vec3_t ang, float cone, int filter) {
+void V_AddLight (vec3_t org, float intensity, float r, float g, float b, vec3_t ang, int style, float cone, int filter) {
 	dlight_t *dl;
 
 	if (r_numdlights >= MAX_DLIGHTS)
@@ -152,6 +152,7 @@ void V_AddLight (vec3_t org, float intensity, float r, float g, float b, vec3_t 
 	dl->color[0] = r;
 	dl->color[1] = g;
 	dl->color[2] = b;
+	dl->style = style;
 }
 
 

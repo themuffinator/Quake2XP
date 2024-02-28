@@ -206,7 +206,7 @@ void R_AddDynamicLight (dlight_t *dl) {
 		light->maxs[i] = light->origin[i] + dl->intensity;
 	}
 
-	light->style = 0;
+	light->style = dl->style;
 	light->filter = dl->filter;
 	light->isStatic = 0;
 	light->isNoWorldModel = 0;
@@ -2661,8 +2661,8 @@ void R_DrawLightBounds(void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	if (!currentShadowLight->isStatic)
-		return;
+//	if (!currentShadowLight->isStatic)
+	//	return;
 
 	GL_Disable(GL_SCISSOR_TEST);
 

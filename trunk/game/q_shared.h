@@ -779,7 +779,9 @@ typedef enum {
 	RF_SHELL_GOD		= BIT(21),
 	RF_NOCULL			= BIT(22),
 	RF_BFG_SPRITE		= BIT(23),
-	RF_DISTORT			= BIT(24)
+	RF_DISTORT			= BIT(24),
+	RF_SELFSHADOW		= BIT(25),
+	RF_EMISSIVECOLOR	= BIT(26)
 }renderFx_t;
 
 
@@ -1345,6 +1347,7 @@ typedef struct entity_state_s {
 	vec3_t	origin;
 	vec3_t	angles;
 	vec3_t	old_origin;		// for lerping
+
 	int		modelindex;
 	int		modelindex2, modelindex3, modelindex4;	// weapons, CTF flags, etc
 	int		frame;
@@ -1356,6 +1359,10 @@ typedef struct entity_state_s {
 	// gi.linkentity sets this properly
 	int		sound;			// for looping sounds, to guarantee shutoff
 	int		event;			// impulse events -- muzzle flashes, footsteps, etc
+	
+	int		lightOffset;
+	int		color; //paked floats
+	int		lightParams; // radius + style
 	// events only go out for a single frame, they
 	// are automatically cleared each frame
 } entity_state_t;

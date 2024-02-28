@@ -189,6 +189,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <DisableSpecificWarnings>6244</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

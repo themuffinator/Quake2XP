@@ -683,8 +683,12 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	alphaShift = clamp(alphaShift, 0.01, 6.0);
 
 	qglUniform1f(U_COLOR_OFFSET, alphaShift);
-	qglUniform1f(U_ENV_SCALE, 0.1);
-	
+	qglUniform1f(U_ENV_SCALE, 0.1); 
+	if (currententity->flags & RF_EMISSIVECOLOR)
+		qglUniform3f(U_COLOR, currententity->addColor[0]* 2.0, currententity->addColor[1] * 2.0, currententity->addColor[2] * 2.0); // modificate emmission color
+	else
+		qglUniform3f(U_COLOR, 1.0, 1.0, 1.0);
+
 	VectorSubtract(r_origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(currententity->axis, temp, viewOrg);
 

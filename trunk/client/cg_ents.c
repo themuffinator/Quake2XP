@@ -165,6 +165,13 @@ void CL_ParseDelta (entity_state_t * from, entity_state_t * to, int number,
 
 	if (bits & U_SOLID)
 		to->solid = MSG_ReadShort (&net_message);
+
+	if (bits & U_LIGHTOFFS)
+		to->lightOffset = MSG_ReadShort(&net_message);
+	if (bits & U_LIGHTRGB)
+		to->color = MSG_ReadLong(&net_message);
+	if (bits & U_LIGHTDATA)
+		to->lightParams = MSG_ReadLong(&net_message);
 }
 
 /*
@@ -676,6 +683,17 @@ extern	model_t	*currentPlayerWeapon;
 
 game_export_t *ge;
 
+void unPakRGB(int color, vec3_t out) {
+	int r, g, b;
+
+	r = (color & 0xFF0000) >> 16;
+	g = (color & 0xFF00) >> 8;
+	b = color & 0xFF;
+	out[0] = r / 255.0f;
+	out[1] = g / 255.0f;
+	out[2] = b / 255.0f;
+}
+
 void CL_AddPacketEntities (frame_t * frame) {
 	entity_t ent;
 	entity_state_t *s1;
@@ -700,15 +718,12 @@ void CL_AddPacketEntities (frame_t * frame) {
 	currentPlayerWeapon = NULL;
 
 	for (pnum = 0; pnum < frame->num_entities; pnum++) {
-		qboolean player_camera = qfalse;
-		s1 = &cl_parse_entities[(frame->parse_entities +
-			pnum) & (MAX_PARSE_ENTITIES - 1)];
 
-		cent = &cl_entities[s1->number];
-
-		effects = s1->effects;
-		renderfx = s1->renderfx;
-
+		s1			= &cl_parse_entities[(frame->parse_entities + pnum) & (MAX_PARSE_ENTITIES - 1)];
+		cent		= &cl_entities[s1->number];
+		effects		= s1->effects;
+		renderfx	= s1->renderfx;
+		qboolean	player_camera = qfalse;
 
 		// set frame
 		if (effects & EF_ANIM01)
@@ -722,12 +737,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 		else
 			ent.frame = s1->frame;
 
-		/*		if(effects & EF_DISTORT){
-				effects &= ~EF_DISTORT;
-				renderfx |= RF_DISTORT;
-				predator = qtrue;
-				}
-				*/
 		// quad and pent can do different things on client
 		if (effects & EF_PENT) {
 			effects &= ~EF_PENT;
@@ -754,8 +763,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 			effects |= EF_COLOR_SHELL;
 			renderfx |= RF_SHELL_HALF_DAM;
 		}
-
-
 
 		// pmm
 		//======
@@ -824,57 +831,45 @@ void CL_AddPacketEntities (frame_t * frame) {
 			ent.model = NULL;
 			ent.flags = 0;
 		}
-
 		else {
 			// set skin
 			if (s1->modelindex == 255) {	// use custom player skin
 				ent.skinnum = 0;
 				ci = &cl.clientinfo[s1->skinnum & 0xff];
-				ent.skin = ci->skin;
-				ent.bump = ci->bump;
-				ent.model = ci->model;
+				ent.skin	= ci->skin;
+				ent.bump	= ci->bump;
+				ent.model	= ci->model;
+
 				if (!ent.skin || !ent.model || !ent.bump) {
-					ent.skin = cl.baseclientinfo.skin;
-					ent.model = cl.baseclientinfo.model;
-					ent.bump = cl.baseclientinfo.bump;
+					ent.skin	= cl.baseclientinfo.skin;
+					ent.model	= cl.baseclientinfo.model;
+					ent.bump	= cl.baseclientinfo.bump;
 				}
 				//============
 				//PGM
 				if (renderfx & RF_USE_DISGUISE) {
 					if (!strncmp ((char *)ent.skin, "players/male", 12)) {
-						ent.skin =
-							R_RegisterSkin ("players/male/disguise.pcx");
-						ent.model =
-							R_RegisterModel ("players/male/tris.md2");
+						ent.skin	= R_RegisterSkin ("players/male/disguise.pcx");
+						ent.model	= R_RegisterModel ("players/male/tris.md2");
 					}
 					else
-					if (!strncmp
-						((char *)ent.skin, "players/female", 14)) {
-						ent.skin =
-							R_RegisterSkin ("players/female/disguise.pcx");
-						ent.model =
-							R_RegisterModel ("players/female/tris.md2");
+					if (!strncmp ((char *)ent.skin, "players/female", 14)) {
+						ent.skin	= R_RegisterSkin ("players/female/disguise.pcx");
+						ent.model	= R_RegisterModel ("players/female/tris.md2");
 					}
 					else
-					if (!strncmp
-						((char *)ent.skin, "players/cyborg", 14)) {
-						ent.skin =
-							R_RegisterSkin ("players/cyborg/disguise.pcx");
-						ent.model =
-							R_RegisterModel ("players/cyborg/tris.md2");
+					if (!strncmp ((char *)ent.skin, "players/cyborg", 14)) {
+						ent.skin	= R_RegisterSkin ("players/cyborg/disguise.pcx");
+						ent.model	= R_RegisterModel ("players/cyborg/tris.md2");
 					}
 				}
 				//PGM
 				//============
 			}
 			else {
-
-
-
 				ent.skinnum = s1->skinnum;
-				ent.skin =
-					ent.bump = NULL;
-				ent.model = cl.model_draw[s1->modelindex];
+				ent.skin	= ent.bump = NULL;
+				ent.model	= cl.model_draw[s1->modelindex];
 			}
 
 		}
@@ -916,20 +911,47 @@ void CL_AddPacketEntities (frame_t * frame) {
 		}
 		// RAFAEL
 		else if (effects & EF_SPINNINGLIGHTS) {
-			ent.angles[0] = 0;
-			ent.angles[1] = anglemod (cl.time / 2) + s1->angles[1];
-			ent.angles[2] = 180;
-			ent.angleMod = qtrue;
-			{
-				vec3_t forward;
-				vec3_t start;
+			if (modName("xatrix")) {
+				ent.angles[0] = 0;
+				ent.angles[1] = anglemod(cl.time / 2) + s1->angles[1];
+				ent.angles[2] = 180;
+				ent.angleMod = qtrue;
+				{
+					vec3_t forward;
+					vec3_t start;
 
-				AngleVectors (ent.angles, forward, NULL, NULL);
-				VectorMA (ent.origin, 64, forward, start);
-				V_AddLight (start, 250, 1, 0, 0, vec3_origin, 0, 0);
+					AngleVectors(ent.angles, forward, NULL, NULL);
+					VectorMA(ent.origin, 64, forward, start);
+					V_AddLight(start, 250, 1, 0, 0, vec3_origin, 0, 0, 0);
+				}
+			}
+			else {
+				// doom3 style swing lamp
+				ent.angles[0] = 55.f * sinf(anglemod(cl.time * 0.001)) + s1->angles[0];
+				ent.angles[1] = s1->angles[1];
+				ent.angles[2] = s1->angles[2];
+				ent.angleMod = qtrue;
+				
+				if (renderfx == RF_SELFSHADOW)
+					ent.flags = RF_SELFSHADOW;
+				
+				ent.flags |= RF_EMISSIVECOLOR;
+
+				vec3_t	rotAngle, lPos, lColor;
+				int		radius, style;
+
+				AngleVectors(ent.angles, NULL, NULL, rotAngle);
+				VectorMA(ent.origin, s1->lightOffset, rotAngle, lPos);
+				//unpack data
+				unPakRGB(s1->color, lColor);
+				radius	= s1->lightParams >> 7;
+				style	= s1->lightParams & 0x7F;
+
+				V_AddLight(lPos, radius, lColor[0], lColor[1], lColor[2], vec3_origin, style, 0, 0);
+				VectorCopy(lColor, ent.addColor);
 			}
 		}
-		else {				// interpolate angles
+		else {	// interpolate angles
 			float a1, a2;
 
 			for (i = 0; i < 3; i++) {
@@ -938,12 +960,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 				ent.angles[i] = LerpAngle (a2, a1, cl.lerpfrac);
 			}
 		}
-
-
+		
 		int dmFlag = Cvar_VariableInteger("dmflags");
 
 		if ( ( (effects & EF_FLASHLIGHT) && !net_compatibility->integer) || (net_compatibility->integer && (dmFlag & DF_FLASHLIGHT) ) ) {
-			vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, up, right;
+			vec3_t			flashlightDirection, flashLightOrigin, tmpAngles, forward, up, right;
 			frame_t			*oldframe;
 			player_state_t	*ps, *ops;
 			extern cvar_t	*hand;
@@ -952,14 +973,14 @@ void CL_AddPacketEntities (frame_t * frame) {
 			if (s1->number == cl.playernum + 1) {	
 
 				// dublicate player weapon info here
-				ps = &cl.frame.playerstate;
-				y = (cl.frame.serverframe - 1) & UPDATE_MASK;
+				ps	= &cl.frame.playerstate;
+				y	= (cl.frame.serverframe - 1) & UPDATE_MASK;
 				oldframe = &cl.frames[y];
 				if (oldframe->serverframe != cl.frame.serverframe - 1 || !oldframe->valid)
 					oldframe = &cl.frame;		// previous frame was dropped or invalid
 				ops = &oldframe->playerstate;
 
-				for (i = 0; i<3; i++)
+				for (i = 0; i < 3; i++)
 				{
 					if (hand->value == 2)		// center
 						flashLightOrigin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) + vup[i] * 3;
@@ -971,7 +992,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 					flashlightDirection[i] = cl.refdef.viewangles[i] + LerpAngle(ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
 				}
 			
-				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 0.5, flashlightDirection, 0.5, 33);
+				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 0.5, flashlightDirection, 0, 0.5, 33);
 			}
 			else if(!modName("rogue")){
 
@@ -982,7 +1003,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				VectorMA (flashLightOrigin,		1,	right,		flashLightOrigin);
 				VectorMA (flashLightOrigin,		25, up,			flashLightOrigin);
 
-				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 1.0, tmpAngles, 0.55, 36); // monsters flashlight
+				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 1.0, tmpAngles, 0, 0.55, 36); // monsters flashlight
 
 			}
 		}
@@ -1002,27 +1023,25 @@ void CL_AddPacketEntities (frame_t * frame) {
 			VectorCopy(ent.origin, light_org);
 
 			if (renderfx & RF_SHELL_RED)
-				V_AddLight (light_org, 200, 1.0, 0.5, 0.5, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1.0, 0.5, 0.5, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_BLUE)
-				V_AddLight (light_org, 200, 0.5, 0.5, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.5, 0.5, 1.0, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_GREEN)
-				V_AddLight (light_org, 200, 0.5, 1.0, 0.5, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.5, 1.0, 0.5, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_GOD)
-				V_AddLight (light_org, 200, 1, 1, 1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1, 1, 1, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_HALF_DAM)
-				V_AddLight (light_org, 200, 0.56, 0.59, 0.45, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.56, 0.59, 0.45, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_DOUBLE)
-				V_AddLight (light_org, 200, 0.9, 0.7, 0.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.9, 0.7, 0.0, vec3_origin, 0, 0, 0);
 			else if (effects & EF_FLAG1)
-				V_AddLight (light_org, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0, 0);
 			else if (effects & EF_FLAG2)
-				V_AddLight (light_org, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0, 0);
 			else if (effects & EF_TAGTRAIL)
-				V_AddLight (light_org, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0, 0);
 			else if (effects & EF_TRACKERTRAIL)
-				V_AddLight (light_org, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
-			
-
+				V_AddLight (light_org, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0, 0);
 		}
 
 		// if set to invisible, skip
@@ -1084,7 +1103,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 					ent.flags |= RF_FULLBRIGHT;
 					ent.alpha = 0.75;
 				}
-
 				V_AddEntity(&ent);
 			}
 
@@ -1097,26 +1115,26 @@ void CL_AddPacketEntities (frame_t * frame) {
 			VectorCopy(ent.origin, light_org);
 
 			if (renderfx & RF_SHELL_RED)
-				V_AddLight (light_org, 200, 1.0, 0, 0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1.0, 0, 0, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_BLUE)
-				V_AddLight (light_org, 200, 0, 0, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0, 0, 1.0, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_GREEN)
-				V_AddLight (light_org, 200, 0, 1.0, 0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0, 1.0, 0, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_GOD)
-				V_AddLight (light_org, 200, 1, 1, 1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1, 1, 1, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_HALF_DAM)
-				V_AddLight (light_org, 200, 0.8, 0.8, 0.8, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.8, 0.8, 0.8, vec3_origin, 0, 0, 0);
 			else if (renderfx & RF_SHELL_DOUBLE)
-				V_AddLight (light_org, 200, 1, 0.8, 0.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1, 0.8, 0.0, vec3_origin, 0, 0, 0);
 			else if (effects & EF_FLAG1)
-				V_AddLight (light_org, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0, 0);
 			else if (effects & EF_FLAG2)
-				V_AddLight (light_org, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0, 0);
 			if (net_compatibility->integer) {
 				if (effects & EF_TAGTRAIL)
-					V_AddLight (light_org, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+					V_AddLight (light_org, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0, 0);
 				else if (effects & EF_TRACKERTRAIL)
-					V_AddLight (light_org, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+					V_AddLight (light_org, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0, 0);
 			}
 
 			if (renderfx & RF_SHELL_HALF_DAM) {
@@ -1281,7 +1299,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				if (!cont)
 					CL_RocketTrail (cent->lerp_origin, ent.origin, cent);
 
-				V_AddLight (ent.origin, 200, 1, 0.77, 0, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 200, 1, 0.77, 0, vec3_origin, 0, 0, 0);
 			}
 			// PGM - Do not reorder EF_BLASTER and EF_HYPERBLASTER.
 			// EF_BLASTER | EF_TRACKER is a special case for
@@ -1292,11 +1310,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 					if (effects & EF_TRACKER)	// lame... problematic?
 					{
 						CL_BlasterTrail (cent->lerp_origin, ent.origin);
-						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);
+						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0, 0);
 					}
 					else{
 						CL_BlasterTrail(cent->lerp_origin, ent.origin);
-						V_AddLight(ent.origin, 200, 1, 0.7, 0, vec3_origin, 0, 0);
+						V_AddLight(ent.origin, 200, 1, 0.7, 0, vec3_origin, 0, 0, 0);
 					}
 				}
 				//PGM
@@ -1304,9 +1322,9 @@ void CL_AddPacketEntities (frame_t * frame) {
 			else if (effects & EF_HYPERBLASTER) {
 
 					if (effects & EF_TRACKER)	// PGM overloaded for blaster2.
-						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);	// PGM
+						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0, 0);	// PGM
 					else
-						V_AddLight(ent.origin, 200, 1, 0.7, 0, vec3_origin, 0, 0);
+						V_AddLight(ent.origin, 200, 1, 0.7, 0, vec3_origin, 0, 0, 0);
 
 			}
 			else
@@ -1335,28 +1353,28 @@ void CL_AddPacketEntities (frame_t * frame) {
 				else {
 					i = bfg_lightramp[s1->frame];
 				}
-				V_AddLight (ent.origin, i, 0, 1, 0, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, i, 0, 1, 0, vec3_origin, 0, 0, 0);
 			}
 			// RAFAEL
 			else if (effects & EF_TRAP) {
 				ent.origin[2] += 32;
 				CL_TrapParticles (&ent);
 				i = (rand () % 100) + 100;
-				V_AddLight (ent.origin, i, 1, 0.8, 0.1, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, i, 1, 0.8, 0.1, vec3_origin, 0, 0, 0);
 			}
 			else if (effects & EF_FLAG1) {
 				CL_FlagTrail (cent->lerp_origin, ent.origin, 1, 0, 0);
-				V_AddLight (ent.origin, 225, 1, 0.1, 0.1, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 225, 1, 0.1, 0.1, vec3_origin, 0, 0, 0);
 			}
 			else if (effects & EF_FLAG2) {
 				CL_FlagTrail (cent->lerp_origin, ent.origin, 0, 0, 1);
-				V_AddLight (ent.origin, 225, 0.1, 0.1, 1, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 225, 0.1, 0.1, 1, vec3_origin, 0, 0, 0);
 			}
 			//======
 			//ROGUE
 				if (effects & EF_TAGTRAIL) {
 					CL_TagTrail (cent->lerp_origin, ent.origin, 220);
-					V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+					V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0, 0);
 				}
 				if (effects & EF_TRACKERTRAIL) {
 					if (effects & EF_TRACKER) {
@@ -1364,17 +1382,17 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 						intensity = 50 + (500 * (sin (cl.time / 500.0) + 1.0));
 						// FIXME - check out this effect in rendition
-						V_AddLight (ent.origin, intensity, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+						V_AddLight (ent.origin, intensity, -1.0, -1.0, -1.0, vec3_origin, 0, 0, 0);
 					}
 					else {
 						CL_Tracker_Shell (cent->lerp_origin);
-						V_AddLight (ent.origin, 155, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+						V_AddLight (ent.origin, 155, -1.0, -1.0, -1.0, vec3_origin, 0, 0, 0);
 					}
 				}
 				if (effects & EF_TRACKER) {
 					CL_TrackerTrail (cent->lerp_origin, ent.origin, 0);
 					// FIXME - check out this effect in rendition
-					V_AddLight (ent.origin, 200, -1, -1, -1, vec3_origin, 0, 0);
+					V_AddLight (ent.origin, 200, -1, -1, -1, vec3_origin, 0, 0, 0);
 				}
 			//ROGUE
 			//======
@@ -1389,11 +1407,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 			// RAFAEL
 			else if (effects & EF_IONRIPPER) {
 				CL_IonripperTrail (cent->lerp_origin, ent.origin);
-				V_AddLight (ent.origin, 100, 1, 0.5, 0.5, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 100, 1, 0.5, 0.5, vec3_origin, 0, 0, 0);
 			}
 			// RAFAEL
 			else if (effects & EF_BLUEHYPERBLASTER) {
-				V_AddLight (ent.origin, 200, 0, 0, 1, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 200, 0, 0, 1, vec3_origin, 0, 0, 0);
 			}
 			// RAFAEL
 			else if (effects & EF_PLASMA) {
@@ -1403,7 +1421,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 					// CL_RocketTrail (cent->lerp_origin, ent.origin,
 					// cent);
 				}
-				V_AddLight (ent.origin, 130, 1, 0.5, 0.5, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 130, 1, 0.5, 0.5, vec3_origin, 0, 0, 0);
 			}
 		}
 

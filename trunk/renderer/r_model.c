@@ -2304,7 +2304,7 @@ static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 	while (count = *order++){
 
-		if (index > MAX_VERTICES - 6)
+		if (index > MAX_VERTS*3 - 6)
 			break;
 		
 		if (count < 0){

@@ -360,6 +360,10 @@ enum clc_ops_e {
 #define	U_SOUND		(1<<26)
 #define	U_SOLID		(1<<27)
 
+// q2xp
+#define	U_LIGHTOFFS	(1<<28)
+#define	U_LIGHTRGB	(1<<29)
+#define	U_LIGHTDATA (1<<30)
 
 /*
 ==============================================================

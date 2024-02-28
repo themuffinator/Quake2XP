@@ -1882,3 +1882,159 @@ void SP_func_killbox (edict_t *ent) {
 	ent->svflags = SVF_NOCLIENT;
 }
 
+
+/*QUAKED light_swing (0 1 0) (-8 -8 -80) (8 8 8) START_OFF HAVE_SOUND
+"health"	if set, the light may be killed.
+"ligthOffs" light offset
+"color"     set rgb values
+"radius"    light radius
+"lStyle"    light style
+"noise"		custom sound
+model="models/objects/swinglight/tris.md3"
+*/
+
+#define START_OFF	1
+
+static int buzz1, buzz2, buzz3, buzz4;
+
+void neon_buzz(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_AUTO, buzz1, 1, ATTN_STATIC, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_AUTO, buzz2, 1, ATTN_STATIC, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_AUTO, buzz3, 1, ATTN_STATIC, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_AUTO, buzz4, 1, ATTN_STATIC, 0);
+}
+
+void light_swing_sound(edict_t *self) {
+	if (self->spawnflags & START_OFF) {
+		self->think = NULL;
+		self->nextthink = 0;		
+	}
+	else {
+		gi.sound(self, CHAN_BODY, self->sounds, 1, ATTN_STATIC, 0);
+		self->nextthink = level.time + 1;
+	}
+}
+
+void light_swing_killed(edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point) {
+
+	gi.WriteByte(svc_temp_entity);
+	gi.WriteByte(TE_WELDING_SPARKS);
+	gi.WriteByte(30);
+	gi.WritePosition(self->s.origin);
+	gi.WriteDir(vec3_origin);
+	gi.WriteByte(0xe0 + (rand() & 7));
+	gi.multicast(self->s.origin, MULTICAST_PVS);
+
+	self->s.effects &= ~EF_SPINNINGLIGHTS;
+	self->use = NULL;
+
+	self->think = G_FreeEdict;
+	self->nextthink = level.time + 0.1;
+
+}
+
+void light_swing_damage(edict_t *self, edict_t *other, float kick, int damage) {
+	
+//	if (damage > 50) {
+		int min = 1, max = 31;
+		int style = (rand() % (max - min + 1)) + min;
+		int radius = st.radius - (rand() % ((int)(st.radius - st.radius / 2) + 1));
+		self->s.lightParams = ((radius & 0x3FF) << 7) + (style & 0x7F);
+		self->think = neon_buzz;
+		self->nextthink = level.time + 0.1;
+//	}
+}
+
+void light_swing_use(edict_t *self, edict_t *other, edict_t *activator) {
+	if (self->spawnflags & START_OFF) {
+		self->spawnflags &= ~START_OFF;
+		self->s.effects |= EF_SPINNINGLIGHTS;
+
+		if (self->spawnflags & 2) {
+			self->think = light_swing_sound;
+			self->nextthink = level.time + 0.1;
+		}
+	}
+	else {
+		self->spawnflags |= START_OFF;
+		self->s.effects &= ~EF_SPINNINGLIGHTS;
+	}
+}
+
+int encodeRGB(vec3_t in) {
+	float r,g,b;
+	int out;
+	r = in[0] * 255.0;
+	g = in[1] * 255.0;
+	b = in[2] * 255.0;
+	return out = ((int)r << 16) + ((int)g << 8) + ((int)b);
+}
+void SP_light_swing(edict_t *self) {
+
+	self->movetype	= MOVETYPE_STOP;
+	self->solid		= SOLID_BBOX;
+
+	self->s.modelindex	= gi.modelindex("models/objects/swinglight/tris.md3");
+	self->s.renderfx	= RF_SELFSHADOW;
+
+	VectorSet(self->mins, -8, -8, -80);
+	VectorSet(self->maxs, 8, 8, 8);
+	
+	if (!st.ligthOffs)
+		self->s.lightOffset = self->mins[2];
+	else
+		self->s.lightOffset = st.ligthOffs;
+
+	self->s.color		= encodeRGB(st.color);
+	self->s.lightParams	= ((st.radius & 0x3FF) << 7) + (st.lStyle & 0x7F);
+	
+	self->use	= light_swing_use;
+	self->pain	= light_swing_damage;
+
+	if (self->spawnflags & START_OFF)
+		self->s.effects &= ~EF_SPINNINGLIGHTS;
+	else {
+		self->s.effects |= EF_SPINNINGLIGHTS;
+	}
+
+	if (!self->health) {
+		self->health = 150;
+		self->max_health = self->health;
+		self->die = light_swing_killed;
+		self->takedamage = DAMAGE_YES;
+	}
+	else {
+		self->max_health = self->health;
+		self->die = light_swing_killed;
+		self->takedamage = DAMAGE_YES;
+	}
+
+	buzz1 = gi.soundindex("light/buzz_01.wav");
+	buzz2 = gi.soundindex("light/buzz_02.wav");
+	buzz3 = gi.soundindex("light/buzz_03.wav");
+	buzz4 = gi.soundindex("light/buzz_04.wav");
+
+	if (self->spawnflags & 2) {
+
+		if (st.noise && st.noise[0]){
+			char	buff[MAX_QPATH + 4];
+
+			if (!strstr(st.noise, ".wav"))
+				Com_sprintf(buff, sizeof(buff), "%s.wav", st.noise);
+			else
+				strncpy(buff, st.noise, sizeof(buff));
+			self->s.sound = gi.soundindex(buff);
+			self->volume = 1.0;
+			self->attenuation = 1.0;
+		} else
+			self->s.sound = gi.soundindex("light/swing.wav");
+	}
+
+	gi.linkentity(self);
+}
