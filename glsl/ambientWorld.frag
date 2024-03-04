@@ -52,6 +52,7 @@ void main (void) {
 //	diffuseMap.rgb = pow(diffuseMap.rgb, vec3(2.2));
 
 	vec3 glowMap = texture(u_Add, P).xyz;
+	glowMap *= 1.33;
 	vec3 normalMap = normalize(texture(u_NormalMap, P).rgb * 2.0 - 1.0);
 	float specular = texture(u_NormalMap, P).a;
 

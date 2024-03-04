@@ -16,6 +16,7 @@ layout(location = U_ENV_PASS)		uniform int		u_isEnvMap;
 layout(location = U_TRANS_PASS)		uniform int		u_isTransluscent;
 layout(location = U_SHELL_PASS)		uniform	int		u_isShell;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
+layout(location = U_COLOR)			uniform vec3	u_AddColor; 
 layout(location = U_USE_SSAO)		uniform int		u_ssao;
 layout(location = U_PARAM_INT_1)	uniform bool	u_nwm; 
 
@@ -42,6 +43,7 @@ void main ()
 
 	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color; 
 	vec3 glow = texture(u_Add, v_texCoord).rgb;
+	glow *= u_AddColor;
 	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
 	float bakedAO = texture(u_rgh, v_texCoord).b;
 	fragData.rgb = diffuse.rgb * (bakedAO * 2.0);
