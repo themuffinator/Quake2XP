@@ -1317,7 +1317,8 @@ void R_RegisterCvars(void)
 	r_hdrBloomBlurPasses =				Cvar_Get("r_hdrBloomBlurPasses", "4", CVAR_ARCHIVE);
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
-	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.55", CVAR_ARCHIVE);
+	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.5", CVAR_ARCHIVE);
+	r_hdrBloomQuality =					Cvar_Get("r_hdrBloomQuality", "1.0", CVAR_ARCHIVE);
 	r_hdrKey =							Cvar_Get("r_hdrKey", "0.0", CVAR_ARCHIVE); //0.015
 	r_hdrTime =							Cvar_Get("r_hdrTime", "250", CVAR_ARCHIVE);
 	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "1", CVAR_ARCHIVE);
@@ -1358,7 +1359,7 @@ void R_RegisterCvars(void)
 	r_customWindowHeight->help = "Minimal value is 768\n Minimal custom resolution 1024x768";
 
 	hunk_bsp=							Cvar_Get("hunk_bsp", "60", CVAR_ARCHIVE);
-	hunk_md2=							Cvar_Get("hunk_md2", "5", CVAR_ARCHIVE);
+	hunk_md2=							Cvar_Get("hunk_md2", "10", CVAR_ARCHIVE);
 	hunk_md3=							Cvar_Get("hunk_md3", "14", CVAR_ARCHIVE);
 
 	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
@@ -1584,6 +1585,7 @@ void R_InitFboBuffers() {
 	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
+	CreateGlareBuffer();
 	CreateThermalBuffer();
 	Com_Printf("\n");
 	R_PboInit();
@@ -2005,7 +2007,8 @@ void R_Shutdown(void)
 
 	qglDeleteFramebuffers(1, &fbo._hdr);
 	qglDeleteFramebuffers(1, &fbo._final);
-	qglDeleteFramebuffers(1, &fbo._bloom);
+	qglDeleteFramebuffers(1, &fbo._glare);
+	qglDeleteFramebuffers(1, &fbo._comp);
 	qglDeleteFramebuffers(1, &fbo._thermal);
 	qglDeleteFramebuffers(1, &fbo._ssao);
 	qglDeleteFramebuffers(1, &fbo._linearDepth);
@@ -2050,10 +2053,14 @@ void R_BeginFrame()
 	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
 	r_parallaxScale->integer = ClampCvarInteger(0, 6, r_parallaxScale->integer);
 	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_hdrBloomQuality->value = ClampCvar(0.5, 1.0, r_hdrBloomQuality->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;
 	
+	if(r_hdrBloomQuality->value != 0.5 && r_hdrBloomQuality->value != 1.0)
+		Cvar_SetValue("r_hdrBloomQuality", 1.0);
+
 	if (r_selfShadowingParallax->modified)
 		r_selfShadowingParallax->modified = qfalse;
 

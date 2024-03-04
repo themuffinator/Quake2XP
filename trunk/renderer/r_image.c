@@ -804,11 +804,32 @@ void LoadPCX(char *filename, byte ** pic, byte ** palette, int *width, int *heig
 GL_LoadWal
 ================
 */
+
+float ColorNormalize(vec3_t in, vec3_t out) {
+	float	max, scale;
+
+	max = in[0];
+	if (in[1] > max)
+		max = in[1];
+	if (in[2] > max)
+		max = in[2];
+
+	if (max == 0)
+		return 0;
+
+	scale = 1.0 / max;
+
+	VectorScale(in, scale, out);
+
+	return max;
+}
+
 image_t *GL_LoadWal(char *name)
 {
-	miptex_t *mt;
-	int width, height, ofs;
-	image_t *image;
+	miptex_t	*mt;
+	int			width, height, ofs;
+	image_t		*image;
+
 
 	FS_LoadFile(name, (void **)&mt);
 
@@ -821,8 +842,33 @@ image_t *GL_LoadWal(char *name)
 	height = LittleLong(mt->height);
 	ofs = LittleLong(mt->offsets[0]);
 
-
 	image = GL_LoadPic(name, (byte *)mt + ofs, width, height, it_wall, 8, 0);
+	
+	vec3_t	color, sum;
+	int		size, i;
+	byte	*buffer, *p;
+
+	size = width * height * 3 * 4;
+	buffer = (byte *)malloc(width * height * 3);
+	glGetTextureImage(image->texnum, 0, GL_RGB, GL_UNSIGNED_BYTE, size, buffer);
+	VectorClear(sum);
+
+	for (i = 0, p = buffer; i < width * height; i++, p += 3) {
+		sum[0] += (float)p[0] * (1.0 / 255);
+		sum[1] += (float)p[1] * (1.0 / 255);
+		sum[2] += (float)p[2] * (1.0 / 255);
+	}
+
+	VectorScale(sum, 4.0 / (width * height), color);
+	
+	for (i = 0; i < 3; i++) {
+		if (color[i] < 0.5)
+			color[i] = color[i] * 0.5;
+		else
+			color[i] = color[i] * 0.5 + 0.5;
+	}
+	VectorCopy(color, image->reflectivity);
+	free(buffer);
 
 	FS_FreeFile((void *)mt);
 

@@ -112,26 +112,56 @@ void CreateLinearDepthBuffer(void) {
 
 void CreateBloomBuffer(void) {
 	qboolean statusOK;
-
+	
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
+	
+	r_compIn = R_CreateTexture("***r_compIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA, 0,
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-	vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	r_compInterim = R_CreateTexture("***r_compInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	qglGenFramebuffers(1, &fbo._bloom);
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._bloom);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrBloomImage->texnum, 0);
+	r_compOut = R_CreateTexture("***r_compOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	qglGenFramebuffers(1, &fbo._comp);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._comp);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_compIn->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, r_compInterim->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, r_compOut->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
 		Com_Printf(S_COLOR_RED"Failed!");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
-	qglObjectLabel(GL_FRAMEBUFFER, fbo._bloom, strlen("***fbo_bloom***"), "***fbo_bloom***");
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._comp, strlen("***fbo_comp***"), "***fbo_comp***");
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
+
+void CreateGlareBuffer(void) {
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");
+
+	r_hdrGlareImage = R_CreateTexture("***r_hdrGlareImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	qglGenFramebuffers(1, &fbo._glare);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._glare);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrGlareImage->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._glare, strlen("***fbo_glare***"), "***fbo_glare***");
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 
 void CreateThermalBuffer(void) {
 	qboolean statusOK;

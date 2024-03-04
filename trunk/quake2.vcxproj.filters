@@ -555,13 +555,13 @@
     <None Include="..\baseq2\glsl\ambientWorld.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\bloomBright.frag">
+    <None Include="..\baseq2\glsl\bright.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\ambientMd2.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\bloomBright.vert">
+    <None Include="..\baseq2\glsl\bright.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\bloomFinal.frag">
@@ -819,7 +819,16 @@
     <None Include="..\baseq2\glsl\showTris.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\blur.comp">
+    <None Include="..\baseq2\glsl\gauss_h.comp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\gauss_v.comp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\glareFinal.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\glareFinal.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

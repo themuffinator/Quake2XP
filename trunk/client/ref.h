@@ -368,7 +368,7 @@ typedef struct image_s {
 	//lut description
 //	float		lutSize;
 //	char		lutName[MAX_QPATH];
-
+	vec3_t		reflectivity;
 	uint		hash;
 } image_t;
 
@@ -561,13 +561,14 @@ typedef struct {
 typedef struct {
 	uint	_hdr;
 	uint	_final;
-	uint	_bloom;
+	uint	_glare;
 	uint	_thermal;
 	uint	_ssao;
 	uint	_linearDepth;
 	uint	_tex2d;
 	uint	_hdrLum[2];
 	uint	_gbuffer;
+	uint	_comp;
 }fbo_t;
 
 fbo_t fbo;

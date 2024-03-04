@@ -268,10 +268,13 @@ image_t *r_hdrLuminance[2]; //current, prev
 image_t *r_fogMask;
 
 image_t	*r_cinImage;
-image_t	*r_hdrBloomImage;
+image_t	*r_hdrGlareImage;
 image_t	*r_thermalImage;
 image_t	*r_lensDirt;
 image_t *r_levelSkyBox;
+image_t *r_compIn;
+image_t *r_compInterim;
+image_t *r_compOut;
 
 int			i_stencilView;
 uint64_t	i_stencilView_handle;
@@ -335,6 +338,7 @@ cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
 cvar_t	*r_hdrBloomBlurPasses;
+cvar_t	*r_hdrBloomQuality;
 cvar_t	*r_hdrKey;
 cvar_t	*r_hdrTime;
 
@@ -461,6 +465,7 @@ void R_CreateScreenFbo();
 void R_FboFinal();
 void R_Tex2dFbo();
 void CreateBloomBuffer(void);
+void CreateGlareBuffer(void);
 void CreateThermalBuffer(void);
 void CreateLinearDepthBuffer(void);
 void R_LinearDepth(void);
@@ -1043,7 +1048,8 @@ glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*md3AmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*glareProgram;
-glslProgram_t		*bloomBrightProgram;
+glslProgram_t		*glareFinalProgram;
+glslProgram_t		*brightProgram;
 glslProgram_t		*bloomFinalProgram;
 glslProgram_t		*bloomBlurProgram;
 glslProgram_t		*motionBlurProgram;
@@ -1083,7 +1089,8 @@ glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
 glslProgram_t		*showTrisProgram;
 glslProgram_t		*fsqProgram;
-glslProgram_t		*blurComputeProgram;
+glslProgram_t		*blurhComputeProgram;
+glslProgram_t		*blurvComputeProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();

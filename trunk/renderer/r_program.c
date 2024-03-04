@@ -809,8 +809,8 @@ void R_InitPrograms (void) {
 
 	Com_Printf ("Load "S_COLOR_YELLOW"glare program"S_COLOR_WHITE" ");
 	glareProgram = R_FindProgram ("glare", 0);
-
-	if (glareProgram->valid){
+	glareFinalProgram = R_FindProgram("glareFinal", 0);
+	if (glareProgram->valid && glareFinalProgram->valid){
 		Com_Printf("succeeded\n");
 	}
 	else {
@@ -876,10 +876,10 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
-	bloomBrightProgram = R_FindProgram ("bloomBright", 0);
+	brightProgram = R_FindProgram ("bright", 0);
 	bloomFinalProgram = R_FindProgram ("bloomFinal", 0);
 
-	if (bloomBrightProgram->valid && bloomFinalProgram->valid){
+	if (brightProgram->valid && bloomFinalProgram->valid){
 		Com_Printf("succeeded\n");
 	}
 	else {
@@ -887,7 +887,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"bloom blur program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
 	bloomBlurProgram = R_FindProgram("bloomBlur", 0);
 
 	if (bloomBlurProgram->valid) {
@@ -1191,9 +1191,10 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"blur compute program"S_COLOR_WHITE" ");
-	blurComputeProgram = R_FindProgram("blur", S_COMP);
-	if (blurComputeProgram->valid) {
+	Com_Printf("Load "S_COLOR_YELLOW"gauss compute program"S_COLOR_WHITE" ");
+	blurhComputeProgram = R_FindProgram("gauss_h", S_COMP);
+	blurvComputeProgram = R_FindProgram("gauss_v", S_COMP);
+	if (blurhComputeProgram->valid && blurvComputeProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

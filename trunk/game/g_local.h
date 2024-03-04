@@ -985,6 +985,15 @@ void TR_Model_Free();
 void TR_AliasTransformVector(vec3_t in, vec3_t out, float xf[3][4]);
 int TR_Intersect_Triangle(float orig[3], float dir[3], float vert0[3], float vert1[3], float vert2[3], float* t, float* u, float* v);
 
+void neon_buzz(edict_t *self);
+void light_swing_sound(edict_t *self);
+void light_swing_killed(edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point);
+void light_swing_damage(edict_t *self, edict_t *other, float kick, int damage);
+void light_swing_use(edict_t *self, edict_t *other, edict_t *activator);
+int encodeRGB(vec3_t in);
+void SP_light_swing(edict_t *self);
+
+
 struct edict_s {
 	entity_state_t	s;
 	struct gclient_s	*client;	// NULL if not a player

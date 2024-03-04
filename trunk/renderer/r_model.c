@@ -78,12 +78,10 @@ static void R_ClearLightSurf(void) {
 }
 
 void GL_AddLightFromSurface(msurface_t * surf) {
-	int i, width, height, intens;
+	int i, intens;
 	glpoly_t *poly;
-	byte *buffer;
-	byte *p = NULL;
 	float *v, surf_bound;
-	vec3_t origin = { 0, 0, 0 }, color = { 1, 1, 1 }, tmp, rgbSum;
+	vec3_t origin = { 0, 0, 0 }, tmp;
 	vec3_t poly_center, mins, maxs, tmp1, lightOffset, radius;
 	char target[MAX_QPATH];
 
@@ -133,7 +131,6 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 
 	/* =======calc light surf bounds and light size ========== */
 
-
 	VectorSubtract(maxs, mins, tmp1);
 	surf_bound = VectorLength(tmp1);
 	if (surf_bound <= 25)
@@ -151,30 +148,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 
 	r_lightSpawnSurf[r_numAutoLights].sizefull = surf_bound;
 
-	/* =================== calc texture color =================== */
-
-	width = surf->texInfo->albedo->upload_width;
-	height = surf->texInfo->albedo->upload_height;
-	int size = width * height * 3 * 4;
-	buffer = (byte*)malloc(width * height * 3);
-	glGetTextureImage(surf->texInfo->albedo->texnum, 0, GL_RGB, GL_UNSIGNED_BYTE, size, buffer);
-	VectorClear(rgbSum);
-
-	for (i = 0, p = buffer; i < width * height; i++, p += 3) {
-		rgbSum[0] += (float)p[0] * (1.0 / 255);
-		rgbSum[1] += (float)p[1] * (1.0 / 255);
-		rgbSum[2] += (float)p[2] * (1.0 / 255);
-	}
-
-	VectorScale(rgbSum, r_scaleAutoLightColor->value / (width * height), color);
-
-	for (i = 0; i < 3; i++) {
-		if (color[i] < 0.5)
-			color[i] = color[i] * 0.5;
-		else
-			color[i] = color[i] * 0.5 + 0.5;
-	}
-	VectorCopy(color, r_lightSpawnSurf[r_numAutoLights].color);
+	VectorCopy(surf->texInfo->albedo->reflectivity, r_lightSpawnSurf[r_numAutoLights].color);
 
 	/* ============== move light origin in to map bounds ============ */
 
@@ -201,7 +175,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 		vec3_origin, qtrue, 1, 0, qfalse, 1, origin, 10.0, target, 0, 0, 0.0, lightOffset, radius, 0, 0.0, 0.0, 0.0);
 
 	r_numAutoLights++;
-	free(buffer);
+//	free(buffer);
 
 }
 
@@ -750,7 +724,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 		Com_sprintf(name, sizeof(name), "textures/%s.wal", in->texture);
 		out->albedo = GL_FindImage(name, it_wall);
 
-		if (!out->albedo) {
+		if (!out->albedo){
 			// failed to load WAL, use default
 			Com_Printf("Couldn't load %s\n", name);
 			out->albedo = r_missingTexture;
@@ -782,6 +756,8 @@ void Mod_LoadTexinfo(lump_t * l) {
 		image->width = mark->width;
 		image->height = mark->height;
 		out->albedo = image;
+		
+		VectorCopy(mark->reflectivity, out->albedo->reflectivity);
 
 		if (freeWalTex && mark) { // hd texture loaded, delete wal 
 			glMakeTextureHandleNonResidentARB(mark->handle);

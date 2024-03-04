@@ -1147,6 +1147,13 @@ functionList_t functionList[] = {
 { "TR_AliasTransformVector", (byte*)TR_AliasTransformVector },
 { "TR_Intersect_Triangle", (byte*)TR_Intersect_Triangle },
 { "TR_Model_Get_by_Index", (byte *)TR_Model_Get_by_Index },
+{"neon_buzz", (byte*)neon_buzz },
+{ "light_swing_sound", (byte *)light_swing_sound },
+{ "light_swing_killed", (byte *)light_swing_killed },
+{ "light_swing_damage", (byte *)light_swing_damage },
+{ "light_swing_use", (byte *)light_swing_use },
+{ "encodeRGB", (byte *)encodeRGB },
+{ "SP_light_swing", (byte *)SP_light_swing },
 { 0, 0 }
 };
 

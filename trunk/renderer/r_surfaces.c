@@ -212,7 +212,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 			qglUniform1f(U_SCROLL, 0.0);
 	}
 
-	VectorSet(glowScale, 0.f, 0.f, 0.f); // start off 
+	VectorSet(glowScale, 1.f, 1.f, 1.f);
 
 	for (lm = 0; lm < MAXLIGHTMAPS && surf->styles[lm] != 255; lm++) {
 		
@@ -233,7 +233,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		indexArray[numIndices++] = surf->baseIndex + i + 2;
 		}
 
-	*indeces	= numIndices;
+	*indeces = numIndices;
 
 	return qtrue;	
 }
