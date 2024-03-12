@@ -388,10 +388,6 @@ cvar_t	*r_radiosityNormalMapping;
 cvar_t	*r_zNear;
 cvar_t	*r_zFar;
 
-cvar_t	*hunk_bsp;
-cvar_t	*hunk_md2;
-cvar_t	*hunk_md3;
-
 cvar_t	*r_parallaxMapping;
 cvar_t	*r_parallaxScale;
 cvar_t	*r_selfShadowingParallax;
@@ -460,6 +456,7 @@ qboolean xhargar2hack;
 qboolean RA_Frame;
 
 qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height);
+char *q_pretifymem(float value);
 
 void R_CreateScreenFbo();
 void R_FboFinal();

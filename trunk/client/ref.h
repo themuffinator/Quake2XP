@@ -476,7 +476,6 @@ typedef struct msurface_s {
 
 	int	numIndices;
 	int	numVertices;
-	uint16_t	*indices;
 	unsigned int sort;
 
 	//vbo

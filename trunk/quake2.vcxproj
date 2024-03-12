@@ -608,7 +608,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_memory.c" />
+    <ClCompile Include="win32\win_paths.c" />
     <ClCompile Include="win32\win_nvapi.c" />
     <ClCompile Include="win32\win_sysinfo.c" />
     <ClCompile Include="win32\win_system.c">

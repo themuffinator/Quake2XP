@@ -227,7 +227,7 @@
     <ClCompile Include="win32\win_system.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_memory.c">
+    <ClCompile Include="win32\win_paths.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\win_conproc.c">

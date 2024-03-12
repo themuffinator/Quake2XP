@@ -1321,7 +1321,7 @@ void R_RegisterCvars(void)
 	r_hdrBloomQuality =					Cvar_Get("r_hdrBloomQuality", "1.0", CVAR_ARCHIVE);
 	r_hdrKey =							Cvar_Get("r_hdrKey", "0.0", CVAR_ARCHIVE); //0.015
 	r_hdrTime =							Cvar_Get("r_hdrTime", "250", CVAR_ARCHIVE);
-	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "1", CVAR_ARCHIVE);
+	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", CVAR_ARCHIVE);
 //	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
@@ -1357,10 +1357,6 @@ void R_RegisterCvars(void)
 	r_customWindowWidth->help = "Minimal value is 1024\n Minimal custom resolution 1024x768";
 	r_customWindowHeight =				Cvar_Get("r_customWindowHeight", "0", CVAR_ARCHIVE);
 	r_customWindowHeight->help = "Minimal value is 768\n Minimal custom resolution 1024x768";
-
-	hunk_bsp=							Cvar_Get("hunk_bsp", "60", CVAR_ARCHIVE);
-	hunk_md2=							Cvar_Get("hunk_md2", "10", CVAR_ARCHIVE);
-	hunk_md3=							Cvar_Get("hunk_md3", "14", CVAR_ARCHIVE);
 
 	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
 	r_parallaxScale =					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);

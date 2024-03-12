@@ -114,6 +114,7 @@ void R_BuildTriangleNeighbors(neighbours_t *neighbors, uint16_t *indexes, int nu
 	}
 }
 
+void *Mod_Hunk_Alloc(size_t size);
 /*
 =================
 Mod_LoadAliasMD3Model
@@ -154,7 +155,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			mod->name, version, MD3_ALIAS_VERSION);
 	}
 
-	outModel = Hunk_Alloc(sizeof(md3Model_t));
+	outModel = Mod_Hunk_Alloc(sizeof(md3Model_t));
 
 	// byte swap the header fields and sanity check
 	outModel->num_frames = LittleLong(inModel->num_frames);
@@ -180,7 +181,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	// load the frames
 	//
 	inFrame = (dmd3frame_t *)((byte *)inModel + LittleLong(inModel->ofs_frames));
-	outFrame = outModel->frames = Hunk_Alloc(sizeof(md3Frame_t) * outModel->num_frames);
+	outFrame = outModel->frames = Mod_Hunk_Alloc(sizeof(md3Frame_t) * outModel->num_frames);
 
 	for (i = 0; i < outModel->num_frames; i++, inFrame++, outFrame++)
 	{
@@ -198,7 +199,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	// load the tags
 	//
 	inTag = (dmd3tag_t *)((byte *)inModel + LittleLong(inModel->ofs_tags));
-	outTag = outModel->tags = Hunk_Alloc(sizeof(md3Tag_t) * outModel->num_frames * outModel->num_tags);
+	outTag = outModel->tags = Mod_Hunk_Alloc(sizeof(md3Tag_t) * outModel->num_frames * outModel->num_tags);
 
 	for (i = 0; i < outModel->num_frames; i++)
 	{
@@ -206,10 +207,10 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		{
 			memcpy(outTag->name, inTag->name, MD3_MAX_PATH);
 			for (j = 0; j < 3; j++) {
-				outTag->orient.origin[j] = LittleFloat(inTag->orient.origin[j]);
-				outTag->orient.axis[0][j] = LittleFloat(inTag->orient.axis[0][j]);
-				outTag->orient.axis[1][j] = LittleFloat(inTag->orient.axis[1][j]);
-				outTag->orient.axis[2][j] = LittleFloat(inTag->orient.axis[2][j]);
+				outTag->orient.origin[j]	= LittleFloat(inTag->orient.origin[j]);
+				outTag->orient.axis[0][j]	= LittleFloat(inTag->orient.axis[0][j]);
+				outTag->orient.axis[1][j]	= LittleFloat(inTag->orient.axis[1][j]);
+				outTag->orient.axis[2][j]	= LittleFloat(inTag->orient.axis[2][j]);
 			}
 		}
 	}
@@ -221,7 +222,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	mod->flags = 0;
 
 	inMesh = (dmd3mesh_t *)((byte *)inModel + LittleLong(inModel->ofs_meshes));
-	outMesh = outModel->meshes = Hunk_Alloc(sizeof(md3Mesh_t)*outModel->num_meshes);
+	outMesh = outModel->meshes = Mod_Hunk_Alloc(sizeof(md3Mesh_t) * outModel->num_meshes);
 
 	for (i = 0; i < outModel->num_meshes; i++, outMesh++)
 	{
@@ -321,7 +322,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// load the indexes
 		//
 		inIndex = (unsigned *)((byte *)inMesh + LittleLong(inMesh->ofs_tris));
-		outIndex = outMesh->indexes = (uint16_t*)Hunk_Alloc(sizeof(uint16_t) * outMesh->num_tris * 3);
+		outIndex = outMesh->indexes = (uint16_t*)Mod_Hunk_Alloc(sizeof(uint16_t) * outMesh->num_tris * 3);
 
 		for (j = 0; j < outMesh->num_tris; j++, inIndex += 3, outIndex += 3)
 		{
@@ -334,7 +335,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// load the texture coordinates
 		//
 		inCoord = (dmd3coord_t *)((byte *)inMesh + LittleLong(inMesh->ofs_tcs));
-		outCoord = outMesh->stcoords = Hunk_Alloc(sizeof(md3ST_t) * outMesh->num_verts);
+		outCoord = outMesh->stcoords = Mod_Hunk_Alloc(sizeof(md3ST_t) * outMesh->num_verts);
 
 		for (j = 0; j < outMesh->num_verts; j++, inCoord++, outCoord++)
 		{
@@ -346,7 +347,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// load all vertexes and calc TBN
 		//
 		inVerts = (dmd3vertex_t *)((byte *)inMesh + LittleLong(inMesh->ofs_verts));
-		outVerts = outMesh->vertexes = Hunk_Alloc(outModel->num_frames * outMesh->num_verts * sizeof(md3Vertex_t));
+		outVerts = outMesh->vertexes = Mod_Hunk_Alloc(outModel->num_frames * outMesh->num_verts * sizeof(md3Vertex_t));
 
 		for (l = 0; l < outModel->num_frames; l++){
 
@@ -441,7 +442,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// build triangle neighbours
 		//
 		inMesh = (dmd3mesh_t *)((byte *)inMesh + LittleLong(inMesh->meshsize));
-		outMesh->triangles = (neighbours_t*)Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
+		outMesh->triangles = (neighbours_t*)Mod_Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
 		R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
 
 		if (!Q_strcasecmp(outMesh->name, "MF"))

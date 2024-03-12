@@ -619,86 +619,86 @@ void GL_ImageList_f(void)
 
 		switch (image->texType) {
 		case GL_TEXTURE_2D:
-			Com_Printf("2D    ");
+			Com_Printf(S_COLOR_GREEN"2D    ");
 			break;
 		case GL_TEXTURE_CUBE_MAP:
-			Com_Printf("CUBE  ");
+			Com_Printf(S_COLOR_GREEN"CUBE  ");
 			break;
 		case GL_TEXTURE_CUBE_MAP_ARRAY:
-			Com_Printf("CUBEA ");
+			Com_Printf(S_COLOR_GREEN"CUBEA ");
 			break;
 		case GL_TEXTURE_RECTANGLE:
-			Com_Printf("RECT  ");
+			Com_Printf(S_COLOR_GREEN"RECT  ");
 			break;
 		}
 
 		switch (image->intFormat) {
 		case GL_SRGB8:
-			Com_Printf("SRGB8  ");
+			Com_Printf(S_COLOR_YELLOW"SRGB8  ");
 			break;
 		case GL_RGBA8:
-			Com_Printf("RGBA8  ");
+			Com_Printf(S_COLOR_YELLOW"RGBA8  ");
 			break;
 		case GL_RGB8:
-			Com_Printf("RGB8   ");
+			Com_Printf(S_COLOR_YELLOW"RGB8   ");
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-			Com_Printf("DXT1   ");
+			Com_Printf(S_COLOR_YELLOW"DXT1   ");
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-			Com_Printf("DXT3   ");
+			Com_Printf(S_COLOR_YELLOW"DXT3   ");
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-			Com_Printf("DXT5   ");
+			Com_Printf(S_COLOR_YELLOW"DXT5   ");
 			break;
 		case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB:
-			Com_Printf("BC6S   ");
+			Com_Printf(S_COLOR_YELLOW"BC6S   ");
 			break;
 		case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB:
-			Com_Printf("BC6U   ");
+			Com_Printf(S_COLOR_YELLOW"BC6U   ");
 			break;
 		case GL_COMPRESSED_RGBA_BPTC_UNORM_ARB:
-			Com_Printf("BC7    ");
+			Com_Printf(S_COLOR_YELLOW"BC7    ");
 			break;
 		case GL_RG16F:
-			Com_Printf("RG16F  ");
+			Com_Printf(S_COLOR_YELLOW"RG16F  ");
 			break;
 		case GL_R16F:
-			Com_Printf("R16F   ");
+			Com_Printf(S_COLOR_YELLOW"R16F   ");
 			break;
 		case GL_R32F:
-			Com_Printf("R32F   ");
+			Com_Printf(S_COLOR_YELLOW"R32F   ");
 			break;
 		case GL_DEPTH24_STENCIL8:
-			Com_Printf("D24S8   ");
+			Com_Printf(S_COLOR_YELLOW"D24S8   ");
 			break;
 		case GL_RGBA16F:
-			Com_Printf("RGBA16F ");
+			Com_Printf(S_COLOR_YELLOW"RGBA16F ");
 			break;
 		case GL_RGB16F:
-			Com_Printf("RGB16F  ");
+			Com_Printf(S_COLOR_YELLOW"RGB16F  ");
 			break;
 		case GL_R11F_G11F_B10F:
-			Com_Printf("RG11B10F ");
+			Com_Printf(S_COLOR_YELLOW"RG11B10F ");
 		}
 
 		switch (image->dataType) {
 		case GL_UNSIGNED_BYTE:
-			Com_Printf("GL_UBYTE ");
+			Com_Printf(S_COLOR_MAGENTA"GL_UBYTE ");
 			break;
 		case GL_FLOAT:
-			Com_Printf("GL_FLOAT ");
+			Com_Printf(S_COLOR_MAGENTA"GL_FLOAT ");
 			break;
 		case GL_COMPRESSED_RGBA:
-			Com_Printf("GL_COMPR ");
+			Com_Printf(S_COLOR_MAGENTA"GL_COMPR ");
 			break;
 		case GL_UNSIGNED_INT_24_8:
-			Com_Printf("GL_UINT24_8 ");
+			Com_Printf(S_COLOR_MAGENTA"GL_UINT24_8 ");
 		}
 
-		Com_Printf("%ix%i mips: %i %s\n", image->upload_width, image->upload_height, image->numMips, image->name);
+		Com_Printf("" S_COLOR_GREEN "%i" S_COLOR_WHITE "x" S_COLOR_GREEN "%i " S_COLOR_WHITE "mips: " S_COLOR_GREEN "%i " S_COLOR_YELLOW "%s\n", image->upload_width, image->upload_height, image->numMips, image->name);
 	}
-	Com_Printf("%i MB total image memory\n",totalTexturesSize>>20);
+	Com_Printf("%s total image memory\n", q_pretifymem((float)totalTexturesSize));
 }
 
 
