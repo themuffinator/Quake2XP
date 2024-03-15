@@ -365,7 +365,7 @@ void *Mod_Hunk_Begin(size_t maxsize, char *name){
 	mod_hunkMemBase = Z_Malloc(maxsize);
 
 	if (!mod_hunkMemBase)
-		Sys_Error("Mod_Hunk_Begin: malloc of size %i failed, %i chunks already allocated for %s", maxsize, mod_hunkCount, mod_hunkName);
+		Sys_Error("Mod_Hunk_Begin: malloc of size %i failed, %i hunk already allocated for %s", maxsize, mod_hunkCount, mod_hunkName);
 
 	memset(mod_hunkMemBase, 0, maxsize);
 

@@ -56,20 +56,23 @@ void R_Bloom (void) {
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
+
 	float scale = r_hdrBloomQuality->value;
+	int w = vid.width * scale;
+	int h = vid.height * scale;
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._comp);
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * scale, vid.height * scale, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
-	R_SetViewPortAndScissor(0, 0, vid.width * scale, vid.height * scale);
+	R_SetViewPortAndScissor(0, 0, w, h);
 
 	GL_BindProgram(brightProgram);
 	qglUniform1i(U_PARAM_INT_0, 0);
 	GL_SetBindlessTexture(U_TMU0, r_compIn->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(r_compIn->texnum, 0, 0, 0, 0, 0, vid.width * scale, vid.height * scale);
+	glCopyTextureSubImage2D(r_compIn->texnum, 0, 0, 0, 0, 0, w, h);
 
 	qglMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	int const group_size = 64;
@@ -77,14 +80,14 @@ void R_Bloom (void) {
 	GL_BindProgram(blurhComputeProgram);
 	qglBindImageTexture(0, r_compIn->texnum,		0, GL_FALSE, 0, GL_READ_ONLY,	GL_RGBA16F);
 	qglBindImageTexture(1, r_compInterim->texnum,	0, GL_FALSE, 0, GL_WRITE_ONLY,	GL_R11F_G11F_B10F);
-	qglDispatchCompute((vid.width * scale + group_size - 1) / group_size, vid.height * scale, 1);
+	qglDispatchCompute((w + group_size - 1) / group_size, h, 1);
 	
 	qglMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	
 	GL_BindProgram(blurvComputeProgram);
 	qglBindImageTexture(0, r_compInterim->texnum,	0, GL_FALSE, 0, GL_READ_ONLY,	GL_R11F_G11F_B10F);
 	qglBindImageTexture(1, r_compOut->texnum,		0, GL_FALSE, 0, GL_WRITE_ONLY,	GL_R11F_G11F_B10F);
-	qglDispatchCompute(vid.width * scale, (vid.height * scale + group_size - 1) / group_size, 1);
+	qglDispatchCompute(w, (h + group_size - 1) / group_size, 1);
 
 	qglMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
 	
