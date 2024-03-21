@@ -16,6 +16,7 @@ layout (location = U_LAVA_PASS)			uniform int		u_isLava;
 layout (location = U_PARAM_INT_0)		uniform int		u_envMapPass;
 layout (location = U_PARAM_INT_1)		uniform int		u_bump;	
 layout (location = U_PARAM_VEC3_0)		uniform vec3	u_glowScale;	
+layout (location = U_COLOR)				uniform vec3	u_glowFix;
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -51,7 +52,7 @@ void main (void) {
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
 //	diffuseMap.rgb = pow(diffuseMap.rgb, vec3(2.2));
 
-	vec3 glowMap = texture(u_Add, P).xyz;
+	vec3 glowMap = texture(u_Add, P).xyz * u_glowFix;
 	glowMap *= 1.33;
 	vec3 normalMap = normalize(texture(u_NormalMap, P).rgb * 2.0 - 1.0);
 	float specular = texture(u_NormalMap, P).a;

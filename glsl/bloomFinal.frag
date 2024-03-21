@@ -9,6 +9,7 @@ void main(void) {
 
 	vec4 src = texture(u_map0, gl_FragCoord.xy); 
 	vec4 dst = texture(u_map1, gl_FragCoord.xy * u_scale);
-	fragData = src + dst * u_intens;
+	float blend_factor = 0.002;
+	fragData = src+(src * blend_factor + dst * (vec4(1.0) - blend_factor));//src + dst * u_intens;
 	fragData.a = 1.0;
 }

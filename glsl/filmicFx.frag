@@ -48,7 +48,7 @@ void main()
 	float lum = 0.0;
 
 	lum = dot(vec3(0.2125, 0.7154, 0.0721), color.rgb);
-	dirt = pow(texture(u_lensDirtTex, uv).rgb, vec3(4.4));
+	dirt = pow(texture(u_lensDirtTex, uv).rgb, vec3(12.0));
 	dirt *= lum;    
 
 	vec3 sum = vec3( 0.0 );
@@ -60,7 +60,7 @@ void main()
 		vec3 so = SpectrumOffset( t );
 
 		sum += so.xyz;
-		sumColor += so * texture(u_ScreenTex, BarrelDistortion( uv, ( 0.5 * Chromatic_Power * t ) ) ).rgb + dirt;
+		sumColor += so * texture(u_ScreenTex, BarrelDistortion( uv, ( 0.5 * Chromatic_Power * t ) ) ).rgb /*+ dirt*/;
 	}
 
 	color.rgb = ( sumColor / sum );
