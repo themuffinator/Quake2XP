@@ -263,9 +263,7 @@ image_t	*r_depthStencilTexture;
 image_t	*r_hdrScreenCopy2d;
 image_t	*r_finalScreen;
 image_t	*r_linearDepth;
-image_t	*r_hdr64image;
-image_t *r_hdrLuminance[2]; //current, prev 
-image_t *r_fogMask;
+image_t *r_hdrLuminance; 
 
 image_t	*r_cinImage;
 image_t	*r_hdrGlareImage;
@@ -330,17 +328,13 @@ cvar_t	*r_contrast;
 cvar_t	*r_saturation;
 cvar_t	*r_gamma;
 
-cvar_t	*r_hdrAutoExposure;
-cvar_t	*r_hdrExposure;
+cvar_t	*r_hdrEVcomp;
 cvar_t	*r_hdrLightScale;
 cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
-cvar_t	*r_hdrBloomBlurPasses;
 cvar_t	*r_hdrBloomQuality;
-cvar_t	*r_hdrKey;
-cvar_t	*r_hdrTime;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -472,6 +466,7 @@ void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray);
 void GL_DrawArrays(int mode, int first, int count);
 void R_HdrLumFbo();
 void R_PboInit();
+void R_HdrLumFboPrev();
 
 void R_LightPoint (vec3_t p, vec3_t color);
 

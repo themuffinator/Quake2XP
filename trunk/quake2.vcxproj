@@ -782,6 +782,7 @@
     <None Include="..\baseq2\glsl\heatHaze.vert" />
     <None Include="..\baseq2\glsl\include\blur.inc" />
     <None Include="..\baseq2\glsl\include\global.inc" />
+    <None Include="..\baseq2\glsl\include\pbCamera.inc" />
     <None Include="..\baseq2\glsl\lightAlias.frag" />
     <None Include="..\baseq2\glsl\lightAlias.vert" />
     <None Include="..\baseq2\glsl\ambientMd2.frag" />

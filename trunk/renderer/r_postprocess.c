@@ -57,6 +57,11 @@ void R_Bloom (void) {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
+	if (r_hdrBloomQuality->value < 0.5 && r_hdrBloomQuality->value > 0.25)
+		Cvar_SetValue("r_hdrBloomQuality", 0.5);
+	if (r_hdrBloomQuality->value < 1.0 && r_hdrBloomQuality->value > 0.5)
+		Cvar_SetValue("r_hdrBloomQuality", 1.0);
+
 	float scale = r_hdrBloomQuality->value;
 	int w = vid.width * scale;
 	int h = vid.height * scale;
@@ -99,6 +104,7 @@ void R_Bloom (void) {
 	qglUniform1f(U_PARAM_FLOAT_1, scale);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	GL_SetBindlessTexture(U_TMU1, r_compOut->handle);
+
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -364,144 +370,37 @@ void R_FXAA(void) {
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
-float ClampFloat(float value, float min, float max) {
-	if (value < min)
-		return min;
-	if (value > max)
-		return max;
-	return value;
-}
-void R_CalcAutoExposure() {
-
-	int		i;
-	float	curTime;
-	float	deltaTime;
-	float	luminance;
-	float	avgLuminance = 0.0;
-	float	maxLuminance = 0.0;
-	float	newAdaptation;
-	float	newMaximum;
-
-	curTime = Sys_Milliseconds() * 0.001;
-
-	// calculate the average scene luminance
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdrLum[0]);
-
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 64, 64, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-	R_SetViewPortAndScissor(0, 0, 64, 64);
-
-	static int index = 0;
-	int nextIndex = 0;
-	index = (index + 1) % 2;
-	nextIndex = (index + 1) % 2;
-
-	// read back the contents
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[index]);
-
-	static int lastUpdate;
-	if (curtime - lastUpdate >= r_hdrTime->integer) {
-
-		qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, 0);
-		lastUpdate = curtime;
-	}
-
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[nextIndex]);
-	GLfloat *src = (GLfloat *)qglMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 64 * 64 * 3 * sizeof(float), GL_MAP_READ_BIT);
-		
-	if (src){
-		vec3_t	color;
-		vec3_t	luma	=	{ 0.2125f, 0.7154f, 0.0721f };
-		vec3_t	tmp		=	{ 0.0,0.0,0.0 };
-		double	sum		=	0.0f;
-
-		for (i = 0; i < 4096; i += 3){
-
-			color[0] = src[i * 3 + 0];
-			color[1] = src[i * 3 + 1];
-			color[2] = src[i * 3 + 2];
-
-			tmp[0] = pow(color[0], 1.0 / 2.2);
-			tmp[1] = pow(color[1], 1.0 / 2.2);
-			tmp[2] = pow(color[2], 1.0 / 2.2);
-
-			luminance = DotProduct(luma, tmp) + 0.0001f;
-				
-			if (luminance > maxLuminance)
-				maxLuminance = luminance;				
-
-			float logLuminance = log2(luminance + 1.0f);
-			sum += logLuminance;
-		}
-
-		avgLuminance = sum / 4096.0f;
-
-		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-	}		
-
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
-	R_RestoreViewPortAndScissor();
-
-	if (hdrTime > curTime)		
-		hdrTime = curTime;
-
-	deltaTime = curTime - hdrTime;
-
-	newAdaptation = hdrAverageLuminance + (avgLuminance - hdrAverageLuminance)	* (1.0f - powf(0.98f, 30.0f * deltaTime));
-	newMaximum =	hdrMaxLuminance		+ (maxLuminance - hdrMaxLuminance)		* (1.0f - powf(0.98f, 30.0f * deltaTime));
-
-	if (!isnan(newAdaptation) && !isnan(newMaximum)){
-
-		hdrAverageLuminance = newAdaptation;
-		hdrMaxLuminance = newMaximum;
-	}
-
-	hdrTime = curTime;
-//	Com_DPrintf("HDR luminance avg = %f, max = %f\n", hdrAverageLuminance, hdrMaxLuminance);
-}
-
-float Lerp(const float v1, const float v2, const float l) {
-	float out;
-	if (l <= 0.0f) 
-		return v1;
-	if (l >= 1.0f) 
-		return v2;
-	out = v1 + l * (v2 - v1);
-	return out;
-}
 
 void R_ToneMaping(void) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	vec2_t hdrParams;
-	if (r_hdrAutoExposure->integer) {
-		R_CalcAutoExposure();
-		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.04, 1.0);
-		hdrParams[1] = 0.1 + hdrAverageLuminance;
-	}
-	else {
-		hdrParams[0] = 1.0;
-		hdrParams[1] = r_hdrExposure->value;
-	}
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdrLum);
+
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	glGenerateTextureMipmap(r_hdrLuminance->texnum);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
 	GL_BindProgram(tonemapProgram);
 
-	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	qglUniform2fv(U_PARAM_VEC2_0, 1, hdrParams);
-	qglUniform1f(U_PARAM_FLOAT_1, r_gamma->value);
+	GL_SetBindlessTexture(U_TMU0,	r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU1,	r_hdrLuminance->handle);
+
+	qglUniform1f(U_PARAM_FLOAT_1,	r_gamma->value);
+	qglUniform1f(U_PARAM_FLOAT_2,	r_hdrEVcomp->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
 
 	R_FXAA(); // apply fxaa AFTER tonemap!!!!
 
+//===========================================================
+
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._final);
 
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -880,4 +779,3 @@ void R_GlobalFog() {
 	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
-

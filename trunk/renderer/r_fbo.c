@@ -283,21 +283,18 @@ void R_Tex2dFbo() {
 
 void R_HdrLumFbo() {
 	qboolean statusOK;
-	int i, texSize = 64;
+	int texSize = 128;
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
 
-	for (i = 0; i < 2; i++) {
+	qglGenFramebuffers(1, &fbo._hdrLum);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdrLum);
 
-		qglGenFramebuffers(1, &fbo._hdrLum[i]);
-		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdrLum[i]);
+	r_hdrLuminance = R_CreateTexture("***fbo_hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+	IF_MIPMAP, texSize, texSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-		r_hdrLuminance[i] = R_CreateTexture(va("***fbo_hdrLuminance_%i***", i), GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-		IF_MIPMAP, texSize, texSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-		qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrLuminance[i]->texnum, 0);
-		qglObjectLabel(GL_FRAMEBUFFER, fbo._hdrLum[i], strlen(va("***fbo_hdrLuminance_%i***", i)), va("***fbo_hdrLuminance_%i***", i));
-	}
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdrLuminance->texnum, 0);
+	qglObjectLabel(GL_FRAMEBUFFER, fbo._hdrLum, strlen("***fbo_hdrLuminance***"), "***fbo_hdrLuminance***");
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
@@ -313,13 +310,6 @@ void R_PboInit() {
 	Com_Printf("Initializing Pixel Buffers: " S_COLOR_GREEN "ok\n");
 	
 	// read from gpu
-	qglGenBuffers(2, pbo._luma);
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[0]);
-	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_COPY);
-
-	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._luma[1]);
-	qglBufferData(GL_PIXEL_PACK_BUFFER, 64 * 64 * 3 * sizeof(float), 0, GL_STREAM_COPY);
-
 	qglGenBuffers(1, &pbo._fullScreen);
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreen);
 	qglBufferData(GL_PIXEL_PACK_BUFFER, vid.width * vid.height * 3 * sizeof(byte), 0, GL_STREAM_READ);
@@ -327,7 +317,6 @@ void R_PboInit() {
 	qglGenBuffers(1, &pbo._fullScreenF);
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, pbo._fullScreenF);
 	qglBufferData(GL_PIXEL_PACK_BUFFER, vid.width * vid.height * 3 * sizeof(float), 0, GL_STREAM_READ);
-
 
 	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }

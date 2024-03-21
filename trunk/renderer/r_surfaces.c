@@ -190,6 +190,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 			qglUniform1i(U_LAVA_PASS, 1);
 		else
 			qglUniform1i(U_LAVA_PASS, 0);
+		
+		qglUniform3fv(U_COLOR, 1, image->reflectivity);
 
 		GL_SetBindlessTexture(U_TMU0, image->handle);
 		GL_SetBindlessTexture(U_TMU1, fx->handle);

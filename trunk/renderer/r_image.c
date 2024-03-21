@@ -805,25 +805,6 @@ GL_LoadWal
 ================
 */
 
-float ColorNormalize(vec3_t in, vec3_t out) {
-	float	max, scale;
-
-	max = in[0];
-	if (in[1] > max)
-		max = in[1];
-	if (in[2] > max)
-		max = in[2];
-
-	if (max == 0)
-		return 0;
-
-	scale = 1.0 / max;
-
-	VectorScale(in, scale, out);
-
-	return max;
-}
-
 image_t *GL_LoadWal(char *name)
 {
 	miptex_t	*mt;
@@ -846,7 +827,7 @@ image_t *GL_LoadWal(char *name)
 	
 	vec3_t	color, sum;
 	int		size, i;
-	byte	*buffer, *p;
+	byte *buffer, *p;
 
 	size = width * height * 3 * 4;
 	buffer = (byte *)malloc(width * height * 3);
@@ -854,9 +835,11 @@ image_t *GL_LoadWal(char *name)
 	VectorClear(sum);
 
 	for (i = 0, p = buffer; i < width * height; i++, p += 3) {
-		sum[0] += (float)p[0] * (1.0 / 255);
-		sum[1] += (float)p[1] * (1.0 / 255);
-		sum[2] += (float)p[2] * (1.0 / 255);
+		if (p) {
+			sum[0] += (float)p[0] * (1.0 / 255);
+			sum[1] += (float)p[1] * (1.0 / 255);
+			sum[2] += (float)p[2] * (1.0 / 255);
+		}
 	}
 
 	VectorScale(sum, 4.0 / (width * height), color);
