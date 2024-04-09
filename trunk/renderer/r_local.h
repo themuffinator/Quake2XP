@@ -183,6 +183,52 @@ typedef struct {
 }vbo_t;
 vbo_t vbo;
 
+typedef struct {
+	char		name[MAX_QPATH];
+	GLenum		internalFormat;
+	GLuint		id;
+	int			width;
+	int			height;
+} rbObject_t;
+
+typedef struct {
+	char		name[MAX_QPATH];
+	int			index; // todo cubamap faces, 3d textures layers
+	GLuint		id;
+} fbObject_t;
+
+#define MAX_RBOS 64
+rbObject_t r_rbo[MAX_RBOS];
+int	r_numRbos;
+
+typedef struct {
+	rbObject_t *depthStencil;
+}rbo_t;
+rbo_t rbo;
+
+#define MAX_FBOS 256
+fbObject_t	r_fbo[MAX_FBOS];
+int	r_numFbos;
+
+typedef struct {
+	fbObject_t	*_screen;
+	fbObject_t	*_final;
+	fbObject_t	*_glare;
+	fbObject_t	*_thermal;
+	fbObject_t	*_ssao;
+	fbObject_t	*_linearDepth;
+	fbObject_t	*_tex2d;
+	fbObject_t	*_comp;
+	fbObject_t	*_hdrLum;
+}fbo_t;
+fbo_t fbo;
+
+void GL_BindFB(fbObject_t *fb);
+void R_ShotdownFBO(void);
+float	clearColor[4];
+float	clearDepth;
+int		clearStencil;
+
 #include "r_model.h"
 
 void GL_SetDefaultState (void);
@@ -452,21 +498,14 @@ qboolean RA_Frame;
 qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height);
 char *q_pretifymem(float value);
 
-void R_CreateScreenFbo();
-void R_FboFinal();
-void R_Tex2dFbo();
-void CreateBloomBuffer(void);
-void CreateGlareBuffer(void);
-void CreateThermalBuffer(void);
-void CreateLinearDepthBuffer(void);
+void R_InitFboBuffers();
+
 void R_LinearDepth(void);
 void R_DrawLightWorldRA(void);
 void GL_SetBindlessTexture(int loc, uint64_t handle);
 void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray);
 void GL_DrawArrays(int mode, int first, int count);
-void R_HdrLumFbo();
-void R_PboInit();
-void R_HdrLumFboPrev();
+
 
 void R_LightPoint (vec3_t p, vec3_t color);
 
@@ -608,7 +647,6 @@ void R_InitVertexBuffers();
 
 void SetModelsLight();
 extern float shadelight[3];
-byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
 void R_ColorTemperatureCorrection(void);
 
@@ -758,7 +796,7 @@ typedef struct {
 	int			vboId;
 	int			vboType;
 	GLenum		matrixMode;
-
+	int			fboId;
 	mat4_t		projectionMatrix;
 	mat4_t		modelViewMatrix;		// ready to load
 
@@ -1092,6 +1130,9 @@ void R_SetupOrthoMatrix(void);
 
 
 void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
+
+
+
 
 typedef enum {
 	ATT_POSITION,

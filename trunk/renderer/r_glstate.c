@@ -590,6 +590,7 @@ void GL_SetDefaultState(void) {
 	hdrKey = 0;
 
 //	gl_state.vaoId = 0;
+	gl_state.fboId = 0;
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
@@ -597,6 +598,10 @@ void GL_SetDefaultState(void) {
 	//fix 1366x768 screenshots
 	qglPixelStorei(GL_UNPACK_ALIGNMENT, (vid.width & 3) ? 1 : 4);
 	qglPixelStorei(GL_PACK_ALIGNMENT, (vid.width & 3) ? 1 : 4);
+
+	Vector4Set (clearColor, 0.0, 0.0, 0.0, 1.0);
+	clearDepth = 1.0;
+	clearStencil = 128;
 
 	GL_UpdateSwapInterval();
 }

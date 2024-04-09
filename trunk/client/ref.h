@@ -94,7 +94,8 @@ typedef enum {
 	PF_LIGHT		= BIT(1),	// phong lighting
 	PF_PANSCAN		= BIT(3),	// panscan 16:9 images on 3:4 monitors
 	PF_CROSSHAIR	= BIT(4),	// crosshair flag
-	PF_VIGNETTE		= BIT(5)
+	PF_VIGNETTE		= BIT(5),
+	PF_CONLOLE		= BIT(6)
 } pictureFlags_t;
 
 
@@ -556,21 +557,6 @@ typedef struct {
 // end decals
 //================
 
-
-typedef struct {
-	uint	_hdr;
-	uint	_final;
-	uint	_glare;
-	uint	_thermal;
-	uint	_ssao;
-	uint	_linearDepth;
-	uint	_tex2d;
-	uint	_hdrLum;
-	uint	_gbuffer;
-	uint	_comp;
-}fbo_t;
-
-fbo_t fbo;
 
 typedef struct {
 

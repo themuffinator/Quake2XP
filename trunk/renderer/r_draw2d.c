@@ -207,7 +207,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
-
+	
 	if (woh < WIDE_SCREEN_16x9) {  // quad screen
 		offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
 		offsY = 0;
@@ -224,7 +224,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 
 	if (console) {
 		qglUniform1i(U_CONSOLE_BACK, 1);
-
+	//	qglUniform1i(U_PARAM_INT_0, PF_PANSCAN);
 		float	t;
 		vec4_t	lPos;
 		t = Sys_Milliseconds() * 0.001;
@@ -592,7 +592,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	int			row;
 	unsigned	*dest;
 
-	qglClear(GL_COLOR_BUFFER_BIT);
+	qglClearBufferfv(GL_COLOR, 0, clearColor);
 
 	memset(image32, 0, sizeof(image32));
 

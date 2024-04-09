@@ -716,6 +716,10 @@ extern	PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer;
 
 extern	PFNGLDRAWBUFFERSPROC								qglDrawBuffers;
 
+extern PFNGLCLEARBUFFERIVPROC								qglClearBufferiv;
+extern PFNGLCLEARBUFFERFVPROC								qglClearBufferfv;
+extern PFNGLCLEARBUFFERFIPROC								qglClearBufferfi;
+
 extern PFNGLBINDVERTEXARRAYPROC								glBindVertexArray;
 extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;

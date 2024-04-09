@@ -712,8 +712,9 @@ void VID_SetProcessDpiAwareness(void) {
 	if (SetProcessDpiAwareness) {
 		SetProcessDpiAwareness(XP_PROCESS_PER_MONITOR_DPI_AWARE); 
 	}
-	else
-		SetProcessDPIAware(); 
+	else 
+		if(SetProcessDPIAware)
+			SetProcessDPIAware(); 
 	
 	if (shDLL)
 		FreeLibrary(shDLL);
@@ -1033,6 +1034,7 @@ static qboolean GLW_ChoosePixelFormat() {
 void GLW_CreateContext() {
 
 	const char	*profileName[] = { "core", "compatibility" };
+	const char *debug[] = { "debug", "" };
 
 	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
@@ -1048,8 +1050,8 @@ void GLW_CreateContext() {
 	};
 
 	// create the GL context
-	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW "  %s" S_COLOR_WHITE " profile context: ", r_glMajorVersion->integer, r_glMinorVersion->integer, profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
-
+	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW " %s %s" S_COLOR_WHITE " profile context: ", r_glMajorVersion->integer, r_glMinorVersion->integer, debug[contextFlag == WGL_CONTEXT_DEBUG_BIT_ARB ? 0 : 1], profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+	
 	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs);
 
 	if (!glw_state.hGLRC) {

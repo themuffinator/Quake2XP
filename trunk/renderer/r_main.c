@@ -556,7 +556,7 @@ void R_DrawLightScene (void)
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		qglClearStencil(128);
 		GL_StencilMask(255);
-		qglClear(GL_STENCIL_BUFFER_BIT);
+		qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
 		c_numVisLights++;
 	}
 
@@ -731,7 +731,7 @@ void R_DrawPlayerWeapon(void)
 
 			qglClearStencil(128);
 			GL_StencilMask(255);
-			qglClear(GL_STENCIL_BUFFER_BIT);
+			qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
 			
 			R_CastBspShadowVolumes();
 			R_DrawPlayerWeaponLightPass();
@@ -920,7 +920,7 @@ void R_LinearDepth(void)
 
 	R_SetupOrthoMatrix();
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth->id);
 
 	GL_BindProgram(linearDepthProgram);
 	GL_SetBindlessTexture(U_TMU0, r_depthStencilTexture->handle);
@@ -936,7 +936,7 @@ void R_LinearDepth(void)
 	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
 }
 
 /*
@@ -981,15 +981,18 @@ void R_RenderView (refdef_t *fd) {
 		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
-			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			qglClearBufferfv(GL_COLOR, 0, clearColor);
+			qglClearBufferfv(GL_DEPTH, 0, &clearDepth);
 		}
-		else
-		qglClear(GL_DEPTH_BUFFER_BIT);
+		else {
+			qglClearBufferfv(GL_DEPTH, 0, &clearDepth);
+		}
 	}
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
-		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
-		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
+		qglClearBufferfv(GL_COLOR, 0, clearColor);
+		qglClearBufferfv(GL_DEPTH, 0, &clearDepth);
 	}
 
 	R_DrawDepthScene();
@@ -1567,23 +1570,6 @@ qboolean IsExtensionSupported(const char *name)
 	return qfalse;
 }
 
-void R_InitFboBuffers() {
-	
-	Com_Printf("Initializing FBOs...\n\n");
-	R_CreateScreenFbo();
-	R_FboFinal();
-	R_Tex2dFbo();
-	CreateLinearDepthBuffer();
-	CreateSSAOBuffer();
-	CreateBloomBuffer();
-	CreateGlareBuffer();
-	CreateThermalBuffer();
-	R_HdrLumFbo();
-	Com_Printf("\n");
-	R_PboInit();
-	Com_Printf("\n");
-}
-
 int R_Init(void *hinstance, void *hWnd)
 {
 	int		max_aniso, max_texSize;
@@ -1675,7 +1661,9 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetFramebufferAttachmentParameteriv	= (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC)qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
 	qglDrawBuffers							= (PFNGLDRAWBUFFERSPROC)						qwglGetProcAddress("glDrawBuffers");
 	glCopyImageSubData						= (PFNGLCOPYIMAGESUBDATAPROC)					qwglGetProcAddress("glCopyImageSubData");
-
+	qglClearBufferfv						= (PFNGLCLEARBUFFERFVPROC)						qwglGetProcAddress("glClearBufferfv");
+	qglClearBufferfi						= (PFNGLCLEARBUFFERFIPROC)						qwglGetProcAddress("glClearBufferfi");
+	qglClearBufferiv						= (PFNGLCLEARBUFFERIVPROC)						qwglGetProcAddress("glClearBufferiv");
 	// bindless textures stuff
 	glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
 	glGetTextureSamplerHandleARB		= (PFNGLGETTEXTURESAMPLERHANDLEARBPROC)		qwglGetProcAddress("glGetTextureSamplerHandleARB");
@@ -1997,20 +1985,21 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("vaoList");
 	Cmd_RemoveCommand("vboList");
 
-	qglDeleteFramebuffers(1, &fbo._hdr);
-	qglDeleteFramebuffers(1, &fbo._final);
-	qglDeleteFramebuffers(1, &fbo._glare);
-	qglDeleteFramebuffers(1, &fbo._comp);
-	qglDeleteFramebuffers(1, &fbo._thermal);
-	qglDeleteFramebuffers(1, &fbo._ssao);
-	qglDeleteFramebuffers(1, &fbo._linearDepth);
-	qglDeleteFramebuffers(1, &fbo._tex2d);
-	qglDeleteFramebuffers(1, &fbo._hdrLum);
+//	qglDeleteFramebuffers(1, &fbo._hdr);
+//	qglDeleteFramebuffers(1, &fbo._final);
+//	qglDeleteFramebuffers(1, &fbo._glare);
+//	qglDeleteFramebuffers(1, &fbo._comp);
+//	qglDeleteFramebuffers(1, &fbo._thermal);
+//	qglDeleteFramebuffers(1, &fbo._ssao);
+//	qglDeleteFramebuffers(1, &fbo._linearDepth);
+//	qglDeleteFramebuffers(1, &fbo._tex2d);
+//	qglDeleteFramebuffers(1, &fbo._hdrLum);
 
 	// free pbo's
 	qglDeleteBuffers(1, &pbo._fullScreen);
 	qglDeleteBuffers(1, &pbo._fullScreenF);
 
+	R_ShotdownFBO();
 	R_ShutDownVertexBuffers();
 
 	Mod_FreeAll();
@@ -2088,7 +2077,7 @@ void R_BeginFrame()
 	gldepthmax = 1.0;
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthRange(gldepthmin, gldepthmax);
-	qglClear(GL_COLOR_BUFFER_BIT);
+	qglClearBufferfv(GL_COLOR, 0, clearColor);
 }
 
 /*

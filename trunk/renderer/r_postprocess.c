@@ -66,10 +66,10 @@ void R_Bloom (void) {
 	int w = vid.width * scale;
 	int h = vid.height * scale;
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._comp);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._comp->id);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._screen->id);
 	R_SetViewPortAndScissor(0, 0, w, h);
 
 	GL_BindProgram(brightProgram);
@@ -119,11 +119,11 @@ void R_ThermalVision (void) {
 	if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
 		return;
 	
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._thermal);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._thermal->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.5, vid.height * 0.5, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._screen->id);
 
 	R_SetViewPortAndScissor(0, 0, vid.width * 0.5, vid.height * 0.5);
 
@@ -287,11 +287,11 @@ void R_FilmFx(void) {
 		return;
 	
 	// hdr glares
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._glare);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._glare->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.25, vid.height * 0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._screen->id);
 
 	R_SetViewPortAndScissor(0, 0, vid.width * 0.25, vid.height * 0.25);
 
@@ -328,12 +328,12 @@ void R_FilmFx(void) {
 	//-----------------
 	// setup program
 	GL_BindProgram (filmicFxProgram);
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
 
 	GL_SetBindlessTexture(U_TMU0,	r_hdrScreenCopy2d->handle);
 	GL_SetBindlessTexture(U_TMU1,	r_lensDirt->handle);
@@ -356,12 +356,12 @@ void R_FXAA(void) {
 	// setup program
 	GL_BindProgram(fxaaProgram);
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
@@ -376,12 +376,12 @@ void R_ToneMaping(void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdrLum);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdrLum->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	glGenerateTextureMipmap(r_hdrLuminance->texnum);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._screen->id);
 
 	GL_BindProgram(tonemapProgram);
 
@@ -397,8 +397,8 @@ void R_ToneMaping(void) {
 
 //===========================================================
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._final);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._final->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	
@@ -525,7 +525,7 @@ void R_SSAO (void) {
 	
 	// downsample the depth buffer
 	GL_DepthRange(0.0, 1.0);
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao->id);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	R_SetViewPortAndScissor(0, 0, vid.width * 0.5, vid.height * 0.5);
@@ -570,7 +570,7 @@ void R_SSAO (void) {
 	}
 	
 	// restore
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	GL_Enable(GL_CULL_FACE);
@@ -599,12 +599,12 @@ void R_FixFov(void) {
 	// setup program
 	GL_BindProgram(fixFovProgram);
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
 
 	params[0] = r_fixFovStrength->value;
 	params[1] = tan(DEG2RAD(r_newrefdef.fov_x) / 2.0) / (vid.width / vid.height);
