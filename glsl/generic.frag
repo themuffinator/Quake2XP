@@ -2,15 +2,23 @@
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1)  uniform sampler2D	u_normalMap;
 
-layout(location = U_PARAM_VEC4_0)	uniform vec4	u_lightShift;
-layout(location = U_CONSOLE_BACK)	uniform int	    u_console;
-layout(location = U_2D_PICS)		uniform int	    u_2dPics;
-layout(location = U_FRAG_COLOR)		uniform int     u_fragColor;
+layout (location = U_PARAM_VEC4_0)	uniform vec4	u_lightShift;
+layout (location = U_CONSOLE_BACK)	uniform int	    u_console;
+layout (location = U_2D_PICS)		uniform int	    u_2dPics;
+layout (location = U_FRAG_COLOR)	uniform int     u_fragColor;
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
+
 
 in vec2		v_texCoord;
 in vec4		v_color;
 
+int	PF_LIGHTING		= 1;
+int	PF_ADD			= 2;
+int	PF_PANSCAN		= 4;
+int	PF_VIGNET		= 8;
+int	PF_VERTCOLOR	= 16;
+int	PF_CRT			= 32;
+int	PF_CONSOLE		= 64;
 
 #include lighting.inc //!#include "include/lighting.inc"
 

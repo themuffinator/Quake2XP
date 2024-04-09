@@ -21,12 +21,13 @@ void main(){
 	
     vec3 hdrColor   = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
     vec3 luminance  = exp2(textureLod(u_LumTex, vec2(0.5), 8).rgb);
-	float avgLum    = log2(dot(vec3(0.2125, 0.7154, 0.0721), luminance));
-
+    float avgLum    = log2(dot(vec3(0.2125, 0.7154, 0.0721), luminance));
+    
     float targetEV      = ComputeTargetEV(avgLum);
     targetEV            = targetEV + u_EVcomp;
     float aperture      = 4.0;
-    float shutterSpeed  = 1.0 / 100;
+    float focalLength   = 70.0;
+    float shutterSpeed  = 1.0 / (focalLength * 1000.0);
 
     // Compute the resulting ISO if we left both shutter and aperture here
     float iso = clamp(ComputeISO(aperture, shutterSpeed, targetEV), MIN_ISO, MAX_ISO);
