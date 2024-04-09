@@ -225,6 +225,8 @@ fbo_t fbo;
 
 void GL_BindFB(fbObject_t *fb);
 void R_ShotdownFBO(void);
+void R_FboListing_f(void);
+
 float	clearColor[4];
 float	clearDepth;
 int		clearStencil;

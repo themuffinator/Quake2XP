@@ -58,6 +58,20 @@ void GL_BindFB(fbObject_t *fb) {
 		gl_state.fboId = fb->id;
 	}
 }
+void R_FboListing_f(void) {
+	rbObject_t *rb;
+	fbObject_t *fb;
+	int i;
+
+	Com_Printf(S_COLOR_YELLOW"RBO List:\n");
+	for (i = 0, rb = r_rbo; i < r_numRbos; i++, rb++) {
+		Com_Printf(">" S_COLOR_GREEN "%s\n", rb->name);
+	}
+	Com_Printf(S_COLOR_YELLOW"FBO List:\n");
+	for (i = 0, fb = r_fbo; i < r_numFbos; i++, fb++) {
+		Com_Printf(">" S_COLOR_GREEN "%s\n", fb->name);
+	}
+}
 
 void R_ShotdownFBO(void) {
 	rbObject_t *rb;

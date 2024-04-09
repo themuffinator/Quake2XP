@@ -1498,6 +1498,7 @@ bind v			"paste"
 	Cmd_AddCommand("scaleLightColor",			R_ScaleLightColor_f);
 	Cmd_AddCommand("vaoList",					R_VaoListing_f);
 	Cmd_AddCommand("vboList",					R_VboListing_f);
+	Cmd_AddCommand("fboList",					R_FboListing_f);
 }
 
 /*
@@ -1984,16 +1985,7 @@ void R_Shutdown(void)
 	
 	Cmd_RemoveCommand("vaoList");
 	Cmd_RemoveCommand("vboList");
-
-//	qglDeleteFramebuffers(1, &fbo._hdr);
-//	qglDeleteFramebuffers(1, &fbo._final);
-//	qglDeleteFramebuffers(1, &fbo._glare);
-//	qglDeleteFramebuffers(1, &fbo._comp);
-//	qglDeleteFramebuffers(1, &fbo._thermal);
-//	qglDeleteFramebuffers(1, &fbo._ssao);
-//	qglDeleteFramebuffers(1, &fbo._linearDepth);
-//	qglDeleteFramebuffers(1, &fbo._tex2d);
-//	qglDeleteFramebuffers(1, &fbo._hdrLum);
+	Cmd_RemoveCommand("fboList");
 
 	// free pbo's
 	qglDeleteBuffers(1, &pbo._fullScreen);
