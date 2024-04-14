@@ -321,7 +321,7 @@ void R_UpdateAmbientBspUniforms(qboolean bmodel) {
 	else
 		qglUniform1i(U_USE_SSAO, 0);
 
-	GL_SetBindlessTexture(U_TMU6, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+	GL_SetBindlessTexture(U_TMU6, i_ssaoColor[i_ssaoColorIndex]->handle);
 }
 
 static void GL_DrawLightmappedPoly(qboolean bmodel)
@@ -412,7 +412,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
 		rghMap		= R_TextureAnimationPbr		(surf->texInfo);
 
-		if (rghMap == r_blackTexture1x1) {
+		if (rghMap == i_blackTexture1x1) {
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		}
 		else {
@@ -452,7 +452,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else
 			qglUniform1i(U_PARAM_INT_0, 0);
 
-		if (r_imageAutoBump->integer && normalMap == r_defBump) {
+		if (r_imageAutoBump->integer && normalMap == i_defBump) {
 			qglUniform1i(U_USE_AUTOBUMP, 1);
 			qglUniform2f(U_AUTOBUMP_PARAMS, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 		}
@@ -555,7 +555,7 @@ void R_UpdateLightUniforms(qboolean bModel)
 	 else
 		 qglUniform1i(U_USE_SSAO, 0);
 
-	 GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+	 GL_SetBindlessTexture(U_TMU5, i_ssaoColor[i_ssaoColorIndex]->handle);
 		 
  }
 

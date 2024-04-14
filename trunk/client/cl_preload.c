@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
-extern image_t *r_blackTexture1x1;
+extern image_t *i_blackTexture1x1;
 
 void CL_InitImages () {
 

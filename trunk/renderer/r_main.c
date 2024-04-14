@@ -235,7 +235,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(U_REFR_THICKNESS1, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE) {
-		GL_SetBindlessTexture(U_TMU1, r_blackTexture1x1->handle);
+		GL_SetBindlessTexture(U_TMU1, i_blackTexture1x1->handle);
 		scaled = 2;
 	}
 	else		
@@ -755,9 +755,9 @@ void R_RenderSprites(void)
 	// setup program
 	GL_BindProgram(spriteProgram);
 
-	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
-	GL_SetBindlessTexture(U_TMU2,r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, r_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU0, i_distort->handle);
+	GL_SetBindlessTexture(U_TMU2, i_hdrBaseInterim->handle);
+	GL_SetBindlessTexture(U_TMU3, i_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -913,17 +913,17 @@ void R_DrawRAScene (void) {
 	}
 }
 
-void R_LinearDepth(void)
+void R_linearDepth(void)
 {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL))
 		return;
 
 	R_SetupOrthoMatrix();
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth->id);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fb.linearDepth->id);
 
 	GL_BindProgram(linearDepthProgram);
-	GL_SetBindlessTexture(U_TMU0, r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU0, i_depthStencil->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
@@ -936,7 +936,7 @@ void R_LinearDepth(void)
 	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
 }
 
 /*
@@ -990,14 +990,14 @@ void R_RenderView (refdef_t *fd) {
 	}
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
-		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._screen->id);
+		qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
 		qglClearBufferfv(GL_COLOR, 0, clearColor);
 		qglClearBufferfv(GL_DEPTH, 0, &clearDepth);
 	}
 
 	R_DrawDepthScene();
 	R_SetFrustum(qfalse);
-	R_LinearDepth();
+	R_linearDepth();
 	
 	R_SSAO();
 	R_DrawAmbientScene();
@@ -1109,26 +1109,26 @@ void R_RenderFrame(refdef_t * fd) {
 	
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
-		CL_AddString(0, VID_CENTER_H,       3, buff0, consFont);
-		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, consFont);
-		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, consFont);
-		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, consFont);
-		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, consFont);
-		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, consFont);
-		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, consFont);
-		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, consFont);
-		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, consFont);
-		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, consFont);
-		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, consFont);
-		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, consFont);
-		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, consFont);
-		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, consFont);
-		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, consFont);
-		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, consFont);
+		CL_AddString(0, VID_CENTER_H,       3, buff0, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, i_consFont);
 
 //		Draw_StringScaled(0, VID_CENTER_H + 325, 2, 2, buff16, qtrue);
 	//	Draw_StringScaled(0, VID_CENTER_H + 345, 2, 2, buff17, qtrue);
-		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, consFont);
+		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, i_consFont);
 		RE_SetColor(colorWhite);
 	}
 }
@@ -1665,6 +1665,25 @@ int R_Init(void *hinstance, void *hWnd)
 	qglClearBufferfv						= (PFNGLCLEARBUFFERFVPROC)						qwglGetProcAddress("glClearBufferfv");
 	qglClearBufferfi						= (PFNGLCLEARBUFFERFIPROC)						qwglGetProcAddress("glClearBufferfi");
 	qglClearBufferiv						= (PFNGLCLEARBUFFERIVPROC)						qwglGetProcAddress("glClearBufferiv");
+	
+	// fbo dsa
+	qglCreateRenderbuffers					= (PFNGLCREATERENDERBUFFERSPROC)				qwglGetProcAddress("glCreateRenderbuffers");
+	qglNamedRenderbufferStorageMultisample	= (PFNGLNAMEDRENDERBUFFERSTORAGEMULTISAMPLEPROC)qwglGetProcAddress("glNamedRenderbufferStorageMultisample");
+	qglNamedFramebufferRenderbuffer			= (PFNGLNAMEDFRAMEBUFFERRENDERBUFFERPROC)		qwglGetProcAddress("glNamedFramebufferRenderbuffer");
+	qglNamedRenderbufferStorage				= (PFNGLNAMEDRENDERBUFFERSTORAGEPROC)			qwglGetProcAddress("glNamedRenderbufferStorage");
+		
+	qglCreateFramebuffers					= (PFNGLCREATEFRAMEBUFFERSPROC)					qwglGetProcAddress("glCreateFramebuffers");
+	qglNamedFramebufferTexture				= (PFNGLNAMEDFRAMEBUFFERTEXTUREPROC)			qwglGetProcAddress("glNamedFramebufferTexture");
+	qglCheckNamedFramebufferStatus			= (PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC)		qwglGetProcAddress("glCheckNamedFramebufferStatus");
+	qglNamedFramebufferDrawBuffer			= (PFNGLNAMEDFRAMEBUFFERDRAWBUFFERPROC)			qwglGetProcAddress("glNamedFramebufferDrawBuffer");
+	qglNamedFramebufferDrawBuffers			= (PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC)		qwglGetProcAddress("glNamedFramebufferDrawBuffers");
+	qglBlitNamedFramebuffer					= (PFNGLBLITNAMEDFRAMEBUFFERPROC)				qwglGetProcAddress("glBlitNamedFramebuffer");
+	
+	qglClearNamedFramebufferiv				= (PFNGLCLEARNAMEDFRAMEBUFFERIVPROC)			qwglGetProcAddress("glClearNamedFramebufferiv");
+	qglClearNamedFramebufferfv				= (PFNGLCLEARNAMEDFRAMEBUFFERFVPROC)			qwglGetProcAddress("glClearNamedFramebufferfv");
+	qglClearNamedFramebufferfi				= (PFNGLCLEARNAMEDFRAMEBUFFERFIPROC)			qwglGetProcAddress("glClearNamedFramebufferfi");
+
+
 	// bindless textures stuff
 	glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
 	glGetTextureSamplerHandleARB		= (PFNGLGETTEXTURESAMPLERHANDLEARBPROC)		qwglGetProcAddress("glGetTextureSamplerHandleARB");

@@ -34,17 +34,17 @@ R_LoadFont
 
 void R_Init2D(void)
 {
-	menuFont = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
+	i_menuFont = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
 
-	if (!menuFont)
-		menuFont = GL_FindImage("pics/conchars.pcx", it_nomips);
+	if (!i_menuFont)
+		i_menuFont = GL_FindImage("pics/conchars.pcx", it_nomips);
 
-	if (!menuFont)
+	if (!i_menuFont)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	consFont = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
-	if (!consFont)
-		consFont = r_missingTexture;
+	i_consFont = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
+	if (!i_consFont)
+		i_consFont = i_missingTexture;
 }
 
 void R_DrawTexturedQuad() {
@@ -152,7 +152,7 @@ image_t* Draw_FindPic(char* name)
 		gl = GL_FindImage(name + 1, it_pic);
 	}
 	if (gl)
-		if (gl != r_missingTexture)
+		if (gl != i_missingTexture)
 			strcpy(gl->bare_name, name);
 
 	return gl;
@@ -246,7 +246,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
-	GL_SetBindlessTexture(U_TMU1, r_conBump->handle);
+	GL_SetBindlessTexture(U_TMU1, i_conBump->handle);
 
 	VA_SetElem2(tess2d.v[0].pos, x, y);
 	VA_SetElem2(tess2d.v[1].pos, x + w, y);
@@ -408,7 +408,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 		return;
 
 	if (!gl2)
-		gl2 = r_defBump;
+		gl2 = i_defBump;
 
 	if (strstr(gl->name, "chx"))
 		return;
@@ -461,7 +461,7 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char* pic)
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-		gl = r_missingTexture;
+		gl = i_missingTexture;
 	}
 	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
 }
@@ -476,12 +476,12 @@ void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, c
 
 	gl = Draw_FindPic(pic);
 	if (!gl) {
-		gl = r_missingTexture;
+		gl = i_missingTexture;
 	}
 
 	gl2 = Draw_FindPic(pic2);
 	if (!gl2) {
-		gl2 = r_defBump;
+		gl2 = i_defBump;
 	}
 	Draw_ScaledBumpPic(x, y, scale_x, scale_y, gl, gl2);
 }
@@ -619,12 +619,12 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	}
 
 	// update cin texture
-	glTextureSubImage2D(r_cinImage->texnum, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
+	glTextureSubImage2D(i_cinematic->texnum, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 
 	// setup program
 	GL_BindProgram(cinProgram);
 
-	GL_SetBindlessTexture(U_TMU0, r_cinImage->handle);
+	GL_SetBindlessTexture(U_TMU0, i_cinematic->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 

@@ -43,24 +43,9 @@ static void R_FB_Check() {
 	Com_Printf(S_COLOR_RED"Failed!:" S_COLOR_MAGENTA " %s\n", s);
 }
 
-void GL_BindFB(fbObject_t *fb) {
-
-	if (!fb) {
-		if (gl_state.fboId) {
-			qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-			gl_state.fboId = 0;
-		}
-		return;
-	}
-
-	if (gl_state.fboId != fb->id) {
-		qglBindFramebuffer(GL_FRAMEBUFFER, fb->id);
-		gl_state.fboId = fb->id;
-	}
-}
 void R_FboListing_f(void) {
-	rbObject_t *rb;
-	fbObject_t *fb;
+	rbo_t *rb;
+	fbo_t *fb;
 	int i;
 
 	Com_Printf(S_COLOR_YELLOW"RBO List:\n");
@@ -74,8 +59,8 @@ void R_FboListing_f(void) {
 }
 
 void R_ShotdownFBO(void) {
-	rbObject_t *rb;
-	fbObject_t *fb;
+	rbo_t *rb;
+	fbo_t *fb;
 	int i;
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -90,8 +75,8 @@ void R_ShotdownFBO(void) {
 	}
 }
 
-rbObject_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int height) {
-	rbObject_t *rb;
+rb_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int height) {
+	rbo_t *rb;
 	int i;
 
 	switch (internalFormat) {
@@ -184,7 +169,7 @@ rbObject_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int
 	return rb;
 }
 
-static void R_AttachRBO(const rbObject_t *rb, const GLenum attachment) {
+static void R_AttachRBO(const rbo_t *rb, const GLenum attachment) {
 	switch (attachment) {
 	case GL_DEPTH_ATTACHMENT:
 	case GL_STENCIL_ATTACHMENT:
@@ -212,7 +197,7 @@ static void R_AttachRBO(const rbObject_t *rb, const GLenum attachment) {
 	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rb->id);
 }
 
-void R_AttachImage(const GLenum attachment, const image_t *image, const int index) {
+void R_FB_AttachImage(const GLenum attachment, const image_t *image, const int index) {
 
 	switch (attachment) {
 	case GL_DEPTH_ATTACHMENT:
@@ -236,13 +221,13 @@ void R_AttachImage(const GLenum attachment, const image_t *image, const int inde
 	case GL_COLOR_ATTACHMENT15:
 		break;
 	default:
-		VID_Error(ERR_DROP, "R_AttachImage: invalid attachment point 0x%x\n", attachment);
+		VID_Error(ERR_DROP, "R_FB_AttachImage: invalid attachment point 0x%x\n", attachment);
 	}
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, attachment, image->texType, image->texnum, 0);
 }
 
-fbObject_t *R_Create_FBO(const char *name) {
-	fbObject_t *fb;
+fbo_t *R_Create_FBO(const char *name) {
+	fbo_t *fb;
 	int i;
 
 	if (r_numRbos == MAX_FBOS)
@@ -268,155 +253,7 @@ fbObject_t *R_Create_FBO(const char *name) {
 	return fb;
 }
 
-void CreateSSAOBuffer(void) {
-
-	Com_Printf("Load "S_COLOR_YELLOW "SSAO FBO ");
-
-	r_miniDepthTex = R_CreateTexture("***r_miniDepthTex***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 
-									0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
-									GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	for (int i = 0; i < 2; i++)
-		r_ssaoColorTex[i] = R_CreateTexture("***r_ssaoColorTex***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 
-									0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
-											GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	r_ssaoColorTexIndex = 0;
-	fbo._ssao = R_Create_FBO("***ssai_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_ssaoColorTex[0],	0);
-	R_AttachImage(GL_COLOR_ATTACHMENT1, r_ssaoColorTex[1],	0);
-	R_AttachImage(GL_COLOR_ATTACHMENT2, r_miniDepthTex,		0);
-	R_FB_Check();
-}
-
-void CreateLinearDepthBuffer(void) {
-
-	Com_Printf("Load "S_COLOR_YELLOW "LINEAR DEPTH FBO ");
-
-	r_linearDepth = R_CreateTexture("***r_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, vid.width, vid.height,
-									GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-									GL_FLOAT, NULL);
-	
-	fbo._linearDepth = R_Create_FBO("***linearDepth_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_linearDepth, 0);
-	R_FB_Check();
-}
-
-void CreateBloomBuffer(void) {
-	
-	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
-	
-	r_compIn = R_CreateTexture("***r_compIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA, 0,
-		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	r_compInterim = R_CreateTexture("***r_compInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	r_compOut = R_CreateTexture("***r_compOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-	
-	fbo._comp = R_Create_FBO("***comp_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_compIn, 0);
-	R_AttachImage(GL_COLOR_ATTACHMENT1, r_compInterim, 0);
-	R_AttachImage(GL_COLOR_ATTACHMENT2, r_compOut, 0);
-	R_FB_Check();
-}
-
-void CreateGlareBuffer(void) {
-
-	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");
-
-	r_hdrGlareImage = R_CreateTexture("***r_hdrGlareImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	fbo._glare = R_Create_FBO("***glare_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_hdrGlareImage, 0);
-	R_FB_Check();
-}
-
-
-void CreateThermalBuffer(void) {
-
-	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
-
-	r_thermalImage = R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-									vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
-									GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-	fbo._thermal = R_Create_FBO("***thermal_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_thermalImage, 0);
-	R_FB_Check();
-}
-
-void R_CreateScreenFbo() {
-
-	Com_Printf("Load "S_COLOR_YELLOW "SCREEN FBO ");
-
-	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
-		0, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_FLOAT, NULL);
-
-	r_hdrScreenCopy = R_CreateTexture("***r_hdrScreenCopy***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
-		0, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_FLOAT, NULL);
-
-	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
-		0, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_UNSIGNED_INT_24_8, NULL);
-
-	rbo.depthStencil	= R_Create_RBO("***rbo_depth_stencil***", GL_DEPTH24_STENCIL8, vid.width, vid.height);
-	fbo._screen			= R_Create_FBO("***screen_fbo***");
-
-	R_AttachRBO(rbo.depthStencil, GL_DEPTH_STENCIL_ATTACHMENT);
-
-	R_AttachImage(GL_COLOR_ATTACHMENT0,			r_hdrScreen, 0);
-	R_AttachImage(GL_COLOR_ATTACHMENT1,			r_hdrScreenCopy, 0);
-	R_AttachImage(GL_DEPTH_STENCIL_ATTACHMENT,	r_depthStencilTexture, 0);
-	R_FB_Check();
-}
-
-void R_FboFinal() {
-
-	Com_Printf("Load "S_COLOR_YELLOW "FINAL FBO ");
-
-	r_finalScreen = R_CreateTexture("***r_finalScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
-									0, vid.width, vid.height,
-									GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR,
-									GL_FLOAT, NULL);
-
-	fbo._final = R_Create_FBO("***final_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_finalScreen, 0);
-	R_FB_Check();
-}
-
-void R_Tex2dFbo() {
-
-	Com_Printf("Load "S_COLOR_YELLOW "SCREEN 2D FBO ");
-
-	r_hdrScreenCopy2d = R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA,
-						0, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	fbo._tex2d = R_Create_FBO("***tex2d_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_hdrScreenCopy2d, 0);
-	R_FB_Check();
-}
-
-void R_HdrLumFbo() {
-	int texSize = 128;
-
-	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
-
-	r_hdrLuminance = R_CreateTexture("***fbo_hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-	IF_MIPMAP, texSize, texSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-	
-	fbo._hdrLum = R_Create_FBO("***hdrLum_fbo***");
-	R_AttachImage(GL_COLOR_ATTACHMENT0, r_hdrLuminance, 0);
-	R_FB_Check();
-}
-
-void R_PboInit() {
+void R_InitPboBuffers() {
 
 	Com_Printf("Initializing Pixel Buffers: " S_COLOR_GREEN "ok\n");
 	
@@ -434,19 +271,121 @@ void R_PboInit() {
 
 void R_InitFboBuffers() {
 
-	Com_Printf("Initializing FBOs...\n\n");
-	R_CreateScreenFbo();
-	R_FboFinal();
-	R_Tex2dFbo();
-	CreateLinearDepthBuffer();
-	CreateSSAOBuffer();
-	CreateBloomBuffer();
-	CreateGlareBuffer();
-	CreateThermalBuffer();
-	R_HdrLumFbo();
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0); // reset
+	Com_Printf("Initializing Frame Buffers...\n\n");
+// init fbo textures
+	i_hdrBase = R_CreateTexture("***i_hdrBase***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
+		0, vid.width, vid.height,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
+		GL_FLOAT, NULL);
+
+	i_hdrBaseInterim = R_CreateTexture("***i_hdrBaseInterim***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
+		0, vid.width, vid.height,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
+		GL_FLOAT, NULL);
+
+	i_depthStencil = R_CreateTexture("***i_depthStencil***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
+		0, vid.width, vid.height,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
+		GL_UNSIGNED_INT_24_8, NULL);
+
+	i_ldrBase = R_CreateTexture("***i_ldrBase***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
+		0, vid.width, vid.height,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR,
+		GL_FLOAT, NULL);
+
+	i_hdrInterim2D = R_CreateTexture("***i_hdrInterim2D***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA,
+		0, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_hdrLuminance = R_CreateTexture("***i_hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_glare = R_CreateTexture("***i_glare***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_thermal = R_CreateTexture("***i_thermal***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_bloomIn = R_CreateTexture("***i_bloomIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA, 0,
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_bloomInterim = R_CreateTexture("***i_bloomInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_bloomOut = R_CreateTexture("***i_bloomOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	i_linearDepth = R_CreateTexture("***i_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, vid.width, vid.height,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
+		GL_FLOAT, NULL);
+
+	i_ssaoDepth = R_CreateTexture("***i_ssaoDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED,
+		0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	for (int i = 0; i < 2; i++)
+		i_ssaoColor[i] = R_CreateTexture("***i_ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
+			0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+			GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+// init fbo buffers
+	Com_Printf("Load "S_COLOR_YELLOW "BASE FBO ");
+	rb.depthStencil = R_Create_RBO("***rbo_depth_stencil***", GL_DEPTH24_STENCIL8, vid.width, vid.height);
+	fb.hdrBase = R_Create_FBO("***hdrBase_fbo***");
+	R_AttachRBO(rb.depthStencil, GL_DEPTH_STENCIL_ATTACHMENT);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrBase, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, i_hdrBaseInterim, 0);
+	R_FB_AttachImage(GL_DEPTH_STENCIL_ATTACHMENT, i_depthStencil, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "FINAL FBO ");
+	fb.ldrBase = R_Create_FBO("***ldrBase_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_ldrBase, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "SCREEN 2D FBO ");
+	fb.hdr2D = R_Create_FBO("***hdr2D_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrInterim2D, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
+	fb.hdrLum = R_Create_FBO("***hdrLum_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrLuminance, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");
+	fb.glare = R_Create_FBO("***glare_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_glare, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
+	fb.thermal = R_Create_FBO("***thermal_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_thermal, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
+	fb.bloomCompute = R_Create_FBO("***comp_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_bloomIn, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, i_bloomInterim, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, i_bloomOut, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "LINEAR DEPTH FBO ");
+	fb.linearDepth = R_Create_FBO("***linearDepth_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_linearDepth, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "SSAO FBO ");
+	i_ssaoColorIndex = 0;
+	fb.ssao = R_Create_FBO("***ssao_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_ssaoColor[0], 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, i_ssaoColor[1], 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, i_ssaoDepth, 0);
+	R_FB_Check();
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	Com_Printf("\n");
-	R_PboInit();
+	R_InitPboBuffers();
 	Com_Printf("\n");
 }

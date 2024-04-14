@@ -540,7 +540,7 @@ void R_CaptureColorBuffer(){
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(i_hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 
@@ -816,7 +816,7 @@ image_t *GL_LoadWal(char *name)
 
 	if (!mt) {
 		Com_Printf("GL_FindImage: can't load %s\n", name);
-		return r_missingTexture;
+		return i_missingTexture;
 	}
 
 	width = LittleLong(mt->width);
@@ -983,7 +983,7 @@ void R_FreePic(char* name)
 ================
 GL_LoadPic
 
-This is also used as an entry point for the generated r_blackTexture1x1
+This is also used as an entry point for the generated i_blackTexture1x1
 ================
 */
 
@@ -1181,7 +1181,7 @@ struct image_s *R_RegisterSkin(char *name){
 	img = R_LoadDDS(gl, it_skin);
 
 	if (!img)
-		img = r_missingTexture;
+		img = i_missingTexture;
 	
 	return img;
 }
@@ -1197,7 +1197,7 @@ struct image_s *R_RegisterPlayerBump (char *name){
 	img = R_LoadDDS(gl, it_skin);
 
 	if(!img)
-		img = r_defBump;
+		img = i_defBump;
 
 	return img;
 }
@@ -1218,8 +1218,8 @@ void GL_FreeUnusedImages(void)
 
 	// image cache
 	//=========================
-	r_blackTexture1x1->registration_sequence = registration_sequence;
-	r_missingTexture->registration_sequence = registration_sequence;
+	i_blackTexture1x1->registration_sequence = registration_sequence;
+	i_missingTexture->registration_sequence = registration_sequence;
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
 		r_caustic[i]->registration_sequence = registration_sequence;
@@ -1269,14 +1269,14 @@ void GL_FreeUnusedImages(void)
 	for(i=0; i<MAX_GLOBAL_FILTERS; i++)
 			r_lightCubeMap[i]->registration_sequence = registration_sequence;
 
-	r_distort->registration_sequence = registration_sequence;
-	r_defBump->registration_sequence = registration_sequence;
-	r_conBump->registration_sequence = registration_sequence;
-	r_envTex->registration_sequence = registration_sequence;
-	r_whiteMap->registration_sequence = registration_sequence;
-	skinBump->registration_sequence = registration_sequence;
-	r_laser_normal->registration_sequence = registration_sequence;
-	r_lensDirt->registration_sequence = registration_sequence;
+	i_distort->registration_sequence = registration_sequence;
+	i_defBump->registration_sequence = registration_sequence;
+	i_conBump->registration_sequence = registration_sequence;
+	i_environment->registration_sequence = registration_sequence;
+	i_whiteMap->registration_sequence = registration_sequence;
+	i_skinBump->registration_sequence = registration_sequence;
+	i_laserNormal->registration_sequence = registration_sequence;
+	i_lensDirt->registration_sequence = registration_sequence;
 
 	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)

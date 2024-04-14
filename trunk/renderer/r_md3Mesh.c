@@ -264,7 +264,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			{
 				outMesh->albedo[j] = 
 				outMesh->normalmap[j] = outMesh->emissive[j] =
-				outMesh->envmap[j]	= outMesh->pbr[j] = outMesh->aomap[j] = r_missingTexture;
+				outMesh->envmap[j]	= outMesh->pbr[j] = outMesh->aomap[j] = i_missingTexture;
 				continue;
 			}
 
@@ -275,7 +275,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, ".dds");
 			outMesh->albedo[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->albedo[j])
-				outMesh->albedo[j] = r_missingTexture;
+				outMesh->albedo[j] = i_missingTexture;
 
 			// GlowMaps loading
 			strcpy(tex, name);
@@ -283,7 +283,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_light.dds");
 			outMesh->emissive[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->emissive[j])
-				outMesh->emissive[j] = r_blackTexture1x1;
+				outMesh->emissive[j] = i_blackTexture1x1;
 
 			// Normal maps loading
 			strcpy(tex, name);
@@ -292,7 +292,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			outMesh->normalmap[j] = R_LoadDDS(tex, it_normal);
 
 			if (!outMesh->normalmap[j])
-				outMesh->normalmap[j] = r_defBump;
+				outMesh->normalmap[j] = i_defBump;
 
 			// Roughness maps loading
 			strcpy(tex, name);
@@ -300,7 +300,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_rgh.dds");
 			outMesh->pbr[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->pbr[j])
-				outMesh->pbr[j] = r_blackTexture1x1;
+				outMesh->pbr[j] = i_blackTexture1x1;
 
 			// Env maps loading
 			strcpy(tex, name);
@@ -308,14 +308,14 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_env.dds");
 			outMesh->envmap[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->envmap[j])
-				outMesh->envmap[j] = r_blackTexture1x1;
+				outMesh->envmap[j] = i_blackTexture1x1;
 
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_ao.dds");
 			outMesh->aomap[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->aomap[j])
-				outMesh->aomap[j] = r_whiteMap;
+				outMesh->aomap[j] = i_whiteMap;
 		}
 
 		//
@@ -744,27 +744,27 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_DepthMask(1);
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!albedo || albedo == r_missingTexture){
+		if (!albedo || albedo == i_missingTexture){
 
 			if (currententity->skin){
 				albedo = currententity->skin;	// custom player skin
 			}
 		}
 		if (!albedo)
-			albedo = r_missingTexture;
+			albedo = i_missingTexture;
 
 		emissive = mesh->emissive[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!emissive)
-			emissive = r_blackTexture1x1;
+			emissive = i_blackTexture1x1;
 
 		normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = r_defBump;
+			normal = i_defBump;
 		
 		if (currententity->flags & RF_WEAPONMODEL && r_ssao->integer)
 			ao = mesh->pbr[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		else
-			ao = r_whiteMap;
+			ao = i_whiteMap;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
@@ -835,9 +835,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		GL_SetBindlessTexture(U_TMU0, albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, emissive->handle);
-		GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
+		GL_SetBindlessTexture(U_TMU2, i_environment->handle);
 		GL_SetBindlessTexture(U_TMU3, normal->handle);
-		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+		GL_SetBindlessTexture(U_TMU4, i_ssaoColor[i_ssaoColorIndex]->handle);
 		GL_SetBindlessTexture(U_TMU5, ao->handle);
 
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
@@ -905,18 +905,18 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				continue;
 
 			albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-			if (!albedo || albedo == r_missingTexture){
+			if (!albedo || albedo == i_missingTexture){
 
 				if (currententity->skin){
 					albedo = currententity->skin;	// custom player skin
 				}
 			}
 			if (!albedo)
-				albedo = r_missingTexture;
+				albedo = i_missingTexture;
 
 			normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 			if (!normal)
-				normal = r_defBump;
+				normal = i_defBump;
 
 			for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 				
@@ -986,8 +986,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
 			
 			GL_SetBindlessTexture(U_TMU0, albedo->handle);
-			GL_SetBindlessTexture(U_TMU1, r_blackTexture1x1->handle);
-			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
+			GL_SetBindlessTexture(U_TMU1, i_blackTexture1x1->handle);
+			GL_SetBindlessTexture(U_TMU2, i_environment->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
 
 			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
@@ -1210,22 +1210,22 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		c_litAliasTris += md3Hdr->meshes[i].num_tris;
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!albedo || albedo == r_missingTexture){
+		if (!albedo || albedo == i_missingTexture){
 
 			if (currententity->skin){
 				albedo = currententity->skin;	// custom player skin
 			}
 		}
 		if (!albedo)
-			albedo = r_missingTexture;
+			albedo = i_missingTexture;
 
 		normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = r_defBump;
+			normal = i_defBump;
 
 		pbr = mesh->pbr[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!pbr)
-			pbr = r_blackTexture1x1;
+			pbr = i_blackTexture1x1;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
@@ -1291,15 +1291,15 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 		GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU4, pbr->handle);
-		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
-		GL_SetBindlessTexture(U_TMU6, r_hdrScreenCopy->handle);
-		GL_SetBindlessTexture(U_TMU7, r_linearDepth->handle);
-		GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+		GL_SetBindlessTexture(U_TMU5, i_skinBump->handle);
+		GL_SetBindlessTexture(U_TMU6, i_hdrBaseInterim->handle);
+		GL_SetBindlessTexture(U_TMU7, i_linearDepth->handle);
+		GL_SetBindlessTexture(U_TMU8, i_ssaoColor[i_ssaoColorIndex]->handle);
 
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
-		if (pbr == r_blackTexture1x1)
+		if (pbr == i_blackTexture1x1)
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);

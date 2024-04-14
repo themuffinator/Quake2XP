@@ -720,6 +720,20 @@ extern PFNGLCLEARBUFFERIVPROC								qglClearBufferiv;
 extern PFNGLCLEARBUFFERFVPROC								qglClearBufferfv;
 extern PFNGLCLEARBUFFERFIPROC								qglClearBufferfi;
 
+extern PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC					qglNamedFramebufferDrawBuffers;
+extern PFNGLNAMEDFRAMEBUFFERDRAWBUFFERPROC					qglNamedFramebufferDrawBuffer;
+extern PFNGLNAMEDFRAMEBUFFERRENDERBUFFERPROC				qglNamedFramebufferRenderbuffer;
+extern PFNGLNAMEDRENDERBUFFERSTORAGEMULTISAMPLEPROC			qglNamedRenderbufferStorageMultisample;
+extern PFNGLNAMEDRENDERBUFFERSTORAGEPROC					qglNamedRenderbufferStorage;
+extern PFNGLCREATERENDERBUFFERSPROC							qglCreateRenderbuffers;
+extern PFNGLCREATEFRAMEBUFFERSPROC							qglCreateFramebuffers;
+extern PFNGLNAMEDFRAMEBUFFERTEXTUREPROC						qglNamedFramebufferTexture;
+extern PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC					qglCheckNamedFramebufferStatus;
+extern PFNGLBLITNAMEDFRAMEBUFFERPROC						qglBlitNamedFramebuffer;
+extern PFNGLCLEARNAMEDFRAMEBUFFERIVPROC						qglClearNamedFramebufferiv;
+extern PFNGLCLEARNAMEDFRAMEBUFFERFVPROC						qglClearNamedFramebufferfv;
+extern PFNGLCLEARNAMEDFRAMEBUFFERFIPROC						qglClearNamedFramebufferfi;
+
 extern PFNGLBINDVERTEXARRAYPROC								glBindVertexArray;
 extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;

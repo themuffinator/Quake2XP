@@ -189,41 +189,39 @@ typedef struct {
 	GLuint		id;
 	int			width;
 	int			height;
-} rbObject_t;
-
-typedef struct {
-	char		name[MAX_QPATH];
-	int			index; // todo cubamap faces, 3d textures layers
-	GLuint		id;
-} fbObject_t;
+} rbo_t;
 
 #define MAX_RBOS 64
-rbObject_t r_rbo[MAX_RBOS];
+rbo_t r_rbo[MAX_RBOS];
 int	r_numRbos;
 
 typedef struct {
-	rbObject_t *depthStencil;
-}rbo_t;
-rbo_t rbo;
+	rbo_t *depthStencil;
+}rb_t;
+rb_t rb;
+
+typedef struct {
+	char		name[MAX_QPATH];
+	GLuint		id;
+} fbo_t;
 
 #define MAX_FBOS 256
-fbObject_t	r_fbo[MAX_FBOS];
+fbo_t	r_fbo[MAX_FBOS];
 int	r_numFbos;
 
 typedef struct {
-	fbObject_t	*_screen;
-	fbObject_t	*_final;
-	fbObject_t	*_glare;
-	fbObject_t	*_thermal;
-	fbObject_t	*_ssao;
-	fbObject_t	*_linearDepth;
-	fbObject_t	*_tex2d;
-	fbObject_t	*_comp;
-	fbObject_t	*_hdrLum;
-}fbo_t;
-fbo_t fbo;
+	fbo_t *hdrBase;
+	fbo_t *ldrBase;
+	fbo_t *glare;
+	fbo_t *thermal;
+	fbo_t *ssao;
+	fbo_t *linearDepth;
+	fbo_t *hdr2D;
+	fbo_t *bloomCompute;
+	fbo_t *hdrLum;
+}fb_t;
+fb_t fb;
 
-void GL_BindFB(fbObject_t *fb);
 void R_ShotdownFBO(void);
 void R_FboListing_f(void);
 
@@ -274,6 +272,9 @@ image_t *r_bfg_expl[MAX_BFG_EXPL];
 image_t* r_lightCubeMap[MAX_FILTERS];
 #define		MAX_GLOBAL_FILTERS	38
 
+image_t *r_particleTexture[PT_MAX];
+image_t *r_decalTexture[DECAL_MAX];
+
 //#define		MAX_LUTS 8
 //image_t* r_3dLut[MAX_LUTS];
 //int			lutCount;
@@ -281,51 +282,40 @@ image_t* r_lightCubeMap[MAX_FILTERS];
 image_t r_textures[MAX_GLTEXTURES];
 int		r_numTextures;
 
-image_t *r_blackTexture1x1;
-image_t	*r_missingTexture;
-image_t *r_distort;
-image_t	*cinMap;
-
-image_t *r_particleTexture[PT_MAX];
-image_t *r_decalTexture[DECAL_MAX];
-image_t	*r_rail_normal;
-image_t	*r_laser_normal;
-
-image_t *menuFont, *consFont;
-image_t *r_DSTTex;
-
-image_t	*r_defBump;
-image_t	*r_envTex;
-image_t	*r_randomNormalTex;
-image_t	*r_conBump;
-
-image_t	*r_whiteMap;
-image_t *skinBump;
-
-image_t *r_miniDepthTex;
-image_t *r_ssaoColorTex[2];
-
-image_t	*r_hdrScreen;
-image_t	*r_hdrScreenCopy;
-image_t	*r_depthStencilTexture;
-image_t	*r_hdrScreenCopy2d;
-image_t	*r_finalScreen;
-image_t	*r_linearDepth;
-image_t *r_hdrLuminance; 
-
-image_t	*r_cinImage;
-image_t	*r_hdrGlareImage;
-image_t	*r_thermalImage;
-image_t	*r_lensDirt;
-image_t *r_levelSkyBox;
-image_t *r_compIn;
-image_t *r_compInterim;
-image_t *r_compOut;
+image_t *i_blackTexture1x1;
+image_t	*i_missingTexture;
+image_t *i_distort;
+image_t	*i_laserNormal;
+image_t *i_menuFont, *i_consFont;
+image_t *i_distort;
+image_t	*i_defBump;
+image_t	*i_environment;
+image_t	*i_ssaoRandomNormal;
+image_t	*i_conBump;
+image_t	*i_whiteMap;
+image_t *i_skinBump;
+image_t *i_ssaoDepth;
+image_t *i_ssaoColor[2];
+image_t	*i_hdrBase;
+image_t	*i_hdrBaseInterim;
+image_t	*i_depthStencil;
+image_t	*i_hdrInterim2D;
+image_t	*i_ldrBase;
+image_t	*i_linearDepth;
+image_t *i_hdrLuminance; 
+image_t	*i_cinematic;
+image_t	*i_glare;
+image_t	*i_thermal;
+image_t	*i_lensDirt;
+image_t *i_levelSkyBox;
+image_t *i_bloomIn;
+image_t *i_bloomInterim;
+image_t *i_bloomOut;
 
 int			i_stencilView;
 uint64_t	i_stencilView_handle;
 
-byte r_ssaoColorTexIndex;
+byte i_ssaoColorIndex;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
@@ -482,10 +472,6 @@ cvar_t	*r_particlesOverdraw;
 cvar_t	*r_colorTempK;
 cvar_t	*r_nsightDebug;
 
-float	hdrAverageLuminance;
-float	hdrMaxLuminance;
-float	hdrTime;
-float	hdrKey;
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
@@ -502,7 +488,7 @@ char *q_pretifymem(float value);
 
 void R_InitFboBuffers();
 
-void R_LinearDepth(void);
+void R_linearDepth(void);
 void R_DrawLightWorldRA(void);
 void GL_SetBindlessTexture(int loc, uint64_t handle);
 void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray);
@@ -731,12 +717,6 @@ qboolean R_CullOrigin (vec3_t origin);
 qboolean IsExtensionSupported(const char *name);
 
 int CalcMipmapCount(int w, int h);
-
-/*
-** GL extension emulation functions
-*/
-
-void	CreateSSAOBuffer();
 
 /*
 ** GL config stuff
@@ -1128,13 +1108,7 @@ void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
-
-
-
 void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
-
-
-
 
 typedef enum {
 	ATT_POSITION,
@@ -1145,8 +1119,7 @@ typedef enum {
 	ATT_TEX0,
 	ATT_TEX1,
 	ATT_TEX2,
-}
-glsl_attrib;
+}glsl_attrib;
 
 typedef enum {
 	ATTF_POS		= BIT(0),
@@ -1291,8 +1264,7 @@ typedef enum {
 	U_TMU8,
 	U_TMU9,
 	U_TMU10,
-}
-glsl_uniform;
+}glsl_uniform;
 
 void R_DrawFullScreenQuad();
 static GLenum	drawbuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };

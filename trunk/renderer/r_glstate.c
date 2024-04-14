@@ -583,11 +583,7 @@ void GL_SetDefaultState(void) {
 	lightUniforms.color[1] = -1.0;
 	lightUniforms.color[2] = -1.0;
 	lightUniforms.color[3] = -1.0;
-	
-	hdrAverageLuminance = 0;
-	hdrMaxLuminance = 0;
-	hdrTime = 0;
-	hdrKey = 0;
+
 
 //	gl_state.vaoId = 0;
 	gl_state.fboId = 0;

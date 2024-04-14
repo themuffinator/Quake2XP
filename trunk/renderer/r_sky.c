@@ -49,7 +49,7 @@ void R_DrawSkyBox(){
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 
-	GL_SetBindlessTexture(U_TMU0, r_levelSkyBox->handle);
+	GL_SetBindlessTexture(U_TMU0, i_levelSkyBox->handle);
 
 	GL_BindVAO(vao.sky);
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
@@ -160,11 +160,11 @@ void R_GenSkyCubeMap(char* name) {
 	strncpy(skyname, name, sizeof(skyname) - 1);
 	
 	Com_sprintf(ddsName, sizeof(ddsName), "env/dds/%s.dds", skyname);
-	r_levelSkyBox = R_LoadDDS(ddsName, it_sky);
+	i_levelSkyBox = R_LoadDDS(ddsName, it_sky);
 
-	if (!r_levelSkyBox)
-		r_levelSkyBox = R_MakeLegacySkyCubeMap(skyname);
+	if (!i_levelSkyBox)
+		i_levelSkyBox = R_MakeLegacySkyCubeMap(skyname);
 	
-	if (!r_levelSkyBox)
-		r_levelSkyBox = r_missingTexture;
+	if (!i_levelSkyBox)
+		i_levelSkyBox = i_missingTexture;
 }

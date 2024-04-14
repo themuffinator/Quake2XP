@@ -141,7 +141,7 @@ void CreateWaterWarpTexture(void) {
 			pix[x][y][3] = rand() % 48;
 		}
 
-	r_DSTTex = R_CreateTexture("***r_DSTTex***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, IF_MIPMAP, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint*)pix);
+	i_distort = R_CreateTexture("***i_distort***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, IF_MIPMAP, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint*)pix);
 
 }
 
@@ -323,10 +323,10 @@ void R_InitEngineTextures (void) {
 		}
 	}
 
-	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_normal, 32, 0);
-	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_wall, 32, 0);
-	r_blackTexture1x1 = GL_LoadPic ("***r_blackTexture1x1***",	(byte *)notex, 1, 1, it_wall, 32, 0);
-	r_missingTexture = GL_LoadPic("***r_missingTexture***", (byte*)mt, 16, 16, it_wall, 32, 0);
+	i_defBump	= GL_LoadPic ("***i_defBump***",	(byte *)bump, 1, 1, it_normal, 32, 0);
+	i_whiteMap	= GL_LoadPic ("***i_whiteMap***",	(byte *)white, 1, 1, it_wall, 32, 0);
+	i_blackTexture1x1 = GL_LoadPic ("***i_blackTexture1x1***",	(byte *)notex, 1, 1, it_wall, 32, 0);
+	i_missingTexture = GL_LoadPic("***i_missingTexture***", (byte*)mt, 16, 16, it_wall, 32, 0);
 
 
 	r_particleTexture[PT_DEFAULT] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
@@ -371,16 +371,16 @@ void R_InitEngineTextures (void) {
 		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.dds", i);
 		r_bfg_expl[i] = R_LoadDDS(name, it_part);
 		if (!r_bfg_expl[i])
-			r_bfg_expl[i] = r_missingTexture;
+			r_bfg_expl[i] = i_missingTexture;
 	}
 
-	r_laser_normal = R_LoadDDS("gfx/particles/laser_distort.dds", it_normal);
-	if (!r_laser_normal)
-		r_laser_normal = r_defBump;
+	i_laserNormal = R_LoadDDS("gfx/particles/lasei_distort.dds", it_normal);
+	if (!i_laserNormal)
+		i_laserNormal = i_defBump;
 
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particleTexture[i])
-		r_particleTexture[i] = r_missingTexture;
+		r_particleTexture[i] = i_missingTexture;
 
 	r_decalTexture[DECAL_RAIL]		= R_LoadDDS("gfx/decals/decal_railgun.dds", it_part);
 	r_decalTexture[DECAL_BULLET]	= R_LoadDDS("gfx/decals/decal_bullet2.dds", it_part);
@@ -401,7 +401,7 @@ void R_InitEngineTextures (void) {
 
 	for (i = 0; i < DECAL_MAX; i++) {
 		if (!r_decalTexture[i])
-			r_decalTexture[i] = r_missingTexture;
+			r_decalTexture[i] = i_missingTexture;
 	}
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
@@ -411,7 +411,7 @@ void R_InitEngineTextures (void) {
 			Com_sprintf (name, sizeof(name), "gfx/caust/caust_%i.dds", i);
 		r_caustic[i] = R_LoadDDS(name, it_wall);
 		if (!r_caustic[i])
-			r_caustic[i] = r_missingTexture;
+			r_caustic[i] = i_missingTexture;
 	}
 
 	for (i = 0; i < MAX_WATER_NORMALS; i++) {
@@ -421,21 +421,21 @@ void R_InitEngineTextures (void) {
 			Com_sprintf(name, sizeof(name), "gfx/water/0%iNormal.dds", i);
 		r_waterNormals[i] = R_LoadDDS(name, it_normal);
 		if (!r_waterNormals[i])
-			r_waterNormals[i] = r_defBump;
+			r_waterNormals[i] = i_defBump;
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/fly/fly%i.dds", i);
 		fly[i] = R_LoadDDS(name, it_wall);
 		if (!fly[i])
-			fly[i] = r_missingTexture;
+			fly[i] = i_missingTexture;
 	}
 
 	for (i = 0; i < MAX_FLAMEANIM; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/flame/fire_0%i.dds", i);
 		flameanim[i] = R_LoadDDS(name, it_wall);
 		if (!flameanim[i])
-			flameanim[i] = r_missingTexture;
+			flameanim[i] = i_missingTexture;
 	}
 
 
@@ -443,7 +443,7 @@ void R_InitEngineTextures (void) {
 		Com_sprintf (name, sizeof(name), "gfx/particles/bloodhit%i.dds", i);
 		r_blood[i] = R_LoadDDS(name, it_wall);
 		if (!r_blood[i])
-			r_blood[i] = r_missingTexture;
+			r_blood[i] = i_missingTexture;
 
 	}
 
@@ -451,7 +451,7 @@ void R_InitEngineTextures (void) {
 		Com_sprintf (name, sizeof(name), "gfx/particles/xbloodhit%i.dds", i);
 		r_xblood[i] = R_LoadDDS(name, it_wall);
 		if (!r_xblood[i])
-			r_xblood[i] = r_missingTexture;
+			r_xblood[i] = i_missingTexture;
 
 	}
 
@@ -459,53 +459,53 @@ void R_InitEngineTextures (void) {
 		Com_sprintf (name, sizeof(name), "gfx/explode/rlboom_%i.dds", i);
 		r_explode[i] = R_LoadDDS(name, it_part);
 		if (!r_explode[i])
-			r_explode[i] = r_missingTexture;
+			r_explode[i] = i_missingTexture;
 	}
 
 	for (i = 0; i < MAX_SHELLS; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/shells/shell%i.dds", i);
 		r_texshell[i] = R_LoadDDS(name, it_wall);
 		if (!r_texshell[i])
-			r_texshell[i] = r_missingTexture;
+			r_texshell[i] = i_missingTexture;
 	}
 
-	r_distort = R_LoadDDS("gfx/explosion/explosion.dds", it_normal);
-	if (!r_distort)
-		r_distort = r_defBump;
+	i_distort = R_LoadDDS("gfx/explosion/explosion.dds", it_normal);
+	if (!i_distort)
+		i_distort = i_defBump;
 
-	r_conBump = R_LoadDDS("pics/conback_bump.dds", it_normal);
-	if (!r_conBump)
-		r_conBump = r_defBump;
+	i_conBump = R_LoadDDS("pics/conback_bump.dds", it_normal);
+	if (!i_conBump)
+		i_conBump = i_defBump;
 
-	r_envTex = R_LoadDDS("gfx/tinfx.dds", it_wall);
-	if (!r_envTex)
-		r_envTex = r_missingTexture;
+	i_environment = R_LoadDDS("gfx/tinfx.dds", it_wall);
+	if (!i_environment)
+		i_environment = i_missingTexture;
 
-	r_randomNormalTex = R_LoadDDS("gfx/randomNormal.dds", it_screen);
-	if (!r_randomNormalTex)
-		r_randomNormalTex = r_defBump;
+	i_ssaoRandomNormal = R_LoadDDS("gfx/randomNormal.dds", it_screen);
+	if (!i_ssaoRandomNormal)
+		i_ssaoRandomNormal = i_defBump;
 	
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++) {
 		Com_sprintf(name, sizeof(name), "gfx/lights/lf_%i.dds", i+1);
 		r_lightCubeMap[i] = R_LoadDDS(name, it_wall);
 		if (!r_lightCubeMap[i])
-			r_lightCubeMap[i] = r_missingTexture;
+			r_lightCubeMap[i] = i_missingTexture;
 	}
 
-	skinBump = R_LoadDDS("gfx/skinBlend_bump.dds", it_normal);
-	if (!skinBump)
-		skinBump = r_defBump;
+	i_skinBump = R_LoadDDS("gfx/skinBlend_bump.dds", it_normal);
+	if (!i_skinBump)
+		i_skinBump = i_defBump;
 
 	CreateWaterWarpTexture();
 
 	//Load3dLut();
 
-	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
+	i_cinematic = R_CreateTexture("***i_cinematic***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
 								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, NULL);
 
-	r_lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_screen);
-	if (!r_lensDirt)
-		r_lensDirt = r_missingTexture;
+	i_lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_screen);
+	if (!i_lensDirt)
+		i_lensDirt = i_missingTexture;
 
 }
 
