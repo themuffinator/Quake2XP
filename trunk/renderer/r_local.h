@@ -284,7 +284,7 @@ int		r_numTextures;
 
 image_t *i_blackTexture1x1;
 image_t	*i_missingTexture;
-image_t *i_distort;
+image_t *i_watherDistort;
 image_t	*i_laserNormal;
 image_t *i_menuFont, *i_consFont;
 image_t *i_distort;
@@ -450,6 +450,8 @@ cvar_t	*r_glMinorVersion;
 cvar_t	*r_glMajorVersion;
 cvar_t	*r_glCoreProfile;
 cvar_t	*r_contextNoError;
+cvar_t	*r_useHdrDisplay;
+
 cvar_t	*r_debug;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
@@ -753,6 +755,7 @@ typedef struct {
 	int			stencilBits;
 	int			samples;
 	int			maxSamples;
+	qboolean	hdrDisplay;
 } glconfig_t;
 
 

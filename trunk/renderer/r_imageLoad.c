@@ -141,7 +141,7 @@ void CreateWaterWarpTexture(void) {
 			pix[x][y][3] = rand() % 48;
 		}
 
-	i_distort = R_CreateTexture("***i_distort***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, IF_MIPMAP, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint*)pix);
+	i_watherDistort = R_CreateTexture("***i_watherDistort***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, IF_MIPMAP, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_UNSIGNED_BYTE, (uint*)pix);
 
 }
 

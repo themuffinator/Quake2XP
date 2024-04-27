@@ -57,7 +57,7 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 			qglUniform1f(U_SCROLL, 0.0);
 
 		if (scrolling)
-			GL_SetBindlessTexture(U_TMU0, i_distort->handle);
+			GL_SetBindlessTexture(U_TMU0, i_watherDistort->handle);
 		else
 			GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
 

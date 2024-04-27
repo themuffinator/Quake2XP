@@ -378,7 +378,6 @@ void R_ToneMaping(void) {
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrLum->id);
-
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	glGenerateTextureMipmap(i_hdrLuminance->texnum);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
@@ -390,6 +389,7 @@ void R_ToneMaping(void) {
 
 	qglUniform1f(U_PARAM_FLOAT_1,	r_gamma->value);
 	qglUniform1f(U_PARAM_FLOAT_2,	r_hdrEVcomp->value);
+
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
 
@@ -399,9 +399,7 @@ void R_ToneMaping(void) {
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.ldrBase->id);
-
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
  // blit to screen

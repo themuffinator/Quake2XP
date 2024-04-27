@@ -1314,7 +1314,7 @@ void R_RegisterCvars(void)
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 
-	r_hdrEVcomp =						Cvar_Get("r_hdrEVcomp", "0.5", CVAR_ARCHIVE);
+	r_hdrEVcomp =						Cvar_Get("r_hdrEVcomp", "0.0", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
 	r_hdrBloom =						Cvar_Get("r_hdrBloom", "1", CVAR_ARCHIVE);
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
@@ -1403,13 +1403,15 @@ void R_RegisterCvars(void)
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	
 	r_filmicFx = 						Cvar_Get("r_filmicFx", "0", CVAR_ARCHIVE);
-	r_filmicFxVignetSize =			Cvar_Get("r_filmicFxVignetSize", "0.4", CVAR_ARCHIVE);
+	r_filmicFxVignetSize =				Cvar_Get("r_filmicFxVignetSize", "0.4", CVAR_ARCHIVE);
 
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);
 	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "6", CVAR_ARCHIVE);
 	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "1", CVAR_ARCHIVE);
 	r_contextNoError =					Cvar_Get("r_contextNoError", "0", CVAR_ARCHIVE);
+	r_useHdrDisplay =					Cvar_Get("r_useHdrDisplay", "0", CVAR_ARCHIVE);
+
 	r_debug =							Cvar_Get("r_debug", "0", 0);
 
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);

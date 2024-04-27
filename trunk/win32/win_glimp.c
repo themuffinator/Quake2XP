@@ -202,27 +202,30 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		if (glw_state.dpi > 96)
 			Com_Printf(S_COLOR_YELLOW"...force dpi awareness:"S_COLOR_GREEN" ok\n");
 	}
-
-	ShowWindow( glw_state.hWnd, SW_SHOW );
-	UpdateWindow( glw_state.hWnd );
+	
+	if (glw_state.hWnd) {
+		ShowWindow(glw_state.hWnd, SW_SHOW);
+		UpdateWindow(glw_state.hWnd);
+	}
 
 	// init all the gl stuff for the window
 	if (!GLW_InitDriver())
 	{
 		Com_Printf(S_COLOR_RED"...destroying window\n");
 		Com_Printf(S_COLOR_RED "VID_CreateWindow() - GLimp_InitGL failed\n");
-
-		ShowWindow(glw_state.hWnd, SW_HIDE);
-		DestroyWindow(glw_state.hWnd);
+		if (glw_state.hWnd) {
+			ShowWindow(glw_state.hWnd, SW_HIDE);
+			DestroyWindow(glw_state.hWnd);
+		}
 		glw_state.hWnd = NULL;
 
 		UnregisterClass(WINDOW_CLASS_NAME, glw_state.hInstance);
 		return qfalse;
 	}
-
-	SetForegroundWindow( glw_state.hWnd );
-	SetFocus( glw_state.hWnd );
-
+	if (glw_state.hWnd) {
+		SetForegroundWindow(glw_state.hWnd);
+		SetFocus(glw_state.hWnd);
+	}
 	// let the sound and input subsystems know about the new window
 	VID_NewWindow (width, height);
 
@@ -489,7 +492,9 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 			winScreenModes[count].hz = glw_state.desktopRefresh;
 			winScreenModes[count].num = count;
 			winScreenModes[count].description = malloc(sizeof(char) * 9);
-			sprintf(winScreenModes[count].description, "[Desktop]");
+			
+			if(winScreenModes[count].description)
+				sprintf(winScreenModes[count].description, "[Desktop]");
 		}
 		else {
 			if (w == dm.dmPelsWidth && h == dm.dmPelsHeight && hz == dm.dmDisplayFrequency)
@@ -500,7 +505,9 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 			winScreenModes[count].hz = dm.dmDisplayFrequency;
 			winScreenModes[count].num = count;
 			winScreenModes[count].description = malloc(sizeof(char) * 21);
-			sprintf(winScreenModes[count].description, "[%i %i][%i hz]", winScreenModes[count].w, winScreenModes[count].h, winScreenModes[count].hz);
+			
+			if(winScreenModes[count].description)
+				sprintf(winScreenModes[count].description, "[%i %i][%i hz]", winScreenModes[count].w, winScreenModes[count].h, winScreenModes[count].hz);
 			
 			w = dm.dmPelsWidth;
 			h = dm.dmPelsHeight;
@@ -969,6 +976,7 @@ static qboolean GLW_ChoosePixelFormat() {
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
 		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
 		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+	//	WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB, GL_TRUE,
 		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
 		WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
 		WGL_COLOR_BITS_ARB, 32,
@@ -986,10 +994,10 @@ static qboolean GLW_ChoosePixelFormat() {
 		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
 		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_FLOAT_ARB,
 		WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-		WGL_RED_BITS_ARB, 16,
-		WGL_GREEN_BITS_ARB, 16,
-		WGL_BLUE_BITS_ARB, 16,
-		WGL_ALPHA_BITS_ARB, 16,
+		WGL_RED_BITS_ARB, 10,
+		WGL_GREEN_BITS_ARB, 10,
+		WGL_BLUE_BITS_ARB, 10,
+		WGL_ALPHA_BITS_ARB, 2,
 		WGL_DEPTH_BITS_ARB, 24,
 		WGL_STENCIL_BITS_ARB, 8,
 		WGL_SAMPLE_BUFFERS_ARB, samples ? GL_TRUE : GL_FALSE,
@@ -998,8 +1006,9 @@ static qboolean GLW_ChoosePixelFormat() {
 	};
 
 	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
+	qboolean useHdrDisplay = gl_config.hdrDisplay && r_useHdrDisplay->integer;
 
-	if (!qwglChoosePixelFormatARB(glw_state.hDC, pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
+	if (!qwglChoosePixelFormatARB(glw_state.hDC, useHdrDisplay ? pAttribsHDR : pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
 		Com_Printf(S_COLOR_RED "...qwglChoosePixelFormatARB() failed.");
 		ReleaseDC(glw_state.hWnd, glw_state.hDC);
 		glw_state.hDC = NULL;
@@ -1019,11 +1028,12 @@ static qboolean GLW_ChoosePixelFormat() {
 
 	Com_Printf(S_COLOR_GREEN "ok\n");
 
-	gl_config.colorBits = 32;
-	gl_config.alphaBits = 8;
+	gl_config.colorBits = useHdrDisplay ? 48 : 32;
+	gl_config.alphaBits = useHdrDisplay ? 16 : 8;
 	gl_config.depthBits = 24;
 	gl_config.stencilBits = 8;
 	gl_config.samples = samples;
+
 
 	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n\n",
 		32, 24, 8, 8, gl_config.maxSamples, gl_config.samples);

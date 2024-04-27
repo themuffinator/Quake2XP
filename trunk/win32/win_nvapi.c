@@ -161,13 +161,80 @@ void NvApi_GetDisplayInfo() {
 	}
 }
 
+void NvApi_SetUhdDisplays(qboolean enableHDR){
+
+	NvAPI_Status ret = NVAPI_OK;
+	NvAPI_ShortString string;
+	NvU32 displayCount = 16, flags = 0;
+
+	Com_Printf("\n...Looking For HDR Displays\n");
+
+	for (NvU32 i = 0; i < physicalGpuCount; ++i){
+		NV_GPU_DISPLAYIDS displayArray[16] = {0};
+		displayArray[0].version = NV_GPU_DISPLAYIDS_VER;
+
+		ret = NvAPI_GPU_GetConnectedDisplayIds(hPhysicalGpu[i], displayArray, &displayCount, flags);
+
+		if (NVAPI_OK != ret){
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"NvAPI_GPU_GetConnectedDisplayIds() fail: %s\n", string);
+			continue;
+		}
+
+		for (NvU32 j = 0; j < displayCount; ++j){
+			NV_HDR_CAPABILITIES hdrCaps = {0};
+			hdrCaps.version = NV_HDR_CAPABILITIES_VER;
+
+			ret = NvAPI_Disp_GetHdrCapabilities(displayArray[j].displayId, &hdrCaps);
+
+			if (ret != NVAPI_OK){
+				NvAPI_GetErrorMessage(ret, string);
+				Com_Printf(S_COLOR_RED"NvAPI_Disp_GetHdrCapabilities() fail: %s\n", string);
+				continue;
+			}				
+				if (hdrCaps.isST2084EotfSupported){
+					NV_HDR_COLOR_DATA hdrColorData = {0};
+					memset(&hdrColorData, 0, sizeof(hdrColorData));
+
+					hdrColorData.version = NV_HDR_COLOR_DATA_VER;
+					hdrColorData.cmd = NV_HDR_CMD_SET;
+					hdrColorData.static_metadata_descriptor_id = NV_STATIC_METADATA_TYPE_1;
+					hdrColorData.hdrMode = enableHDR ? NV_HDR_MODE_UHDBD : NV_HDR_MODE_OFF;
+
+					if(enableHDR)
+						Com_Printf(">%d:" S_COLOR_GREEN " Hdr Mode Enabled.\n", j);
+					else
+						Com_Printf(">%d:" S_COLOR_YELLOW " Hdr Mode Disabled.\n", j);
+
+					ret = NvAPI_Disp_HdrColorControl(displayArray[j].displayId, &hdrColorData);
+
+					if (ret != NVAPI_OK){
+						NvAPI_GetErrorMessage(ret, string);
+						Com_Printf(S_COLOR_RED"NvAPI_Disp_HdrColorControl() fail: %s\n", string);
+						continue;
+					}
+					if(enableHDR)
+						gl_config.hdrDisplay = qtrue;
+				}
+				else {
+					Com_Printf(">%d: " S_COLOR_MAGENTA "Don't Supported Hdr.\n", j);
+					Cvar_Set("r_useHdrDisplay", "0");
+					gl_config.hdrDisplay = qfalse;
+				}
+
+		}
+	}
+
+}
+
 void GLimp_InitNvApi() {
 
 	NvAPI_Status ret = NVAPI_OK;
 	NvAPI_ShortString ver, string;
 
 	nvApiInit = qfalse;
-	
+	gl_config.hdrDisplay = qfalse;
+
 	Com_Printf("\n==================================\n\n");
 
 	Com_Printf("" S_COLOR_YELLOW "...Initializing NVIDIA API\n\n");
@@ -197,6 +264,8 @@ void GLimp_InitNvApi() {
 
 	nvApiInit = qtrue;
 	NvApi_GetDisplayInfo();
+
+	NvApi_SetUhdDisplays(r_useHdrDisplay->integer);
 	Com_Printf("\n==================================\n\n");
 }
 
