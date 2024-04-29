@@ -98,7 +98,6 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 		image->numMips = CalcMipmapCount(width, height);
 		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
 		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips-1);
-		glGenerateTextureMipmap(image->texnum);
 	}
 	else
 		image->numMips = 1;
@@ -121,6 +120,9 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	glMakeTextureHandleResidentARB(image->handle);
 
 	qglObjectLabel(GL_TEXTURE, image->texnum, strlen(image->name), image->name);
+	
+	if (image->flags & IF_MIPMAP)
+		glGenerateTextureMipmap(image->texnum);
 
 	if(clearData)
 		free(pixdata);
@@ -128,91 +130,6 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 	return image;
 
 }
-
-void CreateWaterWarpTexture(void) {
-	uchar pix[16][16][4];
-	int	 x, y;
-
-	for (x = 0; x < 16; x++)
-		for (y = 0; y < 16; y++) {
-			pix[x][y][0] = rand() % 255;
-			pix[x][y][1] = rand() % 255;
-			pix[x][y][2] = rand() % 48;
-			pix[x][y][3] = rand() % 48;
-		}
-
-	i_watherDistort = R_CreateTexture("***i_watherDistort***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, IF_MIPMAP, 16, 16, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_UNSIGNED_BYTE, (uint*)pix);
-
-}
-
-/*
-void Load3dLut(void) {
-	int		i, j, len;
-	char	name[MAX_OSPATH];
-	char	checkname[MAX_OSPATH];
-	char	*buf;
-	image_t	*image;
-	
-	Com_Printf("\n======" S_COLOR_YELLOW " Load Color Lookup Tables " S_COLOR_WHITE "=====\n\n");
-	lutCount = 0;
-	for (j = 0; j < MAX_LUTS; j++) {
-
-		Com_sprintf(name, sizeof(name), "***lut_%i***", j);
-
-		// find a free image
-		for (i = 0, image = gltextures; i < numTextures; i++, image++) {
-			if (!image->texnum)
-				break;
-		}
-		if (i == numTextures) {
-			if (numTextures == MAX_GLTEXTURES)
-				VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-			numTextures++;
-		}
-		image = &gltextures[i];
-
-		strcpy(image->name, name);
-
-		image->width = vid.width;
-		image->height = vid.height;
-		image->upload_width = vid.width;
-		image->upload_height = vid.height;
-		image->type = it_pic;
-		image->hash = Com_HashKey(image->name);
-
-		r_3dLut[j] = image;
-
-		Com_sprintf(checkname, sizeof(checkname), "gfx/lut/lut_%i.lut", j);
-		len = FS_LoadFile(checkname, (void **)&buf);
-		if (len < 0)
-			continue;
-		
-		int LUTsize = buf[0];
-		r_3dLut[j]->lutSize = (float)LUTsize;
-		char *title = buf + sizeof(LUTsize) + (LUTsize * LUTsize * LUTsize) * sizeof(vec3_t);
-		if (title)
-			strcpy(r_3dLut[j]->lutName, title);
-
-		Com_Printf("Load LUT:" S_COLOR_GREEN " %s\n", title);
-
-		glCreateTextures(GL_TEXTURE_3D, 1, &r_3dLut[j]->texnum);
-
-		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_WRAP_R, GL_REPEAT);
-		glTextureStorage3D(r_3dLut[j]->texnum, 1, GL_RGB16F, LUTsize, LUTsize, LUTsize);
-		glTextureSubImage3D(r_3dLut[j]->texnum, 0, 0, 0, 0, LUTsize, LUTsize, LUTsize, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
-		image->handle = glGetTextureHandleARB(image->texnum);
-		glMakeTextureHandleResidentARB(image->handle);
-
-		FS_FreeFile(buf);
-		lutCount++;
-	}
-	Com_Printf("\n=====================================\n\n");
-}
-*/
 
 //photoshop helper
 /*
@@ -284,6 +201,7 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 		}
 	}
 }
+
 byte	missingTexture[16][16] =
 {
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -307,10 +225,19 @@ byte	missingTexture[16][16] =
 void R_InitEngineTextures (void) {
 	int		i, x, y;
 	char	name[MAX_QPATH];
-	static byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
-	static byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
-	static byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
-	static byte mt[16][16][4];
+	uint8_t	bump[1][1][4]	= { 0x80,	0x80,	0xff,	0x10 };
+	uint8_t	black[1][1][4]	= { 0x0,	0x0,	0x0,	0x0 };
+	uint8_t	white[1][1][4]	= { 0xff,	0xff,	0xff,	0xff };
+	uint8_t mt[16][16][4];
+	uint8_t wd[16][16][4];
+
+	for (x = 0; x < 16; x++)
+		for (y = 0; y < 16; y++) {
+			wd[x][y][0] = rand() % 255;
+			wd[x][y][1] = rand() % 255;
+			wd[x][y][2] = rand() % 48;
+			wd[x][y][3] = rand() % 48;
+		}
 
 	for (x = 0; x < 16; x++)
 	{
@@ -323,11 +250,23 @@ void R_InitEngineTextures (void) {
 		}
 	}
 
-	i_defBump	= GL_LoadPic ("***i_defBump***",	(byte *)bump, 1, 1, it_normal, 32, 0);
-	i_whiteMap	= GL_LoadPic ("***i_whiteMap***",	(byte *)white, 1, 1, it_wall, 32, 0);
-	i_blackTexture1x1 = GL_LoadPic ("***i_blackTexture1x1***",	(byte *)notex, 1, 1, it_wall, 32, 0);
-	i_missingTexture = GL_LoadPic("***i_missingTexture***", (byte*)mt, 16, 16, it_wall, 32, 0);
+	i_defBump = R_CreateTexture("***i_defBump***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
+	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint*)bump);
 
+	i_whiteMap	= R_CreateTexture("***i_whiteMap***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
+	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint *)white);
+
+	i_blackTexture1x1 = R_CreateTexture("***i_blackTexture1x1***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
+	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint *)black);
+
+	i_missingTexture = R_CreateTexture("***i_missingTexture***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16,
+	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint *)mt);
+
+	i_waterDistort = R_CreateTexture("***i_waterDistort***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16, 
+	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint *)wd);
+
+	i_cinematic = R_CreateTexture("***i_cinematic***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
+	GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, NULL);
 
 	r_particleTexture[PT_DEFAULT] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
 	r_particleTexture[PT_BUBBLE] = R_LoadDDS("gfx/particles/bubble.dds", it_part);
@@ -495,13 +434,6 @@ void R_InitEngineTextures (void) {
 	i_skinBump = R_LoadDDS("gfx/skinBlend_bump.dds", it_normal);
 	if (!i_skinBump)
 		i_skinBump = i_defBump;
-
-	CreateWaterWarpTexture();
-
-	//Load3dLut();
-
-	i_cinematic = R_CreateTexture("***i_cinematic***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
-								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, NULL);
 
 	i_lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_screen);
 	if (!i_lensDirt)

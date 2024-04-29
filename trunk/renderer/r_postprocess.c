@@ -329,7 +329,7 @@ void R_FilmFx(void) {
 	// setup program
 	GL_BindProgram (filmicFxProgram);
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdr2D->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase2D->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
@@ -357,7 +357,7 @@ void R_FXAA(void) {
 	GL_BindProgram(fxaaProgram);
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdr2D->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase2D->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
@@ -376,22 +376,37 @@ void R_ToneMaping(void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
+	float adaptTime = 0.5;
+	float curTime = Sys_Milliseconds() / 1000.0;	
+	static int hdrTime, prevLumTime;
+
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrLum->id);
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	glGenerateTextureMipmap(i_hdrLuminance->texnum);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
+	
+	if (curTime - hdrTime > adaptTime)
+		hdrTime = curTime;
 
 	GL_BindProgram(tonemapProgram);
 
 	GL_SetBindlessTexture(U_TMU0,	i_hdrBaseInterim->handle);
 	GL_SetBindlessTexture(U_TMU1,	i_hdrLuminance->handle);
+	GL_SetBindlessTexture(U_TMU2,	i_prevHdrLuminance->handle);
 
 	qglUniform1f(U_PARAM_FLOAT_1,	r_gamma->value);
 	qglUniform1f(U_PARAM_FLOAT_2,	r_hdrEVcomp->value);
+	qglUniform1f(U_PARAM_FLOAT_3,	(curTime - hdrTime) / adaptTime);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
+
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrLum->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.prevHdrLum->id);
+	qglBlitFramebuffer(0, 0, 128, 128, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	glGenerateTextureMipmap(i_prevHdrLuminance->texnum);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
 
 	R_FXAA(); // apply fxaa AFTER tonemap!!!!
 
@@ -598,7 +613,7 @@ void R_FixFov(void) {
 	GL_BindProgram(fixFovProgram);
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdr2D->id);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase2D->id);
 
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 

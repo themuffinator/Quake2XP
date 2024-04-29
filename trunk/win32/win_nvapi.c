@@ -218,7 +218,6 @@ void NvApi_SetUhdDisplays(qboolean enableHDR){
 				}
 				else {
 					Com_Printf(">%d: " S_COLOR_MAGENTA "Don't Supported Hdr.\n", j);
-					Cvar_Set("r_useHdrDisplay", "0");
 					gl_config.hdrDisplay = qfalse;
 				}
 

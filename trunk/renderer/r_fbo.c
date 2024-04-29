@@ -298,6 +298,9 @@ void R_InitFboBuffers() {
 
 	i_hdrLuminance = R_CreateTexture("***i_hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
 		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	
+	i_prevHdrLuminance = R_CreateTexture("***i_prevHdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	i_glare = R_CreateTexture("***i_glare***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
@@ -343,14 +346,19 @@ void R_InitFboBuffers() {
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_ldrBase, 0);
 	R_FB_Check();
 
-	Com_Printf("Load "S_COLOR_YELLOW "SCREEN 2D FBO ");
-	fb.hdr2D = R_Create_FBO("***hdr2D_fbo***");
+	Com_Printf("Load "S_COLOR_YELLOW "BASE 2D FBO ");
+	fb.hdrBase2D = R_Create_FBO("***hdrBase2D_fbo***");
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrInterim2D, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
 	fb.hdrLum = R_Create_FBO("***hdrLum_fbo***");
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrLuminance, 0);
+	R_FB_Check();
+	
+	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE 2 FBO ");
+	fb.prevHdrLum = R_Create_FBO("***prevHdrLum_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_prevHdrLuminance, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");

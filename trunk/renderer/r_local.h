@@ -212,13 +212,14 @@ int	r_numFbos;
 typedef struct {
 	fbo_t *hdrBase;
 	fbo_t *ldrBase;
+	fbo_t *hdrBase2D;
 	fbo_t *glare;
 	fbo_t *thermal;
 	fbo_t *ssao;
 	fbo_t *linearDepth;
-	fbo_t *hdr2D;
 	fbo_t *bloomCompute;
 	fbo_t *hdrLum;
+	fbo_t *prevHdrLum;
 }fb_t;
 fb_t fb;
 
@@ -284,7 +285,7 @@ int		r_numTextures;
 
 image_t *i_blackTexture1x1;
 image_t	*i_missingTexture;
-image_t *i_watherDistort;
+image_t *i_waterDistort;
 image_t	*i_laserNormal;
 image_t *i_menuFont, *i_consFont;
 image_t *i_distort;
@@ -303,6 +304,7 @@ image_t	*i_hdrInterim2D;
 image_t	*i_ldrBase;
 image_t	*i_linearDepth;
 image_t *i_hdrLuminance; 
+image_t *i_prevHdrLuminance;
 image_t	*i_cinematic;
 image_t	*i_glare;
 image_t	*i_thermal;
