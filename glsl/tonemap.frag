@@ -1,9 +1,11 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 layout (bindless_sampler, location = U_TMU1) uniform sampler2D  	u_LumTex;
+layout (bindless_sampler, location = U_TMU2) uniform sampler2D  	u_prevLumTex;
 
 layout(location = U_PARAM_FLOAT_1)	uniform float	u_gamma;	
 layout(location = U_PARAM_FLOAT_2)	uniform float	u_EVcomp;
+layout(location = U_PARAM_FLOAT_3)	uniform float	u_backLerp;
 
 #include pbCamera.inc   //!#include "include/pbCamera.inc"
 
@@ -41,32 +43,39 @@ vec3 ACESFitted(vec3 color){
 
     return color;
 }
+
 float A = 0.15;
 float B = 0.50;
 float C = 0.10;
 float D = 0.20;
 float E = 0.02;
 float F = 0.30;
-float W = 1.0;
+float W = 0.88;
 
 vec3 uncharted2Tonemap(vec3 x){
    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
-//#define TMO_UNCHARTED
+#define UNCHARTED
 //#define HDR_OUTPUT
 
 void main(){
 	
-    vec3 hdrColor   = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
-    vec3 luminance  = exp2(textureLod(u_LumTex, vec2(0.5), 8).rgb);
-    float avgLum    = log2(dot(vec3(0.2125, 0.7154, 0.0721), luminance));
+    vec3    hdrColor    = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
 
-    float targetEV      = ComputeTargetEV(avgLum);
-    targetEV            = targetEV + u_EVcomp;
+    vec3    currLum     = exp2(textureLod(u_LumTex, vec2(0.5), 8).rgb);
+    float   avgLum      = log2(dot(vec3(0.2125, 0.7154, 0.0721), currLum));
+
+    vec3    prevLum     = exp2(textureLod(u_prevLumTex, vec2(0.5), 8).rgb);
+    float   avgPrevLum  = log2(dot(vec3(0.2125, 0.7154, 0.0721), prevLum));
+    float   lum         = mix(avgLum, avgPrevLum, u_backLerp);
+
+    float targetEV      = ComputeTargetEV(lum);
     float aperture      = 4.0;
     float focalLength   = 70.0;
     float shutterSpeed  = 1.0 / (focalLength * 1000.0);
+    
+    targetEV            = targetEV + u_EVcomp;
 
     // Compute the resulting ISO if we left both shutter and aperture here
     float iso = clamp(ComputeISO(aperture, shutterSpeed, targetEV), MIN_ISO, MAX_ISO);
@@ -79,25 +88,24 @@ void main(){
 
     float exposure = getStandardOutputBasedExposure(aperture, shutterSpeed, iso, 0.18f);
 
-#ifdef TMO_UNCHARTED
-	vec3 curr           = uncharted2Tonemap( exposure * hdrColor.rgb );
-	vec3 whiteScale     = 1.0 / uncharted2Tonemap( vec3(W - u_EVcomp) );
-	#ifdef HDR_OUTPUT
-    fragData.rgb        = curr * whiteScale;
+#ifdef UNCHARTED
+	vec3 currColor      = uncharted2Tonemap( exposure * hdrColor.rgb );
+	vec3 whiteScale     = 1.0 / uncharted2Tonemap( vec3(W - lum) );
+	
+    #ifdef HDR_OUTPUT
+        fragData.rgb        = currColor * whiteScale;
     #else
-    hdrColor.rgb        = curr * whiteScale;
-    float gamma         = 1.0 / u_gamma;
-    fragData.rgb        = pow( hdrColor.rgb, vec3(gamma) ); //vid menu controled
+        hdrColor.rgb        = currColor * whiteScale;
+        fragData.rgb        = pow( hdrColor.rgb, vec3(1.0 / u_gamma) ); //vid menu controled
     #endif
 #else
     #ifdef HDR_OUTPUT
-    fragData.rgb        = ACESFitted( hdrColor.rgb * exposure);
+        fragData.rgb        = ACESFitted( hdrColor.rgb * exposure);
     #else
-    hdrColor.rgb        = ACESFitted( hdrColor.rgb * exposure);
-	fragData.rgb        = pow( hdrColor.rgb, vec3(1.0 / 2.2) ); // force 2.2 gamma
+        hdrColor.rgb        = ACESFitted( hdrColor.rgb * exposure);
+	    fragData.rgb        = pow( hdrColor.rgb, vec3(1.0 / 2.2) ); // force 2.2 gamma
 #endif
 #endif
     // store luma for fxaa
-    float lum = dot(vec3(0.2125, 0.7154, 0.0721), fragData.rgb);
-    fragData.a = lum;
+    fragData.a = dot(vec3(0.2125, 0.7154, 0.0721), fragData.rgb);
 }
