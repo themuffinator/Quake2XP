@@ -344,6 +344,9 @@
     <ClCompile Include="renderer\r_vertexObjects.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="win32\nvapi\NvApiDriverSettings.c">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\qgl.h">
@@ -522,6 +525,27 @@
     </ClInclude>
     <ClInclude Include="renderer\khrplatform.h">
       <Filter>Source Files\Renderer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_d3dext.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_sli.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_stereo.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\NvApiDriverSettings.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvHLSLExtns.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvHLSLExtnsInternal.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvShaderExtnEnums.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

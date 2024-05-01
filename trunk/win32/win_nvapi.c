@@ -226,6 +226,48 @@ void NvApi_SetUhdDisplays(qboolean enableHDR){
 
 }
 
+typedef enum _NV_RAM_TYPE
+{
+	NV_RAM_TYPE_UNKNOWN = 0,
+	NV_RAM_TYPE_SDRAM,
+	NV_RAM_TYPE_DDR1,
+	NV_RAM_TYPE_DDR2,
+	NV_RAM_TYPE_GDDR2,
+	NV_RAM_TYPE_GDDR3,
+	NV_RAM_TYPE_GDDR4,
+	NV_RAM_TYPE_DDR3,
+	NV_RAM_TYPE_GDDR5,
+	NV_RAM_TYPE_LPDDR2,
+	NV_RAM_TYPE_GDDR5X,
+	NV_RAM_TYPE_GDDR6X = 15
+}NV_RAM_TYPE;
+
+typedef enum _NV_RAM_MAKER
+{
+	NV_RAM_MAKER_NONE,
+	NV_RAM_MAKER_SAMSUNG,
+	NV_RAM_MAKER_QIMONDA,
+	NV_RAM_MAKER_ELPIDA,
+	NV_RAM_MAKER_ETRON,
+	NV_RAM_MAKER_NANYA,
+	NV_RAM_MAKER_HYNIX,
+	NV_RAM_MAKER_MOSEL,
+	NV_RAM_MAKER_WINBOND,
+	NV_RAM_MAKER_ELITE,
+	NV_RAM_MAKER_MICRON
+}NV_RAM_MAKER;
+
+HINSTANCE nv_hDLL;
+
+typedef void *(*NvAPI_QueryInterface_t)(unsigned int offset);
+typedef int		(*NvAPI_GPU_GetRamType_t)(int *handle, NV_RAM_TYPE *pRamType);
+typedef int		(*NvAPI_GPU_GetRamMaker_t)(int *handle, NV_RAM_MAKER *pRamMaker);
+
+NvAPI_QueryInterface_t	NvAPI_GPU_QueryInterface = NULL;
+NvAPI_GPU_GetRamType_t	NvAPI_GPU_GetRamType = NULL;
+NvAPI_GPU_GetRamMaker_t NvAPI_GPU_GetMemMarker = NULL;
+
+
 void GLimp_InitNvApi() {
 
 	NvAPI_Status ret = NVAPI_OK;
@@ -241,6 +283,13 @@ void GLimp_InitNvApi() {
 	// init nvapi
 	ret = NvAPI_Initialize();
 
+	nv_hDLL = LoadLibrary("nvapi.dll");
+
+	if (nv_hDLL) {
+		NvAPI_GPU_QueryInterface	= (void*)GetProcAddress(nv_hDLL, "nvapi_QueryInterface");
+		NvAPI_GPU_GetRamType		= NvAPI_GPU_QueryInterface(0x57F7CAACUL);
+		NvAPI_GPU_GetMemMarker		= NvAPI_GPU_QueryInterface(0x42AEA16AUL);
+	}
 	if (ret != NVAPI_OK) { // check for nvapi error
 		Com_Printf(S_COLOR_MAGENTA"...not supported\n");
 		Com_Printf("\n==================================\n");
@@ -277,7 +326,9 @@ extern qboolean adlInit;
 
 void R_GpuInfo_f(void) {
 
-	NvAPI_Status		ret = NVAPI_OK;
+	NvAPI_Status		ret			= NVAPI_OK;
+	NV_RAM_TYPE			memtype		= NV_RAM_TYPE_UNKNOWN;
+	NV_RAM_MAKER		memmarker	= NV_RAM_MAKER_NONE;
 	NvAPI_ShortString	string;
 
 	if (adlInit) {
@@ -291,31 +342,142 @@ void R_GpuInfo_f(void) {
 	}
 
 	Com_Printf("\n==========================================================\n");
-	ret = NvAPI_GPU_GetFullName(hPhysicalGpu[0], string);
-
-	if (ret != NVAPI_OK) {
-		NvAPI_GetErrorMessage(ret, string);
-		Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetFullName() fail: %\n", string);
-	}
-	else
-		Com_Printf("...Get GPU statistic from: " S_COLOR_GREEN "%s\n", string);
-
-	ret = NvAPI_GPU_GetVbiosVersionString(hPhysicalGpu[0], string);
-	if (ret != NVAPI_OK) {
-		NvAPI_GetErrorMessage(ret, string);
-		Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetVbiosVersionString() fail: %\n", string);
-	}
-	else
-		Com_Printf("...Bios Version: " S_COLOR_GREEN "%s\n", string);
-	
 	for (int i = 0; i < physicalGpuCount; i++) {
 
-		Com_Printf("\n   GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ":\n", i);
-				
+		Com_Printf("" S_COLOR_YELLOW ">" S_COLOR_WHITE "GPU" S_COLOR_GREEN "%i" S_COLOR_WHITE ":", i);
+		ret = NvAPI_GPU_GetFullName(hPhysicalGpu[i], string);
+
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetFullName() fail: %\n", string);
+		}
+		else
+			Com_Printf(" " S_COLOR_GREEN "%s\n\n", string);
+
+		ret = NvAPI_GPU_GetVbiosVersionString(hPhysicalGpu[i], string);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetVbiosVersionString() fail: %\n", string);
+		}
+		else
+			Com_Printf("...Bios Version: " S_COLOR_GREEN "%s\n", string);
+
+		int total = 0;
+		float used = 0.0;
+		NV_DISPLAY_DRIVER_MEMORY_INFO gpuMemoryStatus;
+		gpuMemoryStatus.version = MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V2, 2);
+		ret = NvAPI_GPU_GetMemoryInfo(hPhysicalGpu[i], (NV_DISPLAY_DRIVER_MEMORY_INFO *)&gpuMemoryStatus);
+		if (NVAPI_OK != ret) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED "NvAPI_GPU_GetMemoryInfo() fail: %s\n", string);
+		}
+		else {
+			used = (float)gpuMemoryStatus.dedicatedVideoMemory - (float)gpuMemoryStatus.curAvailableDedicatedVideoMemory;
+			total = gpuMemoryStatus.dedicatedVideoMemory;
+
+			total /= (1024 * 1024);
+			used /= (1024 * 1024);
+		}
+
+		ret = NvAPI_GPU_GetRamType(hPhysicalGpu[i], &memtype);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetRamType() fail: %\n", string);
+			Com_Printf("...Onboard Memory: " S_COLOR_GREEN " %i" S_COLOR_WHITE " Gb\n", total);
+			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
+		}
+		else {
+			Com_Printf("...Onboard Memory: " S_COLOR_GREEN " %i" S_COLOR_WHITE " Gb ", total);
+			switch (memtype) {
+			case NV_RAM_TYPE_SDRAM:
+				Com_Printf(S_COLOR_GREEN"SDRAM ");
+				break;
+			case NV_RAM_TYPE_DDR1:
+				Com_Printf(S_COLOR_GREEN"DDR1 ");
+				break;
+			case NV_RAM_TYPE_DDR2:
+				Com_Printf(S_COLOR_GREEN"DDR2 ");
+				break;
+			case NV_RAM_TYPE_GDDR2:
+				Com_Printf(S_COLOR_GREEN"GDDR2 ");
+				break;
+			case NV_RAM_TYPE_GDDR3:
+				Com_Printf(S_COLOR_GREEN"GDDR3 ");
+				break;
+			case NV_RAM_TYPE_GDDR4:
+				Com_Printf(S_COLOR_GREEN"GDDR4 ");
+				break;
+			case NV_RAM_TYPE_DDR3:
+				Com_Printf(S_COLOR_GREEN"DDR3 ");
+				break;
+			case NV_RAM_TYPE_GDDR5:
+				Com_Printf(S_COLOR_GREEN"GDDR5 ");
+				break;
+			case NV_RAM_TYPE_LPDDR2:
+				Com_Printf(S_COLOR_GREEN"LPDDR2 ");
+				break;
+			case NV_RAM_TYPE_GDDR5X:
+				Com_Printf(S_COLOR_GREEN"GDDR5X ");
+				break;
+			case NV_RAM_TYPE_GDDR6X:
+				Com_Printf(S_COLOR_GREEN"GDDR6X ");
+				break;
+			case NV_RAM_TYPE_UNKNOWN:
+			default:
+				Com_Printf(S_COLOR_GREEN"Unknown %i ", memtype);
+				break;
+			}			
+		}
+		ret = NvAPI_GPU_GetMemMarker(hPhysicalGpu[i], &memmarker);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetMemMarker() fail: %\n", string);
+		}
+		else {
+			switch (memmarker) {
+			case NV_RAM_MAKER_SAMSUNG:
+				Com_Printf("(Samsung)\n");
+				break;
+			case NV_RAM_MAKER_QIMONDA:
+				Com_Printf("(Qimonda)\n");
+				break;
+			case NV_RAM_MAKER_ELPIDA:
+				Com_Printf("(Elpida)\n");
+				break;
+			case NV_RAM_MAKER_ETRON:
+				Com_Printf("(Etron)\n");
+				break;
+			case NV_RAM_MAKER_NANYA:
+				Com_Printf("(Nanya)\n");
+				break;
+			case NV_RAM_MAKER_HYNIX:
+				Com_Printf("(Hynix)\n");
+				break;
+			case NV_RAM_MAKER_MOSEL:
+				Com_Printf("(Mosel)\n");
+				break;
+			case NV_RAM_MAKER_WINBOND:
+				Com_Printf("(Winbond)\n");
+				break;
+			case NV_RAM_MAKER_ELITE:
+				Com_Printf("(Elite)\n");
+				break;
+			case NV_RAM_MAKER_MICRON:
+				Com_Printf("(Micron)\n");
+				break;
+			default:
+				Com_Printf("(%i)\n", memmarker);
+				break;
+			}
+			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
+		}
+
 		// get gpu temperature
 		NV_GPU_THERMAL_SETTINGS	thermal;
 
 		thermal.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+		thermal.count = NVAPI_MAX_THERMAL_SENSORS_PER_GPU;
+
 		ret = NvAPI_GPU_GetThermalSettings(hPhysicalGpu[i], NVAPI_THERMAL_TARGET_ALL, &thermal);
 		if (ret != NVAPI_OK) {
 			NvAPI_GetErrorMessage(ret, string);
@@ -327,7 +489,6 @@ void R_GpuInfo_f(void) {
 
 				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_GPU)
 					Com_Printf("...GPU temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius (%s)\n", thermal.sensor[j].currentTemp, GLimp_NvApi_GetThermalController(thermal.sensor[i].controller));
-				
 				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_MEMORY)
 					Com_Printf("...VRAM temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " Celsius \n", thermal.sensor[j].currentTemp);
 				if (thermal.sensor[j].target == NVAPI_THERMAL_TARGET_POWER_SUPPLY)
@@ -338,14 +499,14 @@ void R_GpuInfo_f(void) {
 
 		}
 		// get fans speed
-		NvU32 rpm = 0;
-		ret = NvAPI_GPU_GetTachReading(hPhysicalGpu[i], &rpm);
-		if (ret != NVAPI_OK) {
-			NvAPI_GetErrorMessage(ret, string);
-			Com_Printf(S_COLOR_RED"NvAPI_GPU_GetTachReading() fail: %s\n", string);
-		}
-		else
-			Com_Printf("...fan speed: " S_COLOR_GREEN "%u" S_COLOR_WHITE " rpm\n", rpm);
+		//NvU32 rpm = 0;
+		//ret = NvAPI_GPU_GetTachReading(hPhysicalGpu[i], &rpm);
+		//if (ret != NVAPI_OK) {
+		//	NvAPI_GetErrorMessage(ret, string);
+		//	Com_Printf(S_COLOR_RED"NvAPI_GPU_GetTachReading() fail: %s\n", string);
+		//}
+		//else
+		//	Com_Printf("...fan speed: " S_COLOR_GREEN "%u" S_COLOR_WHITE " rpm\n", rpm);
 
 		NvU32 pWidth;
 		uint pcieLines = 0;
@@ -429,24 +590,6 @@ void R_GpuInfo_f(void) {
 			}
 		
 		}
-
-		NV_DISPLAY_DRIVER_MEMORY_INFO gpuMemoryStatus;
-		gpuMemoryStatus.version = MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V2, 2);
-		ret = NvAPI_GPU_GetMemoryInfo(hPhysicalGpu[i], (NV_DISPLAY_DRIVER_MEMORY_INFO *)&gpuMemoryStatus);
-		if (NVAPI_OK != ret) {
-			NvAPI_GetErrorMessage(ret, string);
-			Com_Printf(S_COLOR_RED "NvAPI_GPU_GetMemoryInfo() fail: %s\n", string);
-		} else{
-			float used = (float)gpuMemoryStatus.dedicatedVideoMemory - (float)gpuMemoryStatus.curAvailableDedicatedVideoMemory;
-			float total = (float)gpuMemoryStatus.dedicatedVideoMemory;
-			
-			total /= (1024 * 1024);
-			used /= (1024 * 1024);
-			
-			Com_Printf("\n...Full GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", total);
-			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
-		}
-
 		Com_Printf("\n==========================================================\n");
 	}
 }

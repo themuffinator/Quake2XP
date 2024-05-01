@@ -656,6 +656,8 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 ** for the window.  The state structure is also nulled out.
 **
 */
+extern HINSTANCE nv_hDLL;
+
 
 void GLimp_Shutdown( void )
 {
@@ -688,9 +690,10 @@ void GLimp_Shutdown( void )
 		gl_state.fullscreen = qfalse;
 	}
 	
-	if(nvApiInit)
+	if (nvApiInit) {
 		NvAPI_Unload();
-
+		FreeLibrary(nv_hDLL);
+	}
 	if(adlInit)
 		ADL_Shutdown();
 }
