@@ -790,7 +790,7 @@ NOMONSTER	monsters will not trigger this door
 4)	heavy
 */
 
-void door_use_areaportals (edict_t *self, qboolean open) {
+void door_use_areaportals (edict_t *self, bool open) {
 	edict_t	*t = NULL;
 
 	if (!self->target)
@@ -827,7 +827,7 @@ void door_hit_bottom (edict_t *self) {
 		self->s.sound = 0;
 	}
 	self->moveinfo.state = STATE_BOTTOM;
-	door_use_areaportals (self, qfalse);
+	door_use_areaportals (self, false);
 }
 
 void door_go_down (edict_t *self) {
@@ -870,7 +870,7 @@ void door_go_up (edict_t *self, edict_t *activator) {
 		AngleMove_Calc (self, door_hit_top);
 
 	G_UseTargets (self, activator);
-	door_use_areaportals (self, qtrue);
+	door_use_areaportals (self, true);
 }
 
 void door_use (edict_t *self, edict_t *other, edict_t *activator) {
@@ -984,7 +984,7 @@ void Think_SpawnDoorTrigger (edict_t *ent) {
 	gi.linkentity (other);
 
 	if (ent->spawnflags & DOOR_START_OPEN)
-		door_use_areaportals (ent, qtrue);
+		door_use_areaportals (ent, true);
 
 	Think_CalcMoveSpeed (ent);
 }
@@ -1415,9 +1415,9 @@ void train_wait (edict_t *self) {
 void train_next (edict_t *self) {
 	edict_t		*ent;
 	vec3_t		dest;
-	qboolean	first;
+	bool	first;
 
-	first = qtrue;
+	first = true;
 again:
 	if (!self->target) {
 		//		gi.dprintf ("train_next: no next target\n");
@@ -1438,7 +1438,7 @@ again:
 			gi.dprintf ("connected teleport path_corners, see %s at %s\n", ent->classname, vtos (ent->s.origin));
 			return;
 		}
-		first = qfalse;
+		first = false;
 		VectorSubtract (ent->s.origin, self->mins, self->s.origin);
 		VectorCopy (self->s.origin, self->s.old_origin);
 		self->s.event = EV_OTHER_TELEPORT;
@@ -1737,7 +1737,7 @@ void door_secret_use (edict_t *self, edict_t *other, edict_t *activator) {
 		return;
 
 	Move_Calc (self, self->pos1, door_secret_move1);
-	door_use_areaportals (self, qtrue);
+	door_use_areaportals (self, true);
 }
 
 void door_secret_move1 (edict_t *self) {
@@ -1774,7 +1774,7 @@ void door_secret_done (edict_t *self) {
 		self->health = 0;
 		self->takedamage = DAMAGE_YES;
 	}
-	door_use_areaportals (self, qfalse);
+	door_use_areaportals (self, false);
 }
 
 void door_secret_blocked (edict_t *self, edict_t *other) {

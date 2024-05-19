@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cl_console.h"
 #include "snd_loc.h"
 
-qboolean FS_FileInGamedir(const char* file);
+bool FS_FileInGamedir(const char* file);
 #ifdef USE_CURL
 
 // Number of max. parallel downloads.
@@ -73,8 +73,8 @@ typedef struct dlhandle_s
 
 typedef struct dlquirks_s
 {
-	qboolean error;
-	qboolean filelist;
+	bool error;
+	bool filelist;
 	char gamedir[MAX_QPATH];
 } dlquirks_t;
 
@@ -86,18 +86,18 @@ extern cvar_t* cl_http_proxy;
 extern cvar_t* cl_http_max_connections;
 extern cvar_t* cl_http_show_dw_progress;
 
-void CL_CancelHTTPDownloads(qboolean permKill);
+void CL_CancelHTTPDownloads(bool permKill);
 void CL_InitHTTPDownloads(void);
-qboolean CL_QueueHTTPDownload(const char* quakePath, qboolean gamedirForFilelist);
+bool CL_QueueHTTPDownload(const char* quakePath, bool gamedirForFilelist);
 void CL_RunHTTPDownloads(void);
-qboolean CL_PendingHTTPDownloads(void);
+bool CL_PendingHTTPDownloads(void);
 void CL_SetHTTPServer(const char* URL);
-void CL_HTTP_Cleanup(qboolean fullShutdown);
+void CL_HTTP_Cleanup(bool fullShutdown);
 
 // --------
 
 // True if cURL is initialized.
-extern qboolean qcurlInitialized;
+extern bool qcurlInitialized;
 
 // Function pointers to cURL.
 extern void (*qcurl_easy_cleanup)(CURL* curl);
@@ -119,7 +119,7 @@ extern CURLMcode(*qcurl_multi_remove_handle)(CURLM* multi_handle, CURL* curl_han
 // --------
 
 // Loads and initialized cURL.
-qboolean qcurlInit(void);
+bool qcurlInit(void);
 
 // Shuts cURL down and unloads it.
 void qcurlShutdown(void);
@@ -348,7 +348,7 @@ trace_t SV_Trace (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
 	edict_t * passedict, int contentmask);
 trace_t CL_Trace (vec3_t start, vec3_t end, float size, int contentmask);
 void CL_ParticleSmoke2 (vec3_t org, vec3_t dir, float r, float g, float b,
-	int count, qboolean add);
+	int count, bool add);
 void CL_LaserParticle (vec3_t org, vec3_t dir, int count);
 
 #define	MAX_LASERS	32
@@ -359,7 +359,7 @@ typedef struct {
 laser_t cl_lasers[MAX_LASERS];
 extern vec3_t cl_indexPalette[256];
 
-qboolean loadingMessage;
+bool loadingMessage;
 char loadingMessages[5][96];
 float loadingPercent;
 
@@ -369,7 +369,7 @@ extern vec3_t viewweapon;
 extern vec3_t cl_indexPalette[256];
 
 typedef struct {
-	qboolean valid;				// cleared if delta parsing was invalid
+	bool valid;				// cleared if delta parsing was invalid
 	int serverframe;
 	int servertime;				// server time the message is valid for
 	// (in msec)
@@ -430,9 +430,9 @@ typedef struct {
 	int timedemo_frames;
 	int timedemo_start;
 
-	qboolean refresh_prepped;	// qfalse if on new level or new ref dll
-	qboolean sound_prepped;		// ambient sounds can start
-	qboolean force_refdef;		// vid has changed, so we can't use a
+	bool refresh_prepped;	// false if on new level or new ref dll
+	bool sound_prepped;		// ambient sounds can start
+	bool force_refdef;		// vid has changed, so we can't use a
 	// paused refdef
 
 	int parse_entities;			// index (not anded off) into
@@ -489,12 +489,12 @@ typedef struct {
 	int cinematicframe;
 	int cinStaticHD;
 	char cinematicpalette[768];
-	qboolean cinematicpalette_active;
+	bool cinematicpalette_active;
 
 	//
 	// server state information
 	//
-	qboolean attractloop;		// running the attract loop, any key will
+	bool attractloop;		// running the attract loop, any key will
 	// menu
 	int servercount;			// server identification for prespawns
 	char gamedir[MAX_QPATH];
@@ -561,14 +561,14 @@ typedef enum {
 typedef struct {
 	connstate_t state;
 	keydest_t key_dest;
-	qboolean consoleActive;
-	qboolean menuActive;
+	bool consoleActive;
+	bool menuActive;
 
 	int frameCount;
 	int realTime;				// always increasing, no clamping, etc
 	float frameTime;			// seconds since last frame
 	float renderFrameTime;
-	qboolean forcePacket;
+	bool forcePacket;
 
 	// screen rendering information
 	int disableScreen;		// showing loading plaque between levels
@@ -602,8 +602,8 @@ typedef struct {
 	float		downloadRate; //kmquake2
 
 	// demo recording info must be here, so it isn't cleared on level change
-	qboolean demoRecording;
-	qboolean demoWaiting;		// don't record until a non-delta message
+	bool demoRecording;
+	bool demoWaiting;		// don't record until a non-delta message
 	// is received
 	FILE *demoFile;
 
@@ -673,7 +673,7 @@ extern entity_state_t cl_parse_entities[MAX_PARSE_ENTITIES];
 extern netadr_t net_from;
 extern sizebuf_t net_message;
 
-qboolean CL_CheckOrDownloadFile (char *filename);
+bool CL_CheckOrDownloadFile (char *filename);
 
 //ROGUE
 typedef struct cl_sustain {
@@ -731,12 +731,12 @@ void CL_ParticleHeadBlood (vec3_t org);
 void CL_AddLasers (void);
 void CL_GibExplosion (vec3_t org, vec3_t dir);
 void CL_ParticleTracer (vec3_t start, vec3_t end);
-qboolean AL_Init (int hardreset);
+bool AL_Init (int hardreset);
 void AL_Shutdown (void);
 void S_fastsound (vec3_t origin, int entnum, int entchannel,
 	ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor);
 void CL_ParticleArmorSpark (vec3_t org, vec3_t dir, int count,
-	qboolean power);
+	bool power);
 void CL_ParticleGibBlood (vec3_t org);
 void CL_ParticleGunSmoke (vec3_t org, vec3_t dir, int count);
 
@@ -776,7 +776,7 @@ typedef struct particle_s {
 } cparticle_t;
 /*
 typedef struct {
-qboolean	isactive;
+bool	isactive;
 
 vec3_t		lightcol;
 float		light;
@@ -895,7 +895,7 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 
 
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-	int mask, qboolean checkAliases);
+	int mask, bool checkAliases);
 
 void CL_NewDlight (int key, vec3_t org, float r, float g, float b,
 	float radius, float time);
@@ -923,7 +923,7 @@ void CL_ParticleRailRick (vec3_t org, vec3_t dir);
 #endif
 
 int	Developer_searchpath(int who);
-qboolean modName(const char *gameDir);
+bool modName(const char *gameDir);
 
 //
 // cl_input

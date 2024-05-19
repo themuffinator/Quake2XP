@@ -1,9 +1,7 @@
 #include"nvapi_lite_salstart.h"
 #include"nvapi_lite_common.h"
-#include"nvapi_lite_sli.h"
 #include"nvapi_lite_surround.h"
-#include"nvapi_lite_stereo.h"
-#include"nvapi_lite_d3dext.h"
+
  /************************************************************************************************************************************\
 |*                                                                                                                                    *|
 |*     Copyright © 2012 NVIDIA Corporation.  All rights reserved.                                                                     *|

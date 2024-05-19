@@ -327,11 +327,11 @@ do the apropriate things.
 void Com_Error (int code, char *fmt, ...) {
 	va_list argptr;
 	static char msg[MAXPRINTMSG];
-	static qboolean recursive;
+	static bool recursive;
 
 	if (recursive)
 		Sys_Error ("recursive error after: %s", msg);
-	recursive = qtrue;
+	recursive = true;
 
 	va_start (argptr, fmt);
 	vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -339,20 +339,20 @@ void Com_Error (int code, char *fmt, ...) {
 
 	if (code == ERR_DISCONNECT) {
 		CL_Drop ();
-		recursive = qfalse;
+		recursive = false;
 		longjmp (abortframe, -1);
 	}
 	else if (code == ERR_DROP) {
 		Com_Printf
 			("********************\nERROR: %s\n********************\n",
 			msg);
-		SV_Shutdown (va ("Server crashed: %s\n", msg), qfalse);
+		SV_Shutdown (va ("Server crashed: %s\n", msg), false);
 		CL_Drop ();
-		recursive = qfalse;
+		recursive = false;
 		longjmp (abortframe, -1);
 	}
 	else {
-		SV_Shutdown (va ("Server fatal crashed: %s\n", msg), qfalse);
+		SV_Shutdown (va ("Server fatal crashed: %s\n", msg), false);
 		CL_Shutdown ();
 	}
 
@@ -374,7 +374,7 @@ do the apropriate things.
 =============
 */
 void Com_Quit (void) {
-	SV_Shutdown ("Server quit\n", qfalse);
+	SV_Shutdown ("Server quit\n", false);
 	CL_Shutdown ();
 
 	if (logfile) {
@@ -596,8 +596,8 @@ Can delta from either a baseline or a previous packet_entity
 ==================
 */
 void MSG_WriteDeltaEntity (entity_state_t * from, entity_state_t * to,
-	sizebuf_t * msg, qboolean force,
-	qboolean newentity) {
+	sizebuf_t * msg, bool force,
+	bool newentity) {
 	int bits;
 
 	if (!to->number)
@@ -997,7 +997,7 @@ void SZ_Init (sizebuf_t * buf, byte * data, int length) {
 
 void SZ_Clear (sizebuf_t * buf) {
 	buf->cursize = 0;
-	buf->overflowed = qfalse;
+	buf->overflowed = false;
 }
 
 void *SZ_GetSpace (sizebuf_t * buf, int length) {
@@ -1014,7 +1014,7 @@ void *SZ_GetSpace (sizebuf_t * buf, int length) {
 
 		Com_Printf ("SZ_GetSpace: overflow\n");
 		SZ_Clear (buf);
-		buf->overflowed = qtrue;
+		buf->overflowed = true;
 	}
 
 	data = buf->data + buf->cursize;
@@ -1770,7 +1770,7 @@ void Qcommon_Init (int argc, char **argv) {
 	// a basedir or cddir needs to be set before execing
 	// config files, but we want other parms to override
 	// the settings of the config files
-	Cbuf_AddEarlyCommands (qfalse);
+	Cbuf_AddEarlyCommands (false);
 	Cbuf_Execute ();
 
 	Con_Init ();
@@ -1783,7 +1783,7 @@ void Qcommon_Init (int argc, char **argv) {
 	Cbuf_AddText	("exec x360.cfg\n");
 	Cbuf_AddText	("exec xpconfig.cfg\n");
 
-	Cbuf_AddEarlyCommands (qtrue);
+	Cbuf_AddEarlyCommands (true);
 	Cbuf_Execute ();
 	Com_Printf ("\n");
 
@@ -1849,7 +1849,7 @@ void Qcommon_Frame (int msec) {
 		return;					// an ERR_DROP was thrown
 
 	if (log_stats->modified) {
-		log_stats->modified = qfalse;
+		log_stats->modified = false;
 		if (log_stats->integer) {
 			if (log_stats_file) {
 				fclose (log_stats_file);

@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define		CON_TEXTSIZE	0x30000 //doom3 size
 
 typedef struct {
-	qboolean initialized;
+	bool initialized;
 
 	short text[CON_TEXTSIZE];
 	int current;				// line where next message will be printed

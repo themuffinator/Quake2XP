@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../renderer/r_local.h"
 
 static int m_main_cursor;
-extern qboolean ru_loc;
+extern bool ru_loc;
 void M_Option_Banner(image_t* banner[2]);
 
 #define NUM_CURSOR_FRAMES 15
@@ -56,7 +56,7 @@ void M_Menu_Quit_f(void);
 void M_Menu_Advanced_f(void);
 void M_AdvancedInit(void);
 
-qboolean m_entersound;			// play after drawing a frame, so caching
+bool m_entersound;			// play after drawing a frame, so caching
 								// won't disrupt the sound
 
 void(*m_drawfunc) (void);
@@ -64,7 +64,7 @@ int(*m_keyfunc) (int key);
 
 extern cvar_t *ui_hudScale;
 model_t *currentPlayerWeapon;
-qboolean drawIDlogo;
+bool drawIDlogo;
 struct model_s* cl_menu_id_logo;
 struct model_s* cl_menu_quad_model;
 
@@ -123,9 +123,9 @@ void M_PushMenu(void(*draw) (void), int(*key) (int k)) {
 
 	m_drawfunc = draw;
 	m_keyfunc = key;
-	cls.menuActive = qtrue;
+	cls.menuActive = true;
 
-	m_entersound = qtrue;
+	m_entersound = true;
 
 	cls.key_dest = key_menu;
 }
@@ -137,7 +137,7 @@ void M_ForceMenuOff(void) {
 	m_menudepth = 0;
 	Key_ClearStates();
 
-	cls.menuActive = qfalse;
+	cls.menuActive = false;
 
 	Cvar_Set("paused", "0");
 }
@@ -349,7 +349,7 @@ void M_Main_DrawQuad(float x, float y) {
 	entity.oldFrame = 0;
 	entity.backLerp = 0.0;
 	entity.angles[1] = anglemod(cl.time / 16);
-	entity.angleMod = qtrue;
+	entity.angleMod = true;
 
 	R_RenderFrame(&refdef);
 	refdef.num_entities++;
@@ -423,7 +423,7 @@ void M_Main_Draw(void) {
 
 	}
 	M_Main_DrawQuad(xoffset - 30, ystart + (m_main_cursor * 40 + 5)* fontscale);
-	drawIDlogo = qtrue;
+	drawIDlogo = true;
 }
 
 
@@ -453,7 +453,7 @@ int M_Main_Key(int key) {
 		//		case K_XPAD_START:
 	case K_XPAD_A: // � ���� "A" �������� ��� ����� ������ ����
 	case K_ENTER:
-		m_entersound = qtrue;
+		m_entersound = true;
 
 		switch (m_main_cursor) {
 		case 0:
@@ -521,7 +521,7 @@ void Multiplayer_MenuInit(void) {
 	s_multiplayer_menu.x = viddef.width * 0.50 - 64 * ui_fontScale->value;
 	s_multiplayer_menu.nitems = 0;
 	
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_join_network_server_action.generic.type = MTYPE_ACTION;
 	s_join_network_server_action.generic.flags = QMF_LEFT_JUSTIFY;
@@ -737,7 +737,7 @@ static void KeyBindingFunc(void *self) {
 	if (keys[1] != -1)
 		M_UnbindCommand(bindnames[a->generic.localdata[0]][0]);
 
-	bind_grab = qtrue;
+	bind_grab = true;
 
 	Menu_SetStatusBar(&s_keys_menu,
 		"press a key or button for this action");
@@ -747,7 +747,7 @@ static void Keys_MenuInit(void) {
 	int y = 0;
 	int i = 0;
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_keys_menu.x = viddef.width * 0.50;
 	s_keys_menu.nitems = 0;
@@ -979,7 +979,7 @@ int Keys_MenuKey(int key) {
 
 		Menu_SetStatusBar(&s_keys_menu,
 			"enter to change, backspace to clear");
-		bind_grab = qfalse;
+		bind_grab = false;
 		return menu_out_sound;
 	}
 
@@ -1325,7 +1325,7 @@ void M_AdvancedInit(void) {
 
 	unsigned  menu_y = 0;
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	/*
 	** configure controls menu and menu items
@@ -1474,7 +1474,7 @@ void Options_MenuInit(void) {
 
 	win_noalttab = Cvar_Get("win_noalttab", "0", CVAR_ARCHIVE);
 	
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	/*
 	** configure controls menu and menu items
@@ -1823,12 +1823,10 @@ static char *idcredits[] = {
 	"Kurtis Smith",
 	"",
 	"+USE CODE",
-	"MrG - quake2xp based on beefquake r5",
 	"Serge 'Berserker' Borodulin",
-	"Vic",
-	"Echon",
+	"Robert Beckebans",
+	"Paril",
 	"Knightmare",
-	"Berserk",
 	"Discoloda",
 	"SulQ2",
 	"",
@@ -2185,7 +2183,7 @@ void M_Credits_MenuDraw(void) {
 
 	// draw the credits
 	
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	for (i = 0, y = viddef.height - ((cls.realTime - credits_start_time) / 30.0F); credits[i] && y < (int)viddef.height; y += 10 * ui_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
 	{
@@ -2380,16 +2378,16 @@ void DrawModShot(void* m)
 	size *= 0.75;
 
 	if (Draw_FindPic(m_mod_names[s_mods_menu.cursor])) {
-		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, qfalse);
+		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, false);
 		Draw_StretchPic(w, h, size, size, m_mod_names[s_mods_menu.cursor]);
 	}
 	else {
-		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, qfalse);
+		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, false);
 		Draw_StretchPic(w, h, size, size, "idlog");
 	}
 }
 
-qboolean Mods_MenuInit()
+bool Mods_MenuInit()
 {
 	char	*path = NULL;
 	char	**dirnames = NULL;
@@ -2427,7 +2425,7 @@ qboolean Mods_MenuInit()
 	}
 
 	if (!ndirs)
-		return qfalse;
+		return false;
 
 	if (ui_fontScale->integer >= 3)
 		scale = 250;
@@ -2498,7 +2496,7 @@ qboolean Mods_MenuInit()
 
 	}
 
-	return qtrue;
+	return true;
 }
 
 
@@ -2529,7 +2527,7 @@ void Game_MenuInit(void) {
 		0
 	};
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 	
 	s_game_menu.x = viddef.width * 0.50 - 20 * ui_fontScale->value;
 	s_game_menu.nitems = 0;
@@ -2655,10 +2653,10 @@ char m_savesInfos[MAX_SAVEGAMES][MAX_OSPATH];
 char m_savemapnames[MAX_SAVEGAMES][MAX_OSPATH];
 
 static char m_quicksavestring[32];
-static qboolean m_quicksavevalid;
+static bool m_quicksavevalid;
 char m_quickSavesInfos[MAX_OSPATH];
 
-qboolean m_savevalid[MAX_SAVEGAMES];
+bool m_savevalid[MAX_SAVEGAMES];
 
 void Create_MapNamesList()
 {
@@ -2673,7 +2671,7 @@ void Create_MapNamesList()
 		if (!f)
 		{
 			strcpy(m_savemapnames[i], "<EMPTY>");
-			m_savevalid[i] = qfalse;
+			m_savevalid[i] = false;
 		}
 		else
 		{
@@ -2695,12 +2693,12 @@ void Create_MapNamesList()
 				}
 			}
 			fclose(f);
-			m_savevalid[i] = qtrue;
+			m_savevalid[i] = true;
 		}
 	}
 }
 
-void Create_QuickSavesList(qboolean load)
+void Create_QuickSavesList(bool load)
 {
 	FILE* f;
 	char	name[MAX_OSPATH], tmp[32];
@@ -2710,7 +2708,7 @@ void Create_QuickSavesList(qboolean load)
 	if (!f)
 	{
 		strcpy(m_quicksavestring, "QUICKSAVE <EMPTY>");
-		m_quicksavevalid = qfalse;
+		m_quicksavevalid = false;
 	}
 	else
 	{
@@ -2721,7 +2719,7 @@ void Create_QuickSavesList(qboolean load)
 		else
 			Com_sprintf(m_quicksavestring, sizeof(m_quicksavestring), "QUICKSAVE: %s", tmp);
 		fclose(f);
-		m_quicksavevalid = qtrue;
+		m_quicksavevalid = true;
 	}
 
 }
@@ -2737,7 +2735,7 @@ void Create_Savestrings(void) {
 		f = fopen(name, "rb");
 		if (!f) {
 			strcpy(m_savestrings[i], "<EMPTY>");
-			m_savevalid[i] = qfalse;
+			m_savevalid[i] = false;
 		}
 		else {
 			fseek(f, 9, SEEK_SET); // try find victory screen
@@ -2751,7 +2749,7 @@ void Create_Savestrings(void) {
 				fread(m_savestrings[i], sizeof(m_savestrings[i]), 1, f);
 			}
 			fclose(f);
-			m_savevalid[i] = qtrue;
+			m_savevalid[i] = true;
 		}
 	}
 }
@@ -2767,7 +2765,7 @@ void Create_SavesInfoss(void) {
 		f = fopen(name, "rb");
 		if (!f) {
 			strcpy(m_savesInfos[i], "");
-			m_savevalid[i] = qfalse;
+			m_savevalid[i] = false;
 		}
 		else {
 			fseek(f, 9, SEEK_SET); // try find victory screen
@@ -2781,7 +2779,7 @@ void Create_SavesInfoss(void) {
 				fread(m_savesInfos[i], sizeof(m_savesInfos[i]), 1, f);
 			}
 			fclose(f);
-			m_savevalid[i] = qtrue;
+			m_savevalid[i] = true;
 		}
 	}
 }
@@ -2794,13 +2792,13 @@ void Create_QuickSavesInfoss(void) {
 		f = fopen(name, "rb");
 		if (!f) {
 			strcpy(m_quickSavesInfos, "");
-			m_quicksavevalid = qfalse;
+			m_quicksavevalid = false;
 		}
 		else {
 			fseek(f, 0, SEEK_SET);
 			fread(m_quickSavesInfos, sizeof(m_quickSavesInfos), 1, f);
 			fclose(f);
-			m_quicksavevalid = qtrue;
+			m_quicksavevalid = true;
 		}
 }
 
@@ -2832,9 +2830,9 @@ void DrawSavedShot(void* m)
 		aspect = (float)w / (float)h;
 
 		R_FreePic(savePic); // update pic cache
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5)-7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], i_menuFont);
@@ -2845,7 +2843,7 @@ void DrawSavedShot(void* m)
 			strcpy(savePic, va("/pics/victory.jpg", m_savemapnames[i]));
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
-			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
+			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
 			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 	else
@@ -2859,11 +2857,11 @@ void DrawSavedShot(void* m)
 		}
 
 		aspect = (float)w / (float)h;
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 				
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], i_menuFont);
@@ -2872,7 +2870,7 @@ void DrawSavedShot(void* m)
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
 		aspect = (float)w / (float)h;
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, false);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Save Data") * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Save Data", i_menuFont);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
@@ -2905,9 +2903,9 @@ void DrawQuickSavedShot(void* m)
 	if (m_quicksavevalid){
 
 		R_FreePic(savePic); // update pic cache
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_quickSavesInfos) * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_quickSavesInfos, i_menuFont);
@@ -2915,7 +2913,7 @@ void DrawQuickSavedShot(void* m)
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
 		aspect = (float)w / (float)h;
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, qfalse);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, false);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Quick Save Data") * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Quick Save Data", i_menuFont);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
@@ -2947,7 +2945,7 @@ void QuickSaveGameCallback(void* self) {
 void LoadGame_MenuInit(void) {
 	int i, w, h;
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 	
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
@@ -2958,7 +2956,7 @@ void LoadGame_MenuInit(void) {
 	s_loadgame_menu.nitems = 0;
 
 	// The quickload slot...
-	Create_QuickSavesList(qtrue);
+	Create_QuickSavesList(true);
 	Create_QuickSavesInfoss();
 	
 	s_quickLoadGame_actions.generic.type = MTYPE_ACTION;
@@ -3060,7 +3058,7 @@ void SaveGame_MenuInit(void) {
 
 
 	// The quicksave slot...
-	Create_QuickSavesList(qfalse);
+	Create_QuickSavesList(false);
 	Create_QuickSavesInfoss();
 
 	s_quickSaveGame_actions.generic.type = MTYPE_ACTION;
@@ -3079,7 +3077,7 @@ void SaveGame_MenuInit(void) {
 	Create_SavesInfoss();
 	Create_MapNamesList();
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	// don't include the autosave slot
 	for (i = 0; i < MAX_SAVEGAMES - 1; i++) {
@@ -3215,7 +3213,7 @@ void JoinServer_MenuInit(void) {
 
 	shift = 60 * (ui_fontScale->value - 1);
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_joinserver_menu.x = viddef.width * 0.50 - 120;
 
@@ -3374,7 +3372,7 @@ void StartServerActionFunc(void *self) {
 		Cvar_SetValue("gamerules", 0);
 	}
 	else {
-		Cvar_SetValue("deathmatch", 1);	// deathmatch is always qtrue for rogue games, right?
+		Cvar_SetValue("deathmatch", 1);	// deathmatch is always true for rogue games, right?
 		Cvar_SetValue("coop", 0);			// FIXME - this might need to depend on which game we're running
 		Cvar_SetValue("gamerules", s_rules_box.curInteger);
 	}
@@ -3499,7 +3497,7 @@ void StartServer_MenuInit(void) {
 		FS_FreeFile(buffer);
 	}
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	/*
 	** initialize the menu stuff
@@ -3811,7 +3809,7 @@ void DMOptions_MenuInit(void) {
 	int dmflags = Cvar_VariableInteger("dmflags");
 	int y = 0;
 	
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_dmoptions_menu.x = viddef.width * 0.50;
 	s_dmoptions_menu.nitems = 0;
@@ -4085,7 +4083,7 @@ void DownloadOptions_MenuInit(void) {
 	};
 	int y = 0;
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 	
 	s_downloadoptions_menu.x = viddef.width * 0.50;
 	s_downloadoptions_menu.nitems = 0;
@@ -4188,7 +4186,7 @@ void AddressBook_MenuInit(void) {
 	s_addressbook_menu.y = viddef.height / 4 + (h * ui_fontScale->value);
 	s_addressbook_menu.nitems = 0;
 	
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	for (i = 0; i < NUM_ADDRESSBOOK_ENTRIES; i++) {
 		cvar_t *adr;
@@ -4297,7 +4295,7 @@ static void ModelCallback(void *unused) {
 	currentPlayerWeapon = NULL;
 }
 
-static qboolean IconOfSkinExists(char *skin, char **pcxfiles,
+static bool IconOfSkinExists(char *skin, char **pcxfiles,
 	int npcxfiles) {
 	int i;
 	char scratch[1024];
@@ -4308,13 +4306,13 @@ static qboolean IconOfSkinExists(char *skin, char **pcxfiles,
 
 	for (i = 0; i < npcxfiles; i++) {
 		if (strcmp(pcxfiles[i], scratch) == 0)
-			return qtrue;
+			return true;
 	}
 
-	return qfalse;
+	return false;
 }
 
-static qboolean
+static bool
 PlayerConfig_ScanDirectories(void) {
 	char		path[MAX_OSPATH];
 	char           *ptr;
@@ -4333,7 +4331,7 @@ PlayerConfig_ScanDirectories(void) {
 	dirnames = FS_ListFilesAll("players/*", &ndirs, SFF_SUBDIR, 0);
 
 	if (dirnames == NULL)
-		return (qfalse);
+		return (false);
 
 	/* Go through the subdirectories. */
 	npms = ndirs;
@@ -4398,7 +4396,7 @@ PlayerConfig_ScanDirectories(void) {
 
 	FS_FreeList(dirnames, ndirs);
 
-	return (qtrue);
+	return (true);
 }
 
 static int pmicmpfnc(const void *_a, const void *_b) {
@@ -4422,7 +4420,7 @@ static int pmicmpfnc(const void *_a, const void *_b) {
 }
 
 
-qboolean PlayerConfig_MenuInit(void) {
+bool PlayerConfig_MenuInit(void) {
 	extern cvar_t *name;
 	extern cvar_t *skin;
 	char currentdirectory[1024];
@@ -4441,7 +4439,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	offcet = (ui_fontScale->value - 1) * 16;
 
 	if (s_numplayermodels == 0)
-		return qfalse;
+		return false;
 
 	if (hand->value < 0 || hand->value > 2)
 		Cvar_SetValue("hand", 0);
@@ -4481,7 +4479,7 @@ qboolean PlayerConfig_MenuInit(void) {
 		}
 	}
 	
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_player_config_menu.x = viddef.width / 2 - 95 * ui_fontScale->value; //3
 	s_player_config_menu.y = viddef.height / 2 - 97 * ui_fontScale->value; //1
@@ -4584,7 +4582,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	Menu_AddItem(&s_player_config_menu, &s_player_rate_box);
 	Menu_AddItem(&s_player_config_menu, &s_player_download_action);
 
-	return qtrue;
+	return true;
 }
 
 #include "m_frames.h"
@@ -4804,7 +4802,7 @@ int M_Quit_Key(int key) {
 void M_Quit_Draw(void) {
 	int w = 320;
 	int h = 240;
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 //	Draw_GetPicSize(&w, &h, "quit");
 	Draw_ScaledPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, i_quit[0]);
 	Draw_ScaledBumpPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, i_quit[0], i_quit[1]);
@@ -4886,7 +4884,7 @@ void M_DrawBackgroundModel() {
 	entity.backLerp = 0.0;
 
 	entity.angles[1] = anglemod(cl.time / 32);
-	entity.angleMod = qtrue;
+	entity.angleMod = true;
 
 	VectorNegate(center, entity.origin);
 
@@ -4926,7 +4924,7 @@ void M_Draw(void) {
 	// caching images
 	if (m_entersound) {
 		S_StartLocalSound(fastsound_descriptor[menu_in_sound]);
-		m_entersound = qfalse;
+		m_entersound = false;
 	}
 }
 

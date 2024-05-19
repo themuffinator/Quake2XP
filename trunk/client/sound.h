@@ -48,7 +48,7 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 ALuint S_RegisterSound (const char *sample);
 ALuint S_RegisterSexedSound (entity_state_t * ent, const char *base);
 
-ALuint S_FindName (char *name, qboolean create);
+ALuint S_FindName (char *name, bool create);
 ALuint S_FindName_lite (char *input_name);
 
 // the sound code makes callbacks to the client for entitiy position

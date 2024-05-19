@@ -8,7 +8,7 @@ extern msurface_t	*sceneSurfaces[MAX_MAP_FACES];
 static int			numDepthSurfaces;
 static vec3_t		modelorg;			// relative to viewpoint
 
-qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
+bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->polys->numVerts;
 
@@ -16,7 +16,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	numIndices = *indeces;
 
 	if ((nv - 2) * 3 >= MAX_INDICES)
-		return qfalse;
+		return false;
 
 	// create indexes
 	if (numIndices == 0xffffffff)
@@ -32,7 +32,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	*vertices = numVertices;
 	*indeces = numIndices;
 
-	return qtrue;
+	return true;
 }
 
 static void GL_DrawDepthBspTris () {
@@ -216,7 +216,7 @@ static void R_AddBModelDepthTris (void) {
 void R_DrawDepthBrushModel (void) {
 	vec3_t		mins, maxs;
 	int			i;
-	qboolean	rotated;
+	bool	rotated;
 	mat4_t		mvp;
 
 	if (!r_drawEntities->integer)
@@ -226,14 +226,14 @@ void R_DrawDepthBrushModel (void) {
 		return;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = qtrue;
+		rotated = true;
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	}
 	else {
-		rotated = qfalse;
+		rotated = false;
 		VectorAdd (currententity->origin, currentmodel->mins, mins);
 		VectorAdd (currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -257,7 +257,7 @@ void R_DrawDepthBrushModel (void) {
 	R_SetupEntityMatrix (currententity);
 
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)mvp);
 
 	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
@@ -268,7 +268,7 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
 
 void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	int					index_xyz;
-	int					i, j, jj = 0;
+	int					i, j, k = 0;
 	dtriangle_t			*tris;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
@@ -277,21 +277,21 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	c_aliasTris += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
-	jj = 0;
+	k = 0;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
-		for (j = 0; j < 3; j++, jj++) {
+		for (j = 0; j < 3; j++, k++) {
 			index_xyz = tris[i].index_xyz[j];
-			VectorCopy(s_lerped[index_xyz], tess.position[jj]);
+			VectorCopy(s_lerped[index_xyz], tess3d.v[k].pos);
 		}
 	}
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, jj * sizeof(vec4_t), tess.position);
-	GL_DrawArrays(GL_TRIANGLES, 0, jj);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, k * sizeof(vertex3d_t), &tess3d);
+	GL_DrawArrays(GL_TRIANGLES, 0, k);
 
 }
 
@@ -377,7 +377,7 @@ void R_DrawDepthMD3Model(void) {
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++){
 		
@@ -394,15 +394,15 @@ void R_DrawDepthMD3Model(void) {
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 
-			tess.position[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
-			tess.position[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
-			tess.position[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
+			tess3d.v[j].pos[0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			tess3d.v[j].pos[1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			tess3d.v[j].pos[2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vec4_t), tess.position);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
 		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
-		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
 	if (currententity->flags & RF_DEPTHHACK)
@@ -428,7 +428,7 @@ void R_DrawDepthScene (void) {
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
 		GL_BindVAO(vao.depthBsp);
 
 		numDepthSurfaces = 0;
@@ -447,8 +447,9 @@ void R_DrawDepthScene (void) {
 		}
 	}
 
-	GL_BindVAO(vao.dynamic);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.dynamicIbo);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

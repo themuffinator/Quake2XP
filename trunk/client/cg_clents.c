@@ -70,13 +70,13 @@ void CL_ClipMoveToEntitiesWorld (vec3_t start, vec3_t mins, vec3_t maxs,
 			trace.ent = (struct edict_s *) ent;
 			if (tr->startsolid) {
 				*tr = trace;
-				tr->startsolid = qtrue;
+				tr->startsolid = true;
 			}
 			else
 				*tr = trace;
 		}
 		else if (trace.startsolid)
-			tr->startsolid = qtrue;
+			tr->startsolid = true;
 	}
 }
 
@@ -84,7 +84,7 @@ void CL_ClipMoveToEntities (vec3_t start, vec3_t mins, vec3_t maxs,
 	vec3_t end, trace_t * tr);
 
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-	int mask, qboolean checkAliases) {
+	int mask, bool checkAliases) {
 	trace_t t;
 
 	// check against world
@@ -134,7 +134,7 @@ void CL_AddClEntities () {
 	trace_t trace2;
 	float alpha, bak;
 	int contents;
-	qboolean onground = (qboolean)qfalse;
+	bool onground = (bool)false;
 	float time, time2, dst, grav = Cvar_VariableValue ("sv_gravity");
 	vec3_t tmpSize;
 	float entSize;
@@ -175,7 +175,7 @@ void CL_AddClEntities () {
 		org[2] = bak;
 
 		if (contents & MASK_SOLID)
-			onground = (qboolean)qtrue;
+			onground = (bool)true;
 
 		if (onground) {
 			le->flags &= ~CLM_ROTATE;
@@ -212,7 +212,7 @@ void CL_AddClEntities () {
 				if (contents & CONTENTS_LAVA) {	// kill entity in lava
 					VectorSet (dir, 0, 0, 1);
 					S_fastsound (org, 0, CHAN_AUTO, cl_sfx_lava, 1, ATTN_NORM);
-					CL_ParticleSmoke2 (org, dir, 1, 0.3, 0, 6, qtrue);
+					CL_ParticleSmoke2 (org, dir, 1, 0.3, 0, 6, true);
 					le->alpha = 0;
 					continue;
 				}
@@ -240,7 +240,7 @@ void CL_AddClEntities () {
 		entSize = VectorLength (tmpSize);
 		
 		if (le->flags & CLM_BOUNCE) {
-			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, qfalse);
+			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, false);
 
 			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;
@@ -385,7 +385,7 @@ brass effect. No change
 =======================
 */
 
-void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
+void CL_BrassShells (vec3_t org, vec3_t dir, int count, bool mshell) {
 	int i, j;
 	clentity_t *le;
 	float d;

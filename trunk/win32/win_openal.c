@@ -299,9 +299,9 @@ void S_SoundInfo_f (void);
  AL_Init
  =================
  */
-qboolean AL_StartOpenAL (void);
+bool AL_StartOpenAL (void);
 
-qboolean AL_Init (int hardreset) {
+bool AL_Init (int hardreset) {
 
 	if (hardreset) {
 		char	path[MAX_OSPATH];
@@ -311,15 +311,15 @@ qboolean AL_Init (int hardreset) {
 
 		if (!SearchPath (NULL, "OpenAL32.dll", NULL, sizeof(path), path, NULL)) {
 			Sys_Error("...ERROR: couldn't find OpenAL driver 'OpenAL32.dll'\n");
-			openalStop = qtrue;
-			return qfalse;
+			openalStop = true;
+			return false;
 		}
 
 		Com_DPrintf ("...LoadLibrary( '%s' ) \n", path);
 		if ((alConfig.hInstOpenAL = LoadLibrary (path)) == NULL) {
 			Sys_Error("...ERROR: couldn't load OpenAL driver 'OpenAL32.dll'\n");
-			openalStop = qtrue;
-			return qfalse;
+			openalStop = true;
+			return false;
 		}
 
 		// Binds our AL function pointers to the appropriate AL stuff
@@ -406,12 +406,12 @@ qboolean AL_Init (int hardreset) {
 	if (!AL_StartOpenAL ()) {
 		// Let the user continue without sound
 		Com_Printf (S_COLOR_RED"WARNING: OpenAL initialization failed\n");
-		openalStop = qtrue;
-		return qfalse;
+		openalStop = true;
+		return false;
 	}
 
 	// Initialize extensions
-	alConfig.efx = qfalse;
+	alConfig.efx = false;
 
 	// Check for ALC Extensions
 	
@@ -463,7 +463,7 @@ qboolean AL_Init (int hardreset) {
 			ALint		iEffectSlotsGenerated;
 			ALint		iSends;
 
-			alConfig.efx = qtrue;
+			alConfig.efx = true;
 
 			// Imported EFX functions; Get function pointers
 			// Effect objects
@@ -576,5 +576,5 @@ qboolean AL_Init (int hardreset) {
 		}
 	}//<---(!s_openal_efx->value)
 
-	return qtrue;
+	return true;
 }

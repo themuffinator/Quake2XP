@@ -69,7 +69,7 @@ void gunner_search (edict_t *self) {
 }
 
 
-qboolean visible (edict_t *self, edict_t *other);
+bool visible (edict_t *self, edict_t *other);
 void GunnerGrenade (edict_t *self);
 void GunnerFire (edict_t *self);
 void gunner_fire_chain (edict_t *self);
@@ -456,7 +456,7 @@ void GunnerFire (edict_t *self) {
 	VectorSubtract (target, start, aim);
 	VectorNormalize (aim);
 	monster_fire_bullet (self, start, aim, 3, 4, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, flash_number);
-//	monster_fire_blaster(self, start, aim, 10, 1000, MZ2_MEDIC_BLASTER_1, qtrue);
+//	monster_fire_blaster(self, start, aim, 10, 1000, MZ2_MEDIC_BLASTER_1, true);
 }
 
 void GunnerGrenade (edict_t *self) {

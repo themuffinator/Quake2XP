@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/qmenu.h"
 #include "../renderer/r_local.h"
 
-extern qboolean drawIDlogo;
+extern bool drawIDlogo;
 extern cvar_t *vid_ref;
 
 extern void M_ForceMenuOff (void);
@@ -278,68 +278,68 @@ static void ApplyChanges (void *unused) {
 	*/
 	
 	if (r_selfShadowingParallax->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_brightness->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 	
 	if (r_contrast->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 	
 	if (r_saturation->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_gamma->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_textureAnisotropy->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_parallaxScale->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_hdrBloom->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_dof->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_displayRefresh->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_drawFlares->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_parallaxMapping->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_vsync->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_dof->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_radialBlur->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_ssao->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_fxaa->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_lightmapScale->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_motionBlur->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 	if (r_hdrGlareIntens->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 
 
 	if (r_fixFovStrength->modified)
-		vid_ref->modified = qtrue;
+		vid_ref->modified = true;
 	
 	M_ForceMenuOff ();
 
@@ -419,7 +419,7 @@ void M_ColorInit() {
 		lut_table[i] = r_3dLut[i]->lutName;
 	}
 */
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_opengl2_menu.x = viddef.width * 0.50;
 	s_opengl2_menu.nitems = 0;
@@ -693,7 +693,7 @@ void VID_MenuInit (void) {
 	if (!r_motionBlur->integer)
 		r_motionBlur = Cvar_Get ("r_motionBlur", "0", CVAR_ARCHIVE);
 
-	drawIDlogo = qfalse;
+	drawIDlogo = false;
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
@@ -809,7 +809,7 @@ void VID_MenuInit (void) {
 	s_ambientLevel_slider.maxValue = 20;
 	s_ambientLevel_slider.curValue = r_lightmapScale->value * 20;
 	s_ambientLevel_slider.divRange = 20;
-	s_ambientLevel_slider.percent = qtrue;
+	s_ambientLevel_slider.percent = true;
 	s_ambientLevel_slider.generic.statusbar = "Ambient Lighting Level";
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;

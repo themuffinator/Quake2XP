@@ -164,8 +164,8 @@ typedef struct
 	image_t			*pbr[MD3_MAX_SKINS];
 	image_t			*aomap[MD3_MAX_SKINS];
 
-	qboolean		muzzle;
-	qboolean		skinAlphatest;
+	bool		muzzle;
+	bool		skinAlphatest;
 } md3Mesh_t;
 
 typedef struct md3Model_s

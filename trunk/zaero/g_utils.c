@@ -543,7 +543,7 @@ Kills all entities that would touch the proposed new positioning
 of ent.  Ent should be unlinked before calling this!
 =================
 */
-qboolean KillBox (edict_t *ent)
+bool KillBox (edict_t *ent)
 {
 	trace_t		tr;
 
@@ -574,7 +574,7 @@ Kills all entities except players that would touch the proposed new
 positioning of ent.  Ent should be unlinked before calling this!
 =================
 */
-qboolean MonsterKillBox (edict_t *ent)
+bool MonsterKillBox (edict_t *ent)
 {
 	trace_t		tr;
 
@@ -608,7 +608,7 @@ Kills all entities except players that would touch the proposed new
 positioning of ent.  Ent should be unlinked before calling this!
 =================
 */
-qboolean MonsterPlayerKillBox (edict_t *ent)
+bool MonsterPlayerKillBox (edict_t *ent)
 {
 	trace_t		tr;
 

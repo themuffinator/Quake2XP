@@ -185,7 +185,7 @@ CL_PrepRefresh
 Call before entering a new level, or after changing dlls
 =================
 */
-qboolean needLoadingPlaque (void);
+bool needLoadingPlaque (void);
 void R_GenSkyCubeMap (char *name);
 extern float loadingLod;
 
@@ -200,7 +200,7 @@ void CL_PrepRefresh (void) {
 	char		name[MAX_QPATH];
 	float		rotate, sec;
 	vec3_t		axis;
-	qboolean	newPlaque = needLoadingPlaque ();
+	bool	newPlaque = needLoadingPlaque ();
 
 	if (!cl.configstrings[CS_MODELS + 1][0])
 		return;					// no map loaded
@@ -219,7 +219,7 @@ void CL_PrepRefresh (void) {
 
 	loadScreenColorFade = 0.1;
 
-	loadingMessage = qtrue;
+	loadingMessage = true;
 	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]), "Loading Map...");
 	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "Loading Models...");
 	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]), "Loading Pics...");
@@ -360,8 +360,8 @@ void CL_PrepRefresh (void) {
 
 	SCR_UpdateScreen ();
 
-	cl.refresh_prepped = qtrue;
-	cl.force_refdef = qtrue;		// make sure we have a valid refdef
+	cl.refresh_prepped = true;
+	cl.force_refdef = true;		// make sure we have a valid refdef
 
 	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]), "");
 	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "");
@@ -371,7 +371,7 @@ void CL_PrepRefresh (void) {
 	// start the cd track
 	Music_Play ();
 
-	loadingMessage = qfalse;
+	loadingMessage = false;
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	sec *= 0.001;
@@ -476,7 +476,7 @@ void SCR_DrawCrosshair (void) {
 		return;
 
 	if (crossHair->modified) {
-		crossHair->modified = qfalse;
+		crossHair->modified = false;
 		SCR_TouchPics ();
 	}
 
@@ -574,7 +574,7 @@ void V_RenderView () {
 	// an invalid frame will just use the exact previous refdef
 	// we can't use the old frame if the video mode has changed, though...
 	if (cl.frame.valid && (cl.force_refdef || !cl_paused->value)) {
-		cl.force_refdef = qfalse;
+		cl.force_refdef = false;
 
 		V_ClearScene ();
 

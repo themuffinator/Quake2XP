@@ -35,7 +35,7 @@ PF_Unicast
 Sends the contents of the mutlicast buffer to a single client
 ===============
 */
-void PF_Unicast (edict_t * ent, qboolean reliable) {
+void PF_Unicast (edict_t * ent, bool reliable) {
 	int p;
 	client_t *client;
 
@@ -131,7 +131,7 @@ void PF_centerprintf (edict_t * ent, char *fmt, ...) {
 
 	MSG_WriteByte (&sv.multicast, svc_centerprint);
 	MSG_WriteString (&sv.multicast, msg);
-	PF_Unicast (ent, qtrue);
+	PF_Unicast (ent, true);
 }
 
 
@@ -250,7 +250,7 @@ PF_inPVS
 Also checks portalareas so that doors block sight
 =================
 */
-qboolean PF_inPVS (vec3_t p1, vec3_t p2) {
+bool PF_inPVS (vec3_t p1, vec3_t p2) {
 	int leafnum;
 	int cluster;
 	int area1, area2;
@@ -265,10 +265,10 @@ qboolean PF_inPVS (vec3_t p1, vec3_t p2) {
 	cluster = CM_LeafCluster (leafnum);
 	area2 = CM_LeafArea (leafnum);
 	if (mask && (!(mask[cluster >> 3] & (1 << (cluster & 7)))))
-		return qfalse;
+		return false;
 	if (!CM_AreasConnected (area1, area2))
-		return qfalse;			// a door blocks sight
-	return qtrue;
+		return false;			// a door blocks sight
+	return true;
 }
 
 
@@ -279,7 +279,7 @@ PF_inPHS
 Also checks portalareas so that doors block sound
 =================
 */
-qboolean PF_inPHS (vec3_t p1, vec3_t p2) {
+bool PF_inPHS (vec3_t p1, vec3_t p2) {
 	int leafnum;
 	int cluster;
 	int area1, area2;
@@ -294,11 +294,11 @@ qboolean PF_inPHS (vec3_t p1, vec3_t p2) {
 	cluster = CM_LeafCluster (leafnum);
 	area2 = CM_LeafArea (leafnum);
 	if (mask && (!(mask[cluster >> 3] & (1 << (cluster & 7)))))
-		return qfalse;			// more than one bounce away
+		return false;			// more than one bounce away
 	if (!CM_AreasConnected (area1, area2))
-		return qfalse;			// a door blocks hearing
+		return false;			// a door blocks hearing
 
-	return qtrue;
+	return true;
 }
 
 void PF_StartSound (edict_t * entity, int channel, int sound_num,

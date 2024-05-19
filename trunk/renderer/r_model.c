@@ -47,7 +47,7 @@ model_t mod_inline[MAX_MOD_KNOWN];
 
 int registration_sequence;
 extern char map_entitystring[MAX_MAP_ENTSTRING];
-extern qboolean relightMap, cleanAmbientMap;
+extern bool relightMap, cleanAmbientMap;
 
 byte Normal2Index(const vec3_t vec);
 
@@ -173,7 +173,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 	memset(target, 0, sizeof(target));
 
 	R_AddNewWorldLight(lightOffset, r_lightSpawnSurf[r_numAutoLights].color, radius, 0, 0, vec3_origin,
-		vec3_origin, qtrue, 1, 0, qfalse, 1, origin, 10.0, target, 0, 0, 0.0, lightOffset, radius, 0, 0.0, 0.0, 0.0);
+		vec3_origin, true, 1, 0, false, 1, origin, 10.0, target, 0, 0, 0.0, lightOffset, radius, 0, 0.0, 0.0, 0.0);
 
 	r_numAutoLights++;
 //	free(buffer);
@@ -456,7 +456,7 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName(char *name, qboolean crash) {
+model_t *Mod_ForName(char *name, bool crash) {
 	model_t		*mod;
 	unsigned	*buf;
 	int			i;
@@ -584,7 +584,7 @@ Mod_LoadLighting
 void Mod_LoadLighting(lump_t * l) {
 	char *s, *c;
 
-	loadmodel->useXPLM = qfalse;
+	loadmodel->useXPLM = false;
 
 	if (!l->filelen) {
 		loadmodel->lightData = NULL;
@@ -779,7 +779,7 @@ void Mod_LoadTextureFx(image_t *tex, char *s) {
 		}
 
 		if (!Q_strcasecmp(token, "envMap")) {
-			tex->envMap = qtrue;
+			tex->envMap = true;
 			continue;
 		}
 	}
@@ -844,7 +844,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 		Com_sprintf(name, sizeof(name), "overrides/%s.dds", purename);
 		image = R_LoadDDS(name, it_wall);
 		
-		qboolean freeWalTex = qtrue;
+		bool freeWalTex = true;
 
 		if (!image) {
 			Com_sprintf(name, sizeof(name), "textures/%s.dds", in->texture);
@@ -852,7 +852,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 			if (!image) {
 				image = out->albedo; // load wal texture
-				freeWalTex = qfalse; // dont free it!
+				freeWalTex = false; // dont free it!
 			}
 		}
 
@@ -1325,20 +1325,20 @@ void Mod_BuildVertexCache() {
 	vao.bsp = R_Alloc_VAO("bspVao", ATTF_POS | ATTF_ST0 | ATTF_ST1 | ATTF_COLOR | ATTF_TANGENT | ATTF_BINORMAL | ATTF_NORMAL);
 	GL_BindVBO(vbo.bspVbo);
 
-	qglVertexAttribPointer(ATT_POSITION,	3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATT_TEX1,		2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
-	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.col_offset));
+	qglVertexAttribPointer(ATT_POSITION,	3, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATT_TEX1,		2, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATT_NORMAL,		3, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATT_TANGENT,		3, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATT_BINORMAL,	3, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.bn_offset));
+	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, false, 0, BUFFER_OFFSET(vbo.col_offset));
 
 //----------------------------------------------
 //setup z world
 	R_DeleteVAO(vao.depthBsp);
 	vao.depthBsp = R_Alloc_VAO("depthBspVao", ATTF_POS);
 	GL_BindVBO(vbo.bspVbo);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, false, 0, 0);
 	GL_BindNullVAO();
 }
 
@@ -1793,14 +1793,14 @@ Mod_LoadBrushModel
 
 =================
 */
-static qboolean R_LoadXPLM(void) {
+static bool R_LoadXPLM(void) {
 	char tmp[MAX_QPATH], name[MAX_QPATH];
 	char *pB, *buf;
 	int *pIB;
 	int i, len, numFaces;
 	
 	if(!r_radiosityNormalMapping->integer)
-		return qfalse;
+		return false;
 
 	FS_StripExtension(loadmodel->name, tmp, sizeof(tmp));
 	Com_sprintf(name, sizeof(name), "%s.xplm", tmp);
@@ -1809,7 +1809,7 @@ static qboolean R_LoadXPLM(void) {
 
 	if (!buf) {
 		//		Com_DPrintf("R_LoadXPLM(): external lightmaps for '%s' not found.\n", loadmodel->name);
-		return qfalse;
+		return false;
 	}
 
 	//
@@ -1851,13 +1851,13 @@ static qboolean R_LoadXPLM(void) {
 	loadmodel->lightData = (byte *)Mod_Hunk_Alloc(len);
 
 	Q_memcpy(loadmodel->lightData, pB, len);
-	loadmodel->useXPLM = qtrue;
+	loadmodel->useXPLM = true;
 
 	FS_FreeFile(buf);
 
 	Com_Printf("Loaded lightmaps from " S_COLOR_GREEN "%s" S_COLOR_WHITE ".\n", name);
 
-	return qtrue;
+	return true;
 }
 
 void Mod_ParseFogParams(model_t *mod, char *s) {
@@ -2182,7 +2182,7 @@ static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, dtriangle_t * tris,
 
 	int i, j, found = -1, foundj = 0;
 	dtriangle_t *current = &tris[triIndex];
-	qboolean dup = qfalse;
+	bool dup = false;
 
 	for (i = 0; i < numtris; i++) {
 		if (i == triIndex)
@@ -2203,7 +2203,7 @@ static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, dtriangle_t * tris,
 					foundj = j;
 				}
 				else
-					dup = qtrue;	// the three edges story
+					dup = true;	// the three edges story
 			}
 		}
 	}
@@ -2279,11 +2279,11 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 			continue;
 		}
 		if (!Q_strcasecmp(token, "noSelfShadow")) {
-			mod->noSelfShadow = qtrue;
+			mod->noSelfShadow = true;
 			continue;
 		}
 		if (!Q_strcasecmp(token, "envMap")) {
-			mod->envMap = qtrue;
+			mod->envMap = true;
 			mod->envScale = atof(COM_Parse(&s));
 			continue;
 		}
@@ -2500,7 +2500,7 @@ static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 	memcpy(mod->indexArray, indices, index * sizeof(uint16_t));
 
-	char pname[64];
+/*	char pname[64];
 	strcpy(pname, mod->name);
 	if (strstr(pname, "models")) {
 		memmove(pname, pname + 7, strlen(pname));
@@ -2511,6 +2511,7 @@ static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 		pname[strlen(pname) - 4] = 0;
 	}
 	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(uint16_t), mod->indexArray, GL_STATIC_DRAW);
+	*/
 }
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
@@ -2563,9 +2564,9 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	mod->glowCfg[0] = 0.3;
 	mod->glowCfg[1] = 3.0;
 	mod->glowCfg[2] = 5.666;
-	mod->noSelfShadow = (qboolean)qfalse;
+	mod->noSelfShadow = (bool)false;
 	mod->modelScale = 1.0;
-	mod->envMap = (qboolean)qfalse;
+	mod->envMap = (bool)false;
 	mod->envScale = 0.1;
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);
@@ -2795,20 +2796,20 @@ void R_BeginRegistration(char *model) {
 	Com_sprintf(fullname, sizeof(fullname), "maps/%s.bsp", model);
 
 	if (!strcmp(model, "xhangar2"))
-		xhargar2hack = qtrue;
+		xhargar2hack = true;
 	else
-		xhargar2hack = qfalse;
+		xhargar2hack = false;
 
 	// explicitly free the old map if different
 	// this guarantees that mod_known[0] is the world map
 	flushmap = Cvar_Get("flushmap", "0", 0);
 	if (strcmp(mod_known[0].name, fullname) || flushmap->integer)
 		Mod_Free(&mod_known[0]);
-	r_worldmodel = Mod_ForName(fullname, qtrue);
+	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
 	numPreCachedLights = 0;
-	flareEdit = (qboolean)qfalse;
+	flareEdit = (bool)false;
 }
 
 /*
@@ -2838,7 +2839,7 @@ struct model_s *R_RegisterModel(char *name) {
 			return mod;
 	}
 
-	mod = Mod_ForName(name, qfalse);
+	mod = Mod_ForName(name, false);
 
 	if (mod) {
 		mod->registration_sequence = registration_sequence;
@@ -2949,14 +2950,10 @@ void R_EndRegistration(void) {
 		}
 	}
 	GL_FreeUnusedImages();
-
-	qglClear(GL_COLOR_BUFFER_BIT);
-	qglClearColor(0.0, 0.0, 0.0, 0.0);
-
 	GL_SetDefaultState();
 
-	relightMap = qfalse;
-	cleanAmbientMap = qfalse;
+	relightMap = false;
+	cleanAmbientMap = false;
 }
 
 
@@ -2999,7 +2996,7 @@ void Mod_FreeAll() {
 
 #ifdef _WIN32_
 /// from Tenebrae, asm by Berserker
-qboolean HasSharedLeafs(byte *v1, byte *v2) {
+bool HasSharedLeafs(byte *v1, byte *v2) {
 
 	int numleafs__ = r_worldmodel->numLeafs;
 	_asm
@@ -3036,19 +3033,19 @@ qboolean HasSharedLeafs(byte *v1, byte *v2) {
 			cmp edx, numleafs__
 			jc short l1
 	}
-l5:	return qfalse;
+l5:	return false;
 	_asm
 	{
 	l3:
 	}
-	return qtrue;
+	return true;
 
 }
 
 #else
 
 // optimized version based on previous assembly one
-qboolean HasSharedLeafs(byte *v1, byte *v2) {
+bool HasSharedLeafs(byte *v1, byte *v2) {
 	int numLeafs = r_worldmodel->numLeafs;
 	int i;
 
@@ -3056,7 +3053,7 @@ qboolean HasSharedLeafs(byte *v1, byte *v2) {
 		uint *v1_x4 = (uint*)v1;
 		uint *v2_x4 = (uint*)v2;
 		if (*v1_x4 & *v2_x4)
-			return qtrue;
+			return true;
 
 		numLeafs -= 32;
 		v1 += 4;
@@ -3066,9 +3063,9 @@ qboolean HasSharedLeafs(byte *v1, byte *v2) {
 	for (i = 0; i < numLeafs; i++) {
 		if (v1[i >> 3] & (1 << (i & 7)))
 			if (v2[i >> 3] & (1 << (i & 7)))
-				return qtrue;
+				return true;
 	}
 
-	return qfalse;
+	return false;
 }
 #endif

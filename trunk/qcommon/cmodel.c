@@ -107,7 +107,7 @@ mapsurface_t nullsurface;
 
 int floodvalid;
 
-qboolean portalopen[MAX_MAP_AREAPORTALS];
+bool portalopen[MAX_MAP_AREAPORTALS];
 
 
 cvar_t *map_noareas;
@@ -519,7 +519,7 @@ CM_LoadMap
 Loads in the map and all subModels
 ==================
 
-cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
+cmodel_t *CM_LoadMap (char *name, bool clientload, unsigned *checksum)
 {
 unsigned		*buf;
 int				i;
@@ -608,7 +608,7 @@ return &map_cmodels[0];
 
 extern cvar_t *useRussianLoc;
 
-cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
+cmodel_t *CM_LoadMap (char *name, bool clientload, unsigned *checksum) {
 	unsigned *buf, *entbuf;
 	int i;
 	dheader_t header;
@@ -1054,7 +1054,7 @@ vec3_t trace_extents;
 
 trace_t trace_trace;
 int trace_contents;
-qboolean trace_ispoint;			// optimized case
+bool trace_ispoint;			// optimized case
 
 /*
 ================
@@ -1069,7 +1069,7 @@ void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 	float enterfrac, leavefrac;
 	vec3_t ofs;
 	float d1, d2;
-	qboolean getout, startout;
+	bool getout, startout;
 	float f;
 	cbrushside_t *side, *leadside;
 
@@ -1082,8 +1082,8 @@ void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 
 	c_brush_traces++;
 
-	getout = qfalse;
-	startout = qfalse;
+	getout = false;
+	startout = false;
 	leadside = NULL;
 
 	for (i = 0; i < brush->numsides; i++) {
@@ -1114,9 +1114,9 @@ void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 		d2 = DotProduct (p2, plane->normal) - dist;
 
 		if (d2 > 0)
-			getout = qtrue;		// endpoint is not in solid
+			getout = true;		// endpoint is not in solid
 		if (d1 > 0)
-			startout = qtrue;
+			startout = true;
 
 		// if completely in front of face, no intersection
 		if (d1 > 0 && d2 >= d1)
@@ -1142,9 +1142,9 @@ void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 	}
 
 	if (!startout) {			// original point was inside brush
-		trace->startsolid = qtrue;
+		trace->startsolid = true;
 		if (!getout)
-			trace->allsolid = qtrue;
+			trace->allsolid = true;
 		return;
 	}
 	if (enterfrac < leavefrac) {
@@ -1205,7 +1205,7 @@ void CM_TestBoxInBrush (vec3_t mins, vec3_t maxs, vec3_t p1,
 	}
 
 	// inside this brush
-	trace->startsolid = trace->allsolid = qtrue;
+	trace->startsolid = trace->allsolid = true;
 	trace->fraction = 0;
 	trace->contents = brush->contents;
 }
@@ -1452,11 +1452,11 @@ trace_t CM_BoxTrace (vec3_t start, vec3_t end,
 	// 
 	if (mins[0] == 0 && mins[1] == 0 && mins[2] == 0
 		&& maxs[0] == 0 && maxs[1] == 0 && maxs[2] == 0) {
-		trace_ispoint = qtrue;
+		trace_ispoint = true;
 		VectorClear (trace_extents);
 	}
 	else {
-		trace_ispoint = qfalse;
+		trace_ispoint = false;
 		trace_extents[0] = -mins[0] > maxs[0] ? -mins[0] : maxs[0];
 		trace_extents[1] = -mins[1] > maxs[1] ? -mins[1] : maxs[1];
 		trace_extents[2] = -mins[2] > maxs[2] ? -mins[2] : maxs[2];
@@ -1498,7 +1498,7 @@ trace_t CM_TransformedBoxTrace (vec3_t start, vec3_t end,
 	vec3_t a;
 	vec3_t forward, right, up;
 	vec3_t temp;
-	qboolean rotated;
+	bool rotated;
 
 	// subtract origin offset
 	VectorSubtract (start, origin, start_l);
@@ -1506,9 +1506,9 @@ trace_t CM_TransformedBoxTrace (vec3_t start, vec3_t end,
 
 	// rotate start and end into the models frame of reference
 	if (headnode != box_headnode && (angles[0] || angles[1] || angles[2]))
-		rotated = qtrue;
+		rotated = true;
 	else
-		rotated = qfalse;
+		rotated = false;
 
 	if (rotated) {
 		AngleVectors (angles, forward, right, up);
@@ -1669,7 +1669,7 @@ void FloodAreaConnections (void) {
 
 }
 
-void CM_SetAreaPortalState (int portalnum, qboolean open) {
+void CM_SetAreaPortalState (int portalnum, bool open) {
 	if (portalnum > numareaportals)
 		Com_Error (ERR_DROP, "areaportal > numareaportals");
 
@@ -1677,16 +1677,16 @@ void CM_SetAreaPortalState (int portalnum, qboolean open) {
 	FloodAreaConnections ();
 }
 
-qboolean CM_AreasConnected (int area1, int area2) {
+bool CM_AreasConnected (int area1, int area2) {
 	if (map_noareas->value)
-		return qtrue;
+		return true;
 
 	if (area1 > numareas || area2 > numareas)
 		Com_Error (ERR_DROP, "area > numareas");
 
 	if (map_areas[area1].floodnum == map_areas[area2].floodnum)
-		return qtrue;
-	return qfalse;
+		return true;
+	return false;
 }
 
 
@@ -1752,11 +1752,11 @@ void CM_ReadPortalState (FILE * f) {
 =============
 CM_HeadnodeVisible
 
-Returns qtrue if any leaf under headnode has a cluster that
+Returns true if any leaf under headnode has a cluster that
 is potentially visible
 =============
 */
-qboolean CM_HeadnodeVisible (int nodenum, byte * visbits) {
+bool CM_HeadnodeVisible (int nodenum, byte * visbits) {
 	int leafnum;
 	int cluster;
 	cnode_t *node;
@@ -1765,14 +1765,14 @@ qboolean CM_HeadnodeVisible (int nodenum, byte * visbits) {
 		leafnum = -1 - nodenum;
 		cluster = map_leafs[leafnum].cluster;
 		if (cluster == -1)
-			return qfalse;
+			return false;
 		if (visbits[cluster >> 3] & (1 << (cluster & 7)))
-			return qtrue;
-		return qfalse;
+			return true;
+		return false;
 	}
 
 	node = &map_nodes[nodenum];
 	if (CM_HeadnodeVisible (node->children[0], visbits))
-		return qtrue;
+		return true;
 	return CM_HeadnodeVisible (node->children[1], visbits);
 }

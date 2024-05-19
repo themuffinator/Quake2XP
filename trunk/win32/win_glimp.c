@@ -46,11 +46,11 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 #define	WINDOW_STYLE	(WS_CAPTION|WS_VISIBLE)
 
 typedef struct {
-	qboolean		accelerated;
-	qboolean		drawToWindow;
-	qboolean		supportOpenGL;
-	qboolean		doubleBuffer;
-	qboolean		rgba;
+	bool		accelerated;
+	bool		drawToWindow;
+	bool		supportOpenGL;
+	bool		doubleBuffer;
+	bool		rgba;
 
 	int				colorBits;
 	int				alphaBits;
@@ -66,7 +66,7 @@ static LRESULT CALLBACK FakeWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 #define	WINDOW_CLASS_FAKE		"quake2xp Fake Window"
 #define	WINDOW_NAME				"quake2xp"
 
-qboolean GLW_InitDriver(void);
+bool GLW_InitDriver(void);
 
 glwstate_t glw_state;
 
@@ -77,7 +77,7 @@ void Com_Printf(char* fmt, ...);
 */
 #define	WINDOW_CLASS_NAME	"quake2xp"
 
-qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
+bool VID_CreateWindow( int width, int height, bool fullscreen )
 {
 	WNDCLASS		wc;
 	RECT			r;
@@ -220,7 +220,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		glw_state.hWnd = NULL;
 
 		UnregisterClass(WINDOW_CLASS_NAME, glw_state.hInstance);
-		return qfalse;
+		return false;
 	}
 	if (glw_state.hWnd) {
 		SetForegroundWindow(glw_state.hWnd);
@@ -229,7 +229,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	// let the sound and input subsystems know about the new window
 	VID_NewWindow (width, height);
 
-	return qtrue;
+	return true;
 }
 
 #define MAX_SUPPORTED_MONITORS  16
@@ -358,13 +358,13 @@ BOOL CALLBACK MonitorEnumProc2(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMon
 }
 void GLimp_InitADL();
 void GLimp_InitNvApi();
-extern qboolean adlInit;
+extern bool adlInit;
 
 /*
 ** GLimp_SetMode
 */
 
-rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fullscreen)
+rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, bool fullscreen)
 {
 	int /*width, height*/ i, idx, cvm, cdsRet, j, count = 0;
 	const char* win_fs[] = { "Window", "Full Screen" };
@@ -567,11 +567,11 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 			*pwidth = winScreenModes[r_mode->integer].w;
 			*pheight = winScreenModes[r_mode->integer].h;
 
-			gl_state.fullscreen = qtrue;
+			gl_state.fullscreen = true;
 
 			Com_Printf(S_COLOR_GREEN"ok\n" );
 
-			if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qtrue) )
+			if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, true) )
 				return rserr_invalid_mode;
 
 			return rserr_ok;
@@ -608,18 +608,18 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 				
 				*pwidth = winScreenModes[r_mode->integer].w;
 				*pheight = winScreenModes[r_mode->integer].h;
-				gl_state.fullscreen = qfalse;
+				gl_state.fullscreen = false;
 
-				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse) )
+				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, false) )
 					return rserr_invalid_mode;
 				return rserr_invalid_fullscreen;
 			}
 			else
 			{
 				Com_Printf(S_COLOR_GREEN" ok\n" );
-				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qtrue) )
+				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, true) )
 					return rserr_invalid_mode;
-				gl_state.fullscreen = qtrue;
+				gl_state.fullscreen = true;
 				return rserr_ok;
 			}
 		}
@@ -627,19 +627,19 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 	else{
 		
 		ChangeDisplaySettings( 0, 0 );
-		gl_state.fullscreen = qfalse;
+		gl_state.fullscreen = false;
 		if (r_customWindowWidth->integer >= 1024 && r_customWindowHeight->integer >= 768) {
 			Com_Printf("...setting custom windowed mode [%ix%i]\n", r_customWindowWidth->integer, r_customWindowHeight->integer);
 			*pwidth = r_customWindowWidth->integer;
 			*pheight = r_customWindowHeight->integer;
-			if (!VID_CreateWindow(r_customWindowWidth->integer, r_customWindowHeight->integer, qfalse))
+			if (!VID_CreateWindow(r_customWindowWidth->integer, r_customWindowHeight->integer, false))
 				return rserr_invalid_mode;
 		}
 		else {
 			Com_Printf("...setting windowed mode [%ix%i]\n", winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h);
 			*pwidth = winScreenModes[r_mode->integer].w;
 			*pheight = winScreenModes[r_mode->integer].h;
-			if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse))
+			if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, false))
 				return rserr_invalid_mode;
 		}
 
@@ -687,7 +687,7 @@ void GLimp_Shutdown( void )
 	if ( gl_state.fullscreen )
 	{
 		ChangeDisplaySettings( 0, 0 );
-		gl_state.fullscreen = qfalse;
+		gl_state.fullscreen = false;
 	}
 	
 	if (nvApiInit) {
@@ -733,7 +733,7 @@ void VID_SetProcessDpiAwareness(void) {
 }
 
 
-qboolean GLimp_Init( void *hinstance, void *wndproc )
+bool GLimp_Init( void *hinstance, void *wndproc )
 {
 	Con_Printf (PRINT_ALL, "\n");
 	Com_Printf ("========"S_COLOR_YELLOW"System Information"S_COLOR_WHITE"========\n");
@@ -752,7 +752,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
 	
-	return qtrue;
+	return true;
 	
 
 }
@@ -803,10 +803,10 @@ void GLW_InitExtensions() {
 	else
 		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
 
-	gl_state.wgl_swap_control_tear = qfalse;
+	gl_state.wgl_swap_control_tear = false;
 	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control_tear")) {
 		Com_Printf("...using WGL_EXT_swap_control_tear\n");
-		gl_state.wgl_swap_control_tear = qtrue;
+		gl_state.wgl_swap_control_tear = true;
 	}
 	else {
 		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
@@ -882,7 +882,7 @@ GLW_InitFakeOpenGL
 
 ==================
 */
-static qboolean GLW_InitFakeOpenGL(void) {
+static bool GLW_InitFakeOpenGL(void) {
 	WNDCLASSEX				wndClass;
 	PIXELFORMATDESCRIPTOR	PFD;
 	int						pixelFormat;
@@ -902,19 +902,19 @@ static qboolean GLW_InitFakeOpenGL(void) {
 	wndClass.lpszClassName = WINDOW_CLASS_FAKE;
 
 	if (!RegisterClassEx(&wndClass))
-		return qfalse;
+		return false;
 
 	// create the fake window
 	glw_state.hWndFake = CreateWindowEx(0, WINDOW_CLASS_FAKE, WINDOW_NAME, WINDOWBORDERLESS_STYLE, 0, 0, 320, 240, NULL, NULL, glw_state.hInstance, NULL);
 	if (!glw_state.hWndFake) {
 		GLW_ShutdownFakeOpenGL();
-		return qfalse;
+		return false;
 	}
 
 	glw_state.hDCFake = GetDC(glw_state.hWndFake);
 	if (!glw_state.hDCFake) {
 		GLW_ShutdownFakeOpenGL();
-		return qfalse;
+		return false;
 	}
 
 	// choose a pixel format
@@ -933,7 +933,7 @@ static qboolean GLW_InitFakeOpenGL(void) {
 
 	if (!pixelFormat) {
 		GLW_ShutdownFakeOpenGL();
-		return qfalse;
+		return false;
 	}
 
 	// set the pixel format
@@ -941,7 +941,7 @@ static qboolean GLW_InitFakeOpenGL(void) {
 
 	if (!SetPixelFormat(glw_state.hDCFake, pixelFormat, &PFD)) {
 		GLW_ShutdownFakeOpenGL();
-		return qfalse;
+		return false;
 	}
 
 	// create the fake GL context and make it current
@@ -949,18 +949,18 @@ static qboolean GLW_InitFakeOpenGL(void) {
 
 	if (!glw_state.hGLRCFake) {
 		GLW_ShutdownFakeOpenGL();
-		return qfalse;
+		return false;
 	}
 
 	if (!qwglMakeCurrent(glw_state.hDCFake, glw_state.hGLRCFake)) {
 		GLW_ShutdownFakeOpenGL();
-		return qfalse;
+		return false;
 	}
 
-	return qtrue;
+	return true;
 }
 
-static qboolean GLW_ChoosePixelFormat() {
+static bool GLW_ChoosePixelFormat() {
 	PIXELFORMATDESCRIPTOR	PFD;
 	int pixelFormat, samples;
 	uint numFormats;
@@ -1009,14 +1009,14 @@ static qboolean GLW_ChoosePixelFormat() {
 	};
 
 	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
-	qboolean useHdrDisplay = gl_config.hdrDisplay && r_useHdrDisplay->integer;
+	bool useHdrDisplay = gl_config.hdrDisplay && r_useHdrDisplay->integer;
 
 	if (!qwglChoosePixelFormatARB(glw_state.hDC, useHdrDisplay ? pAttribsHDR : pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
 		Com_Printf(S_COLOR_RED "...qwglChoosePixelFormatARB() failed.");
 		ReleaseDC(glw_state.hWnd, glw_state.hDC);
 		glw_state.hDC = NULL;
 
-		return qfalse;
+		return false;
 	}
 
 	int numPixelFormats = WGL_NUMBER_PIXEL_FORMATS_ARB;
@@ -1041,7 +1041,7 @@ static qboolean GLW_ChoosePixelFormat() {
 	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n\n",
 		32, 24, 8, 8, gl_config.maxSamples, gl_config.samples);
 
-	return qtrue;
+	return true;
 }
 
 void GLW_CreateContext() {
@@ -1094,11 +1094,11 @@ void GLW_CreateContext() {
 	GLW_ShutdownFakeOpenGL();
 }
 
-qboolean GLW_InitDriver(void) {
+bool GLW_InitDriver(void) {
 
 	if (!GLW_InitFakeOpenGL()) {
 		Com_Printf(S_COLOR_RED "...failed to initialize fake OpenGL context\n");
-		return qfalse;
+		return false;
 	}
 	// get a DC for the current window
 	Com_Printf("...getting DC: ");
@@ -1107,7 +1107,7 @@ qboolean GLW_InitDriver(void) {
 	if (!glw_state.hDC) {
 		Com_Printf(S_COLOR_RED "failed\n");
 		VID_Error(ERR_FATAL, "...getting DC: failed.");
-		return qfalse;
+		return false;
 	}
 
 	Com_Printf(S_COLOR_GREEN"ok\n");
@@ -1122,7 +1122,7 @@ qboolean GLW_InitDriver(void) {
 	if (!qwglMakeCurrent(glw_state.hDC, glw_state.hGLRC)) {
 		Com_Printf(S_COLOR_RED "...wglMakeCurrent() failed.");
 		VID_Error(ERR_FATAL, "...wglMakeCurrent() failed.");
-		return qfalse;
+		return false;
 	}
 
 	Com_Printf(S_COLOR_GREEN "ok\n");
@@ -1130,7 +1130,7 @@ qboolean GLW_InitDriver(void) {
 	gl_config.glMajorVersion = r_glMajorVersion->integer;
 	gl_config.glMinorVersion = r_glMinorVersion->integer;
 
-	return qtrue;
+	return true;
 }
 
 
@@ -1157,7 +1157,7 @@ void GL_UpdateSwapInterval()
 {
 
 	if(r_vsync->modified)
-	r_vsync->modified = qfalse;
+	r_vsync->modified = false;
 
 	if(gl_state.wgl_swap_control_tear){
 	
@@ -1179,7 +1179,7 @@ void GL_UpdateSwapInterval()
 /*
 ** GLimp_AppActivate
 */
-void GLimp_AppActivate( qboolean active )
+void GLimp_AppActivate( bool active )
 {
 	if ( active )
 	{

@@ -29,7 +29,7 @@ vec3_t vec3_origin = { 0, 0, 0 };
 
 //============================================================================
 
-qboolean ru_loc;
+bool ru_loc;
 
 /*
  =================
@@ -46,7 +46,7 @@ inline char b_chrt(char sym)
 	return sym;
 }
 
-qboolean b_stricmp(char *str1, char *str2)
+bool b_stricmp(char *str1, char *str2)
 {
 	int i = 0;
 	while (1)
@@ -55,9 +55,9 @@ qboolean b_stricmp(char *str1, char *str2)
 		char ch2 = b_chrt(str2[i]);
 
 		if ((ch1 == 0) && (ch2 == 0))
-			return qfalse;		// equal
+			return false;		// equal
 		if (ch1 != ch2)
-			return qtrue;					// not equal
+			return true;					// not equal
 		i++;
 	}
 }
@@ -1009,7 +1009,7 @@ BYTE ORDER FUNCTIONS
 ============================================================================
 */
 
-qboolean	bigendien;
+bool	bigendien;
 
 // can't just use function pointers, or dll linkage can
 // mess up when qcommon is included in multiple places
@@ -1096,7 +1096,7 @@ void Swap_Init (void) {
 
 	// set the byte swapping variables in a portable manner	
 	if (*(short *)swaptest == 1) {
-		bigendien = qfalse;
+		bigendien = false;
 		_BigShort = ShortSwap;
 		_LittleShort = ShortNoSwap;
 		_BigLong = LongSwap;
@@ -1105,7 +1105,7 @@ void Swap_Init (void) {
 		_LittleFloat = FloatNoSwap;
 	}
 	else {
-		bigendien = qtrue;
+		bigendien = true;
 		_BigShort = ShortNoSwap;
 		_LittleShort = ShortSwap;
 		_BigLong = LongNoSwap;
@@ -1496,12 +1496,12 @@ Some characters are illegal in info strings because they
 can mess up the server's parsing
 ==================
 */
-qboolean Info_Validate (char *s) {
+bool Info_Validate (char *s) {
 	if (strstr (s, "\""))
-		return qfalse;
+		return false;
 	if (strstr (s, ";"))
-		return qfalse;
-	return qtrue;
+		return false;
+	return true;
 }
 
 void Info_SetValueForKey (char *s, char *key, char *value) {
@@ -1613,10 +1613,10 @@ void Q_strcat (char *dst, const char *src, int dstSize) {
 	Q_strncpyz (dst + len, src, dstSize - len);
 }
 
-char *Com_ParseExt (char **data_p, qboolean allowNewLines) {
+char *Com_ParseExt (char **data_p, bool allowNewLines) {
 	int c, len = 0;
 	char *data;
-	qboolean hasNewLines = qfalse;
+	bool hasNewLines = false;
 
 	data = *data_p;
 	com_token[0] = 0;
@@ -1707,7 +1707,7 @@ char *Com_ParseExt (char **data_p, qboolean allowNewLines) {
 	return com_token;
 }
 
-char *Com_SkipWhiteSpace (char *data_p, qboolean *hasNewLines) {
+char *Com_SkipWhiteSpace (char *data_p, bool *hasNewLines) {
 	int c;
 
 	while ((c = *data_p) <= ' ') {
@@ -1716,7 +1716,7 @@ char *Com_SkipWhiteSpace (char *data_p, qboolean *hasNewLines) {
 
 		if (c == '\n') {
 			com_parseLine++;
-			*hasNewLines = qtrue;
+			*hasNewLines = true;
 		}
 		data_p++;
 	}

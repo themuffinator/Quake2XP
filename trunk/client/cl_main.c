@@ -165,7 +165,7 @@ void CL_Stop_f (void) {
 	fwrite (&len, 4, 1, cls.demoFile);
 	fclose (cls.demoFile);
 	cls.demoFile = NULL;
-	cls.demoRecording = qfalse;
+	cls.demoRecording = false;
 	Com_Printf ("Stopped demo.\n");
 }
 
@@ -214,11 +214,11 @@ void CL_Record_f (void) {
 		Com_Printf ("ERROR: couldn't open.\n");
 		return;
 	}
-	cls.demoRecording = qtrue;
+	cls.demoRecording = true;
 
 	// don't start saving messages until a non-delta compressed message is
 	// received
-	cls.demoWaiting = qtrue;
+	cls.demoWaiting = true;
 
 	//
 	// write out messages to hold the startup information
@@ -270,7 +270,7 @@ void CL_Record_f (void) {
 
 		MSG_WriteByte (&buf, svc_spawnbaseline);
 		MSG_WriteDeltaEntity (&nullstate, &cl_entities[i].baseline, &buf,
-			qtrue, qtrue);
+			true, true);
 	}
 
 	MSG_WriteByte (&buf, svc_stufftext);
@@ -358,7 +358,7 @@ void CL_ForwardToServer_f (void) {
 		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 		SZ_Print (&cls.netchan.message, Cmd_Args ());
 	}
-	cls.forcePacket = qtrue;
+	cls.forcePacket = true;
 }
 
 
@@ -429,7 +429,7 @@ void CL_SendConnectPacket (void) {
 		adr.port = BigShort (PORT_SERVER);
 
 	port = Cvar_VariableValue ("qport");
-	userinfo_modified = qfalse;
+	userinfo_modified = false;
 
 	if (net_compatibility->integer)
 		Netchan_OutOfBandPrint (NS_CLIENT, adr, "connect %i %i %i \"%s\"\n",
@@ -449,7 +449,7 @@ CL_ForcePacket
 */
 void CL_ForcePacket(void)
 {
-	cls.forcePacket = qtrue;
+	cls.forcePacket = true;
 }
 
 /*
@@ -516,7 +516,7 @@ void CL_Connect_f (void) {
 	
 	if (Com_ServerState ()) {	// if running a local server, kill it and
 		// reissue
-		SV_Shutdown (va ("Server quit\n", msg), qfalse);
+		SV_Shutdown (va ("Server quit\n", msg), false);
 	}
 	else {
 		CL_Disconnect ();
@@ -524,7 +524,7 @@ void CL_Connect_f (void) {
 
 	server = Cmd_Argv (1);
 
-	NET_Config (qtrue);			// allow remote
+	NET_Config (true);			// allow remote
 
 	CL_Disconnect ();
 
@@ -560,7 +560,7 @@ void CL_Rcon_f (void) {
 	message[3] = (char)255;
 	message[4] = 0;
 
-	NET_Config (qtrue);			// allow remote
+	NET_Config (true);			// allow remote
 
 	strcat (message, "rcon ");
 
@@ -663,7 +663,7 @@ void CL_Disconnect (void) {
 	}
 
 #ifdef USE_CURL
-	CL_CancelHTTPDownloads(qtrue);
+	CL_CancelHTTPDownloads(true);
 	cls.downloadReferer[0] = 0;
 	cls.downloadName[0] = 0;
 	cls.downloadposition = 0;
@@ -698,7 +698,7 @@ void CL_Packet_f (void) {
 		return;
 	}
 
-	NET_Config (qtrue);			// allow remote
+	NET_Config (true);			// allow remote
 
 	if (!NET_StringToAdr (Cmd_Argv (1), &adr)) {
 		Com_Printf ("Bad address\n");
@@ -778,7 +778,7 @@ void CL_Reconnect_f (void) {
 		cls.state = ca_connected;
 		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString (&cls.netchan.message, "new");
-		cls.forcePacket = qtrue;
+		cls.forcePacket = true;
 		return;
 	}
 
@@ -825,7 +825,7 @@ void CL_PingServers_f (void) {
 	cvar_t *noudp;
 	//cvar_t *noipx;
 
-	NET_Config (qtrue);			// allow remote
+	NET_Config (true);			// allow remote
 
 	// send a broadcast packet
 	Com_Printf ("pinging broadcast...\n");
@@ -908,7 +908,7 @@ CL_ConnectionlessPacket
 Responses to broadcasts, etc
 =================
 */
-qboolean Sys_GetAntiCheatAPI();
+bool Sys_GetAntiCheatAPI();
 
 void CL_ConnectionlessPacket (void) {
 	char	*s, *c;
@@ -918,7 +918,7 @@ void CL_ConnectionlessPacket (void) {
 
 	s = MSG_ReadStringLine (&net_message);
 
-	Cmd_TokenizeString (s, qfalse);
+	Cmd_TokenizeString (s, false);
 
 	c = Cmd_Argv (0);
 
@@ -946,7 +946,7 @@ void CL_ConnectionlessPacket (void) {
 			if (!p[0])
 				continue;
 			if (atoi(p))
-				try_to_use_anticheat = qtrue;
+				try_to_use_anticheat = true;
 		}
 
 			else if (!strncmp(p, "dlserver=", 9))
@@ -984,7 +984,7 @@ void CL_ConnectionlessPacket (void) {
 		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString (&cls.netchan.message, "new");
 		cls.state = ca_connected;
-		cls.forcePacket = qtrue;
+		cls.forcePacket = true;
 		return;
 	}
 	// server responding to a status broadcast
@@ -1115,7 +1115,7 @@ void CL_FixUpGender (void) {
 
 		if (gender->modified) {
 			// was set directly, don't override the user
-			gender->modified = qfalse;
+			gender->modified = false;
 			return;
 		}
 
@@ -1129,7 +1129,7 @@ void CL_FixUpGender (void) {
 			Cvar_Set ("gender", "female");
 		else
 			Cvar_Set ("gender", "none");
-		gender->modified = qfalse;
+		gender->modified = false;
 	}
 }
 
@@ -1156,7 +1156,7 @@ void CL_Snd_Restart_f (void) {
 	CL_RegisterSounds ();
 
 	// cause music track to reload if already playing
-	s_musicSrc->modified = qtrue;
+	s_musicSrc->modified = true;
 }
 
 int precache_check;				// for autodownload of precache items
@@ -1187,7 +1187,7 @@ void CL_Precache_f (void) {
 	if (Cmd_Argc () < 2) {
 		unsigned map_checksum;	// for detecting cheater maps
 
-		CM_LoadMap (cl.configstrings[CS_MODELS + 1], qtrue, &map_checksum);
+		CM_LoadMap (cl.configstrings[CS_MODELS + 1], true, &map_checksum);
 		CL_RegisterSounds ();
 		CL_PrepRefresh ();
 		return;
@@ -1327,7 +1327,7 @@ void CL_InitLocal (void) {
 
 	gender = Cvar_Get ("gender", "male", CVAR_USERINFO | CVAR_ARCHIVE);
 	gender_auto = Cvar_Get ("gender_auto", "1", CVAR_ARCHIVE);
-	gender->modified = qfalse;	// clear this so we know when user sets it
+	gender->modified = false;	// clear this so we know when user sets it
 	// manually
 
 	dmflags = Cvar_Get ("dmflags", "0", CVAR_SERVERINFO);
@@ -1538,8 +1538,8 @@ void CL_UpdateHRTF() {
 
 	if (s_hrtfIndex->modified || s_useHRTF->modified)
 	{
-		s_hrtfIndex->modified = qfalse;
-		s_useHRTF->modified = qfalse;
+		s_hrtfIndex->modified = false;
+		s_useHRTF->modified = false;
 
 		ALCint attrlist[5] =
 		{ ALC_HRTF_SOFT, s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
@@ -1573,9 +1573,9 @@ void CL_Frame_Async(int msec)
 	static int	renderDelta = 0;
 	static int	miscDelta = 0;
 	static int  lasttimecalled;
-	qboolean	packetFrame = qtrue;
-	qboolean	renderFrame = qtrue;
-	qboolean	miscFrame = qtrue;
+	bool	packetFrame = true;
+	bool	renderFrame = true;
+	bool	miscFrame = true;
 
 	// Don't allow setting maxfps too low or too high
 	net_maxFps->integer = ClampCvarInteger(10, 90, net_maxFps->integer);
@@ -1604,19 +1604,19 @@ void CL_Frame_Async(int msec)
 	if (!cl_timedemo->value)
 	{	// Don't flood packets out while connecting
 		if (cls.state == ca_connected && packetDelta < 100)
-			packetFrame = qfalse;
+			packetFrame = false;
 
 		if (packetDelta < 1000.0 / net_maxFps->value)
-			packetFrame = qfalse;
+			packetFrame = false;
 		else if (cls.frameTime == cls.renderFrameTime)
-			packetFrame = qfalse;
+			packetFrame = false;
 
 		if (renderDelta < 1000.0 / r_maxFps->value)
-			renderFrame = qfalse;
+			renderFrame = false;
 
 		// Stuff that only needs to run at 10FPS
 		if (miscDelta < 1000.0 / 10)
-			miscFrame = qfalse;
+			miscFrame = false;
 
 		if (!packetFrame && !renderFrame && !cls.forcePacket && !userinfo_modified)
 		{	
@@ -1642,8 +1642,8 @@ void CL_Frame_Async(int msec)
 
 	if (cls.forcePacket || userinfo_modified)
 	{
-		packetFrame = qtrue;
-		cls.forcePacket =qfalse;
+		packetFrame = true;
+		cls.forcePacket =false;
 	}
 
 	// Send a new command message to the server
@@ -1764,7 +1764,7 @@ CL_Frame
 void CL_Frame (int msec) {
 	static int	extratime, packet_delta, misc_delta = 1000;
 	static int lasttimecalled;
-	qboolean	packet_frame = qtrue;
+	bool	packet_frame = true;
 
 	if (dedicated->integer)
 		return;
@@ -1935,7 +1935,7 @@ void CL_Init (void) {
 #endif
 
 	SCR_Init ();
-	cls.disableScreen = qtrue;	// don't draw yet
+	cls.disableScreen = true;	// don't draw yet
 
 	Music_Init ();
 	CL_InitLocal ();
@@ -1956,16 +1956,16 @@ to run quit through here before the final handoff to the sys code.
 */
 void CL_Shutdown (void) {
 	char	name[MAX_OSPATH];
-	static qboolean isdown = qfalse;
+	static bool isdown = false;
 
 	if (isdown) {
 		printf ("recursive shutdown\n");
 		return;
 	}
-	isdown = qtrue;
+	isdown = true;
 
 #ifdef USE_CURL
-	CL_HTTP_Cleanup(qtrue);
+	CL_HTTP_Cleanup(true);
 #endif
 
 	// kill temp demo record

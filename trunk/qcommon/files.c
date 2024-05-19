@@ -155,18 +155,18 @@ int	Developer_searchpath (int who) {
 	return (0);
 }
 
-qboolean modName(const char *gameDir) {
+bool modName(const char *gameDir) {
 
 	searchpath_t	*search;
 
 	for (search = fs_searchpaths; search; search = search->next)
 		if (strstr(search->filename, gameDir))
-			return qtrue;
+			return true;
 
-	return qfalse;
+	return false;
 }
 
-qboolean RepairPath(char* filename)
+bool RepairPath(char* filename)
 {
 	int i = 0;
 	int last = 0;
@@ -175,7 +175,7 @@ qboolean RepairPath(char* filename)
 	while (1)
 	{
 		if (filename[i] == 0)
-			return qfalse;
+			return false;
 
 		if (filename[i] == '/' || filename[i] == '\\')
 		{
@@ -186,10 +186,10 @@ qboolean RepairPath(char* filename)
 		if (filename[i] == '.' && filename[i + 1] == '.')
 		{
 			if (laster == 0)
-				return qfalse;	// Ситуация типа '../monsters/skin.pcx', то есть две точки встретились в самом начале
+				return false;	// Ситуация типа '../monsters/skin.pcx', то есть две точки встретились в самом начале
 
 			if (filename[i + 2] != '/' && filename[i + 2] != '\\')
-				return qfalse;	// Ситуация, когда не встретилась строка  ../
+				return false;	// Ситуация, когда не встретилась строка  ../
 
 			int in, out;
 			in = i + 3;
@@ -200,7 +200,7 @@ qboolean RepairPath(char* filename)
 				filename[out] = filename[in];
 
 				if (filename[in] == 0)
-					return qtrue;
+					return true;
 
 				in++;
 				out++;
@@ -274,15 +274,15 @@ int FS_FOpenFile (const char *filename, FILE **file) {
 }
 
 
-qboolean FS_FileExists (char *path) {
+bool FS_FileExists (char *path) {
 	FILE *f;
 
 	if (FS_FOpenFile (path, &f)) {
 		FS_FCloseFile (f);
-		return (qtrue);
+		return (true);
 	}
 
-	return (qfalse);
+	return (false);
 }
 
 /*
@@ -706,23 +706,23 @@ static int countchs (const char *s, char c) {
  * XXX: Sys_Find* doesn't support multi-depth patterns, but FS_MathPath does
  */
 
-qboolean
+bool
 FS_MatchPath (const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave) {
-	qboolean	 retval;
+	bool	 retval;
 	char		*ptr;
 	char		 buffer[MAX_OSPATH];
 
 	strncpy (buffer, name, sizeof(buffer));
 
 	if ((canthave & SFF_SUBDIR) && name[strlen (name) - 1] == '/')
-		return (qfalse);
+		return (false);
 
 	if (musthave & SFF_SUBDIR) {
 		if ((ptr = strrchr (buffer, '/')) != NULL)
 			*ptr = '\0';
 
 		else
-			return (qfalse);
+			return (false);
 	}
 
 	if ((musthave & SFF_HIDDEN) || (canthave & SFF_HIDDEN)) {
@@ -731,17 +731,17 @@ FS_MatchPath (const char *findname, const char *name, char **output, unsigned mu
 
 		if (((musthave & SFF_HIDDEN) && ptr[1] != '.') ||
 			((canthave & SFF_HIDDEN) && ptr[1] == '.'))
-			return (qfalse);
+			return (false);
 	}
 
 	if (canthave & SFF_RDONLY)
-		return (qfalse);
+		return (false);
 
 	retval = Com_glob_match (findname, buffer);
 
 	// check that the path depth does not increase
 	if (countchs (buffer, '/') > countchs (findname, '/'))
-		retval = qfalse;
+		retval = false;
 
 	if (retval && output != NULL)
 		*output = strdup (buffer);
@@ -1001,7 +1001,7 @@ void FS_StripExtension (const char *in, char *out, size_t size_out) {
 		*out = 0;
 }
 
-qboolean FS_FileInGamedir(const char* file)
+bool FS_FileInGamedir(const char* file)
 {
 	char path[MAX_OSPATH];
 	FILE* fd;
@@ -1011,11 +1011,11 @@ qboolean FS_FileInGamedir(const char* file)
 	if ((fd = fopen(path, "rb")) != NULL)
 	{
 		fclose(fd);
-		return qtrue;
+		return true;
 	}
 	else
 	{
-		return qfalse;
+		return false;
 	}
 }
 
@@ -1050,7 +1050,7 @@ char *FS_NextPath (char *prevpath) {
 FS_LocalFileExists
 ================
 */
-qboolean FS_LocalFileExists(char* path)
+bool FS_LocalFileExists(char* path)
 {
 	char		realPath[MAX_OSPATH];
 	FILE* f;
@@ -1059,9 +1059,9 @@ qboolean FS_LocalFileExists(char* path)
 	f = fopen(realPath, "rb");
 	if (f) {
 		fclose(f);
-		return qtrue;
+		return true;
 	}
-	return qfalse;
+	return false;
 }
 
 void FS_ScanForGameDLL (void) {

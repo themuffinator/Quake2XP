@@ -37,7 +37,7 @@ typedef struct cmdalias_s {
 
 cmdalias_t *cmd_alias;
 
-qboolean cmd_wait;
+bool cmd_wait;
 
 #define	ALIAS_LOOP_COUNT	16
 int alias_count;				// for detecting runaway loops
@@ -55,7 +55,7 @@ bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
 void Cmd_Wait_f (void) {
-	cmd_wait = qtrue;
+	cmd_wait = true;
 }
 
 
@@ -227,7 +227,7 @@ void Cbuf_Execute (void) {
 		if (cmd_wait) {
 			// skip out while text still remains in buffer, leaving it
 			// for next frame
-			cmd_wait = qfalse;
+			cmd_wait = false;
 			break;
 		}
 	}
@@ -247,7 +247,7 @@ the client and server initialize for the first time.
 Other commands are added late, after all initialization is complete.
 ===============
 */
-void Cbuf_AddEarlyCommands (qboolean clear) {
+void Cbuf_AddEarlyCommands (bool clear) {
 	int i;
 	char *s;
 
@@ -273,16 +273,16 @@ Adds command line parameters as script statements
 Commands lead with a + and continue until another + or -
 quake +vid_ref gl +map amlev1
 
-Returns qtrue if any late commands were added, which
+Returns true if any late commands were added, which
 will keep the demoloop from immediately starting
 =================
 */
-qboolean Cbuf_AddLateCommands (void) {
+bool Cbuf_AddLateCommands (void) {
 	int i, j;
 	int s;
 	char *text, *build, c;
 	int argc;
-	qboolean ret;
+	bool ret;
 
 	// build the combined string to parse from
 	s = 0;
@@ -291,7 +291,7 @@ qboolean Cbuf_AddLateCommands (void) {
 		s += strlen (COM_Argv (i)) + 1;
 	}
 	if (!s)
-		return qfalse;
+		return false;
 
 	text = Z_Malloc (s + 1);
 	text[0] = 0;
@@ -505,13 +505,13 @@ Cmd_MacroExpandString
 */
 char *Cmd_MacroExpandString (char *text) {
 	int i, j, count, len;
-	qboolean inquote;
+	bool inquote;
 	char *scan;
 	static char expanded[MAX_STRING_CHARS];
 	char temporary[MAX_STRING_CHARS];
 	char *token, *start;
 
-	inquote = qfalse;
+	inquote = false;
 	scan = text;
 
 	len = strlen (scan);
@@ -577,7 +577,7 @@ Parses the given string into command line tokens.
 $Cvars will be expanded unless they are in a quoted token
 ============
 */
-void Cmd_TokenizeString (char *text, qboolean macroExpand) {
+void Cmd_TokenizeString (char *text, bool macroExpand) {
 	int i;
 	char *com_token;
 
@@ -696,15 +696,15 @@ void Cmd_RemoveCommand (char *cmd_name) {
 Cmd_Exists
 ============
 */
-qboolean Cmd_Exists (char *cmd_name) {
+bool Cmd_Exists (char *cmd_name) {
 	cmd_function_t *cmd;
 
 	for (cmd = cmd_functions; cmd; cmd = cmd->next) {
 		if (!strcmp (cmd_name, cmd->name))
-			return qtrue;
+			return true;
 	}
 
-	return qfalse;
+	return false;
 }
 
 
@@ -731,7 +731,7 @@ char *Cmd_CompleteCommand (char *partial) {
 	cmdalias_t *a;
 	cvar_t *cvar;
 	char *pmatch[1024];
-	qboolean diff = qfalse;
+	bool diff = false;
 	unsigned t = 0;
 
 	len = strlen (partial);
@@ -795,7 +795,7 @@ char *Cmd_CompleteCommand (char *partial) {
 					continue;
 				if (retval[p] != pmatch[o][p]) {
 					retval[p] = 0;
-					diff = qfalse;
+					diff = false;
 				}
 			}
 			p++;
@@ -807,7 +807,7 @@ char *Cmd_CompleteCommand (char *partial) {
 	return NULL;
 }
 
-qboolean Cmd_IsComplete (char *command) {
+bool Cmd_IsComplete (char *command) {
 	cmd_function_t *cmd;
 	cmdalias_t *a;
 	cvar_t *cvar;
@@ -815,15 +815,15 @@ qboolean Cmd_IsComplete (char *command) {
 	// check for exact match
 	for (cmd = cmd_functions; cmd; cmd = cmd->next)
 	if (!Q_stricmp (command, cmd->name))
-		return qtrue;
+		return true;
 	for (a = cmd_alias; a; a = a->next)
 	if (!Q_stricmp (command, a->name))
-		return qtrue;
+		return true;
 	for (cvar = cvar_vars; cvar; cvar = cvar->next)
 	if (!Q_stricmp (command, cvar->name))
-		return qtrue;
+		return true;
 
-	return qfalse;
+	return false;
 }
 
 
@@ -839,7 +839,7 @@ void Cmd_ExecuteString (char *text) {
 	cmd_function_t *cmd;
 	cmdalias_t *a;
 
-	Cmd_TokenizeString (text, qtrue);
+	Cmd_TokenizeString (text, true);
 
 	// execute the command line
 	if (!Cmd_Argc ())

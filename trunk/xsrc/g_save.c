@@ -2401,7 +2401,7 @@ Q_strlcpy(char *dst, const char *src, int size)
 * - help computer info
 */
 void
-WriteGame(char *filename, qboolean autosave)
+WriteGame(char *filename, bool autosave)
 {
 	FILE *f;
 	int i;
@@ -2440,7 +2440,7 @@ WriteGame(char *filename, qboolean autosave)
 
 	game.autosaved = autosave;
 	fwrite(&game, sizeof(game), 1, f);
-	game.autosaved = qfalse;
+	game.autosaved = false;
 
 	for (i = 0; i < game.maxclients; i++)
 	{
@@ -2744,7 +2744,7 @@ ReadLevel(char *filename)
 	{
 		ent = &g_edicts[i + 1];
 		ent->client = game.clients + i;
-		ent->client->pers.connected = qfalse;
+		ent->client->pers.connected = false;
 	}
 
 	/* do any load time things at this point */

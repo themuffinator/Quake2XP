@@ -105,9 +105,9 @@ static uchar gammatable[256];
 uint d_8to24table[256];
 float d_8to24tablef[256][3];
 int upload_width, upload_height;
-qboolean uploaded_paletted;
+bool uploaded_paletted;
 
-qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
+bool STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
 	int		w, h, bbp;
 	byte*	buffer = NULL;
 	byte*	data = NULL;
@@ -115,7 +115,7 @@ qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
 	int len = FS_LoadFile(name, (void**)&buffer);
 	if (buffer == NULL){
 		Com_DPrintf("%s couldn't read image form %s\n", __func__, name);
-		return qfalse;
+		return false;
 	}
 
 	data = stbi_load_from_memory(buffer, len, &w, &h, &bbp, STBI_rgb_alpha);
@@ -123,7 +123,7 @@ qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
 	{
 		Com_DPrintf("%s couldn't load data from %s: %s!\n", __func__, name, stbi_failure_reason());
 		FS_FreeFile(buffer);
-		return qfalse;
+		return false;
 	}
 
 	FS_FreeFile(buffer);
@@ -133,7 +133,7 @@ qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height){
 	*pic = data;
 	*width = w;
 	*height = h;
-	return qtrue;
+	return true;
 }
 
 image_t* R_LoadDDS(char* texName, uint type) {
@@ -143,7 +143,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	uint					len, i, width, height, skipMip;
 	uint					format, intFormat, blockSize = 16, mipLevel, texSize, hdrBitsCount = 0, dataType;
 	image_t					*image;
-	qboolean				compressed, hdr;
+	bool				compressed, hdr;
 	byte					*buf, *imagedata;
 	uint					hash = Com_HashKey(texName);
 
@@ -188,28 +188,28 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 	header = (ddsFileHeader_t*)(buf + 4);
 
-	compressed = qfalse;
-	hdr = qfalse;
+	compressed = false;
+	hdr = false;
 
 	if (header->ddspf.dwFlags & DDSF_FOURCC){
 
-		compressed = qtrue;
+		compressed = true;
 
 		switch (header->ddspf.dwFourCC){
 
 	/*	case 113: // D3DFMT_A16B16G16R16F        
 			intFormat = GL_RGBA16F;
 			format = GL_RGBA;
-			compressed = qfalse;
-			hdr = qtrue;
+			compressed = false;
+			hdr = true;
 			hdrBitsCount = 64;
 			break;
 	*/	
 		case 116: // D3DFMT_A32B32G32R32F
 			intFormat		= GL_RGBA32F;
 			format			= GL_RGBA;
-			compressed		= qfalse;
-			hdr				= qtrue;
+			compressed		= false;
+			hdr				= true;
 			hdrBitsCount	= 128;
 			break;
 
@@ -236,14 +236,14 @@ image_t* R_LoadDDS(char* texName, uint type) {
 			if (headerDXT10->dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) {
 				intFormat		= GL_RGBA32F;
 				format			= GL_RGBA;
-				compressed		= qfalse;
-				hdr				= qtrue;
+				compressed		= false;
+				hdr				= true;
 				hdrBitsCount	= 128;
 			}
 			if (headerDXT10->dxgiFormat == DXGI_FORMAT_B8G8R8A8_UNORM) {
 				intFormat		= GL_RGBA8;
 				format			= GL_BGRA;
-				compressed		= qfalse;
+				compressed		= false;
 			}			
 
 			if (headerDXT10->dxgiFormat == DXGI_FORMAT_BC1_UNORM) {
@@ -332,8 +332,8 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->hash = hash;
 	image->floatTex = hdr;
 	image->compressed = compressed;
-	image->has_alpha = qtrue;
-	image->paletted = qfalse;
+	image->has_alpha = true;
+	image->paletted = false;
 	image->intFormat = intFormat;
 
 	if (image->type == it_pic){
@@ -865,7 +865,7 @@ GL_Upload32
 Returns has_alpha
 ===============
 */
-qboolean GL_Upload32(uint texnum, unsigned *data, int width, int height, qboolean mipmap, uint ClampMode){
+bool GL_Upload32(uint texnum, unsigned *data, int width, int height, bool mipmap, uint ClampMode){
 
 	int		samples, c, i;
 	byte	*scan;
@@ -914,7 +914,7 @@ Returns has_alpha
 ===============
 */
 
-qboolean GL_Upload8(uint texnum, byte * data, int width, int height, qboolean mipmap)
+bool GL_Upload8(uint texnum, byte * data, int width, int height, bool mipmap)
 {
 	static unsigned trans[512 * 256];
 	int i, s;
@@ -1019,8 +1019,8 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	image->picScale_w = 1.0;
 	image->picScale_h = 1.0;
 	image->type = type;
-	image->floatTex = qfalse;
-	image->compressed = qfalse;
+	image->floatTex = false;
+	image->compressed = false;
 	
 	image->dataType = GL_UNSIGNED_BYTE;
 	image->texType = GL_TEXTURE_2D;

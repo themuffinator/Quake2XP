@@ -40,7 +40,7 @@ void R_Init2D(void)
 		i_menuFont = GL_FindImage("pics/conchars.pcx", it_nomips);
 
 	if (!i_menuFont)
-		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
+		VID_Error(ERR_DROP, "couldn't load pics/conchars");
 
 	i_consFont = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
 	if (!i_consFont)
@@ -50,45 +50,44 @@ void R_Init2D(void)
 void R_DrawTexturedQuad() {
 
 	GL_BindVAO(vao.tess2d);
-	GL_BindVBO(vbo.tess2dVbo);
+	GL_BindVBO(vbo.tess2dVbo);	
+	GL_BindVBO(vbo.quadIbo);
+
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, QUAD_VERTS * sizeof(vertex2d_t), &tess2d);
 	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
-	GL_BindNullVAO();
 }
 
 void R_Flush2D() {
 
-	if (!tess2dArray.numVerts)
+	if (!tess2dArray.numVerts || tess2dArray.numVerts < 4)
 		return;
 
 	GL_BindProgram(genericProgram);
 	qglUniform1i(U_2D_PICS, 1);
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, tess2dArray.handle);
 
 	GL_BindVAO(vao.tess2dArray);
 	GL_BindVBO(vbo.tess2dArrayVbo);
+	GL_BindVBO(vbo.quadStringIbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2dArray), &tess2dArray);
-
-	GL_DrawElements(GL_TRIANGLES, 6 * tess2dArray.numSymbols, GL_UNSIGNED_SHORT, NULL);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, tess2dArray.numVerts * sizeof(vertex2d_t), &tess2dArray);
+	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES * tess2dArray.numSymbols, GL_UNSIGNED_INT, NULL);
 
 	tess2dArray.numVerts = 0;
 	tess2dArray.numSymbols = 0;
-
-	GL_BindNullVAO();
 }
 
 void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex) {
 	int row, col, x1, y1;
 	float frow, fcol, size;
 
-	if (tess2dArray.numVerts >= MAX_VERTICES_2D || (tess2dArray.numVerts && tess2dArray.handle != inTex->handle)) {
+	if (tess2dArray.numVerts + 4 >= MAX_VERTICES || (tess2dArray.numVerts && tess2dArray.handle != inTex->handle)) {
 		R_Flush2D();
 	}
 
@@ -108,8 +107,6 @@ void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex
 	x1		= x + 8 * scale;
 	y1		= y + 8 * scale;
 
-	tess2dArray.numVerts = tess2dArray.numSymbols << 2;
-
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 0].tc, fcol, frow);
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 1].tc, fcol +size, frow);
 	VA_SetElem2(tess2dArray.v[tess2dArray.numVerts + 2].tc, fcol +size, frow + size);
@@ -124,6 +121,7 @@ void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex
 		VA_SetElem4(tess2dArray.v[tess2dArray.numVerts + i].color, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
 	tess2dArray.numSymbols++;
+	tess2dArray.numVerts += 4;
 }
 
 /*
@@ -192,16 +190,16 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 {
 	float		offsX, offsY;
 	float		woh = (float)vid.width / (float)vid.height;
-	qboolean	console;
+	bool	console;
 
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_StretchPic\n");
 		return;
 	}
 	if (strstr(gl->name, "conback"))
-		console = qtrue;
+		console = true;
 	else
-		console = qfalse;
+		console = false;
 
 	GL_BindProgram(genericProgram);
 
@@ -242,7 +240,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 	else {
 		qglUniform1i(U_2D_PICS, 1);
 	}
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
@@ -268,7 +266,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 
 void Draw_StretchPic(int x, int y, int w, int h, char* pic)
 {
-	qboolean cons = 0;
+	bool cons = 0;
 	image_t* gl;
 
 	gl = Draw_FindPic(pic);
@@ -307,7 +305,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t* gl)
 
 	GL_BindProgram(loadingProgram);
 
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 	qglUniform1f(U_PARAM_FLOAT_0, loadingLod);
 	qglUniform1f(U_PARAM_FLOAT_1, loadScreenColorFade);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
@@ -369,7 +367,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
 
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 
@@ -435,7 +433,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 
 	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
 
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 	GL_SetBindlessTexture(U_TMU1, gl2->handle);
@@ -505,7 +503,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t* image)
 	qglUniform1i(U_2D_PICS, 1);
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, image->handle);
 
@@ -545,14 +543,14 @@ Draw_Fill
 Fills a box of pixels with a single color
 =============
 */
-void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, qboolean loading) {
+void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, bool loading) {
 
 	GL_BindProgram(genericProgram);
 	qglUniform1i(U_2D_PICS, 0);
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 1);
 
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
 	VA_SetElem2(tess2d.v[0].pos, x, y);
 	VA_SetElem2(tess2d.v[1].pos, x + w, y);
@@ -625,7 +623,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	GL_BindProgram(cinProgram);
 
 	GL_SetBindlessTexture(U_TMU0, i_cinematic->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	VA_SetElem2(tess2d.v[0].pos, x, y);

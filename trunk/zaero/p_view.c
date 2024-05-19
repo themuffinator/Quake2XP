@@ -14,7 +14,7 @@ float	bobmove;
 int		bobcycle;		// odd cycles are right foot going forward
 float	bobfracsin;		// sin(bobfrac*M_PI)
 
-qboolean PlayerOnFloor (edict_t *player);
+bool PlayerOnFloor (edict_t *player);
 
 /*
 ===============
@@ -648,8 +648,8 @@ P_WorldEffects
 */
 void P_WorldEffects (void)
 {
-	qboolean	breather;
-	qboolean	envirosuit;
+	bool	breather;
+	bool	envirosuit;
 	int			waterlevel, old_waterlevel;
 
 	if (current_player->movetype == MOVETYPE_NOCLIP)
@@ -972,7 +972,7 @@ void G_SetClientSound (edict_t *ent)
 
 
 //#define MAX_STEP_FRACTION 0.80
-qboolean PlayerOnFloor (edict_t *player)
+bool PlayerOnFloor (edict_t *player)
 {
 	trace_t		tr;
 	vec3_t		end = {0, 0, -2};
@@ -999,7 +999,7 @@ G_SetClientFrame
 void G_SetClientFrame (edict_t *ent)
 {
 	gclient_t	*client;
-	qboolean	duck, run, floor;
+	bool	duck, run, floor;
 
 	if (ent->s.modelindex != MAX_MODELS-1)
 		return;		// not in the player model

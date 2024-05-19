@@ -1,7 +1,7 @@
 #include "g_local.h"
 
 
-extern qboolean is_quad;
+extern bool is_quad;
 extern byte is_silenced;
 
 void playQuadSound(edict_t *ent);
@@ -19,7 +19,7 @@ void check_dodge (edict_t *self, vec3_t start, vec3_t dir, int speed);
 void Grenade_Explode(edict_t *ent);
 void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result);
 
-void zCam_TrackEntity(struct edict_s *player, struct edict_s *track, qboolean playerVisiable, qboolean playerOffset);
+void zCam_TrackEntity(struct edict_s *player, struct edict_s *track, bool playerVisiable, bool playerOffset);
 void zCam_Stop(struct edict_s *player);
 
 void fire_empnuke(edict_t	*ent, vec3_t center, int radius);
@@ -350,7 +350,7 @@ void fire_empnuke(edict_t	*ent, vec3_t center, int radius)
 }
 
 
-qboolean EMPNukeCheck(edict_t	*ent, vec3_t pos)
+bool EMPNukeCheck(edict_t	*ent, vec3_t pos)
 {
 	edict_t	*check = NULL;
 
@@ -517,7 +517,7 @@ void SP_misc_crate_small(edict_t *self)
 	func_barrier
 */
 
-qboolean thruBarrier(edict_t *targ, edict_t *inflictor)
+bool thruBarrier(edict_t *targ, edict_t *inflictor)
 {
 	trace_t tr;
 	edict_t *e = inflictor;

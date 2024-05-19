@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern	HINSTANCE	global_hInstance;
 
 extern HWND			cl_hwnd;
-extern qboolean		ActiveApp, Minimized;
+extern int		ActiveApp, Minimized;
 
-void IN_Activate(qboolean active);
+void IN_Activate(bool active);
 void IN_MouseEvent(int mstate);
 
 extern int		window_center_x, window_center_y;
@@ -47,11 +47,11 @@ cvar_t	*x360_vibration;
 cvar_t  *x360_batteryScale;
 cvar_t  *x360_batteryStatus;
 
-extern qboolean xInputActive;
+extern bool xInputActive;
 
 void	IN_StartupXInput(void);
 void	IN_ToggleXInput();
 void	IN_ControllerMove(usercmd_t *cmd);
 void	IN_ShutDownXinput();
 
-extern qboolean	mlooking;
+extern bool	mlooking;

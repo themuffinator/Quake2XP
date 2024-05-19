@@ -492,7 +492,7 @@ int TR_Intersect_Triangle(float orig[3], float dir[3], float vert0[3], float ver
 	return 1;
 }
 
-qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o)
+bool TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o)
 {
 	vec3_t dir;
 	int i;
@@ -501,7 +501,7 @@ qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o)
 	float len;
 	
 	if (!ent->collision_model->num_triangles)
-		return qfalse;
+		return false;
 
 	VectorSubtract(end, start, dir);
 	len = VectorNormalize(dir);
@@ -521,7 +521,7 @@ qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o)
 	aliasworldtransform[2][3] = ent->s.origin[2];
 
 	float t, lastT = FLT_MAX;
-	qboolean succeeded = qfalse;
+	bool succeeded = false;
 
 	for (i = 0; i < ent->collision_model->num_triangles; ++i)
 	{
@@ -545,7 +545,7 @@ qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o)
 
 				if (o)
 					*o = t;
-				succeeded = qtrue;
+				succeeded = true;
 			}
 		}
 	}

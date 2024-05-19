@@ -18,7 +18,7 @@ void Sys_WindowsInfo() {
 	int		len, len2;
 	char	s[64], s2[MAX_COMPUTERNAME_LENGTH + 1];
 
-	ru_loc = qfalse;
+	ru_loc = false;
 
 	len = sizeof(s);
 	len2 = sizeof(s2);
@@ -28,7 +28,7 @@ void Sys_WindowsInfo() {
 			Com_Printf("\nUI Language:       " S_COLOR_YELLOW "%s\n", ui_Language[i].description);
 
 			if (ui_Language[i].num == 1049 || ui_Language[i].num == 1092 || ui_Language[i].num == 1133 || ui_Language[i].num == 1157)
-				ru_loc = qtrue;
+				ru_loc = true;
 
 			break;
 		}
@@ -221,18 +221,18 @@ void Sys_CpuID()
 	int			CPUInfo[4] = { -1 };
 	int			nFeatureInfo = 0;
 	uint	    nIds, nExIds, i;
-	qboolean    SSE3 = qfalse;
-	qboolean	SSE4 = qfalse;
-	qboolean	SSE41 = qfalse;
-	qboolean	SSE42 = qfalse;
-	qboolean	SSE2 = qfalse;
-	qboolean	SSE = qfalse;
-	qboolean	MMX = qfalse;
-	qboolean	HTT = qfalse;
-	qboolean	SMT = qfalse;
-	qboolean	EM64T = qfalse;
-	qboolean	AVX = qfalse;
-	qboolean	AVX2 = qfalse;
+	bool    SSE3 = false;
+	bool	SSE4 = false;
+	bool	SSE41 = false;
+	bool	SSE42 = false;
+	bool	SSE2 = false;
+	bool	SSE = false;
+	bool	MMX = false;
+	bool	HTT = false;
+	bool	SMT = false;
+	bool	EM64T = false;
+	bool	AVX = false;
+	bool	AVX2 = false;
 
 	// __cpuid with an InfoType argument of 0 returns the number of
 	// valid Ids in CPUInfo[0] and the CPU identification string in
@@ -411,7 +411,7 @@ void GetDiskInfos()
 	char strDrive[4] = { '\0' };
 	char label[MAX_PATH];
 	char dsk[4], fat[16];
-	qboolean result;
+	bool result;
 	float   total, free;
 
 	// 26 letters in [A..Z] range
@@ -513,15 +513,15 @@ void Sys_MemoryUsage_f(void){
 	Com_Printf(S_COLOR_YELLOW"Process Memory Usage: " S_COLOR_GREEN "%d" S_COLOR_WHITE "MB\n", pmc.PrivateUsage >>20);
 }
 
-qboolean isWin64x(){
+bool isWin64x(){
 
 	SYSTEM_INFO sys;
 	GetNativeSystemInfo(&sys);
 	if (sys.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||
 		sys.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64)
-		return qtrue;
+		return true;
 	else
-		return qfalse;
+		return false;
 }
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);

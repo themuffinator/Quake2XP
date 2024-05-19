@@ -46,8 +46,8 @@ const int acActiveEnd[] = { 0, 10, 10, 10, 10 };
 
 typedef struct ac_anim_frame_s
 {
-	qboolean last;
-	qboolean fire;
+	bool last;
+	bool fire;
 	int frame;
 } ac_anim_frame_t;
 
@@ -171,7 +171,7 @@ vec3_t fireOffset[5] = {	{0,0,0},
 							{24,-5,0} };
 const int acDeactStart[] = { 0, 23, 23, 23, 23 };
 const int acDeactEnd[] = { 0, 31, 31, 31, 31 };
-const qboolean turretIdle[] = { false, false, true, true }; // collapse when idle?
+const bool turretIdle[] = { false, false, true, true }; // collapse when idle?
 
 // turret animations
 const int turretIdleStart = 0;
@@ -241,7 +241,7 @@ void monster_autocannon_fire(edict_t *self)
 	}
 }
 
-qboolean angleBetween(float *ang, float *min, float *max)
+bool angleBetween(float *ang, float *min, float *max)
 {
 	// directly between?
 	if (*ang > *min && *ang < *max)
@@ -270,7 +270,7 @@ float mod180(float val)
 	return val;
 }
 
-qboolean canShoot(edict_t *self, edict_t *e)
+bool canShoot(edict_t *self, edict_t *e)
 {
 	vec3_t delta;
 	vec3_t dangles;
@@ -297,7 +297,7 @@ qboolean canShoot(edict_t *self, edict_t *e)
 	return true;
 }
 
-qboolean autocannonInfront (edict_t *self, edict_t *other)
+bool autocannonInfront (edict_t *self, edict_t *other)
 {
 	vec3_t vec;
 	vec3_t angle;

@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 vec3_t cl_indexPalette[256];
 game_export_t *ge;
-void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell);
+void CL_BrassShells (vec3_t org, vec3_t dir, int count, bool mshell);
 void CL_LogoutEffect (vec3_t org, int type);
 void CL_ItemRespawnParticles (vec3_t org);
 
@@ -453,7 +453,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.6;
 			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
-			CL_BrassShells (shell_brass, dir, 1, qtrue);
+			CL_BrassShells (shell_brass, dir, 1, true);
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
 			CL_SetRumble(8192, 15000, 150);
 			break;
@@ -462,7 +462,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.6;
 			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 4);
-			CL_BrassShells (shell_brass, dir, 1, qfalse);
+			CL_BrassShells (shell_brass, dir, 1, false);
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_shotgf1b], volume, ATTN_WEAPON_LIGHT);
 			S_fastsound_queue (smoke_origin, i, CHAN_AUTO,
 				fastsound_descriptor[weapons_shotgr1b],
@@ -474,13 +474,13 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.6;
 			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 6);
-			CL_BrassShells (shell_brass, dir, 2, qfalse);
+			CL_BrassShells (shell_brass, dir, 2, false);
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_sshotf1b], volume, ATTN_WEAPON_LIGHT);
 			CL_SetRumble(20000, 65000, 250);
 			break;
 		case MZ_CHAINGUN1:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
-			CL_BrassShells (shell_brass, dir, 1, qtrue);
+			CL_BrassShells (shell_brass, dir, 1, true);
 			dl->radius = 200 + (rand () & 31);
 			dl->color[0] = 1;
 			dl->color[1] = 0.7;
@@ -490,7 +490,7 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_CHAINGUN2:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
-			CL_BrassShells (shell_brass, dir, 1, qtrue);
+			CL_BrassShells (shell_brass, dir, 1, true);
 			dl->radius = 225 + (rand () & 31);
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
@@ -502,7 +502,7 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_CHAINGUN3:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
-			CL_BrassShells (shell_brass, dir, 1, qtrue);
+			CL_BrassShells (shell_brass, dir, 1, true);
 			dl->radius = 250 + (rand () & 31);
 			dl->color[0] = 1;
 			dl->color[1] = 0.6;
@@ -721,7 +721,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			CL_ParticleSmoke (origin, vec3_origin, 3);
 			CL_GunFire (origin, end);
 
@@ -741,7 +741,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			CL_ParticleSmoke (origin, vec3_origin, 1);
 			CL_GunFire (origin, end);
 			S_fastsound (NULL, ent, CHAN_WEAPON,
@@ -760,7 +760,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			// CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			// CL_SmokeAndFlash(origin);
 
@@ -782,7 +782,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			// CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			// CL_SmokeAndFlash(origin);
 
@@ -804,7 +804,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			// CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			// CL_SmokeAndFlash(origin);
 
@@ -881,7 +881,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[1] = 1;
 			dl->color[2] = 0;
 			// CL_SmokeAndFlash(origin);
-			CL_BrassShells (shell, dir, 1, qfalse);
+			CL_BrassShells (shell, dir, 1, false);
 			CL_ParticleSmoke (origin, vec3_origin, 2);
 			CL_GunFire (origin, end);
 			S_fastsound (NULL, ent, CHAN_WEAPON,
@@ -924,7 +924,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[2] = 0;
 			// CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			// CL_SmokeAndFlash(origin);
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			CL_ParticleSmoke (origin, vec3_origin, 3);
 			CL_GunFire (origin, end);
 			Com_sprintf (soundname, sizeof(soundname), "tank/tnkatk2%c.wav",
@@ -1045,7 +1045,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[2] = 0;
 			//      CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			//      CL_SmokeAndFlash(origin);
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			CL_ParticleSmoke (origin, vec3_origin, 3);
 			CL_GunFire (origin, end);
 			S_fastsound (NULL, ent, CHAN_WEAPON,
@@ -1064,7 +1064,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[2] = 0;
 			//      CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			//      CL_SmokeAndFlash(origin);
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			CL_ParticleSmoke (origin, vec3_origin, 3);
 			CL_GunFire (origin, end);
 			break;
@@ -1086,7 +1086,7 @@ void CL_ParseMuzzleFlash2 (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			CL_BrassShells (shell, dir, 1, qtrue);
+			CL_BrassShells (shell, dir, 1, true);
 			// CL_ParticleEffect (origin, vec3_origin, 0, 40);
 			// CL_SmokeAndFlash(origin);
 

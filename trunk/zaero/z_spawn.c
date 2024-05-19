@@ -29,7 +29,7 @@ edict_t *FindZSpawn(int i)
 	return spot;
 }
 
-qboolean SpawnZ(gitem_t *item, edict_t *spot)
+bool SpawnZ(gitem_t *item, edict_t *spot)
 {
 	edict_t	*ent;
 	vec3_t	forward;

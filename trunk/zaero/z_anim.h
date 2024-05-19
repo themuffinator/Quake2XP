@@ -25,16 +25,16 @@ typedef struct
    int current_frame; //current frame in the current sequence (0 based)
 
    float last_dist; //last distance travelled, for going backwards
-   qboolean moving_forward;
+   bool moving_forward;
 
    int actual_frame, last_actual_frame;
    mmove_t *actual_sequence;
    int actual_sequence_idx;
 
-   qboolean paused; //is animation paused or looping
-   qboolean stationary; //allow movement in frame
-   qboolean frame_events; //play frame events?
-   qboolean active; //apply state changes to this animation
+   bool paused; //is animation paused or looping
+   bool stationary; //allow movement in frame
+   bool frame_events; //play frame events?
+   bool active; //apply state changes to this animation
 
    anim_dir_t facing;
    anim_dir_t aim;
@@ -42,7 +42,7 @@ typedef struct
 } anim_data_t;
 
 //for aim correction during animation playback
-qboolean anim_player_correct_aim(edict_t *self, vec3_t aim);
+bool anim_player_correct_aim(edict_t *self, vec3_t aim);
 
 //for console commands
 void anim_player_cmd(edict_t *ent);

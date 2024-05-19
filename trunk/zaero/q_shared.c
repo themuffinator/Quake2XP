@@ -920,7 +920,7 @@ void COM_DefaultExtension (char *path, size_t pathSize, char *extension)
 ============================================================================
 */
 
-qboolean	bigendien;
+bool	bigendien;
 
 // can't just use function pointers, or dll linkage can
 // mess up when qcommon is included in multiple places
@@ -1168,7 +1168,7 @@ Com_ParseColorString
 Parse an RGB color from an rrggbb string
 =================
 */
-qboolean Com_ParseColorString (const char *s, color_t outColor)
+bool Com_ParseColorString (const char *s, color_t outColor)
 {
 	int		i, digits[6];
 
@@ -1472,7 +1472,7 @@ Some characters are illegal in info strings because they
 can mess up the server's parsing
 ==================
 */
-qboolean Info_Validate (char *s)
+bool Info_Validate (char *s)
 {
 	if (strstr (s, "\""))
 		return false;

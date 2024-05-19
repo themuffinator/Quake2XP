@@ -38,12 +38,12 @@ edict_t		*g_edicts;
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
-qboolean ClientConnect (edict_t *ent, char *userinfo);
+bool ClientConnect (edict_t *ent, char *userinfo);
 void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 void ClientDisconnect (edict_t *ent);
 void ClientBegin (edict_t *ent);
 void ClientCommand (edict_t *ent);
-void WriteGame (char *filename, qboolean autosave);
+void WriteGame (char *filename, bool autosave);
 void ReadGame (char *filename);
 void WriteLevel (char *filename);
 void ReadLevel (char *filename);
@@ -237,7 +237,7 @@ void CheckNeedPass (void) {
 	// if password or spectator_password has changed, update needpass
 	// as needed
 	if (password->modified || spectator_password->modified) {
-		password->modified = spectator_password->modified = qfalse;
+		password->modified = spectator_password->modified = false;
 
 		need = 0;
 

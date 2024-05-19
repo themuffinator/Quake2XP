@@ -7,7 +7,7 @@
 void zCam_SetLocalCopy(struct edict_s *player, char *s);
 
 
-void zCam_TrackEntity(struct edict_s *player, struct edict_s *track, qboolean playerVisiable, qboolean playerOffset)
+void zCam_TrackEntity(struct edict_s *player, struct edict_s *track, bool playerVisiable, bool playerOffset)
 {
 	if (player->client == NULL)
 		return;  // not a true player

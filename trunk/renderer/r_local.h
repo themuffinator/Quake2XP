@@ -120,22 +120,15 @@ int	r_numVertexBuffers;
 
 typedef struct {
 	vertexObject_t *sky;
-	vertexObject_t *md2;
-	vertexObject_t *consoleText;
-	vertexObject_t *tessStream;
-	vertexObject_t *md3;
-	vertexObject_t *tessStreamVaoQuad;
+	vertexObject_t *stream3d;
 	vertexObject_t *tess2dArray;
 	vertexObject_t *tess2d;
-	vertexObject_t *textArray;
 	vertexObject_t *fsq;
 	vertexObject_t *md3shadow;
 	vertexObject_t *md2shadow;
 	vertexObject_t *dynamic;
 	vertexObject_t *bsp;
 	vertexObject_t *depthBsp;
-	vertexObject_t *dynamicCube_verts;
-	vertexObject_t *drawLine;
 }vao_t;
 vao_t vao;
 
@@ -156,7 +149,7 @@ char *q_pretifymem(float value);
 
 typedef struct {
 
-	vertexBuffer_t *md2AliasVbo;
+	vertexBuffer_t *stream3d;
 	vertexBuffer_t *quadIbo;
 	vertexBuffer_t *quadStringIbo;
 	vertexBuffer_t *tess2dVbo;
@@ -166,7 +159,7 @@ typedef struct {
 	vertexBuffer_t *md2ShadowVbo;
 	vertexBuffer_t *md2ShadowIbo;
 	vertexBuffer_t *md3ShadowIbo;
-	vertexBuffer_t *dynamicVbo;
+	vertexBuffer_t *bspShadowVbo;
 	vertexBuffer_t *dynamicIbo;
 	vertexBuffer_t *cubeIbo;
 	vertexBuffer_t *skyBoxVbo;
@@ -478,16 +471,16 @@ cvar_t	*r_nsightDebug;
 
 
 int CL_PMpointcontents (vec3_t point);
-qboolean outMap;
+bool outMap;
 
 extern float ref_realtime;
 
 extern int r_visframecount;
 
-qboolean xhargar2hack;
-qboolean RA_Frame;
+bool xhargar2hack;
+bool RA_Frame;
 
-qboolean STB_LoadTexture(const char* name, byte** pic, int* width, int* height);
+bool STB_LoadTexture(const char* name, byte** pic, int* width, int* height);
 char *q_pretifymem(float value);
 
 void R_InitFboBuffers();
@@ -504,16 +497,16 @@ void R_LightPoint (vec3_t p, vec3_t color);
 void R_InitLightgrid (void);
 
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3], int style,
-	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
-	int isShadow, int isAmbient, qboolean ingame,
+	int filter, vec3_t angles, vec3_t speed, bool isStatic,
+	int isShadow, int isAmbient, bool ingame,
 	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
 	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad,
-	qboolean proj, float fovX, float fovY, float distance);
+	bool proj, float fovX, float fovY, float distance);
 
 void R_DrawParticles (void);
-void R_RenderDecals (qboolean twoside);
+void R_RenderDecals (bool twoside);
 void R_LightColor (vec3_t org, vec3_t color);
-qboolean R_CullAliasModel (vec3_t bbox[8], entity_t *e);
+bool R_CullAliasModel (vec3_t bbox[8], entity_t *e);
 int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore);
 void VID_MenuInit (void);
 void AnglesToMat3 (const vec3_t angles, mat3_t m);
@@ -531,10 +524,10 @@ void R_ToneMaping(void);
 void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);
-qboolean R_CullSphere (const vec3_t centre, const float radius);
+bool R_CullSphere (const vec3_t centre, const float radius);
 void R_CastBspShadowVolumes (void);
-void R_CastAliasShadowVolumes (qboolean player);
-void R_DrawAliasModelLightPass (qboolean weapon_model);
+void R_CastAliasShadowVolumes (bool player);
+void R_DrawAliasModelLightPass (bool weapon_model);
 void R_SetupEntityMatrix (entity_t * e);
 void R_SSAO(void);
 void R_DrawDepthScene(void);
@@ -558,29 +551,29 @@ void R_ResetFlarePos_f (void);
 void R_Copy_Light_Properties_f (void);
 void R_Paste_Light_Properties_f (void);
 
-extern qboolean flareEdit;
+extern bool flareEdit;
 
-void R_CalcCubeMapMatrix (qboolean model);
+void R_CalcCubeMapMatrix (bool model);
 void DeleteShadowVertexBuffers (void);
-void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame);
-qboolean R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust);
+void MakeFrustum4Light (worldShadowLight_t *light, bool ingame);
+bool R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust);
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr);
-qboolean SurfInFrustum (msurface_t *s);
-qboolean HasSharedLeafs (byte *v1, byte *v2);
-qboolean InLightVISEntity ();
+bool SurfInFrustum (msurface_t *s);
+bool HasSharedLeafs (byte *v1, byte *v2);
+bool InLightVISEntity ();
 void R_DrawLightBrushModel ();
 void UpdateLightEditor (void);
 void Load_LightFile ();
-qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p);
+bool BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p);
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
 extern int numFlareOcc;
-extern qboolean FoundReLight;
-qboolean PF_inPVS (vec3_t p1, vec3_t p2);
-void R_SetFrustum (qboolean zpass);
+extern bool FoundReLight;
+bool PF_inPVS (vec3_t p1, vec3_t p2);
+void R_SetFrustum (bool zpass);
 void SetFarClip(void);
 void R_SetViewLightScreenBounds ();
-qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
+bool BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
 void R_DrawLightBounds(void);
 
@@ -591,16 +584,16 @@ extern const mat4_t	mat4_identity;
 
 void Mat3_Identity (mat3_t m);
 void Mat3_Copy (const mat3_t in, mat3_t out);
-qboolean Mat3_Compare(const mat3_t a, const mat3_t b);
+bool Mat3_Compare(const mat3_t a, const mat3_t b);
 
-qboolean Mat4_Compare(const mat4_t a, const mat4_t b);
+bool Mat4_Compare(const mat4_t a, const mat4_t b);
 void Mat4_Multiply (const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_Copy (const mat4_t in, mat4_t out);
 void Mat4_Transpose (const mat4_t in, mat4_t out);
 void Mat4_MultiplyVector (const mat4_t m, const vec3_t in, vec3_t out);
 void Mat4_Translate (mat4_t m, float x, float y, float z);
 void Mat4_Scale (mat4_t m, float x, float y, float z);
-qboolean Mat4_Invert (const mat4_t in, mat4_t out);
+bool Mat4_Invert (const mat4_t in, mat4_t out);
 void Mat4_TransposeMultiply (const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_SetOrientation (mat4_t m, const mat3_t rotation, const vec3_t translation);
 void Mat4_Identity (mat4_t mat);
@@ -611,28 +604,28 @@ void Mat3_Set(mat3_t mat, vec3_t x, vec3_t y, vec3_t z);
 void Mat4_Set(mat4_t mat, vec4_t x, vec4_t y, vec4_t z, vec4_t w);
 void VectorLerp(const vec3_t from, const vec3_t to, float frac, vec3_t out);
 
-qboolean Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits);
-qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits);
+bool Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits);
+bool Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits);
 
-qboolean Mat3_IsIdentity(const mat3_t mat);
+bool Mat3_IsIdentity(const mat3_t mat);
 void Mat3_MultiplyVector(const mat3_t m, const vec3_t in, vec3_t out);
 
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 
-trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
+trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, bool checkAliases);
 void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec3_t maxs2);
 
-void R_DrawSurfacesRA(qboolean bmodel);
+void R_DrawSurfacesRA(bool bmodel);
 void R_DrawBrushModelRA(void);
 
-void R_DrawMD3Mesh(qboolean weapon);
-void R_DrawMD3MeshLight(qboolean weapon);
-void R_DrawMD3ShellMesh(qboolean weapon);
+void R_DrawMD3Mesh(bool weapon);
+void R_DrawMD3MeshLight(bool weapon);
+void R_DrawMD3ShellMesh(bool weapon);
 void CheckEntityFrameMD3(md3Model_t *paliashdr);
-qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
+bool R_CullMD3Model(vec3_t bbox[8], entity_t *e);
 
-qboolean R_AliasInLightBound();
+bool R_AliasInLightBound();
 void R_UpdateLightAliasUniforms();
 
 void R_InitVertexBuffers();
@@ -686,7 +679,7 @@ void R_InitEngineTextures (void);
 void R_Init2D (void);
 void LoadPCX(char *filename, byte **pic, byte **palette, int *width, int *height);
 
-qboolean R_CullBox (vec3_t mins, vec3_t maxs);
+bool R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
 void R_DrawSkyBox();
 
@@ -695,7 +688,7 @@ void COM_StripExtension (char *in, char *out);
 void Draw_GetPicSize (int *w, int *h, char *name);
 void Draw_StretchPic (int x, int y, int w, int h, char *name);
 void Draw_TileClear (int x, int y, int w, int h, char *name);
-void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, qboolean loading);
+void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, bool loading);
 void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows,
 	byte * data);
 
@@ -717,8 +710,8 @@ void GL_InitImages (void);
 void GL_ShutdownImages (void);
 
 void GL_FreeUnusedImages (void);
-qboolean R_CullOrigin (vec3_t origin);
-qboolean IsExtensionSupported(const char *name);
+bool R_CullOrigin (vec3_t origin);
+bool IsExtensionSupported(const char *name);
 
 int CalcMipmapCount(int w, int h);
 
@@ -757,12 +750,12 @@ typedef struct {
 	int			stencilBits;
 	int			samples;
 	int			maxSamples;
-	qboolean	hdrDisplay;
+	bool	hdrDisplay;
 } glconfig_t;
 
 
 typedef struct {
-	qboolean fullscreen;
+	bool fullscreen;
 
 	int prev_mode;
 
@@ -770,18 +763,18 @@ typedef struct {
 	uint64_t	currentBindlessHandle;
 	int		currentBindlessLocation;
 
-	qboolean	texture_compression_bptc;
+	bool	texture_compression_bptc;
 
-	qboolean	wgl_no_error;
-	qboolean	wgl_swap_control_tear;
-	qboolean	depthBoundsTest;
-	qboolean	depthClamp;
+	bool	wgl_no_error;
+	bool	wgl_swap_control_tear;
+	bool	depthBoundsTest;
+	bool	depthClamp;
 
 	int			numFormats, binaryFormats;
 	int			programId;
 	int			vaoId;
 	int			vboId;
-	int			vboType;
+	int			iboId;
 	GLenum		matrixMode;
 	int			fboId;
 	mat4_t		projectionMatrix;
@@ -795,31 +788,28 @@ typedef struct {
 	int			maxDrawBuffers;
 
 	// gl state cache
-	qboolean		cullFace;
+	bool		cullFace;
 	GLenum			cullMode;
 	GLenum			frontFace;
 
-	qboolean		blend;
+	bool		blend;
 	GLenum			blendSrc;
 	GLenum			blendDst;
-	GLenum			alphaFunc;
-	GLclampf		alphaRef;
 
 	GLboolean		colorMask[4];
 
-	qboolean		depthTest;
+	bool		depthTest;
 	GLenum			depthFunc;
 	GLboolean		depthMask;
 	GLclampd		depthRange[2];
 
-	qboolean		polygonOffsetFill;
+	bool		polygonOffsetFill;
 	GLfloat			polygonOffsetFactor;
 	GLfloat			polygonOffsetUnits;
 
-	qboolean		lineSmooth;
-	qboolean		alphaTest;
+	bool		lineSmooth;
 
-	qboolean		stencilTest;
+	bool		stencilTest;
 	GLenum			stencilFunc;
 	GLenum			stencilFace;
 	GLuint			stencilMask;
@@ -829,10 +819,10 @@ typedef struct {
 	GLenum			stencilZFail;
 	GLenum			stencilZPass;
 
-	qboolean		scissorTest;
+	bool		scissorTest;
 	GLint			scissor[4];
 
-	qboolean		glDepthBoundsTest;
+	bool		glDepthBoundsTest;
 	GLfloat			depthBoundsMins;
 	GLfloat			depthBoundsMax;
 
@@ -906,6 +896,7 @@ extern glstate_t gl_state;
 #define CUBE_INDICES	36
 #define CUBE_VERTS		8
 #define QUAD_INDICES	6
+#define QUAD_VERTS		4
 
 #define MAX_VERTICES	65536
 #define MAX_INDICES		MAX_VERTICES * 3
@@ -916,15 +907,7 @@ vec3_t	s_lerped[MAX_VERTS];
 #define MAX_POLY_VERT	128
 
 typedef struct tess_s {
-
-	vec4_t	position[MAX_VERTICES];
-	vec2_t	texCoord[MAX_VERTICES];
-	vec4_t	color[MAX_VERTICES];
-
-	vec3_t	tangent[MAX_VERTICES];
-	vec3_t	binormal[MAX_VERTICES];
-	vec3_t	normal[MAX_VERTICES];
-	uint	indices[MAX_INDICES];
+	vec4_t	pos[MAX_VERTICES];
 } tess_t;
 tess_t tess;
 
@@ -935,57 +918,41 @@ typedef struct {
 	vec3_t tangent;
 	vec3_t binormal;
 	vec3_t normal;
-}vertex_t;
+}vertex3d_t;
 
 typedef struct {
-	vertex_t	v[4096];
-	uint		indices[4096*3];
-}tesselator_t;
-tesselator_t tess2;
-
-#define	TESS_OFFSET_POS			((byte *)(NULL)+0)  
-#define	TESS_OFFSET_TC			((byte *)(NULL)+sizeof(vec4_t))
-#define	TESS_OFFSET_COLOR		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t))
-#define	TESS_OFFSET_TANHENT		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t))
-#define	TESS_OFFSET_BINORMAL	((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t))
-#define	TESS_OFFSET_NORMAL		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t)+sizeof(vec3_t))
-
-// 2D VBO stuff
-#define MAX_VERTICES_2D 16384
-#define MAX_INDICES_2D MAX_VERTICES_2D * 3
-uint16_t ibo_quadString[MAX_INDICES_2D];
-
-#define	VERT2D_POS		((byte *)(NULL)+0)
-#define	VERT2D_TC		((byte *)(NULL)+8)
-#define VERT2D_COLOR	((byte *)(NULL)+16)
-
-///	fill array
-/// xy0, st0, rgba0
-/// xy1, st1, rgba1
-/// xy2, st2, rgba2
-/// xy3, st3, rgba3
-
-typedef struct {
-	vec2_t pos;
+	vec4_t pos;
 	vec2_t tc;
 	vec4_t color;
 }vertex2d_t;
 
 typedef struct {
-	vertex2d_t v[4];
+	vertex3d_t	v[MAX_VERTICES];
+	uint		indices[MAX_INDICES];
+}tess3d_t;
+tess3d_t tess3d;
+
+typedef struct {
+	vertex2d_t v[QUAD_VERTS];
 }tess2d_t;
 tess2d_t tess2d;
 
 typedef struct {
-	vertex2d_t v[MAX_VERTICES_2D];
+	vertex2d_t v[MAX_VERTICES];
+	uint32_t indices[MAX_INDICES];
 	int numVerts, numSymbols;
 	uint64_t handle;
 }tess2dArray_t;
 tess2dArray_t tess2dArray;
 
+#define	TESS_OFFSET_POS			((byte *)(NULL)+0)  
+#define	TESS_OFFSET_TC			((byte *)(NULL)+sizeof(vec4_t))
+#define	TESS_OFFSET_COLOR		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t))
+#define	TESS_OFFSET_TANHENT		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec4_t)+sizeof(vec4_t))
+#define	TESS_OFFSET_BINORMAL	((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t))
+#define	TESS_OFFSET_NORMAL		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t)+sizeof(vec3_t))
 
 void CL_AddString(int x, int y, int scale, char *s, image_t *inTex);
-
 void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex);
 void R_Flush2D();
 void R_DrawTexturedQuad();
@@ -993,9 +960,9 @@ void R_DrawTexturedQuad();
 #define VID_CENTER_W (vid.width * 0.5)
 #define VID_CENTER_H (vid.height * 0.5)
 
-void R_PrepareShadowLightFrame (qboolean weapon);
+void R_PrepareShadowLightFrame (bool weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
-qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);
+bool BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);
 
 #define Vector4Set(v, a, b, c, d)	((v)[0]=(a),(v)[1]=(b),(v)[2]=(c),(v)[3]=(d))
 #define Vector4Copy(a,b) ((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
@@ -1017,7 +984,7 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 
 typedef struct {
 	// Atlas texId for each vector.
-	int		texnum[3];
+	int			texnum[3];
 	uint64_t	handle[3];
 
 	// The lightmap texture data needs to be kept in
@@ -1053,7 +1020,7 @@ typedef struct glslProgram_s {
 
 	char			name[MAX_QPATH];
 	int				id;
-	qboolean		valid;		// qtrue if all permutations linked successfully
+	bool		valid;		// true if all permutations linked successfully
 
 } glslProgram_t;
 
@@ -1113,7 +1080,7 @@ void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
-void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
+void R_ShowTrisBSP(bool bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
 
 typedef enum {
 	ATT_POSITION,
@@ -1274,7 +1241,7 @@ typedef enum {
 void R_DrawFullScreenQuad();
 static GLenum	drawbuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 
-qboolean nvApiInit;
+bool nvApiInit;
 
 void R_GpuInfo_f(void);
 void ADL_PrintGpuInfo();
@@ -1505,11 +1472,11 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 */
 
 void GLimp_EndFrame (void);
-qboolean GLimp_Init (void *hinstance, void *hWnd);
+bool GLimp_Init (void *hinstance, void *hWnd);
 void GLimp_Shutdown (void);
 rserr_t GLimp_SetMode (unsigned *pwidth, unsigned *pheight, int mode,
-	qboolean fullscreen);
-void GLimp_AppActivate (qboolean active);
+	bool fullscreen);
+void GLimp_AppActivate (bool active);
 
 void Sys_CheckWindowsVersion();
 void Sys_CpuID();
@@ -1546,7 +1513,7 @@ typedef struct {
 	int virtualWidth, virtualHeight;
 	int borderWidth, borderHeight;
 
-	qboolean pixelFormatSet;
+	bool pixelFormatSet;
 	char	 desktopName[32];		// no monitor specified if empty, drawing on primary display
 
 #else

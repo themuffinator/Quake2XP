@@ -88,12 +88,12 @@ void Action_Draw (menuaction_s * a) {
 		a->generic.ownerdraw (a);
 }
 
-qboolean Field_DoEnter (menufield_s * f) {
+bool Field_DoEnter (menufield_s * f) {
 	if (f->generic.callback) {
 		f->generic.callback (f);
-		return qtrue;
+		return true;
 	}
-	return qfalse;
+	return false;
 }
 // mp menu  values in field
 void Field_Draw (menufield_s * f) {
@@ -172,7 +172,7 @@ void Field_Draw (menufield_s * f) {
 	}
 }
 
-qboolean Field_Key (menufield_s * f, int key) {
+bool Field_Key (menufield_s * f, int key) {
 	extern int keydown[];
 
 	switch (key) {
@@ -224,7 +224,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 		switch (key) {
 			case K_DEL:
 			default:
-				return qfalse;
+				return false;
 		}
 	}
 
@@ -246,7 +246,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 
 			free (cbd);
 		}
-		return qtrue;
+		return true;
 	}
 
 	switch (key) {
@@ -274,12 +274,12 @@ qboolean Field_Key (menufield_s * f, int key) {
 		case K_ENTER:
 		case K_ESCAPE:
 		case K_TAB:
-			return qfalse;
+			return false;
 
 		case K_SPACE:
 		default:
 			if (!isdigit (key) && (f->generic.flags & QMF_NUMBERSONLY))
-				return qfalse;
+				return false;
 
 			if (f->cursor < f->length) {
 				f->buffer[f->cursor++] = key;
@@ -291,7 +291,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 			}
 	}
 
-	return qtrue;
+	return true;
 }
 
 void Menu_AddItem (menuframework_s * menu, void *item) {
@@ -441,11 +441,11 @@ void Menu_DrawStatusBar (const char *string) {
 	if (string) {
 		int center = ((int)strlen(string) * fontscale * 5) * 0.5;
 
-		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88, qfalse);
+		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88, false);
 		CL_AddString ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, (char*)string, i_menuFont);
 	}
 	else {
-		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0, qfalse);
+		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0, false);
 	}
 }
 
@@ -483,7 +483,7 @@ void *Menu_ItemAtCursor (menuframework_s * m) {
 	return m->items[m->cursor];
 }
 
-qboolean Menu_SelectItem (menuframework_s * s) {
+bool Menu_SelectItem (menuframework_s * s) {
 	menucommon_s *item = (menucommon_s *)Menu_ItemAtCursor (s);
 
 	if (item) {
@@ -492,16 +492,16 @@ qboolean Menu_SelectItem (menuframework_s * s) {
 				return Field_DoEnter ((menufield_s *)item);
 			case MTYPE_ACTION:
 				Action_DoEnter ((menuaction_s *)item);
-				return qtrue;
+				return true;
 			case MTYPE_LIST:
 				//          Menulist_DoEnter( ( menulist_s * ) item );
-				return qfalse;
+				return false;
 			case MTYPE_SPINCONTROL:
 				//          SpinControl_DoEnter( ( menulist_s * ) item );
-				return qfalse;
+				return false;
 		}
 	}
-	return qfalse;
+	return false;
 }
 
 void Menu_SetStatusBar (menuframework_s * m, const char *string) {
@@ -570,7 +570,7 @@ void MenuList_Draw (menulist_s * l) {
 
 	Draw_Fill (l->generic.x - 112 + l->generic.parent->x,
 		l->generic.parent->y + l->generic.y + l->curInteger * 10 + 10,
-		128, 10, 1.0, 0.0, 1.0, 1.0, qfalse);
+		128, 10, 1.0, 0.0, 1.0, 1.0, false);
 	
 	while (*n) {
 		Menu_DrawStringR2LDark (l->generic.x + l->generic.parent->x +

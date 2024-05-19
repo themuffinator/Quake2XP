@@ -71,7 +71,7 @@ typedef struct worldShadowLight_s {
 
 	float		radius[3];
 
-	qboolean	projector;
+	bool	projector;
 	float		coneExp;
 	float		hotSpot;
 	float		distance;
@@ -91,8 +91,8 @@ typedef struct worldShadowLight_s {
 	int			start_off;
 	uint		numStaticShadowTris;
 
-	qboolean	spherical;
-	qboolean	castCaustics, castCaustics2;
+	bool	spherical;
+	bool	castCaustics, castCaustics2;
 
 	cplane_t	frust[6];
 	msurface_t	*interaction[MAX_MAP_FACES];
@@ -135,7 +135,7 @@ typedef struct {
 	float lightIntens;
 	msurface_t *surf;
 	vec3_t lightsurf_origin;
-	qboolean ignore;
+	bool ignore;
 
 } autoLight_t;
 
@@ -257,7 +257,7 @@ typedef struct model_s {
 	//
 	// solid volume for clipping
 	//
-	qboolean	clipbox;
+	bool	clipbox;
 	vec3_t		clipmins, clipmaxs;
 	//
 	// brush model
@@ -301,7 +301,7 @@ typedef struct model_s {
 
 	int			lightmap_scale;
 	byte		*lightData;
-	qboolean	useXPLM;	// 3-vector basis lightmap
+	bool	useXPLM;	// 3-vector basis lightmap
 	
 	// for alias models and skins
 	image_t		*albedo		[MAX_MD2SKINS];
@@ -325,8 +325,8 @@ typedef struct model_s {
 	float		glowCfg[3];
 	float		envScale;
 	float		modelScale;
-	qboolean	noSelfShadow;
-	qboolean	envMap;
+	bool	noSelfShadow;
+	bool	envMap;
 
 	vec3_t	*normals;
 	vec3_t	*binormals;
@@ -346,7 +346,7 @@ typedef struct model_s {
 //============================================================================
 
 void Mod_Init (void);
-model_t *Mod_ForName (char *name, qboolean crash);
+model_t *Mod_ForName (char *name, bool crash);
 byte *Mod_ClusterPVS (int cluster, model_t * model);
 
 void Mod_Modellist_f (void);

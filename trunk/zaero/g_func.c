@@ -1020,7 +1020,7 @@ NOMONSTER	monsters will not trigger this door
 4)	heavy
 */
 
-void door_use_areaportals (edict_t *self, qboolean open)
+void door_use_areaportals (edict_t *self, bool open)
 {
 	edict_t	*t = NULL;
 
@@ -1760,7 +1760,7 @@ void train_next (edict_t *self)
 	vec3_t		dest;
 	vec3_t		adjusted_pathpoint;
 	vec3_t		corner_offset = {1,1,1};
-	qboolean	first;
+	bool	first;
 
 	first = true;
 again:

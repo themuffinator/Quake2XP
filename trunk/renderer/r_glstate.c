@@ -252,14 +252,6 @@ void GL_DepthMask(GLboolean flag) {
 	}
 }
 
-void GL_AlphaFunc(GLenum func, GLclampf ref)
-{
-	if (gl_state.alphaFunc == func && gl_state.alphaRef == ref)
-		return;
-	gl_state.alphaFunc = func;
-	gl_state.alphaRef = ref;
-	qglAlphaFunc(func, ref);
-}
 /*
 =============
 GL_Scissor
@@ -335,53 +327,47 @@ void GL_Enable(GLenum cap) {
 	case GL_BLEND:
 		if (gl_state.blend)
 			return;
-		gl_state.blend = qtrue;
+		gl_state.blend = true;
 		break;
 	case GL_CULL_FACE:
 		if (gl_state.cullFace)
 			return;
-		gl_state.cullFace = qtrue;
+		gl_state.cullFace = true;
 		break;
 	case GL_DEPTH_TEST:
 		if (gl_state.depthTest)
 			return;
-		gl_state.depthTest = qtrue;
+		gl_state.depthTest = true;
 		break;
 	case GL_DEPTH_BOUNDS_TEST_EXT:
 		if (gl_state.glDepthBoundsTest)
 		return;
-		gl_state.glDepthBoundsTest = qtrue;
+		gl_state.glDepthBoundsTest = true;
 		break;
 	case GL_SCISSOR_TEST:
 		if (gl_state.scissorTest)
 			return;
-		gl_state.scissorTest = qtrue;
+		gl_state.scissorTest = true;
 		break;
 	case GL_STENCIL_TEST:
 		if (gl_state.stencilTest)
 			return;
-		gl_state.stencilTest = qtrue;
+		gl_state.stencilTest = true;
 		break;
 	case GL_POLYGON_OFFSET_FILL:
 		if (gl_state.polygonOffsetFill)
 			return;
-		gl_state.polygonOffsetFill = qtrue;
+		gl_state.polygonOffsetFill = true;
 		break;
 	case GL_LINE_SMOOTH:
 		if (gl_state.lineSmooth)
 			return;
-		gl_state.lineSmooth = qtrue;
+		gl_state.lineSmooth = true;
 		break;
 	case GL_DEPTH_CLAMP:
 		if (gl_state.depthClamp)
 			return;
-		gl_state.depthClamp = qtrue;
-
-//	case GL_ALPHA_TEST:
-//		if (gl_state.alphaTest)
-//			return;
-//		gl_state.alphaTest = qtrue;
-
+		gl_state.depthClamp = true;
 	}
 
 	qglEnable(cap);
@@ -398,51 +384,47 @@ void GL_Disable(GLenum cap) {
 	case GL_BLEND:
 		if (!gl_state.blend)
 			return;
-		gl_state.blend = qfalse;
+		gl_state.blend = false;
 		break;
 	case GL_CULL_FACE:
 		if (!gl_state.cullFace)
 			return;
-		gl_state.cullFace = qfalse;
+		gl_state.cullFace = false;
 		break;
 	case GL_DEPTH_TEST:
 		if (!gl_state.depthTest)
 			return;
-		gl_state.depthTest = qfalse;
+		gl_state.depthTest = false;
 		break;
 	case GL_DEPTH_BOUNDS_TEST_EXT:
 		if (!gl_state.glDepthBoundsTest)
 		return;
-		gl_state.glDepthBoundsTest = qfalse;
+		gl_state.glDepthBoundsTest = false;
 		break;
 	case GL_SCISSOR_TEST:
 		if (!gl_state.scissorTest)
 			return;
-		gl_state.scissorTest = qfalse;
+		gl_state.scissorTest = false;
 		break;
 	case GL_STENCIL_TEST:
 		if (!gl_state.stencilTest)
 			return;
-		gl_state.stencilTest = qfalse;
+		gl_state.stencilTest = false;
 		break;
 	case GL_POLYGON_OFFSET_FILL:
 		if (!gl_state.polygonOffsetFill)
 			return;
-		gl_state.polygonOffsetFill = qfalse;
+		gl_state.polygonOffsetFill = false;
 		break;
 	case GL_LINE_SMOOTH:
 		if (!gl_state.lineSmooth)
 			return;
-		gl_state.lineSmooth = qfalse;
+		gl_state.lineSmooth = false;
 		break;
 	case GL_DEPTH_CLAMP:
 		if (!gl_state.depthClamp)
 			return;
-		gl_state.depthClamp = qfalse;
-//	case GL_ALPHA_TEST:
-//		if (!gl_state.alphaTest)
-//			return;
-//		gl_state.alphaTest = qfalse;
+		gl_state.depthClamp = false;
 	}
 
 	qglDisable(cap);
@@ -497,7 +479,7 @@ void GL_SetDefaultState(void) {
 
 	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglPolygonOffset(0.f, 1.f);
-	gl_state.polygonOffsetFill = qfalse;
+	gl_state.polygonOffsetFill = false;
 	gl_state.polygonOffsetFactor = 0.f;
 	gl_state.polygonOffsetUnits = 1.f;
 
@@ -508,7 +490,7 @@ void GL_SetDefaultState(void) {
 	// scissor
 	qglDisable(GL_SCISSOR_TEST);
 	qglScissor(0, 0, vid.width, vid.height);
-	gl_state.scissorTest = qfalse;
+	gl_state.scissorTest = false;
 	gl_state.scissor[0] = 0;
 	gl_state.scissor[1] = 0;
 	gl_state.scissor[2] = vid.width;
@@ -525,9 +507,9 @@ void GL_SetDefaultState(void) {
 	qglDisable(GL_DEPTH_TEST);
 	qglDepthFunc(GL_LEQUAL);
 	qglDepthMask(1);
-	gl_state.depthTest = qfalse;
+	gl_state.depthTest = false;
 	gl_state.depthFunc = GL_LEQUAL;
-	gl_state.depthMask = qtrue;
+	gl_state.depthMask = true;
 
 	// stencil test
 	qglDisable(GL_STENCIL_TEST);
@@ -535,7 +517,7 @@ void GL_SetDefaultState(void) {
 	qglStencilFunc(GL_ALWAYS, 128, 255);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilOpSeparate(GL_FRONT_AND_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
-	gl_state.stencilTest = qfalse;
+	gl_state.stencilTest = false;
 	gl_state.stencilMask = 255;
 	gl_state.stencilFunc = GL_ALWAYS;
 	gl_state.stencilRef = 128;
@@ -548,7 +530,7 @@ void GL_SetDefaultState(void) {
 	// blending
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	gl_state.blend = qfalse;
+	gl_state.blend = false;
 	gl_state.blendSrc = GL_SRC_ALPHA;
 	gl_state.blendDst = GL_ONE_MINUS_SRC_ALPHA;
 
@@ -556,13 +538,13 @@ void GL_SetDefaultState(void) {
 	qglDisable(GL_CULL_FACE);
 	qglCullFace(GL_BACK);
 	qglFrontFace(GL_CW);
-	gl_state.cullFace = qfalse;
+	gl_state.cullFace = false;
 	gl_state.cullMode = GL_BACK;
 	gl_state.frontFace = GL_CW;
 
 	// depth bounds test
 	if (gl_state.depthBoundsTest) {
-		gl_state.glDepthBoundsTest = qfalse;
+		gl_state.glDepthBoundsTest = false;
 		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
 		glDepthBoundsEXT(0.f, 1.f);
 		gl_state.depthBoundsMins = 0.f;
@@ -570,10 +552,6 @@ void GL_SetDefaultState(void) {
 	}
 	
 	gl_state.numDrawBuffers = 1;
-
-	gl_state.alphaTest = qfalse;
-	gl_state.alphaFunc = GL_GREATER;
-	gl_state.alphaRef = 0.666f;
 
 	lightUniforms.pos[0] = -999999;
 	lightUniforms.pos[1] = -999999;
@@ -585,8 +563,14 @@ void GL_SetDefaultState(void) {
 	lightUniforms.color[3] = -1.0;
 
 
-//	gl_state.vaoId = 0;
-	gl_state.fboId = 0;
+	gl_state.vaoId	= 0;
+	gl_state.fboId	= 0;
+	gl_state.vboId	= 0;
+	gl_state.iboId	= 0;
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	qglClearColor(0.0, 0.0, 0.0, 1.0);

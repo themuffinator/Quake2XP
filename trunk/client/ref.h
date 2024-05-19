@@ -179,7 +179,7 @@ typedef struct entity_s {
 	mat4_t	orMatrix, matrix;
 	vec3_t	addColor;
 
-	qboolean angleMod;
+	bool angleMod;
 	/*
 	 ** most recent data
 	 */
@@ -223,7 +223,7 @@ typedef struct {
 	vec3_t		origin, color, angles;
 	float		intensity, _cone;
 	int			filter, style;
-	qboolean	spotlight;
+	bool	spotlight;
 
 } dlight_t;
 
@@ -347,13 +347,13 @@ typedef struct image_s {
 	uint		dataType;
 	uint		flags;
 
-	qboolean	floatTex;
-	qboolean	compressed;
+	bool	floatTex;
+	bool	compressed;
 
-	qboolean	has_alpha;
-	qboolean	paletted;
-	qboolean	envMap;
-	qboolean	legacySky;
+	bool	has_alpha;
+	bool	paletted;
+	bool	envMap;
+	bool	legacySky;
 
 	float		picScale_w;
 	float		picScale_h;
@@ -515,8 +515,8 @@ DECALS
 */
 
 #define MAX_DECALS				8192
-#define MAX_DECAL_VERTS			128
-#define MAX_DECAL_FRAGMENTS		64
+#define MAX_DECAL_VERTS			512
+#define MAX_DECAL_FRAGMENTS		384
 
 typedef struct decals_t {
 	struct decals_t *prev, *next;
@@ -524,12 +524,12 @@ typedef struct decals_t {
 
 	float time, endTime;
 
-	int numverts;
-	int numIndices;
-	uint16_t	*indices;
+	int			numVerts;
+	int			numIndices;
+	uint32_t	*indices;
 
 	vec3_t verts[MAX_DECAL_VERTS];
-	vec2_t stcoords[MAX_DECAL_VERTS];
+	vec2_t st[MAX_DECAL_VERTS];
 	vec3_t color;
 	vec3_t endColor;
 	float alpha;
@@ -549,8 +549,8 @@ typedef struct {
 	mnode_t *node;
 	msurface_t *surf;
 
-	int firstvert;
-	int numverts;
+	int firstVert;
+	int numVerts;
 } fragment_t;
 
 //================
@@ -578,7 +578,7 @@ typedef struct {
 	float blend[4];				// rgba 0-1 full screen blend
 	float time;					// time is uesed to auto animate
 	int rdflags;				// RDF_UNDERWATER, etc
-	qboolean mirrorView;
+	bool mirrorView;
 	byte *areabits;				// if not NULL, only areas with set bits
 	// will be drawn
 
@@ -636,7 +636,7 @@ void Draw_ScaledBumpPic(int x, int y, float scale_x, float scale_y, image_t* gl,
 
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);
-void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, qboolean loading);
+void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, bool loading);
 void R_BeginRegistration (char *map);
 void R_SetSky (char *name, float rotate, vec3_t axis);
 void R_EndRegistration (void);
@@ -648,7 +648,7 @@ void R_ModelRadius (struct model_s * model, vec3_t rad);
 void R_ModelCenter (struct model_s * model, vec3_t center);
 
 void R_Shutdown (void);
-qboolean R_CullPoint (vec3_t org);
+bool R_CullPoint (vec3_t org);
 int R_Init (void *hinstance, void *wndproc);
 image_t *Draw_FindPic (char *name);
 struct model_s *R_RegisterModel (char *name);
@@ -657,7 +657,7 @@ image_t *Draw_FindPic (char *name);
 void R_SetPalette (const unsigned char *palette);
 void R_BeginFrame ();
 void GLimp_EndFrame (void);
-void GLimp_AppActivate (qboolean active);
+void GLimp_AppActivate (bool active);
 void VID_NewWindow (int width, int height);
 void VectorNormalizeFast(vec3_t v);
 

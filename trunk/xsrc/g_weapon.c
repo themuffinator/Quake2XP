@@ -42,7 +42,7 @@ fire_hit
 Used for all impact (hit/punch/slash) attacks
 =================
 */
-qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick) {
+bool fire_hit (edict_t *self, vec3_t aim, int damage, int kick) {
 	trace_t		tr;
 	vec3_t		forward, right, up;
 	vec3_t		v;
@@ -54,7 +54,7 @@ qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick) {
 	VectorSubtract (self->enemy->s.origin, self->s.origin, dir);
 	range = VectorLength (dir);
 	if (range > aim[0])
-		return qfalse;
+		return false;
 
 	if (aim[1] > self->mins[0] && aim[1] < self->maxs[0]) {
 		// the hit is straight on so back the range up to the edge of their bbox
@@ -73,7 +73,7 @@ qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick) {
 	tr = gi.trace (self->s.origin, NULL, NULL, point, self, MASK_SHOT);
 	if (tr.fraction < 1) {
 		if (!tr.ent->takedamage)
-			return qfalse;
+			return false;
 		// if it will hit any client/monster then hit the one we wanted to hit
 		if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client))
 			tr.ent = self->enemy;
@@ -89,7 +89,7 @@ qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick) {
 	T_Damage (tr.ent, self, self, dir, point, vec3_origin, damage, kick / 2, DAMAGE_NO_KNOCKBACK, MOD_HIT);
 
 	if (!(tr.ent->svflags & SVF_MONSTER) && (!tr.ent->client))
-		return qfalse;
+		return false;
 
 	// do our special form of knockback here
 	VectorMA (self->enemy->absmin, 0.5, self->enemy->size, v);
@@ -98,7 +98,7 @@ qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick) {
 	VectorMA (self->enemy->velocity, kick, v, self->enemy->velocity);
 	if (self->enemy->velocity[2] > 0)
 		self->enemy->groundentity = NULL;
-	return qtrue;
+	return true;
 }
 
 
@@ -117,7 +117,7 @@ void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 	float		r;
 	float		u;
 	vec3_t		water_start, start2;
-	qboolean	water = qfalse;
+	bool	water = false;
 	int			content_mask = MASK_SHOT | MASK_WATER;
 
 	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT);
@@ -135,7 +135,7 @@ void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 		VectorMA (end, u, up, end);
 
 		if (gi.pointcontents (start) & MASK_WATER) {
-			water = qtrue;
+			water = true;
 			VectorCopy (start, water_start);
 			content_mask &= ~MASK_WATER;
 		}
@@ -146,7 +146,7 @@ void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 		if (tr.contents & MASK_WATER) {
 			int		color;
 
-			water = qtrue;
+			water = true;
 			VectorCopy (tr.endpos, water_start);
 
 			if (!VectorCompare (start, tr.endpos)) {
@@ -310,7 +310,7 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 	G_FreeEdict (self);
 }
 
-void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, qboolean hyper) {
+void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, bool hyper) {
 	edict_t	*bolt;
 	trace_t	tr;
 
@@ -522,7 +522,7 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	gi.linkentity (grenade);
 }
 
-void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held) {
+void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, bool held) {
 	edict_t	*grenade;
 	vec3_t	dir;
 	vec3_t	forward, right, up;
@@ -666,12 +666,12 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 	trace_t		tr, tr2;
 	edict_t		*ignore;
 	int			mask;
-	qboolean	water;
+	bool	water;
 
 	VectorMA (start, 8192, aimdir, end);
 	VectorCopy (start, from);
 	ignore = self;
-	water = qfalse;
+	water = false;
 	mask = MASK_SHOT | CONTENTS_SLIME | CONTENTS_LAVA;
 	while (ignore) {
 		tr = gi.trace (from, NULL, NULL, end, ignore, mask);
@@ -679,7 +679,7 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 
 		if (tr.contents & (CONTENTS_SLIME | CONTENTS_LAVA)) {
 			mask &= ~(CONTENTS_SLIME | CONTENTS_LAVA);
-			water = qtrue;
+			water = true;
 		}
 		else {
 			//ZOID--added so rail goes through SOLID_BBOX entities (gibs, etc)
@@ -1416,7 +1416,7 @@ void Trap_Think (edict_t *ent) {
 
 
 // RAFAEL
-void fire_trap (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held) {
+void fire_trap (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, bool held) {
 	edict_t	*trap;
 	vec3_t	dir;
 	vec3_t	forward, right, up;

@@ -50,7 +50,7 @@ state bit 1 is edge triggered on the up to down transition
 state bit 2 is edge triggered on the down to up transition
 
 
-Key_Event (int key, qboolean down, unsigned time);
+Key_Event (int key, bool down, unsigned time);
 
 +mlook src time
 
@@ -586,7 +586,7 @@ void CL_RefreshCmd(void)
 
 	// Send packet immediately on important events
 	if (((in_attack.state & 2) || (in_use.state & 2)))
-		cls.forcePacket = qtrue;
+		cls.forcePacket = true;
 }
 
 
@@ -699,7 +699,7 @@ void CL_SendCmd_Async(void)
 	if (userinfo_modified)
 	{
 		CL_FixUpGender();
-		userinfo_modified = qfalse;
+		userinfo_modified = false;
 		MSG_WriteByte(&cls.netchan.message, clc_userinfo);
 		MSG_WriteString(&cls.netchan.message, Cvar_Userinfo());
 	}
@@ -797,7 +797,7 @@ void CL_SendCmd (void) {
 	// send a userinfo update if needed
 	if (userinfo_modified) {
 		CL_FixUpGender ();
-		userinfo_modified = qfalse;
+		userinfo_modified = false;
 		MSG_WriteByte (&cls.netchan.message, clc_userinfo);
 		MSG_WriteString (&cls.netchan.message, Cvar_Userinfo ());
 	}

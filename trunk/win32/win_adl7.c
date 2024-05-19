@@ -58,7 +58,7 @@ ADL_CONTEXT_HANDLE context = NULL;
 
 LPAdapterInfo   adapterInfo = NULL;
 int				atiPhysicalGpuCount, atiPhysicalAdapters;
-qboolean		adlInit;
+bool		adlInit;
 char			gpuNames[30][128]; // 5 outputs per adapter (x4)
 
 #define AMDVENDORID				(1002)
@@ -93,7 +93,7 @@ void GLimp_InitADL(){
 	int adapterID, seenids[100], i, ii;
 	int seenids_num = 0;
 	int iSupported, iEnabled, overDriveVer;
-	adlInit = qfalse;
+	adlInit = false;
 	atiPhysicalGpuCount = atiPhysicalAdapters = 0;
 
 	Com_Printf("" S_COLOR_YELLOW "\n...Initializing AMD Display Library\n");
@@ -235,7 +235,7 @@ void GLimp_InitADL(){
 
 	atiPhysicalAdapters = seenids_num;
 
-	adlInit = qtrue;
+	adlInit = true;
 }
 
 void ADL_PrintGpuInfo(){

@@ -141,7 +141,7 @@ BSP SURFACES
 ===============
 */
 
-qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel) {
+bool R_FillAmbientBatch (msurface_t *surf, bool newBatch, unsigned *indeces, bool bmodel) {
 	uint	numIndices;
 	int		i, nv = surf->numEdges, lm;
 	float	scroll = 0.0, scale[2];
@@ -150,7 +150,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 	numIndices	= *indeces;
 
 	if ((nv-2) * 3 >= MAX_INDICES)
-		return qfalse;	// force the start new batch
+		return false;	// force the start new batch
 
 	if (newBatch) {
 		image_t	*image, *fx, *normal, *rgh;
@@ -237,7 +237,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 	*indeces = numIndices;
 
-	return qtrue;	
+	return true;	
 }
 
 int SurfSort( const msurface_t **a, const msurface_t **b )
@@ -245,7 +245,7 @@ int SurfSort( const msurface_t **a, const msurface_t **b )
 	return	( ((*a)->texInfo->albedo->texnum) ) - ( ((*b)->texInfo->albedo->texnum) );
 }
 
-void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program) {
+void R_ShowTrisBSP(bool bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program) {
 
 	if (!r_showTris->integer)
 		return;
@@ -266,9 +266,9 @@ void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, 
 		qglUniform3f(U_COLOR, r, g, b);
 
 		if (!bmodel)
-			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 		else
-			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 		
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 
@@ -278,16 +278,16 @@ void R_ShowTrisBSP(qboolean bmodel, uint numIndices, float r, float g, float b, 
 		GL_Enable(GL_DEPTH_TEST);
 }
 
-void R_ShowBspTBN(qboolean bmodel, uint numIndices, glslProgram_t *program) {
+void R_ShowBspTBN(bool bmodel, uint numIndices, glslProgram_t *program) {
 
 	if (!r_debugTbn->integer)
 		return;
 
 		GL_BindProgram(tbnDebugProgram);
 		if (!bmodel)
-			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 		else
-			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 		qglUniform1f(U_PARAM_FLOAT_0, 10.0);
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
@@ -298,7 +298,7 @@ void R_ShowBspTBN(qboolean bmodel, uint numIndices, glslProgram_t *program) {
 int			numSceneSurfaces;
 msurface_t	*sceneSurfaces[MAX_MAP_FACES];
 
-void R_UpdateAmbientBspUniforms(qboolean bmodel) {
+void R_UpdateAmbientBspUniforms(bool bmodel) {
 
 	qglUniform3fv(U_VIEW_POS, 1, bmodel ? BmodelViewOrg : r_origin);
 	qglUniform1i(U_PARALLAX_TYPE, r_parallaxMapping->integer);
@@ -306,13 +306,13 @@ void R_UpdateAmbientBspUniforms(qboolean bmodel) {
 	
 	qglUniform1i(U_LM_TYPE, r_worldmodel->useXPLM ? 1 : 0);
 	qglUniform1i(U_PARAM_INT_1, r_radiosityNormalMapping->integer ? 1 : 0);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float*)r_newrefdef.modelViewMatrix);
 
 	if (!bmodel) {
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	}
 	else {
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)currententity->orMatrix);
 	}
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
@@ -324,11 +324,11 @@ void R_UpdateAmbientBspUniforms(qboolean bmodel) {
 	GL_SetBindlessTexture(U_TMU6, i_ssaoColor[i_ssaoColorIndex]->handle);
 }
 
-static void GL_DrawLightmappedPoly(qboolean bmodel)
+static void GL_DrawLightmappedPoly(bool bmodel)
 {
 	msurface_t	*s;
 	int			i;
-	qboolean	newBatch;
+	bool	newBatch;
 	unsigned	oldTex		= 0xffffffff;
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices  = 0xffffffff;
@@ -363,10 +363,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			oldStyle1 = s->styles[1];
 			oldStyle2 = s->styles[2];
 			oldStyle3 = s->styles[3];
-			newBatch = qtrue;
+			newBatch = true;
 		}
 	else
-		newBatch = qfalse;
+		newBatch = false;
 	
 	// fill new batch
 		if (!R_FillAmbientBatch(s, newBatch, &numIndices, bmodel))
@@ -394,7 +394,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 }
 
 
-qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel, qboolean caustics)
+bool R_FillLightBatch(msurface_t *surf, bool newBatch, unsigned *indeces, bool bmodel, bool caustics)
 {
 	unsigned	numIndices;
 	int			i, nv = surf->numEdges;
@@ -403,7 +403,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	numIndices = *indeces;
 
 	if ((nv - 2) * 3 >= MAX_INDICES)
-		return qfalse;	// force the start new batch
+		return false;	// force the start new batch
 
 	if (newBatch)
 	{
@@ -490,10 +490,10 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 
 	*indeces = numIndices;
 	
-	return qtrue;
+	return true;
 }
 
-void R_UpdateLightUniforms(qboolean bModel)
+void R_UpdateLightUniforms(bool bModel)
  {
 	 mat4_t	entAttenMatrix, entSpotMatrix;
 
@@ -515,18 +515,18 @@ void R_UpdateLightUniforms(qboolean bModel)
 		 qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
 	 if (!bModel){
-		 qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-		 qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)currentShadowLight->attenMatrix);
-		 qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)currentShadowLight->spotMatrix);
+		 qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		 qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, false, (const float *)currentShadowLight->attenMatrix);
+		 qglUniformMatrix4fv(U_SPOT_MATRIX, 1, false, (const float *)currentShadowLight->spotMatrix);
 	 }
 	 else{
-		 qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+		 qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
-		 qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);
+		 qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, false, (const float *)entAttenMatrix);
 
 		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-		 qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);
+		 qglUniformMatrix4fv(U_SPOT_MATRIX, 1, false, (const float *)entSpotMatrix);
 	 }
 	 
 	 qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
@@ -547,7 +547,7 @@ void R_UpdateLightUniforms(qboolean bModel)
 		 qglUniform1i(U_PARAM_INT_2, 0);
 
 	 R_CalcCubeMapMatrix(bModel);
-	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
+	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, false, (const float *)currentShadowLight->cubeMapMatrix);
 
 	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		 qglUniform1i(U_USE_SSAO, 1);
@@ -561,12 +561,12 @@ void R_UpdateLightUniforms(qboolean bModel)
 
 int lightSurfSort(const msurface_t** a, const msurface_t** b);
 
-static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
+static void GL_DrawDynamicLightPass(bool bmodel, bool caustics)
 {
 	msurface_t	*s;
 	int			i;
 	glpoly_t	*poly;
-	qboolean	newBatch;
+	bool	newBatch;
 	uint		oldCaust	= 0xffffffff;
 	uint		oldTex		= 0xffffffff;
 	uint		oldFlag		= 0xffffffff;
@@ -594,10 +594,10 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
 			oldCaust = caustics;
-			newBatch = qtrue;
+			newBatch = true;
 		}
 		else
-			newBatch = qfalse;
+			newBatch = false;
 
 	// fill new batch
 		if (!R_FillLightBatch(s, newBatch, &numIndices, bmodel, caustics))
@@ -620,12 +620,12 @@ static void GL_DrawStaticLightPass()
 {
 	msurface_t	*s;
 	int			i;
-	qboolean	newBatch;
+	bool	newBatch;
 	unsigned	oldTex = 0xffffffff;
 	unsigned	oldFlag = 0xffffffff;
 	unsigned	numIndices = 0xffffffff;
 
-	R_UpdateLightUniforms(qfalse);
+	R_UpdateLightUniforms(false);
 
 	for (i = 0; i < currentShadowLight->numInteractionSurfs; i++) {
 		
@@ -645,13 +645,13 @@ static void GL_DrawStaticLightPass()
 
 			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
-			newBatch = qtrue;
+			newBatch = true;
 		}
 		else
-			newBatch = qfalse;
+			newBatch = false;
 
 		// fill new batch
-		if (!R_FillLightBatch(s, newBatch, &numIndices, qfalse, qfalse))
+		if (!R_FillLightBatch(s, newBatch, &numIndices, false, false))
 		{
 			if (numIndices != 0xffffffff) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
@@ -668,11 +668,11 @@ static void GL_DrawStaticLightPass()
 }
 
 
-qboolean SurfInFrustum (msurface_t *s) {
+bool SurfInFrustum (msurface_t *s) {
 	if (s->polys)
 		return !R_CullBox(s->mins, s->maxs);
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -786,7 +786,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 	R_RecursiveWorldNode(node->children[!side]);
 }
 
-qboolean R_MarkLightSurf (msurface_t *surf, qboolean world, worldShadowLight_t *light) {
+bool R_MarkLightSurf (msurface_t *surf, bool world, worldShadowLight_t *light) {
 	cplane_t	*plane;
 	float		dist;
 	glpoly_t	*poly;
@@ -796,14 +796,14 @@ qboolean R_MarkLightSurf (msurface_t *surf, qboolean world, worldShadowLight_t *
 		goto hack;
 
 	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_SKY | SURF_WARP | SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
-		return qfalse;
+		return false;
 hack:
 
 	plane = surf->plane;
 	poly = surf->polys;
 	
 	if (poly->lightTimestamp == r_lightTimestamp)
-		return qfalse;
+		return false;
 
 	switch (plane->type)
 	{
@@ -827,11 +827,11 @@ hack:
 		//the normals are flipped when surf_planeback is 1
 		if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
 			(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
-			return qfalse;
+			return false;
 next:
 
 	if (fabsf(dist) > light->maxRad)
-		return qfalse;
+		return false;
 
 	if(world)
 	{
@@ -853,18 +853,18 @@ next:
 		pbbox[5] = surf->maxs[2];
 
 		if (light->projector && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
-			return qfalse;
+			return false;
 
 		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
-			return qfalse;
+			return false;
 	}
 
 	poly->lightTimestamp = r_lightTimestamp;
 
-	return qtrue;
+	return true;
 }
 
-void R_MarkLightCasting (mnode_t *node, qboolean precalc, worldShadowLight_t *light)
+void R_MarkLightCasting (mnode_t *node, bool precalc, worldShadowLight_t *light)
 {
 	cplane_t			*plane;
 	float				dist;
@@ -888,7 +888,7 @@ void R_MarkLightCasting (mnode_t *node, qboolean precalc, worldShadowLight_t *li
 
 		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++){
 
-			if (R_MarkLightSurf((*surf), qtrue, light)) {
+			if (R_MarkLightSurf((*surf), true, light)) {
 				if(!precalc)
 					interaction[numInteractionSurfs++] = (*surf);
 				else
@@ -937,9 +937,9 @@ void R_DrawLightWorld(void)
 	if (!currentShadowLight->isStatic) {
 		r_lightTimestamp++;
 		numInteractionSurfs = 0;
-		R_MarkLightCasting(r_worldmodel->nodes, qfalse, currentShadowLight);
+		R_MarkLightCasting(r_worldmodel->nodes, false, currentShadowLight);
 		if (numInteractionSurfs > 0)
-			GL_DrawDynamicLightPass(qfalse, qfalse);
+			GL_DrawDynamicLightPass(false, false);
 	}
 	else
 		GL_DrawStaticLightPass();
@@ -974,7 +974,7 @@ void R_DrawBSP (void) {
 	numSceneSurfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_BindVAO(vao.bsp);
-	GL_DrawLightmappedPoly(qfalse);
+	GL_DrawLightmappedPoly(false);
 }
 
 /*
@@ -983,7 +983,7 @@ R_DrawInlineBModel
 
 =================
 */
-extern qboolean bmodelcaust;
+extern bool bmodelcaust;
 
 void R_DrawBrushModel();
 
@@ -1067,7 +1067,7 @@ int CL_PMpointcontents(vec3_t point);
 void R_DrawBrushModel (void) {
 	vec3_t		mins, maxs, tmp;
 	int			i;
-	qboolean	rotated;
+	bool	rotated;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -1075,7 +1075,7 @@ void R_DrawBrushModel (void) {
 		return;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = qtrue;
+		rotated = true;
 
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -1083,7 +1083,7 @@ void R_DrawBrushModel (void) {
 		}
 	}
 	else {
-		rotated = qfalse;
+		rotated = false;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -1114,7 +1114,7 @@ void R_DrawBrushModel (void) {
 
 	numSceneSurfaces = 0;
 	R_AddAmbientBmodelSurfaces();
-	GL_DrawLightmappedPoly(qtrue);
+	GL_DrawLightmappedPoly(true);
 }
 
 /*
@@ -1126,7 +1126,7 @@ R_DrawBrushModelRA
 void R_DrawBrushModelRA (void) {
 	vec3_t		mins, maxs, tmp;
 	int			i;
-	qboolean	rotated;
+	bool	rotated;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -1135,7 +1135,7 @@ void R_DrawBrushModelRA (void) {
 		return;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = qtrue;
+		rotated = true;
 
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -1143,7 +1143,7 @@ void R_DrawBrushModelRA (void) {
 		}
 	}
 	else {
-		rotated = qfalse;
+		rotated = false;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -1172,7 +1172,7 @@ void R_DrawBrushModelRA (void) {
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
 	R_MarkBmodelSurfacesRA();
-	R_DrawSurfacesRA(qtrue);
+	R_DrawSurfacesRA(true);
 }
 
 void R_MarkLightBrushModelSurfaces (void) {
@@ -1185,7 +1185,7 @@ void R_MarkLightBrushModelSurfaces (void) {
 
 	for (i=0 ; i<clmodel->numModelSurfaces ; i++, psurf++){
 
-		if (R_MarkLightSurf (psurf, qfalse, currentShadowLight))
+		if (R_MarkLightSurf (psurf, false, currentShadowLight))
 			interaction[numInteractionSurfs++] = psurf;
 	}
 }
@@ -1193,9 +1193,9 @@ void R_MarkLightBrushModelSurfaces (void) {
 void R_DrawLightBrushModel (void) {
 	vec3_t		mins, maxs, org;
 	int			i;
-	qboolean	rotated;
+	bool	rotated;
 	vec3_t		tmp, oldLight;
-	qboolean	caustics;
+	bool	caustics;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -1204,13 +1204,13 @@ void R_DrawLightBrushModel (void) {
 		return;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = qtrue;
+		rotated = true;
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	} else {
-		rotated = qfalse;
+		rotated = false;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -1233,7 +1233,7 @@ void R_DrawLightBrushModel (void) {
 	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
-	caustics = qfalse;
+	caustics = false;
 	currententity->minmax[0] = mins[0];
 	currententity->minmax[1] = mins[1];
 	currententity->minmax[2] = mins[2];
@@ -1243,22 +1243,22 @@ void R_DrawLightBrushModel (void) {
 
 	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
 	if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-		caustics = qtrue;
+		caustics = true;
 	else 
 	{
 		VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
 		if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-			caustics = qtrue;
+			caustics = true;
 		else
 		{
 			VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
 			if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-				caustics = qtrue;
+				caustics = true;
 			else
 			{
 				VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
 				if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-					caustics = qtrue;
+					caustics = true;
 			}
 		}
 	}
@@ -1280,7 +1280,7 @@ void R_DrawLightBrushModel (void) {
 	R_MarkLightBrushModelSurfaces();
 
 	if(numInteractionSurfs > 0)
-		GL_DrawDynamicLightPass(qtrue, caustics);
+		GL_DrawDynamicLightPass(true, caustics);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 }

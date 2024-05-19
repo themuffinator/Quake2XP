@@ -244,7 +244,7 @@ typedef struct {
 #ifdef _WIN32
 	HINSTANCE hInstOpenAL;
 #endif
-	qboolean efx;
+	bool efx;
 
 	// OpenAL internals
 	ALCdevice *hDevice;
@@ -258,7 +258,7 @@ typedef struct {
 } alConfig_t;
 
 extern alConfig_t alConfig;
-extern qboolean openalStop;
+extern bool openalStop;
 
 // a playsound_t will be generated if game engine delayed the start of sample.
 typedef struct playsound_s {
@@ -268,7 +268,7 @@ typedef struct playsound_s {
 	float attenuation;
 	int entnum;
 	int entchannel;
-	qboolean fixed_origin;		// use origin field instead of entnum's
+	bool fixed_origin;		// use origin field instead of entnum's
 	// origin
 	vec3_t origin;
 	vec3_t velocity;			// willow: TO DO!
@@ -310,7 +310,7 @@ cvar_t	*s_resamplerQuality;
 
 void EFX_RvbInit (void);
 void EFX_RvbUpdate (vec3_t listener_position);
-void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, qboolean enabled);
+void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, bool enabled);
 void EFX_RvbShutdown (void);
 
 int ClampCvarInteger(int min, int max, int value);
@@ -322,7 +322,7 @@ int ClampCvarInteger(int min, int max, int value);
 
 typedef struct {
 	// willow: If enabled (not zero) one channel dedicated to cinematic or VOIP communications.
-	qboolean enabled;
+	bool enabled;
 
 	// use a buffer queue to mirror OpenAL behavior
 	ALuint buffers[NUM_STRBUF];
@@ -336,7 +336,7 @@ streaming_t streaming;
 #define MUSIC_BUFFER_READ_SIZE   4096
 byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE]; 
 
-qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
+bool S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
 int S_Streaming_Add (const byte *buffer, int num_bytes);
 int S_Streaming_NumFreeBufs (void);
 void S_Streaming_Stop (void);
@@ -355,6 +355,6 @@ void Music_Pause (void);
 void Music_Resume (void);
 void Music_Update (void);
 
-qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
+bool S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
 
 #endif /* __SND_LOC_H */

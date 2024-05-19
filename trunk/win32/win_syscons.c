@@ -36,8 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef struct {
 	int			outLen;					// To keep track of output buffer len
 	char		cmdBuffer[MAX_INPUT];	// Buffered input from dedicated console
-	qboolean	timerActive;			// Timer is active (for fatal errors)
-	qboolean	flashColor;				// If true, flash error message to red
+	bool	timerActive;			// Timer is active (for fatal errors)
+	bool	flashColor;				// If true, flash error message to red
 
 	// Window stuff
 	HWND		hWnd;
@@ -135,7 +135,7 @@ void Sys_ConsoleOutput (char *text)
 Sys_ShowConsole
 =================
 */
-void Sys_ShowConsole(qboolean show)
+void Sys_ShowConsole(bool show)
 {
 	if (!show)
 	{
@@ -161,7 +161,7 @@ void Sys_ShowConsole(qboolean show)
 Sys_Error
 =================
 */
-void SaveConsoleLog(qboolean crash, char* str);
+void SaveConsoleLog(bool crash, char* str);
 
 void Sys_Error (char *error, ...)
 {
@@ -181,19 +181,19 @@ void Sys_Error (char *error, ...)
 	Sys_ConsoleOutput("\n");
 	Sys_ConsoleOutput(string);
 	Sys_ConsoleOutput("\n");
-	SaveConsoleLog(qtrue, string); // make crash log
+	SaveConsoleLog(true, string); // make crash log
 
 	// Display the message and set a timer so we can flash the text
 	SetWindowText(sys_console.hWndMsg, string);
 	SetTimer(sys_console.hWnd, 1, 1000, NULL);
 
-	sys_console.timerActive = qtrue;
+	sys_console.timerActive = true;
 
 	// Show/hide everything we need
 	ShowWindow(sys_console.hWndMsg, SW_SHOW);
 	ShowWindow(sys_console.hWndInput, SW_HIDE);
 
-	Sys_ShowConsole(qtrue);
+	Sys_ShowConsole(true);
 
 	// wait 10 seconds and quit
 //	int count = 0;
@@ -213,7 +213,7 @@ void Sys_Error (char *error, ...)
 }
 
 #include "..\client\cl_console.h"
-void SaveConsoleLog(qboolean crash, char* str) {
+void SaveConsoleLog(bool crash, char* str) {
 	int l, x;
 	short* line;
 	FILE* f;
@@ -301,7 +301,7 @@ static LONG WINAPI Sys_ConsoleProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			else
 				if ((HWND)lParam == sys_console.hWndSaveLog)
-					SaveConsoleLog(qfalse, NULL);
+					SaveConsoleLog(false, NULL);
 			else 
 				if ((HWND)lParam == sys_console.hWndQuit)
 				Sys_Quit();
@@ -528,5 +528,5 @@ void Sys_InitDedConsole (void)
 	SendMessage(sys_console.hWndInput, EM_SETLIMITTEXT, (WPARAM)(MAX_INPUT-1), 0);
 
 	// Hide it to start
-	Sys_ShowConsole(qtrue);
+	Sys_ShowConsole(true);
 }

@@ -36,7 +36,7 @@ FIXED by Berserker: подходишь к маленькому €щику около большого €щика (Q2DM1) и 
 ѕросто добавил trace-тестов еще и по Z-координате...
 ============
 */
-qboolean CanDamage(edict_t *targ, edict_t *inflictor)
+bool CanDamage(edict_t *targ, edict_t *inflictor)
 {
 	vec3_t	dest;
 	trace_t	trace;
@@ -48,15 +48,15 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 		VectorScale(dest, 0.5, dest);
 		trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 		if (trace.fraction == 1.0)
-			return qtrue;
+			return true;
 		if (trace.ent == targ)
-			return qtrue;
-		return qfalse;
+			return true;
+		return false;
 	}
 
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, targ->s.origin, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] += 15.0;
@@ -64,7 +64,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] += 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] += 15.0;
@@ -72,7 +72,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] += 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] -= 15.0;
@@ -80,7 +80,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] += 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] -= 15.0;
@@ -88,7 +88,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] += 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] += 15.0;
@@ -96,7 +96,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] -= 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] += 15.0;
@@ -104,7 +104,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] -= 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] -= 15.0;
@@ -112,7 +112,7 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] -= 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
 	VectorCopy(targ->s.origin, dest);
 	dest[0] -= 15.0;
@@ -120,9 +120,9 @@ qboolean CanDamage(edict_t *targ, edict_t *inflictor)
 	dest[2] -= 23.0;
 	trace = gi.trace(inflictor->s.origin, vec3_origin, vec3_origin, dest, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return qtrue;
+		return true;
 
-	return qfalse;
+	return false;
 }
 
 /*
@@ -387,10 +387,10 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker) {
 	}
 }
 
-qboolean CheckTeamDamage (edict_t *targ, edict_t *attacker) {
+bool CheckTeamDamage (edict_t *targ, edict_t *attacker) {
 	//FIXME make the next line real and uncomment this block
 	// if ((ability to damage a teammate == OFF) && (targ's team == attacker's team))
-	return qfalse;
+	return false;
 }
 
 

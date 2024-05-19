@@ -72,7 +72,7 @@ fire_hit
 Used for all impact (hit/punch/slash) attacks
 =================
 */
-qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick)
+bool fire_hit (edict_t *self, vec3_t aim, int damage, int kick)
 {
 	trace_t		tr;
 	vec3_t		forward, right, up;
@@ -152,7 +152,7 @@ This is an internal support routine used for bullet/pellet based weapons.
 	float		r;
 	float		u;
 	vec3_t		water_start;
-	qboolean	water = false;
+	bool	water = false;
 	int			content_mask = MASK_SHOT | MASK_WATER;
 
 	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT);
@@ -384,7 +384,7 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 	G_FreeEdict (self);
 }
 
-void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, qboolean hyper, int color)
+void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, bool hyper, int color)
 {
 	edict_t	*bolt;
 	trace_t	tr;
@@ -553,7 +553,7 @@ void Grenade_Explode (edict_t *ent)
 	Grenade_Explode (ent);
 }
 
-void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean contact)
+void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, bool contact)
 {
 	edict_t	*grenade;
 	vec3_t	dir;
@@ -589,7 +589,7 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	gi.linkentity (grenade);
 }
 
-void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held)
+void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, bool held)
 {
 	edict_t	*grenade;
 	vec3_t	dir;
@@ -785,13 +785,13 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 fire_rail
 =================
 */
-void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, qboolean useColor, int red, int green, int blue)
+void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, bool useColor, int red, int green, int blue)
 {
 	vec3_t		from, end;
 	trace_t		tr;
 	edict_t		*ignore;
 	int			mask, tempevent, i=0;
-	qboolean	water;
+	bool	water;
 
 	// Knightmare- changeable trail color
 #ifdef KMQUAKE2_ENGINE_MOD
@@ -864,7 +864,7 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 		PlayerNoise(self, tr.endpos, PNOISE_IMPACT);
 }
 
-qboolean thruBarrier(edict_t *targ, edict_t *inflictor);
+bool thruBarrier(edict_t *targ, edict_t *inflictor);
 /*
 =================
 fire_bfg

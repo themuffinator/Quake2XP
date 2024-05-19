@@ -173,13 +173,13 @@ SERVER CONNECTING MESSAGES
 
 =====================================================================
 */
-qboolean LegacyProtocol (void) {
+bool LegacyProtocol (void) {
 	// if (dedicated->value) // Server always uses new protocol
-	// return qfalse;
+	// return false;
 	if ((Com_ServerState () && cls.serverProtocol < PROTOCOL_VERSION)
 		|| (cls.serverProtocol == OLD_PROTOCOL_VERSION))
-		return qtrue;
-	return qfalse;
+		return true;
+	return false;
 }
 
 /*
@@ -258,7 +258,7 @@ void CL_ParseServerData (void) {
 		Com_Printf ("%c%s\n", 2, str);
 
 		// need to prep refresh at next oportunity
-		cl.refresh_prepped = qfalse;
+		cl.refresh_prepped = false;
 	}
 }
 

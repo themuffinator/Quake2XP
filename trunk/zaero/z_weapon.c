@@ -1,7 +1,7 @@
 #include "g_local.h"
 #include "m_player.h"
 
-extern qboolean is_quad;
+extern bool is_quad;
 extern byte is_silenced;
 
 void playQuadSound(edict_t *ent);
@@ -366,7 +366,7 @@ void removeOldest ()
 	}
 }
 
-qboolean fire_lasertripbomb (edict_t *self, vec3_t start, vec3_t dir, float timer, float damage, float damage_radius, qboolean quad)
+bool fire_lasertripbomb (edict_t *self, vec3_t start, vec3_t dir, float timer, float damage, float damage_radius, bool quad)
 {
 	// trace a line
 	trace_t tr;
@@ -1464,7 +1464,7 @@ void Weapon_A2k (edict_t *ent)
 	8 - End Push
 */
 
-qboolean push_hit (edict_t *self, vec3_t start, vec3_t aim, int damage, int kick)
+bool push_hit (edict_t *self, vec3_t start, vec3_t aim, int damage, int kick)
 {
 	trace_t tr;
 	vec3_t end;

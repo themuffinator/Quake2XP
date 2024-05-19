@@ -446,15 +446,15 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
 
 		if (!Q_strcasecmp(outMesh->name, "MF"))
-			outMesh->muzzle = qtrue;
+			outMesh->muzzle = true;
 		else
-			outMesh->muzzle = qfalse;
+			outMesh->muzzle = false;
 		
 		if (!Q_strcasecmp(outMesh->name, "ALPHATEST")) {
-			outMesh->skinAlphatest = qtrue;
+			outMesh->skinAlphatest = true;
 		}
 		else
-			outMesh->skinAlphatest = qfalse;
+			outMesh->skinAlphatest = false;
 
 		outMesh->flags = MESH_OPAQUE;
 
@@ -490,7 +490,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 R_CullAliasModel
 =================
 */
-qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e)
+bool R_CullMD3Model(vec3_t bbox[8], entity_t *e)
 {
 	int			i, j;
 	vec3_t		mins, maxs, tmp; //angles;
@@ -566,9 +566,9 @@ qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e)
 	}
 
 	if (aggregatemask)
-		return qtrue;
+		return true;
 
-	return qfalse;
+	return false;
 }
 
 void CheckEntityFrameMD3(md3Model_t *paliashdr)
@@ -587,7 +587,7 @@ void CheckEntityFrameMD3(md3Model_t *paliashdr)
 
 }
 
-void R_DrawMD3Mesh(qboolean weapon) {
+void R_DrawMD3Mesh(bool weapon) {
 
 	md3Model_t	*md3Hdr;
 	vec3_t		bbox[8], temp, viewOrg;
@@ -598,7 +598,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	md3Vertex_t	*verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
 	image_t     *albedo, *emissive, *normal, *ao;
-	qboolean	noLerp = qfalse;
+	bool	noLerp = false;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -669,8 +669,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	R_SetupEntityMatrix(currententity);
 
-	GL_BindVAO(vao.md3);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.dynamicIbo);
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
@@ -694,7 +695,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	Mat3_TransposeMultiplyVector(currententity->axis, temp, viewOrg);
 
 	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 	
 	qglUniform1i(U_USE_SSAO, 1);
 
@@ -718,7 +719,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglUniform1i(U_PARAM_INT_1, 0);
 	
 	if (frame == oldFrame)
-		noLerp = qtrue;
+		noLerp = true;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -769,19 +770,22 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
 			if (mesh->muzzle)
-				Vector4Set(tess.color[j], 1.0, 1.0, 1.0, 1.0);
+				Vector4Set(tess3d.v[j].color, 1.0, 1.0, 1.0, 1.0);
 			else
-				Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
+				Vector4Set(tess3d.v[j].color, shadelight[0], shadelight[1], shadelight[2], 1.0);
+
+			tess3d.v[j].tc[0] = mesh->stcoords[j].st[0];
+			tess3d.v[j].tc[1] = mesh->stcoords[j].st[1];
 
 			if (noLerp || md3Hdr->num_frames < 1) {
-				tess.position[j][0] = move[0] + verts->xyz[0];
-				tess.position[j][1] = move[1] + verts->xyz[1];
-				tess.position[j][2] = move[2] + verts->xyz[2];
+				tess3d.v[j].pos[0] = move[0] + verts->xyz[0];
+				tess3d.v[j].pos[1] = move[1] + verts->xyz[1];
+				tess3d.v[j].pos[2] = move[2] + verts->xyz[2];
 			}
 			else {
-				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+				tess3d.v[j].pos[0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess3d.v[j].pos[1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess3d.v[j].pos[2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 			}
 		}
 		
@@ -792,46 +796,38 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			for (k = 0; k < mesh->num_verts; k++) {
 
 				if (noLerp || md3Hdr->num_frames < 1) {
-					tess.tangent[k][0]	= verts[k].tangent[0];
-					tess.tangent[k][1]	= verts[k].tangent[1];
-					tess.tangent[k][2]	= verts[k].tangent[2];
+					tess3d.v[k].tangent[0]	= verts[k].tangent[0];
+					tess3d.v[k].tangent[1]	= verts[k].tangent[1];
+					tess3d.v[k].tangent[2]	= verts[k].tangent[2];
 
-					tess.binormal[k][0] = verts[k].binormal[0];
-					tess.binormal[k][1] = verts[k].binormal[1];
-					tess.binormal[k][2] = verts[k].binormal[2];
+					tess3d.v[k].binormal[0] = verts[k].binormal[0];
+					tess3d.v[k].binormal[1] = verts[k].binormal[1];
+					tess3d.v[k].binormal[2] = verts[k].binormal[2];
 
-					tess.normal[k][0]	= verts[k].normal[0];
-					tess.normal[k][1]	= verts[k].normal[1];
-					tess.normal[k][2]	= verts[k].normal[2];
+					tess3d.v[k].normal[0]	= verts[k].normal[0];
+					tess3d.v[k].normal[1]	= verts[k].normal[1];
+					tess3d.v[k].normal[2]	= verts[k].normal[2];
 				}
 				else {
-					tess.tangent[k][0]	= verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-					tess.tangent[k][1]	= verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-					tess.tangent[k][2]	= verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+					tess3d.v[k].tangent[0]	= verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+					tess3d.v[k].tangent[1]	= verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+					tess3d.v[k].tangent[2]	= verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-					tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-					tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-					tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+					tess3d.v[k].binormal[0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+					tess3d.v[k].binormal[1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+					tess3d.v[k].binormal[2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-					tess.normal[k][0]	= verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-					tess.normal[k][1]	= verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-					tess.normal[k][2]	= verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+					tess3d.v[k].normal[0]	= verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+					tess3d.v[k].normal[1]	= verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+					tess3d.v[k].normal[2]	= verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 				}
 			}
 		}
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	mesh->num_verts * sizeof(vec4_t), tess.position);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	mesh->num_verts * sizeof(vec2_t), mesh->stcoords);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		mesh->num_verts * sizeof(vec4_t), tess.color);
-
-		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent,	mesh->num_verts * sizeof(vec3_t), tess.tangent);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,mesh->num_verts * sizeof(vec3_t), tess.binormal);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,	mesh->num_verts * sizeof(vec3_t), tess.normal);
-		}
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 		GL_SetBindlessTexture(U_TMU0, albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, emissive->handle);
@@ -844,7 +840,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	
 		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 			GL_BindProgram(tbnDebugProgram);
-			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)currententity->orMatrix);
 			if (currententity->flags & (RF_WEAPONMODEL))
 				qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 			else
@@ -860,7 +856,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			GL_BindProgram(showTrisProgram);
 			qglUniform3f(U_COLOR, 1.0, 1.0, 0.0);
-			qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+			qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 			GL_BindProgram(md3AmbientProgram);
@@ -920,19 +916,23 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 				
-				if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-					Vector4Set(tess.color[j], 0.33, 0.33, 0.33, 0.5);
+				if (mesh->muzzle)
+					Vector4Set(tess3d.v[j].color, 1.0, 1.0, 1.0, 1.0);
 				else
-					Vector4Set(tess.color[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
+					Vector4Set(tess3d.v[j].color, shadelight[0], shadelight[1], shadelight[2], 0.5);
+
+				tess3d.v[j].tc[0] = mesh->stcoords[j].st[0];
+				tess3d.v[j].tc[1] = mesh->stcoords[j].st[1];
 
 				if (noLerp || md3Hdr->num_frames < 1) {
-					tess.position[j][0] = move[0] + verts->xyz[0];
-					tess.position[j][1] = move[1] + verts->xyz[1];
-					tess.position[j][2] = move[2] + verts->xyz[2];
-				}else{
-					tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-					tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-					tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+					tess3d.v[j].pos[0] = move[0] + verts->xyz[0];
+					tess3d.v[j].pos[1] = move[1] + verts->xyz[1];
+					tess3d.v[j].pos[2] = move[2] + verts->xyz[2];
+				}
+				else {
+					tess3d.v[j].pos[0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+					tess3d.v[j].pos[1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+					tess3d.v[j].pos[2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 				}
 			}
 
@@ -942,60 +942,49 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			for (k = 0; k< mesh->num_verts; k++) {
 				
 				if (noLerp || md3Hdr->num_frames < 1) {
-					if (r_debugTbn->integer) {
-						tess.tangent[k][0]	= verts[k].tangent[0];
-						tess.tangent[k][1]	= verts[k].tangent[1];
-						tess.tangent[k][2]	= verts[k].tangent[2];
+					tess3d.v[k].tangent[0] = verts[k].tangent[0];
+					tess3d.v[k].tangent[1] = verts[k].tangent[1];
+					tess3d.v[k].tangent[2] = verts[k].tangent[2];
 
-						tess.binormal[k][0] = verts[k].binormal[0];
-						tess.binormal[k][1] = verts[k].binormal[1];
-						tess.binormal[k][2] = verts[k].binormal[2];
-					}
+					tess3d.v[k].binormal[0] = verts[k].binormal[0];
+					tess3d.v[k].binormal[1] = verts[k].binormal[1];
+					tess3d.v[k].binormal[2] = verts[k].binormal[2];
 
-					tess.normal[k][0] = verts[k].normal[0];
-					tess.normal[k][1] = verts[k].normal[1];
-					tess.normal[k][2] = verts[k].normal[2];
+					tess3d.v[k].normal[0] = verts[k].normal[0];
+					tess3d.v[k].normal[1] = verts[k].normal[1];
+					tess3d.v[k].normal[2] = verts[k].normal[2];
 				}
 				else {
-					if (r_debugTbn->integer) {
-						tess.tangent[k][0]	= verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-						tess.tangent[k][1]	= verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-						tess.tangent[k][2]	= verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+					tess3d.v[k].tangent[0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+					tess3d.v[k].tangent[1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+					tess3d.v[k].tangent[2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-						tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-						tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-						tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
-					}
-					tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-					tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-					tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+					tess3d.v[k].binormal[0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+					tess3d.v[k].binormal[1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+					tess3d.v[k].binormal[2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+
+					tess3d.v[k].normal[0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+					tess3d.v[k].normal[1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+					tess3d.v[k].normal[2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 				}
 			}
 
-			qglInvalidateBufferData(GL_ARRAY_BUFFER);
-			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, mesh->num_verts * sizeof(vec4_t), tess.position);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, mesh->num_verts * sizeof(vec2_t), mesh->stcoords);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color, mesh->num_verts * sizeof(vec4_t), tess.color);
-
-			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent, mesh->num_verts * sizeof(vec3_t), tess.tangent);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal, mesh->num_verts * sizeof(vec3_t), tess.binormal);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, mesh->num_verts * sizeof(vec3_t), tess.normal);
-			}
-			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
-			
 			GL_SetBindlessTexture(U_TMU0, albedo->handle);
 			GL_SetBindlessTexture(U_TMU1, i_blackTexture1x1->handle);
 			GL_SetBindlessTexture(U_TMU2, i_environment->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
+
+			qglInvalidateBufferData(GL_ARRAY_BUFFER);
+			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
+			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 
 			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 				GL_Disable(GL_BLEND);
 				GL_BindProgram(tbnDebugProgram);
-				qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+				qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)currententity->orMatrix);
 				if (currententity->flags & (RF_WEAPONMODEL))
 					qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 				else
@@ -1011,7 +1000,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				GL_BindProgram(showTrisProgram);
 				qglUniform3f(U_COLOR, 1.0, 1.0, 0.5);
-				qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+				qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 				GL_BindProgram(md3AmbientProgram);
@@ -1029,7 +1018,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_Enable(GL_CULL_FACE);
 }
 
-qboolean R_Md3InLightBound() {
+bool R_Md3InLightBound() {
 
 	vec3_t mins, maxs;
 	int i;
@@ -1048,29 +1037,29 @@ qboolean R_Md3InLightBound() {
 	if (currentShadowLight->projector) {
 
 		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
-			return qfalse;
+			return false;
 	}
 	else if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-			return qfalse;
+			return false;
 	}
 	else {
 
 		if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
-			return qfalse;
+			return false;
 	}
 
 	if (!InLightVISEntity())
-		return qfalse;
+		return false;
 
-	return qtrue;
+	return true;
 
 }
 
 void R_UpdateLightAliasUniforms();
 
-void R_DrawMD3MeshLight(qboolean weapon) {
+void R_DrawMD3MeshLight(bool weapon) {
 
 	md3Model_t	*md3Hdr;
 	vec3_t		bbox[8];
@@ -1080,7 +1069,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	vec3_t		move, delta, vectors[3], maxs;
 	md3Vertex_t	*verts, *oldVerts;
 	image_t     *albedo, *pbr, *normal;
-	qboolean	inWater, noLerp = qfalse;
+	bool	inWater, noLerp = false;
 	vec3_t		tmp, oldLight, oldView;
 
 	if (!r_drawEntities->integer)
@@ -1135,6 +1124,10 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
 
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.dynamicIbo);
+
 	GL_StencilFunc(GL_EQUAL, 128, 255);
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
@@ -1142,17 +1135,14 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	GL_PolygonOffset(-1.0, -1.0);
 
-	GL_BindVAO(vao.md3);
-	GL_BindVBO(vbo.dynamicVbo);
-
 	// setup program
 	GL_BindProgram(aliasBumpProgram);
 
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	if (CL_PMpointcontents(maxs) & MASK_WATER)
-		inWater = qtrue;
+		inWater = true;
 	else
-		inWater = qfalse;
+		inWater = false;
 
 	R_UpdateLightAliasUniforms();
 
@@ -1174,8 +1164,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		qglUniform1i(U_PARAM_INT_4, 0);
 
 	if (frame == oldFrame)
-		noLerp = qtrue;
-
+		noLerp = true;
+	
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
@@ -1229,62 +1219,53 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
+			tess3d.v[j].tc[0] = mesh->stcoords[j].st[0];
+			tess3d.v[j].tc[1] = mesh->stcoords[j].st[1];
+
 			if (noLerp || md3Hdr->num_frames < 1) {
-				tess.position[j][0] = move[0] + verts->xyz[0];
-				tess.position[j][1] = move[1] + verts->xyz[1];
-				tess.position[j][2] = move[2] + verts->xyz[2];
+				tess3d.v[j].pos[0] = move[0] + verts->xyz[0];
+				tess3d.v[j].pos[1] = move[1] + verts->xyz[1];
+				tess3d.v[j].pos[2] = move[2] + verts->xyz[2];
 			}
 			else {
-				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+				tess3d.v[j].pos[0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess3d.v[j].pos[1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess3d.v[j].pos[2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 			}
 		}
 
-		verts		= mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts	= mesh->vertexes + currententity->oldFrame * mesh->num_verts;
+		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
+		oldVerts = mesh->vertexes + currententity->oldFrame * mesh->num_verts;
 
-		for (k = 0; k< mesh->num_verts; k++) {
+		for (k = 0; k < mesh->num_verts; k++) {
 
-			if(noLerp || md3Hdr->num_frames < 1){
+			if (noLerp || md3Hdr->num_frames < 1) {
+				tess3d.v[k].tangent[0] = verts[k].tangent[0];
+				tess3d.v[k].tangent[1] = verts[k].tangent[1];
+				tess3d.v[k].tangent[2] = verts[k].tangent[2];
 
-				tess.tangent[k][0] = verts[k].tangent[0];
-				tess.tangent[k][1] = verts[k].tangent[1];
-				tess.tangent[k][2] = verts[k].tangent[2];
+				tess3d.v[k].binormal[0] = verts[k].binormal[0];
+				tess3d.v[k].binormal[1] = verts[k].binormal[1];
+				tess3d.v[k].binormal[2] = verts[k].binormal[2];
 
-				tess.binormal[k][0] = verts[k].binormal[0];
-				tess.binormal[k][1] = verts[k].binormal[1];
-				tess.binormal[k][2] = verts[k].binormal[2];
-
-				tess.normal[k][0] = verts[k].normal[0];
-				tess.normal[k][1] = verts[k].normal[1];
-				tess.normal[k][2] = verts[k].normal[2];
+				tess3d.v[k].normal[0] = verts[k].normal[0];
+				tess3d.v[k].normal[1] = verts[k].normal[1];
+				tess3d.v[k].normal[2] = verts[k].normal[2];
 			}
 			else {
-				tess.tangent[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-				tess.tangent[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-				tess.tangent[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+				tess3d.v[k].tangent[0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+				tess3d.v[k].tangent[1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+				tess3d.v[k].tangent[2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-				tess.binormal[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-				tess.binormal[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-				tess.binormal[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+				tess3d.v[k].binormal[0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+				tess3d.v[k].binormal[1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+				tess3d.v[k].binormal[2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-				tess.normal[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-				tess.normal[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-				tess.normal[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+				tess3d.v[k].normal[0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+				tess3d.v[k].normal[1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+				tess3d.v[k].normal[2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 		}
-
-		qglInvalidateBufferData(GL_ARRAY_BUFFER);
-		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	mesh->num_verts * sizeof(vec4_t), tess.position);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	mesh->num_verts * sizeof(vec2_t), mesh->stcoords);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		mesh->num_verts * sizeof(vec4_t), tess.color);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->tangent,		mesh->num_verts * sizeof(vec3_t), tess.tangent);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->binormal,	mesh->num_verts * sizeof(vec3_t), tess.binormal);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal,		mesh->num_verts * sizeof(vec3_t), tess.normal);
-		
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
 		
 		GL_SetBindlessTexture(U_TMU0, normal->handle);
 		GL_SetBindlessTexture(U_TMU1, albedo->handle);
@@ -1297,13 +1278,18 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU8, i_ssaoColor[i_ssaoColorIndex]->handle);
 
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, false, (const float*)r_newrefdef.projectionMatrix);
 
 		if (pbr == i_blackTexture1x1)
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
 		}
+
+		qglInvalidateBufferData(GL_ARRAY_BUFFER);
+		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -1316,7 +1302,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 }
 
 
-void R_DrawMD3ShellMesh(qboolean weapon) {
+void R_DrawMD3ShellMesh(bool weapon) {
 
 	md3Model_t		*md3Hdr;
 	vec3_t			bbox[8];
@@ -1325,7 +1311,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	md3Frame_t		*frame, *oldFrame;
 	vec3_t			move, delta, vectors[3], tmp, viewOrg;
 	md3Vertex_t		*verts, *oldVerts;
-	qboolean		noLerp = qfalse;
+	bool		noLerp = false;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -1362,11 +1348,12 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	R_SetupEntityMatrix(currententity);
 
-	GL_BindVAO(vao.md3);
-	GL_BindVBO(vbo.dynamicVbo);
-
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, viewOrg);
+
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.dynamicIbo);
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
@@ -1376,7 +1363,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	qglUniform1i(U_SHELL_PASS, 1); // deform in vertex shader
 	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
 	qglUniform2fv(U_SHELL_PARAMS, 1, shellParams);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 	
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
@@ -1392,7 +1379,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
 	
 	if (frame == oldFrame)
-		noLerp = qtrue;
+		noLerp = true;
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -1408,34 +1395,33 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
 			if (noLerp || md3Hdr->num_frames < 1) {
-				tess.position[j][0] = move[0] + verts->xyz[0];
-				tess.position[j][1] = move[1] + verts->xyz[1];
-				tess.position[j][2] = move[2] + verts->xyz[2];
+				tess3d.v[j].pos[0] = move[0] + verts->xyz[0];
+				tess3d.v[j].pos[1] = move[1] + verts->xyz[1];
+				tess3d.v[j].pos[2] = move[2] + verts->xyz[2];
 			}
 			else {
-				tess.position[j][0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
-				tess.position[j][1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
-				tess.position[j][2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
+				tess3d.v[j].pos[0] = move[0] + oldVerts->xyz[0] * backlerp + verts->xyz[0] * frontlerp;
+				tess3d.v[j].pos[1] = move[1] + oldVerts->xyz[1] * backlerp + verts->xyz[1] * frontlerp;
+				tess3d.v[j].pos[2] = move[2] + oldVerts->xyz[2] * backlerp + verts->xyz[2] * frontlerp;
 			}
 
 			if(noLerp || md3Hdr->num_frames < 1){
-				tess.normal[j][0] = verts->normal[0];
-				tess.normal[j][1] = verts->normal[1];
-				tess.normal[j][2] = verts->normal[2];
+				tess3d.v[j].normal[0] = verts->normal[0];
+				tess3d.v[j].normal[1] = verts->normal[1];
+				tess3d.v[j].normal[2] = verts->normal[2];
 			}
 			else {
-				tess.normal[j][0] = oldVerts->normal[0] * backlerp + verts->normal[0] * frontlerp;
-				tess.normal[j][1] = oldVerts->normal[1] * backlerp + verts->normal[1] * frontlerp;
-				tess.normal[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
+				tess3d.v[j].normal[0] = oldVerts->normal[0] * backlerp + verts->normal[0] * frontlerp;
+				tess3d.v[j].normal[1] = oldVerts->normal[1] * backlerp + verts->normal[1] * frontlerp;
+				tess3d.v[j].normal[2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
 			}
 		}
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, mesh->num_verts * sizeof(vec4_t), tess.position);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->normal, mesh->num_verts * sizeof(vec3_t), tess.normal);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
-		
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
+
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 

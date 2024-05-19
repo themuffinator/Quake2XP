@@ -2576,7 +2576,7 @@ typedef struct _ADLDceSettings
     {
         struct
         {
-            qboolean qualityDetectionEnabled;
+            bool qualityDetectionEnabled;
         } HdmiLq;
         struct
         {
@@ -2589,7 +2589,7 @@ typedef struct _ADLDceSettings
         } DpLink;
         struct
         {
-            qboolean linkProtectionEnabled;         // Read-only
+            bool linkProtectionEnabled;         // Read-only
         } Protection;
     } Settings;
     int iReserved[15];

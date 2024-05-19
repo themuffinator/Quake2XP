@@ -218,7 +218,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	dsprframe_t *frame;
 	float		*up, *right;
 	dsprite_t	*psprite;
-	int			len, scaled = 1;
+	int			len, scaled = 1, numVerts=0;
 
 	psprite = (dsprite_t *) currentmodel->extraData;
 	e->frame %= psprite->numFrames;
@@ -241,26 +241,25 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	else		
 		GL_SetBindlessTexture(U_TMU1, currentmodel->albedo[e->frame]->handle);
 	
-	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess.position[0]);
-	VectorMA (tess.position[0],	-frame->origin_x * scaled, right, tess.position[0]);
+	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess3d.v[0].pos);
+	VectorMA (tess3d.v[0].pos,	-frame->origin_x * scaled, right, tess3d.v[0].pos);
 	
-	VectorMA (e->origin,		frame->height * scaled - frame->origin_y * scaled, up, tess.position[1]);
-	VectorMA (tess.position[1],	-frame->origin_x * scaled, right, tess.position[1]);
+	VectorMA (e->origin,		frame->height * scaled - frame->origin_y * scaled, up, tess3d.v[1].pos);
+	VectorMA (tess3d.v[1].pos,	-frame->origin_x * scaled, right, tess3d.v[1].pos);
 
-	VectorMA (e->origin,		frame->height * scaled - frame->origin_y * scaled, up, tess.position[2]);
-	VectorMA (tess.position[2],	frame->width * scaled - frame->origin_x * scaled, right, tess.position[2]);
+	VectorMA (e->origin,		frame->height * scaled - frame->origin_y * scaled, up, tess3d.v[2].pos);
+	VectorMA (tess3d.v[2].pos,	frame->width * scaled - frame->origin_x * scaled, right, tess3d.v[2].pos);
 	
-	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess.position[3]);
-	VectorMA (tess.position[3],	 frame->width * scaled - frame->origin_x * scaled, right, tess.position[3]);
+	VectorMA (e->origin,		-frame->origin_y * scaled, up, tess3d.v[3].pos);
+	VectorMA (tess3d.v[3].pos,	 frame->width * scaled - frame->origin_x * scaled, right, tess3d.v[3].pos);
 	
-	VA_SetElem2(tess.texCoord[0], 0, 1);
-	VA_SetElem2(tess.texCoord[1], 0, 0);
-	VA_SetElem2(tess.texCoord[2], 1, 0);
-	VA_SetElem2(tess.texCoord[3], 1, 1);
+	VA_SetElem2(tess3d.v[0].tc, 0, 1);
+	VA_SetElem2(tess3d.v[1].tc, 0, 0);
+	VA_SetElem2(tess3d.v[2].tc, 1, 0);
+	VA_SetElem2(tess3d.v[3].tc, 1, 1);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, QUAD_INDICES * sizeof(vec4_t), tess.position);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord, QUAD_INDICES * sizeof(vec2_t), tess.texCoord);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, QUAD_INDICES * sizeof(vertex3d_t), &tess3d);
 
 	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
 }
@@ -328,9 +327,9 @@ void R_SetupFrame(void)
 	}
 
 	if(CL_PMpointcontents(r_origin) & CONTENTS_SOLID)
-		outMap = qtrue;
+		outMap = true;
 	else
-		outMap = qfalse;
+		outMap = false;
 
 	for (i = 0; i < 4; i++)
 		v_blend[i] = r_newrefdef.blend[i];	
@@ -502,10 +501,10 @@ void R_DrawPlayerWeaponLightPass(void)
 				continue;
 
 			if (currentmodel->type == mod_alias)
-				R_DrawAliasModelLightPass(qtrue);
+				R_DrawAliasModelLightPass(true);
 
 			if (currentmodel->type == mod_alias_md3)
-				R_DrawMD3MeshLight(qtrue);	
+				R_DrawMD3MeshLight(true);	
 		}
 
 }
@@ -531,7 +530,7 @@ void R_DrawLightScene (void)
 		GL_Enable(GL_POLYGON_OFFSET_FILL);
 	}
 
-	R_PrepareShadowLightFrame(qfalse);
+	R_PrepareShadowLightFrame(false);
 	
 	if(shadowLight_frame) {
 
@@ -564,7 +563,7 @@ void R_DrawLightScene (void)
 			c_staticShadowTris += currentShadowLight->numStaticShadowTris;
 	
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
-	R_CastAliasShadowVolumes(qtrue);	// player shadow and self shadowing models
+	R_CastAliasShadowVolumes(true);	// player shadow and self shadowing models
 
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
@@ -587,12 +586,12 @@ void R_DrawLightScene (void)
 		}
 		
 		if (currentmodel->type == mod_alias)
-			R_DrawAliasModelLightPass(qfalse);
+			R_DrawAliasModelLightPass(false);
 		
 		if (currentmodel->type == mod_alias_md3)
-			R_DrawMD3MeshLight(qfalse);
+			R_DrawMD3MeshLight(false);
 	}
-	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
+	R_CastAliasShadowVolumes(false);   // alias shadows with out player model
 	R_DrawLightWorld();					// light world
 
 	//brush models light pass
@@ -656,7 +655,7 @@ void R_DrawPlayerWeaponAmbient(void)
 			R_DrawAliasModel(currententity);
 
 		if (currentmodel->type == mod_alias_md3)
-			R_DrawMD3Mesh(qtrue);
+			R_DrawMD3Mesh(true);
 	}
 
 	// draw transluscent shells
@@ -679,7 +678,7 @@ void R_DrawPlayerWeaponAmbient(void)
 
 		if (currentmodel->type == mod_alias_md3) {
 			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
-				R_DrawMD3ShellMesh(qtrue);
+				R_DrawMD3ShellMesh(true);
 		}
 	}
 
@@ -709,7 +708,7 @@ void R_DrawPlayerWeapon(void)
 	if (r_shadows->integer)
 		GL_Enable(GL_STENCIL_TEST);
 
-	R_PrepareShadowLightFrame(qtrue);
+	R_PrepareShadowLightFrame(true);
 
 	if (shadowLight_frame) {
 
@@ -760,24 +759,23 @@ void R_RenderSprites(void)
 	GL_SetBindlessTexture(U_TMU3, i_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, false, (const float *)r_newrefdef.projectionMatrix);
 
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_REFR_MASK, 0.0, 1.0);
 
-	GL_BindVAO(vao.tessStreamVaoQuad);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.quadIbo);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
 
-		if (!currentmodel)
+		if (!currentmodel || currentmodel->type != mod_sprite)
 			continue;
-
-		if (currentmodel->type == mod_sprite)
 			R_DrawDistortSpriteModel(currententity);
 	}
 }
@@ -820,7 +818,7 @@ static void R_DrawOpaqueEntities(void) {
 				R_DrawSpriteModel(currententity);
 				break;
 			case mod_alias_md3:
-				R_DrawMD3Mesh(qfalse);
+				R_DrawMD3Mesh(false);
 				break;
 			default:
 				VID_Error(ERR_DROP, "Bad modeltype");
@@ -865,7 +863,7 @@ static void R_DrawTransEntities(void) {
 
 		if (currentmodel->type == mod_alias_md3) {
 			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
-				R_DrawMD3ShellMesh(qfalse);
+				R_DrawMD3ShellMesh(false);
 		}
 	}
 	GL_Disable(GL_BLEND);
@@ -888,12 +886,12 @@ void R_DrawRAScene (void) {
 
 	GL_PolygonOffset(-1.0, 1.0);
 
-	RA_Frame = qfalse;
+	RA_Frame = false;
 
 	if (r_reflectiveSurfaces || r_alphaSurfaces)
-		RA_Frame = qtrue;
+		RA_Frame = true;
 
-	R_DrawSurfacesRA(qfalse);
+	R_DrawSurfacesRA(false);
 
 	GL_PolygonOffset(0.0, 1.0);
 
@@ -926,7 +924,7 @@ void R_linearDepth(void)
 	GL_SetBindlessTexture(U_TMU0, i_depthStencil->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad();
 
@@ -969,7 +967,7 @@ void R_RenderView (refdef_t *fd) {
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel.");
 
 	R_SetupFrame();
-	R_SetFrustum(qtrue);
+	R_SetFrustum(true);
 	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
@@ -996,24 +994,24 @@ void R_RenderView (refdef_t *fd) {
 	}
 
 	R_DrawDepthScene();
-	R_SetFrustum(qfalse);
+	R_SetFrustum(false);
 	R_linearDepth();
 	
 	R_SSAO();
 	R_DrawAmbientScene();
 	R_DrawLightScene();
-	R_RenderDecals(qfalse);
+	R_RenderDecals(false);
 
 	R_DrawParticles();
 	R_CaptureColorBuffer();
 	R_RenderSprites();
 	R_DrawRAScene();
 	R_DrawLightWorldRA();
-	R_RenderDecals(qtrue);
+	R_RenderDecals(true);
 
 	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
 		R_DrawParticles();
-		RA_Frame = qfalse;
+		RA_Frame = false;
 	}
 	R_DrawTransEntities();
 
@@ -1126,8 +1124,8 @@ void R_RenderFrame(refdef_t * fd) {
 		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, i_consFont);
 		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, i_consFont);
 
-//		Draw_StringScaled(0, VID_CENTER_H + 325, 2, 2, buff16, qtrue);
-	//	Draw_StringScaled(0, VID_CENTER_H + 345, 2, 2, buff17, qtrue);
+//		Draw_StringScaled(0, VID_CENTER_H + 325, 2, 2, buff16, true);
+	//	Draw_StringScaled(0, VID_CENTER_H + 345, 2, 2, buff17, true);
 		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, i_consFont);
 		RE_SetColor(colorWhite);
 	}
@@ -1508,31 +1506,31 @@ bind v			"paste"
 R_SetMode
 ==================
 */
-qboolean R_SetMode(void)
+bool R_SetMode(void)
 {
 	rserr_t err;
-	const qboolean fullscreen = (qboolean)r_fullScreen->integer;
+	const bool fullscreen = (bool)r_fullScreen->integer;
 
-	r_fullScreen->modified = qfalse;
-	r_mode->modified = qfalse;
+	r_fullScreen->modified = false;
+	r_mode->modified = false;
  
     err = GLimp_SetMode(&vid.width, &vid.height, r_mode->integer, fullscreen);
 
     // success, update variables
 	if (err == rserr_ok) {
         Cvar_SetValue("r_fullScreen", gl_state.fullscreen);
-        r_fullScreen->modified = qfalse;
+        r_fullScreen->modified = false;
 		gl_state.prev_mode = r_mode->integer;
-        return qtrue;
+        return true;
 
     // try without fullscreen
 	} else if (err == rserr_invalid_fullscreen) {
         Com_Printf(S_COLOR_RED "ref_xpgl::R_SetMode() - fullscreen unavailable in this mode\n");
-        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->integer, qfalse)) == rserr_ok) {
+        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->integer, false)) == rserr_ok) {
             Cvar_SetValue("r_fullScreen", 0);
-            r_fullScreen->modified = qfalse;
+            r_fullScreen->modified = false;
             gl_state.prev_mode = r_mode->integer;
-            return qtrue;
+            return true;
         }
 
     } else if (err == rserr_invalid_mode) {
@@ -1540,15 +1538,15 @@ qboolean R_SetMode(void)
     }
 
     // revert to previous mode
-    if (GLimp_SetMode(&vid.width, &vid.height, gl_state.prev_mode, qfalse) == rserr_ok) {
+    if (GLimp_SetMode(&vid.width, &vid.height, gl_state.prev_mode, false) == rserr_ok) {
         Cvar_SetValue("r_mode", gl_state.prev_mode);
-        r_mode->modified = qfalse;
+        r_mode->modified = false;
         Cvar_SetValue("r_fullScreen", 0);
-        r_fullScreen->modified = qfalse;
-        return qtrue;
+        r_fullScreen->modified = false;
+        return true;
     } else {
         Com_Printf(S_COLOR_RED"ref_xpgl::R_SetMode() - could not revert to safe mode\n");
-        return qfalse;
+        return false;
     }
 }
 
@@ -1557,7 +1555,7 @@ qboolean R_SetMode(void)
 R_Init
 ===============
 */
-qboolean IsExtensionSupported(const char *name)
+bool IsExtensionSupported(const char *name)
 {
 	int			i;
 	GLint		n = 0;
@@ -1568,9 +1566,9 @@ qboolean IsExtensionSupported(const char *name)
 	for (i = 0; i<n; i++){
 		extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
 		if (!strcmp(name, extension))
-			return qtrue;		
+			return true;		
 	}
-	return qfalse;
+	return false;
 }
 
 int R_Init(void *hinstance, void *hWnd)
@@ -1906,11 +1904,12 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_YELLOW"Max Compute Work Group Invocations:" S_COLOR_GREEN " %i\n", maxItemsPerGroup);
 	Com_Printf(S_COLOR_YELLOW"Max Compute Work Group Count:" S_COLOR_GREEN "       %i %i %i\n", maxGroupX, maxGroupY, maxGroupZ);
 	Com_Printf(S_COLOR_YELLOW"Max Compute Shared Memory Size:" S_COLOR_GREEN "     %i\n", maxSharedSize);
+	
+	GL_SetDefaultState();
 
 	R_InitPrograms();
 	R_InitFboBuffers();
 	R_InitVertexBuffers();
-	GL_SetDefaultState();
 	GL_InitImages();
 	Mod_Init();
 	R_InitEngineTextures();
@@ -1938,22 +1937,22 @@ int R_Init(void *hinstance, void *hWnd)
 
 	// ===========================================================================================================================
 
-	gl_state.depthBoundsTest = qfalse;
+	gl_state.depthBoundsTest = false;
 	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {
 		Com_Printf("...using GL_EXT_depth_bounds_test\n");
 
 		glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC)qwglGetProcAddress("glDepthBoundsEXT");
-		gl_state.depthBoundsTest = qtrue;
+		gl_state.depthBoundsTest = true;
 	}
 	else {
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
-		gl_state.depthBoundsTest = qfalse;
+		gl_state.depthBoundsTest = false;
 	}
 
 
 	Com_Printf("=====================================\n");
 
-	flareEdit = (qboolean)qfalse;
+	flareEdit = (bool)false;
 	return 0;
 }
 
@@ -2038,7 +2037,7 @@ void R_BeginFrame()
     // there is no need to restart video mode with SDL
     if (r_fullScreen->modified) {
         R_SetMode();
-		r_fullScreen->modified = qfalse;
+		r_fullScreen->modified = false;
     }
 #endif
 
@@ -2052,28 +2051,28 @@ void R_BeginFrame()
 	r_hdrBloomQuality->value = ClampCvar(0.25, 1.0, r_hdrBloomQuality->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
-        vid_ref->modified = qtrue;
+        vid_ref->modified = true;
 
 	if (r_selfShadowingParallax->modified)
-		r_selfShadowingParallax->modified = qfalse;
+		r_selfShadowingParallax->modified = false;
 
 	if(r_dof->modified)
-		r_dof->modified = qfalse;
+		r_dof->modified = false;
 
 	if(r_lightmapScale->modified)
-		r_lightmapScale->modified = qfalse;
+		r_lightmapScale->modified = false;
 
 	if (r_ssao->modified)
-		r_ssao->modified = qfalse;
+		r_ssao->modified = false;
 	
 	if (r_parallaxMapping->modified)
-		r_parallaxMapping->modified = qfalse;
+		r_parallaxMapping->modified = false;
 
 	if (r_textureAnisotropy->modified)
-		r_textureAnisotropy->modified = qfalse;
+		r_textureAnisotropy->modified = false;
 
 	if (r_textureLodBias->modified)
-		r_textureLodBias->modified = qfalse;
+		r_textureLodBias->modified = false;
 
 	//go into 2D mode
 	R_SetupOrthoMatrix();

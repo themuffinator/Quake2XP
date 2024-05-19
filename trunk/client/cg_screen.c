@@ -41,7 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 float scr_con_current;			// aproaches scr_conlines at scr_conspeed
 float scr_conlines;				// 0.0 to 1.0 lines of console to display
 
-qboolean scr_initialized;		// ready to draw
+bool scr_initialized;		// ready to draw
 
 int scr_draw_loading;
 
@@ -309,7 +309,7 @@ void SCR_Init (void) {
 	Cmd_AddCommand ("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand ("sizedown", SCR_SizeDown_f);
 
-	scr_initialized = qtrue;
+	scr_initialized = true;
 }
 
 
@@ -361,7 +361,7 @@ SCR_DrawLoading
 
 void SCR_DrawLoadingBar (float percent, float scale) {
 
-	Draw_Fill (2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 1.0, 1.0, 1.0, 1.0, qtrue);
+	Draw_Fill (2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 1.0, 1.0, 1.0, 1.0, true);
 
 }
 
@@ -424,7 +424,7 @@ void SCR_DrawLoading (void) {
 		CL_AddString(0, 54 * fontscale, fontscale, va ("%s", loadingMessages[1]), i_consFont);
 		CL_AddString(0, 64 * fontscale, fontscale, va ("%s", loadingMessages[2]), i_consFont);
 		CL_AddString(0, 74 * fontscale, fontscale, va ("%s", loadingMessages[3]), i_consFont);
-		RE_SetColor (colorWhite);
+		RE_SetColor (colorWhite);		
 	}
 }
 
@@ -481,7 +481,7 @@ void SCR_DrawConsole (void) {
 	if (cls.state != ca_active || !cl.refresh_prepped) {	// connected, but can't render
 		float size = 0.5;
 		Con_DrawConsole (size);
-		Draw_Fill (0, viddef.height * size, viddef.width, viddef.height * size, 0.0, 0.0, 0.0, 1.0, qfalse);
+		Draw_Fill (0, viddef.height * size, viddef.width, viddef.height * size, 0.0, 0.0, 0.0, 1.0, false);
 		return;
 	}
 
@@ -502,10 +502,10 @@ SCR_BeginLoadingPlaque
 ================
 */
 
-qboolean needLoadingPlaque (void) {
+bool needLoadingPlaque (void) {
 	if (!cls.disableScreen || !scr_draw_loading)
-		return qtrue;
-	return qfalse;
+		return true;
+	return false;
 }
 
 
@@ -513,7 +513,7 @@ void SCR_BeginLoadingPlaque (void) {
 	
 	S_StopAllSounds ();
 	
-	cl.sound_prepped = qfalse;	// don't play ambients
+	cl.sound_prepped = false;	// don't play ambients
 	
 	Music_Stop ();
 	
@@ -1000,7 +1000,7 @@ void SCR_ShowTexNames() {
 
 	AngleVectors(cl.refdef.viewangles, forward, right, up);
 	VectorMA(cl.refdef.vieworg, 4096, forward, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, (MASK_SOLID | MASK_WATER), qfalse);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, (MASK_SOLID | MASK_WATER), false);
 
 	RE_SetColor(colorGreen);
 
@@ -1070,7 +1070,7 @@ void SCR_UpdateScreen (void) {
 		if (cls.key_dest == key_menu) {
 			if (cl.cinematicpalette_active) {
 				R_SetPalette (NULL);
-				cl.cinematicpalette_active = qfalse;
+				cl.cinematicpalette_active = false;
 			}
 			M_Draw ();
 		}
@@ -1082,7 +1082,7 @@ void SCR_UpdateScreen (void) {
 		// make sure the game palette is active
 		if (cl.cinematicpalette_active) {
 			R_SetPalette (NULL);
-			cl.cinematicpalette_active = qfalse;
+			cl.cinematicpalette_active = false;
 		}
 	next:
 

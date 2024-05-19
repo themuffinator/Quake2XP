@@ -14,7 +14,7 @@ vec3_t vec3_origin = { 0, 0, 0 };
 #pragma optimize( "", off )
 #endif
 
-qboolean ru_loc;
+bool ru_loc;
 
 void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, float degrees) {
 	float	m[3][3];
@@ -867,7 +867,7 @@ BYTE ORDER FUNCTIONS
 ============================================================================
 */
 
-qboolean	bigendien;
+bool	bigendien;
 
 // can't just use function pointers, or dll linkage can
 // mess up when qcommon is included in multiple places
@@ -954,7 +954,7 @@ void Swap_Init (void) {
 
 	// set the byte swapping variables in a portable manner	
 	if (*(short *)swaptest == 1) {
-		bigendien = qfalse;
+		bigendien = false;
 		_BigShort = ShortSwap;
 		_LittleShort = ShortNoSwap;
 		_BigLong = LongSwap;
@@ -963,7 +963,7 @@ void Swap_Init (void) {
 		_LittleFloat = FloatNoSwap;
 	}
 	else {
-		bigendien = qtrue;
+		bigendien = true;
 		_BigShort = ShortNoSwap;
 		_LittleShort = ShortSwap;
 		_BigLong = LongNoSwap;
@@ -1256,12 +1256,12 @@ Some characters are illegal in info strings because they
 can mess up the server's parsing
 ==================
 */
-qboolean Info_Validate (char *s) {
+bool Info_Validate (char *s) {
 	if (strstr (s, "\""))
-		return qfalse;
+		return false;
 	if (strstr (s, ";"))
-		return qfalse;
-	return qtrue;
+		return false;
+	return true;
 }
 
 void Info_SetValueForKey (char *s, char *key, char *value) {

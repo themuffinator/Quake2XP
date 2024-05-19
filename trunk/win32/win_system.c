@@ -38,7 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define DEMO
 int			starttime;
 int			ActiveApp;
-qboolean	Minimized;
+int			Minimized;
 
 static HANDLE		hinput, houtput;
 
@@ -137,12 +137,12 @@ Sys_ScanForCD
 
 char *Sys_ScanForCD (void) {
 	static char	cddir[MAX_OSPATH];
-	static qboolean	done;
+	static bool	done;
 #ifndef DEMO
 	char		drive[4];
 	FILE		*f;
 	char		test[MAX_QPATH];
-	qboolean	missionpack = qfalse; // Knightmare added
+	bool	missionpack = false; // Knightmare added
 	int			i; // Knightmare added
 
 	if (done)		// don't re-check
@@ -156,13 +156,13 @@ char *Sys_ScanForCD (void) {
 	drive[2] = '\\';
 	drive[3] = 0;
 
-	done = qtrue;
+	done = true;
 
 	// Knightmare- check if mission pack gamedir is set
 	for (i = 0; i < argc; i++)
 	if (!strcmp (argv[i], "game") && (i + 1 < argc)) {
 		if (!strcmp (argv[i + 1], "rogue") || !strcmp (argv[i + 1], "xatrix"))
-			missionpack = qtrue;
+			missionpack = true;
 		break; // game parameter only appears once in command line
 	}
 
@@ -562,9 +562,9 @@ static PVOID	anticheatApi;
 static FNINIT	anticheatInit;
 static HMODULE	anticheatHandle;
 
-qboolean Sys_GetAntiCheatAPI()
+bool Sys_GetAntiCheatAPI()
 {
-	qboolean updated = qfalse;
+	bool updated = false;
 
 	//already loaded, just reinit
 	if (anticheatInit)
@@ -576,9 +576,9 @@ qboolean Sys_GetAntiCheatAPI()
 			FreeLibrary(anticheatHandle);
 			anticheatHandle = NULL;
 			anticheatInit = NULL;
-			return qfalse;
+			return false;
 		}
-		return qtrue;
+		return true;
 	}
 
 reInit:
@@ -586,7 +586,7 @@ reInit:
 	if (!anticheatHandle)
 	{
 		Com_Printf("^1Anticheat failed to load.\n");
-		return qfalse;
+		return false;
 	}
 
 	//this should never fail unless the anticheat.dll is bad
@@ -596,24 +596,24 @@ reInit:
 		Com_Printf("^1Couldn't get API of anticheat.dll!\nPlease check you are using a valid anticheat.dll from http://antiche.at/\n");
 		FreeLibrary(anticheatHandle);
 		anticheatHandle = NULL;
-		return qfalse;
+		return false;
 	}
 
 	anticheatApi = anticheatInit();
 	if (anticheatApi)
-		return qtrue; // succeeded
+		return true; // succeeded
 
 	FreeLibrary(anticheatHandle);
 	anticheatHandle = NULL;
 	anticheatInit = NULL;
 	if (!updated)
 	{
-		updated = qtrue;
+		updated = true;
 		goto reInit;
 	}
 
 	Com_Printf("^1Anticheat failed to initialize.\n");
-	return qfalse;
+	return false;
 }
 #endif
 

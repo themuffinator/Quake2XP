@@ -212,7 +212,7 @@ Q_IsLiteral
 
 ===============
 */
-qboolean Q_IsLiteral (const char *text) {
+bool Q_IsLiteral (const char *text) {
 	int		i, c, len;
 
 	len = strlen (text);
@@ -221,10 +221,10 @@ qboolean Q_IsLiteral (const char *text) {
 		c = text[i];
 
 		if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
-			return qfalse;
+			return false;
 	}
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -261,7 +261,7 @@ R_GetInfoLog
 
 ===============
 */
-static void R_GetInfoLog (int id, char *log, qboolean isProgram) {
+static void R_GetInfoLog (int id, char *log, bool isProgram) {
 	int		length, dummy;
 
 	if (isProgram)
@@ -306,7 +306,7 @@ char *R_LoadIncludes (char *glsl) {
 	p = glsl;
 	while (1) {
 		oldp = p;
-		token = Com_ParseExt (&p, qtrue);
+		token = Com_ParseExt (&p, true);
 		if (!token[0])
 			break;
 
@@ -317,7 +317,7 @@ char *R_LoadIncludes (char *glsl) {
 			if (limit < 0)
 				Com_Error (ERR_FATAL, "R_LoadIncludes: more than 64 includes");
 
-			token = Com_ParseExt (&p, qfalse);
+			token = Com_ParseExt (&p, false);
 			Com_sprintf (filename, sizeof(filename), "glsl/include/%s", token);
 			li = FS_LoadFile (filename, (void **)&buf);
 			if (!buf)
@@ -346,7 +346,7 @@ Try To Load Precompiled Shaders
 ===============================
 */
 
-qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
+bool R_LoadBinaryShader(char *shaderName, int shaderId) {
 
 	char			name[MAX_QPATH];
 	GLint			binLength;
@@ -355,14 +355,14 @@ qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
 	FILE*			binFile;
 
 	if (!r_useShaderCache->integer)
-		return qfalse;
+		return false;
 
 	Com_sprintf(name, sizeof(name), "%s/shadercache/%s.bin", FS_Gamedir(), shaderName);
 	FS_CreatePath(name);
 
 	binFile = fopen(name, "rb");
 	if (!binFile) {
-		return qfalse;
+		return false;
 	}
 	else {
 		fseek(binFile, 0, SEEK_END);
@@ -378,10 +378,10 @@ qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
 
 		if (success) {
 			Com_DPrintf(S_COLOR_GREEN">bin\n");
-			return qtrue;
+			return true;
 		}
 	}
-	return qfalse;
+	return false;
 }
 
 /*
@@ -452,7 +452,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			qglGetShaderiv(vertexId, GL_COMPILE_STATUS, &status);
 
 			if (!status) {
-				R_GetInfoLog(vertexId, log, qfalse);
+				R_GetInfoLog(vertexId, log, false);
 				qglDeleteShader(vertexId);
 				Com_Printf("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
@@ -473,7 +473,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			qglGetShaderiv(controlId, GL_COMPILE_STATUS, &status);
 
 			if (!status) {
-				R_GetInfoLog(controlId, log, qfalse);
+				R_GetInfoLog(controlId, log, false);
 				qglDeleteShader(controlId);
 				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
@@ -494,7 +494,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			qglGetShaderiv(evalId, GL_COMPILE_STATUS, &status);
 
 			if (!status) {
-				R_GetInfoLog(evalId, log, qfalse);
+				R_GetInfoLog(evalId, log, false);
 				qglDeleteShader(evalId);
 				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
@@ -515,7 +515,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			qglGetShaderiv(geoId, GL_COMPILE_STATUS, &status);
 
 			if (!status) {
-				R_GetInfoLog(geoId, log, qfalse);
+				R_GetInfoLog(geoId, log, false);
 				qglDeleteShader(geoId);
 				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
@@ -536,7 +536,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			qglGetShaderiv(fragmentId, GL_COMPILE_STATUS, &status);
 
 			if (!status) {
-				R_GetInfoLog(fragmentId, log, qfalse);
+				R_GetInfoLog(fragmentId, log, false);
 				qglDeleteShader(fragmentId);
 				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
@@ -557,7 +557,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			qglGetShaderiv(compId, GL_COMPILE_STATUS, &status);
 
 			if (!status) {
-				R_GetInfoLog(compId, log, qfalse);
+				R_GetInfoLog(compId, log, false);
 				qglDeleteShader(compId);
 				Com_Printf("program '%s': error(s) in compute shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
@@ -603,7 +603,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 
 		qglObjectLabel(GL_PROGRAM, id, strlen(name), name);
 
-		R_GetInfoLog(id, log, qtrue);
+		R_GetInfoLog(id, log, true);
 
 		if (!status) {
 			qglDeleteProgram(id);
@@ -639,7 +639,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 	}
 
 	program->id = id;
-	program->valid = qtrue;
+	program->valid = true;
 
 	// add to the hash
 	hash = Com_ProgramHashKey(program->name, PROGRAM_HASH_SIZE);

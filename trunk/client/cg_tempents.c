@@ -684,9 +684,9 @@ void CL_ParseTEnt (void) {
 			MSG_ReadPos (&net_message, pos);
 			MSG_ReadDir (&net_message, dir);
 			if (type == TE_SCREEN_SPARKS)
-				CL_ParticleArmorSpark (pos, dir, 3, qfalse);
+				CL_ParticleArmorSpark (pos, dir, 3, false);
 			else
-				CL_ParticleArmorSpark (pos, dir, 3, qtrue);
+				CL_ParticleArmorSpark (pos, dir, 3, true);
 			// FIXME : replace or remove this sound
 			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 			break;
@@ -740,7 +740,7 @@ void CL_ParseTEnt (void) {
 
 				}
 				else if (r == SPLASH_LAVA) {
-					CL_ParticleSmoke2 (pos, dir, 1, 0.3, 0, 15, qtrue);
+					CL_ParticleSmoke2 (pos, dir, 1, 0.3, 0, 15, true);
 
 				}
 				else if (r == SPLASH_SLIME) {
@@ -782,7 +782,7 @@ void CL_ParseTEnt (void) {
 			rgb[0] = cl_indexPalette[color][0];
 			rgb[1] = cl_indexPalette[color][1];
 			rgb[2] = cl_indexPalette[color][2];
-			CL_ParticleSmoke2(pos, dir, rgb[0], rgb[1], rgb[2], 16, qtrue);
+			CL_ParticleSmoke2(pos, dir, rgb[0], rgb[1], rgb[2], 16, true);
 			break;
 
 			// RAFAEL
@@ -804,7 +804,7 @@ void CL_ParseTEnt (void) {
 				DECAL_BLASTER, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			CL_ParticleSmoke2 (pos, dir, 0.97, 0.46, 0.14, 16, qtrue);
+			CL_ParticleSmoke2 (pos, dir, 0.97, 0.46, 0.14, 16, true);
 			CL_BlasterParticles (pos, dir);
 			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 			break;
@@ -1158,7 +1158,7 @@ void CL_ParseTEnt (void) {
 			magnitude = 60;
 			color = r & 0xff;
 			CL_ParticleSteamEffect (pos, dir, color, cnt, magnitude);
-			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, qtrue);
+			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, true);
 
 			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 			break;
@@ -1170,7 +1170,7 @@ void CL_ParseTEnt (void) {
 
 			color = 0xe0;
 			magnitude = 60;
-			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, qtrue);
+			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, true);
 			CL_BlasterParticles (pos, dir);
 
 			CL_AddDecalToScene (pos, dir,

@@ -20,7 +20,7 @@ EFXEAXREVERBPROPERTIES rvb_courtYard		= EFX_REVERB_PRESET_FACTORY_COURTYARD;
 extern cvar_t *s_dynamicReverberation;
 
 typedef struct {
-	qboolean on;
+	bool on;
 	ALuint rvbGenericEffect;
 	ALuint rvbUnderwaterEffect;
 	ALuint rvbAuxSlot;
@@ -112,11 +112,11 @@ void EFX_RvbInit (void) {
 	alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
 
 	if (alGetError () == AL_NO_ERROR) {
-		efx.on = qtrue;
+		efx.on = true;
 	}
 	else {
 		Com_Printf (S_COLOR_RED "failed!\n");
-		efx.on = qfalse;
+		efx.on = false;
 	}
 	Com_Printf("\n");
 }
@@ -148,7 +148,7 @@ void EFX_GetRoomSize() {
 
 	for (int i = 0; i < 6; i++){
 
-		trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, dir[i], MASK_SOLID, qfalse);
+		trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, dir[i], MASK_SOLID, false);
 		if (trace.fraction > 0 && trace.fraction < 1) {
 			VectorSubtract(trace.endpos, cl.refdef.vieworg, len);
 			avr += VectorLength(len);
@@ -235,10 +235,10 @@ void EFX_RvbShutdown (void) {
 	alDeleteEffects(1, &efx.rvbFactoryHall);
 	alDeleteEffects(1, &efx.rvbFactoryAlcove);
 
-	efx.on = qfalse;
+	efx.on = false;
 }
 
-void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, qboolean enabled) {
+void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, bool enabled) {
 	if (!enabled)
 		alSource3i (source, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
 	else

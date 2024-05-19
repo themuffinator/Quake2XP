@@ -33,7 +33,7 @@ key up events are sent even if in console mode
 #define		MAXCMDLINE	256
 char key_lines[32][MAXCMDLINE];
 int key_linepos;
-int shift_down = qfalse;
+int shift_down = false;
 int anykeydown;
 
 int edit_line = 0;
@@ -41,13 +41,13 @@ int history_line = 0;
 
 int key_waiting;
 char *keybindings[256];
-qboolean consolekeys[256];		// if qtrue, can't be rebound while in
+bool consolekeys[256];		// if true, can't be rebound while in
 // console
-qboolean menubound[256];		// if qtrue, can't be rebound while in menu
+bool menubound[256];		// if true, can't be rebound while in menu
 int keyshift[256];				// key to map to if shift held down in
 // console
 int key_repeats[256];			// if > 1, it is autorepeating
-qboolean keydown[256];
+bool keydown[256];
 
 typedef struct {
 	char *name;
@@ -152,7 +152,7 @@ LINE TYPING INTO THE CONSOLE
 ==============================================================================
 */
 
-qboolean Cmd_IsComplete (char *cmd);
+bool Cmd_IsComplete (char *cmd);
 
 void CompleteCommand (void) {
 	char *cmd, *s;
@@ -436,7 +436,7 @@ void Key_Console (int key) {
 
 //============================================================================
 
-qboolean chat_team;
+bool chat_team;
 char chat_buffer[MAXCMDLINE];
 int chat_bufferlen = 0;
 
@@ -682,39 +682,39 @@ void Key_Init (void) {
 	// init ascii characters in console mode
 	//
 	for (i = 32; i < 128; i++)
-		consolekeys[i] = qtrue;
-	consolekeys[K_ENTER] = qtrue;
-	consolekeys[K_KP_ENTER] = qtrue;
-	consolekeys[K_TAB] = qtrue;
-	consolekeys[K_LEFTARROW] = qtrue;
-	consolekeys[K_KP_LEFTARROW] = qtrue;
-	consolekeys[K_RIGHTARROW] = qtrue;
-	consolekeys[K_KP_RIGHTARROW] = qtrue;
-	consolekeys[K_UPARROW] = qtrue;
-	consolekeys[K_KP_UPARROW] = qtrue;
-	consolekeys[K_DOWNARROW] = qtrue;
-	consolekeys[K_KP_DOWNARROW] = qtrue;
-	consolekeys[K_BACKSPACE] = qtrue;
-	consolekeys[K_HOME] = qtrue;
-	consolekeys[K_KP_HOME] = qtrue;
-	consolekeys[K_END] = qtrue;
-	consolekeys[K_DEL] = qtrue;
-	consolekeys[K_KP_END] = qtrue;
-	consolekeys[K_PGUP] = qtrue;
-	consolekeys[K_KP_PGUP] = qtrue;
-	consolekeys[K_PGDN] = qtrue;
-	consolekeys[K_KP_PGDN] = qtrue;
-	consolekeys[K_SHIFT] = qtrue;
-	consolekeys[K_INS] = qtrue;
-	consolekeys[K_KP_INS] = qtrue;
-	consolekeys[K_KP_DEL] = qtrue;
-	consolekeys[K_KP_SLASH] = qtrue;
-	consolekeys[K_KP_PLUS] = qtrue;
-	consolekeys[K_KP_MINUS] = qtrue;
-	consolekeys[K_KP_5] = qtrue;
+		consolekeys[i] = true;
+	consolekeys[K_ENTER] = true;
+	consolekeys[K_KP_ENTER] = true;
+	consolekeys[K_TAB] = true;
+	consolekeys[K_LEFTARROW] = true;
+	consolekeys[K_KP_LEFTARROW] = true;
+	consolekeys[K_RIGHTARROW] = true;
+	consolekeys[K_KP_RIGHTARROW] = true;
+	consolekeys[K_UPARROW] = true;
+	consolekeys[K_KP_UPARROW] = true;
+	consolekeys[K_DOWNARROW] = true;
+	consolekeys[K_KP_DOWNARROW] = true;
+	consolekeys[K_BACKSPACE] = true;
+	consolekeys[K_HOME] = true;
+	consolekeys[K_KP_HOME] = true;
+	consolekeys[K_END] = true;
+	consolekeys[K_DEL] = true;
+	consolekeys[K_KP_END] = true;
+	consolekeys[K_PGUP] = true;
+	consolekeys[K_KP_PGUP] = true;
+	consolekeys[K_PGDN] = true;
+	consolekeys[K_KP_PGDN] = true;
+	consolekeys[K_SHIFT] = true;
+	consolekeys[K_INS] = true;
+	consolekeys[K_KP_INS] = true;
+	consolekeys[K_KP_DEL] = true;
+	consolekeys[K_KP_SLASH] = true;
+	consolekeys[K_KP_PLUS] = true;
+	consolekeys[K_KP_MINUS] = true;
+	consolekeys[K_KP_5] = true;
 
-	consolekeys['`'] = qfalse;
-	consolekeys['~'] = qfalse;
+	consolekeys['`'] = false;
+	consolekeys['~'] = false;
 
 	for (i = 0; i < 256; i++)
 		keyshift[i] = i;
@@ -742,9 +742,9 @@ void Key_Init (void) {
 	keyshift['`'] = '~';
 	keyshift['\\'] = '|';
 
-	menubound[K_ESCAPE] = qtrue;
+	menubound[K_ESCAPE] = true;
 	for (i = 0; i < 12; i++)
-		menubound[K_F1 + i] = qtrue;
+		menubound[K_F1 + i] = true;
 
 	//
 	// register our functions
@@ -764,7 +764,7 @@ Should NOT be called during an interrupt!
 ===================
 */
 
-void Key_Event (int key, qboolean down, unsigned time) {
+void Key_Event (int key, bool down, unsigned time) {
 	char *kb;
 	char cmd[1024];
 
@@ -828,7 +828,7 @@ void Key_Event (int key, qboolean down, unsigned time) {
 			SCR_EndLoadingPlaque ();	// get rid of loading plaque
 			Cbuf_AddText ("d1\n");
 
-			cls.consoleActive = qfalse;
+			cls.consoleActive = false;
 
 			M_Menu_Main_f ();
 			return;
@@ -960,11 +960,11 @@ Key_ClearStates
 void Key_ClearStates (void) {
 	int i;
 
-	anykeydown = qfalse;
+	anykeydown = false;
 
 	for (i = 0; i < 256; i++) {
 		if (keydown[i] || key_repeats[i])
-			Key_Event (i, qfalse, 0);
+			Key_Event (i, false, 0);
 		keydown[i] = 0;
 		key_repeats[i] = 0;
 	}

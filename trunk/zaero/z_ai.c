@@ -6,8 +6,8 @@
 
 
 void ai_run_melee(edict_t *self);
-qboolean FindTarget (edict_t *self);
-qboolean SV_StepDirection (edict_t *ent, float yaw, float dist);
+bool FindTarget (edict_t *self);
+bool SV_StepDirection (edict_t *ent, float yaw, float dist);
 void SV_NewChaseDir (edict_t *actor, vec3_t eOrigin, float dist);
 #if 0
 void z_aiMoveTo(edict_t *self, float dist)

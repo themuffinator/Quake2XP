@@ -243,7 +243,7 @@ Con_MessageMode_f
 ================
 */
 void Con_MessageMode_f (void) {
-	chat_team = qfalse;
+	chat_team = false;
 	cls.key_dest = key_message;
 }
 
@@ -253,7 +253,7 @@ Con_MessageMode2_f
 ================
 */
 void Con_MessageMode2_f (void) {
-	chat_team = qtrue;
+	chat_team = true;
 	cls.key_dest = key_message;
 }
 
@@ -348,7 +348,7 @@ void Con_Init (void) {
 	Cmd_AddCommand ("condump", Con_Dump_f);
 
 
-	con.initialized = qtrue;
+	con.initialized = true;
 }
 
 
@@ -358,7 +358,7 @@ Con_Linefeed
 ===============
 */
 
-static void Con_Linefeed (qboolean skipNotify) {
+static void Con_Linefeed (bool skipNotify) {
 	int		i;
 
 	// mark time for transparent overlay
@@ -390,18 +390,18 @@ void Con_Print (char *txt) {
 	int		y;
 	int		c, l;
 	int		color;
-	//	static qboolean	cr;
-	qboolean	skipNotify = qfalse;
+	//	static bool	cr;
+	bool	skipNotify = false;
 
 	if (!Q_strnicmp (txt, "[skipnotify]", 12)) {
-		skipNotify = qtrue;
+		skipNotify = true;
 		txt += 12;
 	}
 
 	if (!con.initialized) {
 		con.lineWidth = -1;
 		Con_CheckResize ();
-		con.initialized = qtrue;
+		con.initialized = true;
 	}
 
 	color = ColorIndex (COLOR_WHITE);

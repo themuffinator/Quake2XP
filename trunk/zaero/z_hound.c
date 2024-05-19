@@ -416,7 +416,7 @@ attack check routines
 
 
 
-qboolean hound_check_melee (edict_t *self)
+bool hound_check_melee (edict_t *self)
 {
 	if (range (self, self->enemy) == RANGE_MELEE)
 		return true;
@@ -424,7 +424,7 @@ qboolean hound_check_melee (edict_t *self)
 }
 
 
-qboolean hound_check_jump (edict_t *self)
+bool hound_check_jump (edict_t *self)
 {
 	vec3_t	v;
 	float	distance;
@@ -452,7 +452,7 @@ qboolean hound_check_jump (edict_t *self)
 }
 
 
-qboolean hound_checkattack (edict_t *self)
+bool hound_checkattack (edict_t *self)
 {
 	if (!self->enemy || self->enemy->health <= 0)
 		return false;
@@ -615,7 +615,7 @@ void SP_monster_hound (edict_t *self)
 
 
 void monster_think (edict_t *self);
-qboolean monster_start (edict_t *self);
+bool monster_start (edict_t *self);
 void hound_createHound(edict_t *self, float healthPercent)
 {
 	edict_t *hound;

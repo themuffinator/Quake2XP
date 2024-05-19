@@ -63,7 +63,7 @@ bind XPAD_RIGHT_TRIGGER "+attack"
 
 extern	unsigned	sys_msg_time;
 
-qboolean	xInputActive			= qfalse;
+bool	xInputActive			= false;
 int			xInputActiveController	= -1;
 int			xInputOldButtonState	= 0;
 
@@ -130,7 +130,7 @@ void IN_StartupXInput(void)
 
 	// reset to -1 each time as this can be called at runtime
 	xInputActiveController = -1;
-	xInputActive = qfalse;
+	xInputActive = false;
 	
 	in_useXInput = Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
 	x360_useControllerID = Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
@@ -281,12 +281,12 @@ void IN_StartupXInput(void)
 	if (xInputActiveController != -1)
 	{
 		qXInputEnable(TRUE);
-		xInputActive = qtrue;
+		xInputActive = true;
 	}
 	else
 	{
 		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
-		xInputActive = qfalse;
+		xInputActive = false;
 		qXInputEnable(FALSE);
 		IN_ShutDownXinput();
 	}
@@ -343,7 +343,7 @@ void IN_ToggleXInput()
 
 		if (xInputActiveController != -1) {
 			qXInputEnable(TRUE);
-			xInputActive = qtrue;
+			xInputActive = true;
 		}
 	}
 	else 
@@ -352,7 +352,7 @@ void IN_ToggleXInput()
 			return;
 
 		qXInputEnable(FALSE);
-		xInputActive = qfalse;
+		xInputActive = false;
 	}
 }
 
@@ -595,10 +595,10 @@ void IN_ControllerMove(usercmd_t *cmd)
 	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)
 	{
 		if ((buttonState & (1 << i)) && !(xInputOldButtonState & (1 << i)))
-			Key_Event(K_XPAD_START + i, qtrue, sys_msg_time);
+			Key_Event(K_XPAD_START + i, true, sys_msg_time);
 
 		if (!(buttonState & (1 << i)) && (xInputOldButtonState & (1 << i)))
-			Key_Event(K_XPAD_START + i, qfalse, sys_msg_time);
+			Key_Event(K_XPAD_START + i, false, sys_msg_time);
 	}
 	// store back
 	xInputOldButtonState = buttonState;

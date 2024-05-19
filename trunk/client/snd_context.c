@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/snd_loc.h"
 
 alConfig_t alConfig;
-qboolean	openalStop = qfalse;
+bool	openalStop = false;
 
 typedef struct ConvLetter {
 	char    win1251;
@@ -158,14 +158,14 @@ int convert_utf8_to_windows1251(const char* utf8, char* windows1251, size_t n)
 
 #define LINE_MAX 512
 
-extern qboolean ru_loc;
+extern bool ru_loc;
 /*
  =================
  AL_InitDriver
  =================
  */
 
-static qboolean AL_InitDriver (void) {
+static bool AL_InitDriver (void) {
 	char *deviceName = s_device->string;
 	char *deviceName1251 = NULL;
 
@@ -198,7 +198,7 @@ static qboolean AL_InitDriver (void) {
 	// Open the device
 	if ((alConfig.hDevice = alcOpenDevice (deviceName)) == NULL) {
 		Com_Printf (S_COLOR_RED"failed\n");
-		return qfalse;
+		return false;
 	}
 
 	if (!deviceName)
@@ -210,9 +210,9 @@ static qboolean AL_InitDriver (void) {
 	// Create the AL context and make it current
 	Com_Printf ("...Creating AL Context: ");
 
-	qboolean hrtf = qfalse;
+	bool hrtf = false;
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
-		hrtf = qtrue;
+		hrtf = true;
 	}
 
 //	int quality;
@@ -354,13 +354,13 @@ static qboolean AL_InitDriver (void) {
 	}else
 		Com_Printf(S_COLOR_MAGENTA"...ALC_SOFT_HRTF not found\n");
 
-	return qtrue;
+	return true;
 
 failed:
 
 	Com_Printf (S_COLOR_RED"...failed hard\n");
 
-	openalStop = qtrue;
+	openalStop = true;
 
 	if (alConfig.hALC) {
 		alcDestroyContext (alConfig.hALC);
@@ -372,7 +372,7 @@ failed:
 		alConfig.hDevice = NULL;
 	}
 
-	return qfalse;
+	return false;
 }
 
 
@@ -382,7 +382,7 @@ failed:
  =================
  */
 
-qboolean AL_StartOpenAL (void) {
+bool AL_StartOpenAL (void) {
 	extern const char *al_device[];
 	char* playback1251[7], *playback1251_def = NULL;
 
@@ -400,7 +400,7 @@ qboolean AL_StartOpenAL (void) {
 		if (!a) {
 			// We have no audio output devices. No hope.
 			QAL_Shutdown ();
-			return qfalse;
+			return false;
 		}
 		
 		Com_Printf("======" S_COLOR_YELLOW " Available Output Devices " S_COLOR_WHITE "=====\n\n");
@@ -452,18 +452,18 @@ qboolean AL_StartOpenAL (void) {
 	else {		
 
 		QAL_Shutdown ();
-		return qfalse;
+		return false;
 	}
 
 	Com_Printf("\n=====================================\n");
 
 	// Initialize the device, context, etc...
 	if (AL_InitDriver ()) {
-		return qtrue;
+		return true;
 	}
 	else {
 		QAL_Shutdown ();
-		return qfalse;
+		return false;
 	}
 }
 

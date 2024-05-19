@@ -13,7 +13,7 @@ chick
 #include "g_local.h"
 #include "m_chick.h"
 
-qboolean visible (edict_t *self, edict_t *other);
+bool visible (edict_t *self, edict_t *other);
 
 void chick_stand (edict_t *self);
 void chick_run (edict_t *self);
@@ -436,7 +436,7 @@ void ChickRocket (edict_t *self) {
 	vec3_t	start;
 	vec3_t	dir;
 	vec3_t	vec;
-	qboolean tone = qtrue;
+	bool tone = true;
 
 	AngleVectors (self->s.angles, forward, right, NULL);
 	G_ProjectSource (self->s.origin, monster_flash_offset[MZ2_CHICK_ROCKET_1], forward, right, start);

@@ -439,7 +439,7 @@ gotnewcl:
 
 	SZ_Init (&newcl->datagram, newcl->datagram_buf,
 		sizeof(newcl->datagram_buf));
-	newcl->datagram.allowoverflow = qtrue;
+	newcl->datagram.allowoverflow = true;
 	newcl->lastmessage = svs.realTime;	// don't timeout
 	newcl->lastconnect = svs.realTime;
 }
@@ -661,7 +661,7 @@ gotnewcl:
 	newcl->state = cs_connected;
 
 	SZ_Init(&newcl->datagram, newcl->datagram_buf, sizeof(newcl->datagram_buf));
-	newcl->datagram.allowoverflow = qtrue;
+	newcl->datagram.allowoverflow = true;
 	newcl->lastmessage = svs.realTime;	// don't timeout
 	newcl->lastconnect = svs.realTime;
 }
@@ -736,7 +736,7 @@ void SV_ConnectionlessPacket (void) {
 
 	s = MSG_ReadStringLine (&net_message);
 
-	Cmd_TokenizeString (s, qfalse);
+	Cmd_TokenizeString (s, false);
 
 	c = Cmd_Argv (0);
 	Com_DPrintf ("Packet %s : %s\n", NET_AdrToString (net_from), c);
@@ -1251,7 +1251,7 @@ not just stuck on the outgoing message list, because the server is going
 to totally exit after returning from this function.
 ==================
 */
-void SV_FinalMessage (char *message, qboolean reconnect) {
+void SV_FinalMessage (char *message, bool reconnect) {
 	int i;
 	client_t *cl;
 
@@ -1289,7 +1289,7 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown (char *finalmsg, qboolean reconnect) {
+void SV_Shutdown (char *finalmsg, bool reconnect) {
 	if (svs.clients)
 		SV_FinalMessage (finalmsg, reconnect);
 

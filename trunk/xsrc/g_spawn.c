@@ -431,11 +431,11 @@ ed should be a properly initialized empty edict.
 ====================
 */
 char *ED_ParseEdict (char *data, edict_t *ent) {
-	qboolean	init;
+	bool	init;
 	char		keyname[256];
 	char		*com_token;
 
-	init = qfalse;
+	init = false;
 	memset (&st, 0, sizeof(st));
 
 	// go through all the dictionary pairs
@@ -457,7 +457,7 @@ char *ED_ParseEdict (char *data, edict_t *ent) {
 		if (com_token[0] == '}')
 			gi.error ("ED_ParseEntity: closing brace without data");
 
-		init = qtrue;
+		init = true;
 
 		// keynames with a leading underscore are used for utility comments,
 		// and are immediately discarded by quake
@@ -854,7 +854,7 @@ string <stat>
 	void SP_worldspawn (edict_t *ent) {
 		ent->movetype = MOVETYPE_PUSH;
 		ent->solid = SOLID_BSP;
-		ent->inuse = qtrue;			// since the world doesn't use G_Spawn()
+		ent->inuse = true;			// since the world doesn't use G_Spawn()
 		ent->s.modelindex = 1;		// world model is always index 1
 
 		//---------------

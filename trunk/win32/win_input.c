@@ -32,7 +32,7 @@ extern	unsigned	sys_msg_time;
 cvar_t	*m_inversion;
 cvar_t	*v_centermove;
 cvar_t	*v_centerspeed;
-qboolean	in_appactive;
+bool	in_appactive;
 
 
 /*
@@ -49,9 +49,9 @@ int			mouse_x, mouse_y, old_mouse_x, old_mouse_y, mx_accum, my_accum;
 
 int			old_x, old_y;
 
-qboolean	mouseactive;	// qfalse when not focus app
+bool	mouseactive;	// false when not focus app
 
-qboolean	mouseinitialized;
+bool	mouseinitialized;
 
 int			window_center_x, window_center_y;
 RECT		window_rect;
@@ -94,7 +94,7 @@ void IN_ActivateMouse (void) {
 	SetCapture(cl_hwnd);
 	ClipCursor(&window_rect);
 
-	mouseactive = qtrue;
+	mouseactive = true;
 	while (ShowCursor(FALSE) >= 0);
 }
 
@@ -114,7 +114,7 @@ void IN_DeactivateMouse (void) {
 	ClipCursor (NULL);
 	ReleaseCapture ();
 
-	mouseactive = qfalse;
+	mouseactive = false;
 	
 	while (ShowCursor(TRUE) < 0);
 }
@@ -134,7 +134,7 @@ void IN_StartupMouse (void) {
 	if (!cv->integer)
 		return;
 
-	mouseinitialized = qtrue;
+	mouseinitialized = true;
 }
 
 /*
@@ -152,12 +152,12 @@ void IN_MouseEvent (int mstate) {
 	for (i = 0; i < MOUSE_BUTTONS; i++) {
 		if ((mstate & (1 << i)) &&
 			!(mouse_oldbuttonstate & (1 << i))) {
-			Key_Event (K_MOUSE1 + i, qtrue, sys_msg_time);
+			Key_Event (K_MOUSE1 + i, true, sys_msg_time);
 		}
 
 		if (!(mstate & (1 << i)) &&
 			(mouse_oldbuttonstate & (1 << i))) {
-			Key_Event (K_MOUSE1 + i, qfalse, sys_msg_time);
+			Key_Event (K_MOUSE1 + i, false, sys_msg_time);
 		}
 	}
 
@@ -360,7 +360,7 @@ The window may have been destroyed and recreated
 between a deactivate and an activate.
 ===========
 */
-void IN_Activate (qboolean active) {
+void IN_Activate (bool active) {
 	in_appactive = active;
 	mouseactive = !active;		// force a new window check or turn off
 }

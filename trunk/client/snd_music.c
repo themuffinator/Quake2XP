@@ -62,7 +62,7 @@ void Music_Shutdown (void) {
 }
 
 // only to be called inside Music_Play
-qboolean Music_PlayFile (const char *name, qboolean hasExt) {
+bool Music_PlayFile (const char *name, bool hasExt) {
 	soundparams_t sp;
 
 	if (hasExt)
@@ -78,11 +78,11 @@ qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 
 		S_Streaming_Start (sp.bits, sp.channels, sp.rate, s_musicVolume->value);
 		mstat = cl_paused->integer ? MSTAT_PAUSED : MSTAT_PLAYING;
-		return qtrue;
+		return true;
 	}
 	else {
 		Com_DPrintf (S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
-		return qfalse;
+		return false;
 	}
 }
 
@@ -96,7 +96,7 @@ void Music_Play (void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Play (track, qtrue);
+			CDAudio_Play (track, true);
 			mstat = MSTAT_PLAYING;
 			break;
 
@@ -108,7 +108,7 @@ void Music_Play (void) {
 				Q_snprintfz(name, sizeof(name), "music_sp2/track%02i", track);
 			else
 				Q_snprintfz(name, sizeof(name), "music/track%02i", track);
-			Music_PlayFile (name, qfalse);
+			Music_PlayFile (name, false);
 			break;
 	}
 }
@@ -138,7 +138,7 @@ void Music_Pause (void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate (qfalse);
+			CDAudio_Activate (false);
 			break;
 		case MUSIC_FILES:
 			alSourcePause (source_name[CH_STREAMING]);
@@ -154,7 +154,7 @@ void Music_Resume (void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate (qtrue);
+			CDAudio_Activate (true);
 			break;
 		case MUSIC_FILES:
 			alSourcePlay (source_name[CH_STREAMING]);
@@ -177,8 +177,8 @@ void Music_Update (void) {
 		Music_Shutdown ();
 		Music_Init ();
 		Music_Play ();
-		s_musicSrc->modified = qfalse;
-		s_musicVolume->modified = qfalse;
+		s_musicSrc->modified = false;
+		s_musicVolume->modified = false;
 		return;
 	}
 
@@ -194,7 +194,7 @@ void Music_Update (void) {
 				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicVolume->value);
 				break;
 		}
-		s_musicVolume->modified = qfalse;
+		s_musicVolume->modified = false;
 		return;
 	}
 

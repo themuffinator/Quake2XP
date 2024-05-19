@@ -41,21 +41,21 @@ edict_t *projectiles[MAX_PROJECTILES];
 int numprojs;
 cvar_t *sv_projectiles;
 
-qboolean SV_AddProjectileUpdate(edict_t * ent)
+bool SV_AddProjectileUpdate(edict_t * ent)
 {
 	if (!sv_projectiles)
 		sv_projectiles = Cvar_Get("sv_projectiles", "1", 0);
 
 	if (!sv_projectiles->value)
-		return qfalse;
+		return false;
 
 	if (!(ent->svflags & SVF_PROJECTILE))
-		return qfalse;
+		return false;
 	if (numprojs == MAX_PROJECTILES)
-		return qtrue;
+		return true;
 
 	projectiles[numprojs++] = ent;
-	return qtrue;
+	return true;
 }
 
 void SV_EmitProjectileUpdate(sizebuf_t * msg)
@@ -173,13 +173,13 @@ void SV_EmitPacketEntities (client_frame_t * from, client_frame_t * to,
 		}
 
 		if (newnum == oldnum) {	// delta update from old position
-			// because the force parm is qfalse, this will not result
+			// because the force parm is false, this will not result
 			// in any bytes being emited if the entity has not changed at
 			// all
 			// note that players are always 'newentities', this updates
 			// their oldorigin always
 			// and prevents warping
-			MSG_WriteDeltaEntity (oldent, newent, msg, qfalse,
+			MSG_WriteDeltaEntity (oldent, newent, msg, false,
 				newent->number <= maxclients->value);
 			oldindex++;
 			newindex++;
@@ -188,8 +188,8 @@ void SV_EmitPacketEntities (client_frame_t * from, client_frame_t * to,
 
 		if (newnum < oldnum) {	// this is a new entity, send it from the
 			// baseline
-			MSG_WriteDeltaEntity (&sv.baselines[newnum], newent, msg, qtrue,
-				qtrue);
+			MSG_WriteDeltaEntity (&sv.baselines[newnum], newent, msg, true,
+				true);
 			newindex++;
 			continue;
 		}
@@ -711,7 +711,7 @@ void SV_RecordDemoMessage (void) {
 			ent->s.number &&
 			(ent->s.modelindex || ent->s.effects || ent->s.sound
 			|| ent->s.event) && !(ent->svflags & SVF_NOCLIENT))
-			MSG_WriteDeltaEntity (&nostate, &ent->s, &buf, qfalse, qtrue);
+			MSG_WriteDeltaEntity (&nostate, &ent->s, &buf, false, true);
 
 		e++;
 		ent = EDICT_NUM (e);

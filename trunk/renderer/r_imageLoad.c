@@ -53,14 +53,14 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 
 	int		i;
 	image_t* image;
-	qboolean clearData;
+	bool clearData;
 
 	if (!pixdata) {
 		pixdata = malloc(vid.width * vid.height * 4 * sizeof(uint));
-		clearData = qtrue;
+		clearData = true;
 	}
 	else
-		clearData = qfalse;
+		clearData = false;
 
 	// find a free image_t
 	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {

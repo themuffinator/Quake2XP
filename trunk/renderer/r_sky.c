@@ -46,8 +46,8 @@ void R_DrawSkyBox(){
 		return;
 	// setup program
 	GL_BindProgram(skyProgram);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)r_newrefdef.skyMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, i_levelSkyBox->handle);
 
@@ -110,10 +110,10 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 	strcpy(image->name, name);
 	image->type = it_sky;
 	image->hash = hash;
-	image->compressed = qfalse;
-	image->has_alpha = qtrue;
-	image->paletted = qfalse;
-	image->legacySky = qtrue;
+	image->compressed = false;
+	image->has_alpha = true;
+	image->paletted = false;
+	image->legacySky = true;
 
 	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &image->texnum);
 

@@ -211,7 +211,7 @@ static void LM_UploadBlock () {
 }
 
 // returns a texture number and the position inside it
-static qboolean LM_AllocBlock (int w, int h, int *x, int *y) {
+static bool LM_AllocBlock (int w, int h, int *x, int *y) {
 	int i, j;
 	int best, best2;
 
@@ -234,12 +234,12 @@ static qboolean LM_AllocBlock (int w, int h, int *x, int *y) {
 	}
 
 	if (best + h > LIGHTMAP_SIZE)
-		return qfalse;
+		return false;
 
 	for (i = 0; i < w; i++)
 		gl_lms.allocated[*x + i] = best + h;
 
-	return qtrue;
+	return true;
 }
 
 

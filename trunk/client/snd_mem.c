@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //=============================================================================
 
-static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
+static bool LoadWAV (char *name, byte ** wav, ALenum * format,
 	ALsizei * rate, ALsizei * size);
 
 
@@ -59,7 +59,7 @@ static ov_callbacks OV_CALLBACKS_NOCLOSE = {
   (long (*)(void*))                            ftell
 };
 */
-qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorbis_info* vi) {
+bool LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorbis_info* vi) {
 	byte* buffer;
 	OggVorbis_File vf;
 	
@@ -70,7 +70,7 @@ qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorb
 	if (ov_open_callbacks(buffer, &vf, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0) {
 		Com_Printf("Stream is not a valid OggVorbis stream! %s\n", name);
 		FS_FreeFile(buffer);
-		return qfalse;
+		return false;
 	}
 	// fill vi with a new ogg vorbis info struct, determine audio format
 	// audio format will always been a length of 16bits, vi->channels determines mono or stereo
@@ -86,7 +86,7 @@ qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorb
 		ov_clear(&vf);
 		free(pcmout);
 		FS_FreeFile(buffer);
-		return qfalse;
+		return false;
 	}
 
 	// fill pcmout buffer with ov_read data samples
@@ -102,7 +102,7 @@ qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorb
 			ov_clear(&vf);
 			free(pcmout);
 			FS_FreeFile(buffer);
-			return qfalse;
+			return false;
 		}
 	}
 	//alBufferData(buffNum, format, pcmout, data_len, vi->rate);
@@ -111,7 +111,7 @@ qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorb
 	free(pcmout);
 	FS_FreeFile(buffer);
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -119,7 +119,7 @@ qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorb
 S_FindName
 ==================
 */
-ALuint S_FindName (char *name, qboolean create) {
+ALuint S_FindName (char *name, bool create) {
 	int i;
 	char real_name[MAX_QPATH];
 	byte *data;
@@ -325,14 +325,14 @@ data_p += (iff_chunk_len + 1) & ~1;
 */
 
 
-static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
+static bool LoadWAV (char *name, byte ** wav, ALenum * format,
 	ALsizei * rate, ALsizei * size) {
 	byte *buffer, *out;
 	short channels, width;
 	int length = FS_LoadFile (name, (void **)&buffer);
 
 	if (!buffer)
-		return qfalse;
+		return false;
 
 	iff_data = buffer;
 	iff_end = buffer + length;
@@ -342,7 +342,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 	if (!(data_p && !memcmp ((void *)(data_p + 8), "WAVE", 4))) {
 		Com_DPrintf ("S_LoadWAV: missing 'RIFF/WAVE' chunks (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	// Get "fmt " chunk
 	iff_data = data_p + 12;
@@ -351,7 +351,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 	if (!data_p) {
 		Com_DPrintf ("S_LoadWAV: missing 'fmt ' chunk (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	data_p += 8;
@@ -359,7 +359,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 	if (GetLittleShort () != 1) {
 		Com_DPrintf ("S_LoadWAV: Microsoft PCM format only (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	*format = AL_FORMAT_MONO8;
@@ -369,7 +369,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 			("S_LoadWAV: only mono and stereo WAV files supported (%s)\n",
 			name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	if (channels == 2)
 		*format |= PCM_STEREO;
@@ -384,7 +384,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 			("S_LoadWAV: only 8 and 16 bit WAV files supported (%s)\n",
 			name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	if (width == 2)
 		*format |= PCM_16BIT;
@@ -394,7 +394,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 	if (!data_p) {
 		Com_DPrintf ("S_LoadWAV: missing 'data' chunk (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	data_p += 4;
@@ -403,7 +403,7 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 	if (*size == 0) {
 		Com_DPrintf ("S_LoadWAV: file with 0 samples (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	// Load the data
 	*wav = out = Z_TagMalloc (*size, TAGMALLOC_CLIENT_SOUNDCACHE);
@@ -411,16 +411,16 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 
 	FS_FreeFile (buffer);
 
-	return qtrue;
+	return true;
 }
 // Loads WAV file in memory returned as "wav", but also returns start of audio data in "start"
-qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize) {
+bool S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize) {
 	byte *buffer;
 	short channels, width;
 	int length = FS_LoadFile (name, (void **)&buffer);
 
 	if (!buffer)
-		return qfalse;
+		return false;
 
 	iff_data = buffer;
 	iff_end = buffer + length;
@@ -430,7 +430,7 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 	if (!(data_p && !memcmp ((void *)(data_p + 8), "WAVE", 4))) {
 		Com_DPrintf ("S_LoadWAV: missing 'RIFF/WAVE' chunks (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	// Get "fmt " chunk
 	iff_data = data_p + 12;
@@ -439,7 +439,7 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 	if (!data_p) {
 		Com_DPrintf ("S_LoadWAV: missing 'fmt ' chunk (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	data_p += 8;
@@ -447,7 +447,7 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 	if (GetLittleShort () != 1) {
 		Com_DPrintf ("S_LoadWAV: Microsoft PCM format only (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	channels = GetLittleShort ();
@@ -456,7 +456,7 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 			("S_LoadWAV: only mono and stereo WAV files supported (%s)\n",
 			name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	*oChans = channels;
 
@@ -470,7 +470,7 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 			("S_LoadWAV: only 8 and 16 bit WAV files supported (%s)\n",
 			name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 	*oBits = width * 8;
 
@@ -479,7 +479,7 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 	if (!data_p) {
 		Com_DPrintf ("S_LoadWAV: missing 'data' chunk (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	data_p += 4;
@@ -488,12 +488,12 @@ qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, in
 	if (*oSize == 0) {
 		Com_DPrintf ("S_LoadWAV: file with 0 samples (%s)\n", name);
 		FS_FreeFile (buffer);
-		return qfalse;
+		return false;
 	}
 
 	// Load the data
 	*oWav = buffer;
 	*oStart = data_p;
 
-	return qtrue;
+	return true;
 }

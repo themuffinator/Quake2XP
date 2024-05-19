@@ -30,7 +30,7 @@ typedef struct {
 } cblock_t;
 
 typedef struct {
-	qboolean restart_sound;
+	bool restart_sound;
 	int s_rate;
 	int s_width;
 	int s_channels;
@@ -163,7 +163,7 @@ void SCR_StopCinematic (void) {
 	}
 	if (cl.cinematicpalette_active) {
 		R_SetPalette (NULL);
-		cl.cinematicpalette_active = qfalse;
+		cl.cinematicpalette_active = false;
 	}
 	if (cl.cinematic_file) {
 		fclose (cl.cinematic_file);
@@ -216,7 +216,7 @@ int SmallestNode1 (int numhnodes) {
 	if (bestnode == -1)
 		return -1;
 
-	cin.h_used[bestnode] = qtrue;
+	cin.h_used[bestnode] = true;
 	return bestnode;
 }
 
@@ -521,31 +521,31 @@ void SCR_RunCinematic (void) {
 ==================
 SCR_DrawCinematic
 
-Returns qtrue if a cinematic is active, meaning the view rendering
+Returns true if a cinematic is active, meaning the view rendering
 should be skipped
 ==================
 */
-qboolean SCR_DrawCinematic (void) {
+bool SCR_DrawCinematic (void) {
 	int     w, h, sw, sh;
 
 	if (cl.cinematictime <= 0) {
-		return qfalse;
+		return false;
 	}
 
 	if (cls.key_dest == key_menu) {	// blank screen and pause if menu is
 		// up
 		R_SetPalette (NULL);
-		cl.cinematicpalette_active = qfalse;
-		return qtrue;
+		cl.cinematicpalette_active = false;
+		return true;
 	}
 
 	if (!cl.cinematicpalette_active) {
 		R_SetPalette (cl.cinematicpalette);
-		cl.cinematicpalette_active = qtrue;
+		cl.cinematicpalette_active = true;
 	}
 
 	if (!cin.pic)
-		return qtrue;
+		return true;
 
 	/// Berserker: prevent distortion of video on a wide monitors.
 	if ((float)viddef.width / (float)viddef.height >= 1.3333333333F) {
@@ -566,7 +566,7 @@ qboolean SCR_DrawCinematic (void) {
 
 	Draw_StretchRaw (sw, sh, w, h, cin.width, cin.height, cin.pic);
 
-	return qtrue;
+	return true;
 }
 
 /*

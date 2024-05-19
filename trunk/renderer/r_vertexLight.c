@@ -165,7 +165,7 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 	end[1] = p[1];
 	end[2] = p[2] - 2048.0f;
 
-/*	trace = CL_PMTraceWorld(p, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+/*	trace = CL_PMTraceWorld(p, vec3_origin, vec3_origin, end, MASK_SOLID, false);
 
 	if (trace.fraction != 1.0) {
 		vec3_t tmp;

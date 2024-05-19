@@ -109,7 +109,7 @@ cparticle_t *active_particles, *free_particles;
 cparticle_t particles[MAX_PARTICLES];
 int cl_numparticles = MAX_PARTICLES;
 void CL_ParticleSmoke2 (vec3_t org, vec3_t dir, float r, float g, float b,
-	int count, qboolean add);
+	int count, bool add);
 
 /*
 ===============
@@ -168,7 +168,7 @@ void CL_AddParticles (void) {
 	float orient, backup;
 	int sFactor, dFactor, flags;
 	int cont;
-	qboolean ground;
+	bool ground;
 
 	if (!grav)
 		grav = 1;
@@ -346,7 +346,7 @@ void CL_AddParticles (void) {
 			VectorScale (mins, 2, mins);
 			VectorScale (maxs, 2, maxs);
 
-			trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SOLID, qfalse);
+			trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SOLID, false);
 
 			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;
@@ -788,7 +788,7 @@ void CL_ParticleSmoke (vec3_t org, vec3_t dir, int count) {
 
 
 void CL_ParticleSmoke2 (vec3_t org, vec3_t dir, float r, float g, float b,
-	int count, qboolean add) {
+	int count, bool add) {
 	int i, j;
 	cparticle_t *p;
 	float d;
@@ -977,7 +977,7 @@ void CL_ParticleSpark (vec3_t org, vec3_t dir, int count) {
 }
 
 void CL_ParticleArmorSpark (vec3_t org, vec3_t dir, int count,
-	qboolean power) {
+	bool power) {
 	int i, j;
 	cparticle_t *p;
 	float d;
@@ -2733,7 +2733,7 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 							DECAL_ACIDMARK, DF_OVERBRIGHT,
 							frand () * 360, GL_ONE, GL_ONE);
 						CL_ParticleSmoke2 (trace.endpos, trace.plane.normal, 1,
-							1, 0, 8, qtrue);
+							1, 0, 8, true);
 						VectorClear (trace.plane.normal);
 						p->alpha = 0;
 						return;
@@ -4075,7 +4075,7 @@ void CL_AddLasers (void) {
 			tmp[2] += l->ent.maxs[2];
 			vec3_t dir;
 			VectorSet(dir, 0.0, 0.0, 1.0);
-			CL_ParticleSmoke2(tmp, dir, p->color[0], p->color[1], p->color[2], 8, qtrue);
+			CL_ParticleSmoke2(tmp, dir, p->color[0], p->color[1], p->color[2], 8, true);
 		}
 
 	}

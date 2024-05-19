@@ -36,51 +36,51 @@ int num_nwmLights;
 int c_numVisLights;
 
 vec3_t player_org, v_forward, v_right, v_up;
-qboolean R_MarkLightLeaves (worldShadowLight_t *light);
-void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
+bool R_MarkLightLeaves (worldShadowLight_t *light);
+void R_DrawBspModelVolumes (bool precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
 void R_AddLightInteraction(worldShadowLight_t *light);
 
-qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
+bool R_AddLightToFrame (worldShadowLight_t *light, bool weapon) {
 
 	if (r_newrefdef.areabits && light->area > 0) {
 		
 		if (light->area > MAX_MAP_LEAFS)
-			return qfalse;
+			return false;
 		
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
-			return qfalse;
+			return false;
 		}
 	}
 
 	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[2] <= 0.01 && !r_lightEditor->integer)
-		return qfalse;
+		return false;
 
 	if (light->projector) {
 		if (R_CullConeLight(light->mins, light->maxs, light->frust))
-			return qfalse;
+			return false;
 	}
 	else
 	if (light->spherical) {
 
 		if (R_CullSphere(light->origin, light->radius[0]))
-			return qfalse;
+			return false;
 	}
 	else {
 		if (R_CullBox(light->mins, light->maxs))
-			return qfalse;
+			return false;
 	}
 
 	if (weapon) {
 
 		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, 25.0))
-			return qfalse;
+			return false;
 	}
 
 	if (!HasSharedLeafs(light->vis, viewvis))
-		return qfalse;
+		return false;
 
-	return qtrue;
+	return true;
 }
 
 void UpdateLightBounds (worldShadowLight_t *light) {
@@ -91,10 +91,10 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	vec3_t tmp;
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2]) {
-		light->spherical = qtrue;
+		light->spherical = true;
 	}
 	else
-		light->spherical = qfalse;
+		light->spherical = false;
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius[i];
@@ -107,7 +107,7 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 		light->maxRad = max(max(light->radius[0], light->radius[1]), light->radius[2]);
 	
 	if (light->projector) {
-		light->spherical = qfalse;
+		light->spherical = false;
 	}
 
 	for (i = 0; i < 8; i++) {
@@ -211,8 +211,8 @@ void R_AddDynamicLight (dlight_t *dl) {
 	light->isStatic = 0;
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
-	light->spherical = qtrue;
-	light->projector = qfalse;
+	light->spherical = true;
+	light->projector = false;
 	light->maxRad = dl->intensity;
 
 	for (i = 0; i < 8; i++) {
@@ -282,8 +282,8 @@ void R_AddNoWorldModelLight () {
 	light->isNoWorldModel = 1;
 	light->flare = 0;
 	light->isAmbient = 0;
-	light->spherical = qtrue;
-	light->projector = qfalse;
+	light->spherical = true;
+	light->projector = false;
 	light->maxRad = light->radius[0];
 
 	AnglesToMat3(light->angles, light->axis);
@@ -312,7 +312,7 @@ void R_AddNoWorldModelLight () {
 }
 
 
-void R_PrepareShadowLightFrame (qboolean weapon) {
+void R_PrepareShadowLightFrame (bool weapon) {
 
 	int i;
 	worldShadowLight_t *light;
@@ -354,20 +354,20 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 				continue;
 		}
 
-		MakeFrustum4Light (light, qtrue);
+		MakeFrustum4Light (light, true);
 
 		if (CL_PMpointcontents (light->origin) & MASK_WATER)
-			light->castCaustics = qfalse;
+			light->castCaustics = false;
 		else
-			light->castCaustics = qtrue;
+			light->castCaustics = true;
 
 		if (CL_PMpointcontents(light->origin) & MASK_WATER) // underwater light cast caustics to non water surfaces
-			light->castCaustics2 = qtrue;
+			light->castCaustics2 = true;
 		else
-			light->castCaustics2 = qfalse;
+			light->castCaustics2 = false;
 		
 		if(light->isAmbient)
-			light->castCaustics = qfalse;
+			light->castCaustics = false;
 		
 		VectorCopy (light->startColor, light->color);
 
@@ -478,11 +478,11 @@ void R_Light_Spawn_f (void) {
 	memset (target, 0, sizeof(target));
 
 	VectorMA (player_org, 1024, v_forward, end);
-	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
 
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, qtrue, 1, spawn, 10.0, target, 0, 0, 0.0, spawn, radius, 0, 0.0, 0.0, 0.0);
+		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, true, 1, spawn, 10.0, target, 0, 0, 0.0, spawn, radius, 0, 0.0, 0.0, 0.0);
 	}
 }
 
@@ -495,7 +495,7 @@ void R_Light_SpawnToCamera_f (void) {
 		return;
 	}
 	memset (target, 0, sizeof(target));
-	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, qtrue, 1, player_org, 10.0, target, 0, 0, 0.0, player_org, radius, 0, 0.0, 0.0, 0.0);
+	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, true, 1, player_org, 10.0, target, 0, 0, 0.0, player_org, radius, 0, 0.0, 0.0, 0.0);
 }
 
 void R_Light_Clone_f (void) {
@@ -545,10 +545,10 @@ void R_Light_Clone_f (void) {
 	fogDensity = selectedShadowLight->fogDensity;
 	VectorMA (player_org, 1024, v_forward, end);
 
-	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, qtrue, flare, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius, proj, fovX, fovY, dist);
+		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, true, flare, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius, proj, fovX, fovY, dist);
 	}
 }
 
@@ -656,7 +656,7 @@ void R_Paste_Light_Properties_f (void) {
 
 	UpdateLightBounds (selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
-	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+	R_DrawBspModelVolumes (true, selectedShadowLight);
 	R_AddLightInteraction(selectedShadowLight);
 
 	Com_Printf ("Paste light properties from clipboard.\n");
@@ -755,7 +755,7 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes (true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
@@ -810,7 +810,7 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (radius, selectedShadowLight->radius);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes (true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
@@ -833,7 +833,7 @@ void R_EditSelectedLight_f (void) {
 
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes (true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
@@ -847,7 +847,7 @@ void R_EditSelectedLight_f (void) {
 
 			UpdateLightBounds(selectedShadowLight);
 			R_MarkLightLeaves(selectedShadowLight);
-			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_DrawBspModelVolumes(true, selectedShadowLight);
 			R_AddLightInteraction(selectedShadowLight);
 		}
 		else
@@ -860,7 +860,7 @@ void R_EditSelectedLight_f (void) {
 			selectedShadowLight->fov[1] = atof(Cmd_Argv(3));
 			UpdateLightBounds(selectedShadowLight);
 			R_MarkLightLeaves(selectedShadowLight);
-			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_DrawBspModelVolumes(true, selectedShadowLight);
 			R_AddLightInteraction(selectedShadowLight);
 		}
 	else
@@ -995,7 +995,7 @@ void R_EditSelectedLight_f (void) {
 	}
 }
 
-qboolean flareEdit;
+bool flareEdit;
 
 void R_FlareEdit_f (void) {
 	int mode;
@@ -1011,9 +1011,9 @@ void R_FlareEdit_f (void) {
 	}
 	mode = atoi (Cmd_Argv (1));
 	if (mode > 0)
-		flareEdit = qtrue;
+		flareEdit = true;
 	else
-		flareEdit = qfalse;
+		flareEdit = false;
 }
 
 void R_ResetFlarePos_f (void) {
@@ -1062,7 +1062,7 @@ void R_MoveLightToRight_f (void) {
 		VectorCopy(lightOrg, selectedShadowLight->origin);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
 
@@ -1105,7 +1105,7 @@ void R_MoveLightForward_f (void) {
 		VectorCopy(lightOrg, selectedShadowLight->origin);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
 
@@ -1149,7 +1149,7 @@ void R_MoveLightUpDown_f (void) {
 		VectorCopy(lightOrg, selectedShadowLight->origin);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);
 	}
 
@@ -1209,7 +1209,7 @@ void R_ChangeLightRadius_f (void) {
 		VectorCopy(rad, selectedShadowLight->radius);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 		R_AddLightInteraction(selectedShadowLight);		
 	}
 }
@@ -1292,47 +1292,46 @@ char buff16[128];
 char buff17[128];
 char buff18[128];
 
-void R_DrawCube(vec4_t v[8], vec3_t org, int size) {
+void R_DrawCube(vec3_t org, int size) {
 
-	VectorSet(v[0], org[0] - size, org[1] - size, org[2] + size);
-	VectorSet(v[1], org[0] + size, org[1] - size, org[2] + size);
-	VectorSet(v[2], org[0] + size, org[1] + size, org[2] + size);
-	VectorSet(v[3], org[0] - size, org[1] + size, org[2] + size);
+	VectorSet(tess3d.v[0].pos, org[0] - size, org[1] - size, org[2] + size);
+	VectorSet(tess3d.v[1].pos, org[0] + size, org[1] - size, org[2] + size);
+	VectorSet(tess3d.v[2].pos, org[0] + size, org[1] + size, org[2] + size);
+	VectorSet(tess3d.v[3].pos, org[0] - size, org[1] + size, org[2] + size);
 
-	VectorSet(v[4], org[0] - size, org[1] - size, org[2] - size);
-	VectorSet(v[5], org[0] + size, org[1] - size, org[2] - size);
-	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
-	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
-	
-	GL_BindVAO(vao.dynamicCube_verts);
-	GL_BindVBO(vbo.dynamicVbo);
+	VectorSet(tess3d.v[4].pos, org[0] - size, org[1] - size, org[2] - size);
+	VectorSet(tess3d.v[5].pos, org[0] + size, org[1] - size, org[2] - size);
+	VectorSet(tess3d.v[6].pos, org[0] + size, org[1] + size, org[2] - size);
+	VectorSet(tess3d.v[7].pos, org[0] - size, org[1] + size, org[2] - size);
+
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.cubeIbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, CUBE_VERTS * sizeof(vertex3d_t), &tess3d);
 
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
-
-//	GL_BindNullVAO();
-//	GL_BindNullVBO();
 }
 
-void R_DrawLightBBox(vec4_t v[8], vec3_t org, vec3_t radius) {
+void R_DrawLightBBox(vec3_t org, vec3_t radius) {
 
-	VectorSet(v[0], org[0] - radius[0], org[1] - radius[1], org[2] + radius[2]);
-	VectorSet(v[1], org[0] + radius[0], org[1] - radius[1], org[2] + radius[2]);
-	VectorSet(v[2], org[0] + radius[0], org[1] + radius[1], org[2] + radius[2]);
-	VectorSet(v[3], org[0] - radius[0], org[1] + radius[1], org[2] + radius[2]);
+	VectorSet(tess3d.v[0].pos, org[0] - radius[0], org[1] - radius[1], org[2] + radius[2]);
+	VectorSet(tess3d.v[1].pos, org[0] + radius[0], org[1] - radius[1], org[2] + radius[2]);
+	VectorSet(tess3d.v[2].pos, org[0] + radius[0], org[1] + radius[1], org[2] + radius[2]);
+	VectorSet(tess3d.v[3].pos, org[0] - radius[0], org[1] + radius[1], org[2] + radius[2]);
 
-	VectorSet(v[4], org[0] - radius[0], org[1] - radius[1], org[2] - radius[2]);
-	VectorSet(v[5], org[0] + radius[0], org[1] - radius[1], org[2] - radius[2]);
-	VectorSet(v[6], org[0] + radius[0], org[1] + radius[1], org[2] - radius[2]);
-	VectorSet(v[7], org[0] - radius[0], org[1] + radius[1], org[2] - radius[2]);
+	VectorSet(tess3d.v[4].pos, org[0] - radius[0], org[1] - radius[1], org[2] - radius[2]);
+	VectorSet(tess3d.v[5].pos, org[0] + radius[0], org[1] - radius[1], org[2] - radius[2]);
+	VectorSet(tess3d.v[6].pos, org[0] + radius[0], org[1] + radius[1], org[2] - radius[2]);
+	VectorSet(tess3d.v[7].pos, org[0] - radius[0], org[1] + radius[1], org[2] - radius[2]);
 
-	GL_BindVAO(vao.dynamicCube_verts);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.cubeIbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, CUBE_VERTS * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, CUBE_VERTS * sizeof(vertex3d_t), &tess3d);
 
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 }
@@ -1371,7 +1370,7 @@ void UpdateLightEditor(void) {
 	headNode = CM_HeadnodeForBox(mins, maxs);
 	VectorMA(r_origin, 1024, v_forward, end_trace);
 
-	trace_bsp = CL_PMTraceWorld(r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID, qfalse); //bsp collision with bmodels
+	trace_bsp = CL_PMTraceWorld(r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID, false); //bsp collision with bmodels
 
 	// light in focus?
 	trace_light = CM_TransformedBoxTrace(r_origin, trace_bsp.endpos, vec3_origin, vec3_origin, headNode, MASK_ALL,
@@ -1385,11 +1384,11 @@ void UpdateLightEditor(void) {
 	// setup program
 	GL_BindProgram(colorProgram);
 	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	if (currentShadowLight != selectedShadowLight) {
 		qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-		R_DrawCube(tess.position, currentShadowLight->origin, 5);
+		R_DrawCube(currentShadowLight->origin, 5);
 	}
 
 	if (selectedShadowLight) {
@@ -1435,7 +1434,7 @@ void UpdateLightEditor(void) {
 
 		VectorCopy(selectedShadowLight->origin, tmpOrg);
 		VectorCopy(selectedShadowLight->radius, tmpRad);
-		R_DrawLightBBox(tess.position, tmpOrg, tmpRad);
+		R_DrawLightBBox(tmpOrg, tmpRad);
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		
@@ -1443,7 +1442,7 @@ void UpdateLightEditor(void) {
 
 			VectorCopy(selectedShadowLight->origin, tmpOrg);
 			qglUniform4f(U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
-			R_DrawCube(tess.position, tmpOrg, 3);
+			R_DrawCube(tmpOrg, 3);
 		}
 	}
 
@@ -1481,7 +1480,7 @@ void CreateNormal (vec3_t dst, vec3_t xyz0, vec3_t xyz1, vec3_t xyz2) {
 }
 
 
-void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
+void MakeFrustum4Light (worldShadowLight_t *light, bool ingame) {
 	vec3_t		v0, v1, v2, v3, v4;
 	vec3_t		forward, right, up;
 	vec3_t		angles, rspeed;
@@ -1612,11 +1611,11 @@ void Frustum_SetupPerspective(frustum_t *frustum, vec3_t origin,  mat3_t axis, f
 }
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style,
-	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
-	int isShadow, int isAmbient, qboolean ingame,
+	int filter, vec3_t angles, vec3_t speed, bool isStatic,
+	int isShadow, int isAmbient, bool ingame,
 	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
 	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad, 
-	qboolean proj, float fovX, float fovY, float distance) {
+	bool proj, float fovX, float fovY, float distance) {
 
 	worldShadowLight_t	*light;
 	int					i;
@@ -1657,9 +1656,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	VectorCopy (flareOrg, light->flareOrigin);
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
-		light->spherical = qtrue;
+		light->spherical = true;
 	else
-		light->spherical = qfalse;
+		light->spherical = false;
 
 	light->projector = proj;
 	light->distance = distance;
@@ -1708,7 +1707,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 
 	if (ingame) { // new light
 		R_MarkLightLeaves(light);
-		R_DrawBspModelVolumes(qtrue, light);
+		R_DrawBspModelVolumes(true, light);
 		R_AddLightInteraction(light);
 	}
 
@@ -1723,7 +1722,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	if (light->projector) {
 		float scale;
 
-		light->spherical = qfalse;
+		light->spherical = false;
 		light->hotSpot = 0.8f;
 		light->coneExp = 1.f;
 
@@ -1839,7 +1838,7 @@ void Load_BspLights () {
 	int addLight, style, numlights, flag;
 	char *c, *token, key[256], *value = {0}, target[MAX_QPATH];
 	float color[3], origin[3], radius[3], cone;
-	qboolean proj = qfalse;
+	bool proj = false;
 
 	if (!loadmodel) {
 		Com_Printf ("No map loaded.\n");
@@ -1862,7 +1861,7 @@ void Load_BspLights () {
 		cone = 0;
 		flag = 0;
 
-		addLight = qfalse;
+		addLight = false;
 
 		while (1) {
 			token = COM_Parse (&c);
@@ -1874,12 +1873,12 @@ void Load_BspLights () {
 			value = COM_Parse (&c);
 			if (!Q_stricmp (key, "classname")) {
 				if (!Q_stricmp (value, "light"))
-					addLight = qtrue;
+					addLight = true;
 				if (!Q_stricmp (value, "light_mine1")) {
-					addLight = qtrue;
+					addLight = true;
 				}
 				if (!Q_stricmp (value, "light_mine2")) {
-					addLight = qtrue;
+					addLight = true;
 				}
 			}
 			if (!Q_stricmp (key, "light"))
@@ -1903,18 +1902,18 @@ void Load_BspLights () {
 			vec3_t occRad;
 			VectorScale(radius, 0.75, occRad);
 			if (cone)
-				proj = qtrue;
+				proj = true;
 			vec3_t angles;
 			VectorSet(angles, 0.0, 0.0, 0.0); //down
 
-			R_AddNewWorldLight (origin, color, radius, style, 0, angles, vec3_origin, qtrue, 1, 0, qfalse, 0, origin, 10.0, target, flag, 0, 0.0, origin, occRad, proj, 45.0, 45.0, 1024.0);
+			R_AddNewWorldLight (origin, color, radius, style, 0, angles, vec3_origin, true, 1, 0, false, 0, origin, 10.0, target, flag, 0, 0.0, origin, occRad, proj, 45.0, 45.0, 1024.0);
 			numlights++;
 		}
 	}
 	Com_Printf (""S_COLOR_MAGENTA"Loaded "S_COLOR_GREEN"%i"S_COLOR_WHITE" bsp lights\n", numlights);
 
 }
-extern qboolean cleanAmbientMap;
+extern bool cleanAmbientMap;
 
 void Load_LightFile () {
 
@@ -2035,7 +2034,7 @@ void Load_LightFile () {
 		if (cleanAmbientMap && ambient == 1)
 			continue;
 		
-		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, qfalse, flare, fOrg, fSize, target, flag, fogLight, fogDensity, occOrg, occRad, projector, fov[0], fov[1], dist);
+		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, true, shadow, ambient, false, flare, fOrg, fSize, target, flag, fogLight, fogDensity, occOrg, occRad, projector, fov[0], fov[1], dist);
 		numLights++;
 	}
 	Com_Printf (""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -2049,7 +2048,7 @@ Marks nodes from the light, this is used for
 gross culling during svbsp creation.
 ===============
 */
-qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
+bool R_MarkLightLeaves (worldShadowLight_t *light) {
 	int contents, leafnum, cluster;
 	static int	leafs[MAX_MAP_LEAFS];
 	int		i, count;
@@ -2070,7 +2069,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 
 	if (!light->area) {
 	skip:	Com_DPrintf ("Out of BSP, rejected light at %i %i %i\n", (int)light->origin[0], (int)light->origin[1], (int)light->origin[2]);
-		return qfalse;
+		return false;
 	}
 
 	// build vis-data
@@ -2096,24 +2095,24 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 	for (i = 0; i < ((r_worldmodel->numLeafs + 31) >> 5); i++)
 		((long *)light->vis)[i] &= ((long *)vis)[i];
 
-	return qtrue;
+	return true;
 }
-extern qboolean cinServer;
+extern bool cinServer;
 
-qboolean InLightVISEntity () {
+bool InLightVISEntity () {
 	static int	leafs[MAX_MAP_LEAFS];
 	int		i, count;
 	int		longs;
 	vec3_t	mins, maxs;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return qtrue;
+		return true;
 	
 	if (cinServer)
-		return qtrue;
+		return true;
 
 	if (!r_worldmodel)
-		return qfalse;
+		return false;
 	
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
@@ -2149,8 +2148,8 @@ int lightSurfSort(const msurface_t** a, const msurface_t** b)
 		(((*b)->texInfo->albedo->texnum) + ((*b)->flags));
 }
 
-void R_MarkLightCasting(mnode_t *node, qboolean precalc, worldShadowLight_t *light);
-void R_MarkLightCastingRA(mnode_t* node, qboolean precalc, worldShadowLight_t* light);
+void R_MarkLightCasting(mnode_t *node, bool precalc, worldShadowLight_t *light);
+void R_MarkLightCastingRA(mnode_t* node, bool precalc, worldShadowLight_t* light);
 
 void R_AddLightInteraction(worldShadowLight_t *light) {
 
@@ -2160,12 +2159,12 @@ void R_AddLightInteraction(worldShadowLight_t *light) {
 	r_lightTimestamp++;
 	light->numInteractionSurfs = 0; // set to zero for ingame editor
 	
-	R_MarkLightCasting(r_worldmodel->nodes, qtrue, light);
+	R_MarkLightCasting(r_worldmodel->nodes, true, light);
 	qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
 
 	r_lightTimestampRA++;
 	light->numInteractionSurfsRA = 0;
-	R_MarkLightCastingRA(r_worldmodel->nodes, qtrue, light);
+	R_MarkLightCastingRA(r_worldmodel->nodes, true, light);
 	qsort(light->interactionRA, light->numInteractionSurfsRA, sizeof(msurface_t*), (int(*)(const void*, const void*))lightSurfSort);
 }
 
@@ -2178,7 +2177,7 @@ void R_CalcStaticLightInteraction (void) {
 		if (!R_MarkLightLeaves (light)) // out of bsp or no area data
 			continue;
 
-		R_DrawBspModelVolumes(qtrue, light);
+		R_DrawBspModelVolumes(true, light);
 		R_AddLightInteraction(light);
 	}
 
@@ -2220,7 +2219,7 @@ R_CalcCubeMapMatrix
 Loads the current matrix with a tranformation used for light filters
 =============
 */
-void R_CalcCubeMapMatrix (qboolean model) {
+void R_CalcCubeMapMatrix (bool model) {
 	float   a, b, c;
 	mat4_t  m;
 
@@ -2307,7 +2306,7 @@ static void R_ClipLightPlane (const mat4_t mvpMatrix, vec3_t mins, vec3_t maxs, 
 	vec3_t	clipped[MAX_LIGHT_PLANE_VERTICES];
 	float	dists[MAX_LIGHT_PLANE_VERTICES];
 	int		sides[MAX_LIGHT_PLANE_VERTICES];
-	qboolean	front, back;
+	bool	front, back;
 	vec4_t	in, out;
 	vec3_t	point;
 	float	scale;
@@ -2336,24 +2335,24 @@ static void R_ClipLightPlane (const mat4_t mvpMatrix, vec3_t mins, vec3_t maxs, 
 	}
 
 	if (numPoints > MAX_LIGHT_PLANE_VERTICES - 2)
-		Com_Error (qfalse, "R_ClipLightPlane: MAX_LIGHT_PLANE_VERTICES hit");
+		Com_Error (false, "R_ClipLightPlane: MAX_LIGHT_PLANE_VERTICES hit");
 
 	// determine sides for each point
-	front = qfalse;
-	back = qfalse;
+	front = false;
+	back = false;
 
 	for (i = 0; i < numPoints; i++) {
 		dists[i] = DotProduct (points[i], frustum[stage].normal) - frustum[stage].dist;
 
 		if (dists[i] > ON_EPSILON) {
 			sides[i] = SIDE_FRONT;
-			front = qtrue;
+			front = true;
 			continue;
 		}
 
 		if (dists[i] < -ON_EPSILON) {
 			sides[i] = SIDE_BACK;
-			back = qtrue;
+			back = true;
 			continue;
 		}
 
@@ -2552,40 +2551,39 @@ void R_DrawLightFlare () {
 
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
 	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float*)r_newrefdef.modelViewMatrix);
 
-	VA_SetElem3(tess.position[0],	currentShadowLight->flareOrigin[0] - vright[0] * dist - vup[0] * dist,
+	VA_SetElem3(tess3d.v[0].pos,	currentShadowLight->flareOrigin[0] - vright[0] * dist - vup[0] * dist,
 									currentShadowLight->flareOrigin[1] - vright[1] * dist - vup[1] * dist,
 									currentShadowLight->flareOrigin[2] - vright[2] * dist - vup[2] * dist);
 
-	VA_SetElem3(tess.position[1],	currentShadowLight->flareOrigin[0] - vright[0] * dist + vup[0] * dist,
+	VA_SetElem3(tess3d.v[1].pos,	currentShadowLight->flareOrigin[0] - vright[0] * dist + vup[0] * dist,
 									currentShadowLight->flareOrigin[1] - vright[1] * dist + vup[1] * dist,
 									currentShadowLight->flareOrigin[2] - vright[2] * dist + vup[2] * dist);
 
-	VA_SetElem3(tess.position[2],	currentShadowLight->flareOrigin[0] + vright[0] * dist + vup[0] * dist,
+	VA_SetElem3(tess3d.v[2].pos,	currentShadowLight->flareOrigin[0] + vright[0] * dist + vup[0] * dist,
 									currentShadowLight->flareOrigin[1] + vright[1] * dist + vup[1] * dist,
 									currentShadowLight->flareOrigin[2] + vright[2] * dist + vup[2] * dist);
 
-	VA_SetElem3(tess.position[3],	currentShadowLight->flareOrigin[0] + vright[0] * dist - vup[0] * dist,
+	VA_SetElem3(tess3d.v[3].pos,	currentShadowLight->flareOrigin[0] + vright[0] * dist - vup[0] * dist,
 									currentShadowLight->flareOrigin[1] + vright[1] * dist - vup[1] * dist,
 									currentShadowLight->flareOrigin[2] + vright[2] * dist - vup[2] * dist);
 
-	VA_SetElem2(tess.texCoord[0], 0, 1);
-	VA_SetElem2(tess.texCoord[1], 0, 0);
-	VA_SetElem2(tess.texCoord[2], 1, 0);
-	VA_SetElem2(tess.texCoord[3], 1, 1);
-	
-	for (i = 0; i < 4; i++)
-		VA_SetElem4(tess.color[i], color[0], color[1], color[2], 1.0);
+	VA_SetElem2(tess3d.v[0].tc, 0, 1);
+	VA_SetElem2(tess3d.v[1].tc, 0, 0);
+	VA_SetElem2(tess3d.v[2].tc, 1, 0);
+	VA_SetElem2(tess3d.v[3].tc, 1, 1);
 
-	GL_BindVAO(vao.tessStreamVaoQuad);
-	GL_BindVBO(vbo.dynamicVbo);
+	for (i = 0; i < 4; i++)
+		VA_SetElem4(tess3d.v[i].color, color[0], color[1], color[2], 1.0);
+
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.quadIbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	QUAD_INDICES * sizeof(vec4_t), tess.position);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	QUAD_INDICES * sizeof(vec2_t), tess.texCoord);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		QUAD_INDICES * sizeof(vec4_t), tess.color);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, QUAD_INDICES * sizeof(vertex3d_t), &tess3d);
 
 	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
 
@@ -2620,27 +2618,28 @@ void R_LightFlareOutLine() { //flare editing highlights
 	GL_BindProgram(colorProgram);
 	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
 	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	
 	// draw light to flare connector
 	GL_Enable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
-	VA_SetElem3(tess.position[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
-	VA_SetElem3(tess.position[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
+	VA_SetElem3(tess3d.v[0].pos, currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
+	VA_SetElem3(tess3d.v[1].pos, currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
 
-	GL_BindVAO(vao.drawLine);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.twoPointLineIbo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position, 2 * sizeof(vec4_t), tess.position);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, 2 * sizeof(vertex3d_t), &tess3d);
 	GL_DrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, NULL);
 
 	GL_Disable(GL_LINE_SMOOTH);
 
 	// draw center of flare
 	VectorCopy(currentShadowLight->flareOrigin, tmpOrg);
-	R_DrawCube(tess.position, tmpOrg, 1);
+	R_DrawCube(tmpOrg, 1);
 
 	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
@@ -2680,10 +2679,10 @@ void R_DrawLightBounds(void) {
 	GL_BindProgram(colorProgram);
 	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
 	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
-	R_DrawCube(tess.position, tmpOrg, 5);
+	R_DrawCube(tmpOrg, 5);
 
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
@@ -2701,7 +2700,7 @@ void R_DrawLightBounds(void) {
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 }
 
-qboolean R_AliasInLightBound() {
+bool R_AliasInLightBound() {
 
 	vec3_t mins, maxs;
 	int i;
@@ -2721,24 +2720,24 @@ qboolean R_AliasInLightBound() {
 	if (currentShadowLight->projector) {
 
 		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
-			return qfalse;
+			return false;
 
 	}
 	else if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-			return qfalse;
+			return false;
 	}
 	else {
 
 		if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
-			return qfalse;
+			return false;
 	}
 
 	if (!InLightVISEntity())
-		return qfalse;
+		return false;
 
-	return qtrue;
+	return true;
 
 }
 
@@ -2761,13 +2760,13 @@ void R_UpdateLightAliasUniforms()
 							currentShadowLight->color[2] * r_hdrLightScale->value, 1.0);
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
-	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);//
+	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, false, (const float *)entAttenMatrix);//
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);//
+	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, false, (const float *)entSpotMatrix);//
 	qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);//
 
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);//
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float *)r_newrefdef.modelViewMatrix);//
 
 	if(r_blinnPhongLighting->integer)
 		qglUniform1i(U_PARAM_INT_0, 1);
@@ -2779,8 +2778,8 @@ void R_UpdateLightAliasUniforms()
 	else
 		qglUniform1i(U_SPOT_LIGHT, 0);
 
-	R_CalcCubeMapMatrix(qtrue);
-	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);//
+	R_CalcCubeMapMatrix(true);
+	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, false, (const float *)currentShadowLight->cubeMapMatrix);//
 
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);//
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);//
 }

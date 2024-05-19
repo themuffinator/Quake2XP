@@ -44,9 +44,9 @@ typedef struct {
 	server_state_t state;		// precache commands are only valid during 
 	// load
 
-	qboolean attractloop;		// running cinematics and demos for the
+	bool attractloop;		// running cinematics and demos for the
 	// local system only
-	qboolean loadgame;			// client begins should reuse existing
+	bool loadgame;			// client begins should reuse existing
 	// entity
 
 	unsigned time;				// always sv.framenum * 100 msec
@@ -65,7 +65,7 @@ typedef struct {
 
 	// demo server information
 	FILE *demofile;
-	qboolean timedemo;			// don't time sync
+	bool timedemo;			// don't time sync
 } server_t;
 
 #define EDICT_NUM(n) ((edict_t *)((byte *)ge->edicts + ge->edict_size*(n)))
@@ -161,7 +161,7 @@ typedef struct {
 
 
 typedef struct {
-	qboolean initialized;		// sv_init has completed
+	bool initialized;		// sv_init has completed
 	int realTime;				// always increasing, no clamping, etc
 
 	char mapcmd[MAX_TOKEN_CHARS];	// ie: *intro.cin+base 
@@ -218,7 +218,7 @@ extern cvar_t *net_compatibility;
 //
 // sv_main.c
 //
-void SV_FinalMessage (char *message, qboolean reconnect);
+void SV_FinalMessage (char *message, bool reconnect);
 void SV_DropClient (client_t * drop);
 
 int SV_ModelIndex (char *name);
@@ -242,7 +242,7 @@ void SV_ReLightMap_f (void);
 // sv_init.c
 //
 void SV_InitGame (void);
-void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame);
+void SV_Map (bool attractloop, char *levelstring, bool loadgame);
 
 
 //

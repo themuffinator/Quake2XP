@@ -32,7 +32,7 @@
 // --------
 
 // True if cURL is initialized.
-qboolean qcurlInitialized;
+bool qcurlInitialized;
 
 // Pointer to the dynamic library.
 static void *curlhandle;
@@ -64,7 +64,7 @@ CURLMcode (*qcurl_multi_remove_handle)(CURLM *multi_handle, CURL *curl_handle);
  * Load libcurl, connect the function pointer
  * and call cURLs global init function.
  */
-qboolean qcurlInit(void)
+bool qcurlInit(void)
 {
 	Com_Printf("\n=========== " S_COLOR_YELLOW "Curl Initialization" S_COLOR_WHITE " ===========\n");
 
@@ -163,19 +163,19 @@ qboolean qcurlInit(void)
 
 	// And finally the global cURL initialization.
 	qcurl_global_init(CURL_GLOBAL_NOTHING);
-	qcurlInitialized = qtrue;
+	qcurlInitialized = true;
 	Com_Printf("Curl Version: " S_COLOR_GREEN "%s\n", qcurl_version() );
 
 	Com_Printf("===========================================\n\n");
 
-	return qtrue;
+	return true;
 
 error:
 	qcurlShutdown();
 
 	Com_Printf("===========================================\n\n");
 
-	return qfalse;
+	return false;
 }
 
 /*
@@ -190,7 +190,7 @@ void qcurlShutdown(void)
 		Com_Printf("Shutting down curl.\n");
 
 		qcurl_global_cleanup();
-		qcurlInitialized = qfalse;
+		qcurlInitialized = false;
 	}
 
 	qcurl_easy_cleanup = NULL;

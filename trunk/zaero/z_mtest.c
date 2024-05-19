@@ -25,7 +25,7 @@ static vec3_t testItem_Size[2];
 gitem_t *testItem;
 edict_t *testItemDroped = NULL;
 int animUpto;
-qboolean testitemOriginMove = false;
+bool testitemOriginMove = false;
 float animSpeed = 1.0;
 
 
@@ -499,7 +499,7 @@ void InitTestItem(void)
 
 
 
-qboolean Pickup_TestItem (edict_t *ent, edict_t *other)
+bool Pickup_TestItem (edict_t *ent, edict_t *other)
 {
 	other->client->pers.inventory[ITEM_INDEX(ent->item)]++;
 

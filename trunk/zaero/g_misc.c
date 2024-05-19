@@ -970,7 +970,7 @@ void SP_func_explosive (edict_t *self)
 Large exploding box.  You can override its mass (100),
 health (80), and dmg (150).
 */
-qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink);
+bool SV_movestep (edict_t *ent, vec3_t move, bool relink);
 void barrel_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
 
 {

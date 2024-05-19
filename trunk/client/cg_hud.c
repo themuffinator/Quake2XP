@@ -263,7 +263,7 @@ void LoadHudEnts (void) {
 }
 
 extern cvar_t	*ui_hudModelScale;
-qboolean stopRotation, xatrix;
+bool stopRotation, xatrix;
 
 void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	refdef_t	refdef;
@@ -319,13 +319,13 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 		}
 		else {
 			entity.angles[1] = anglemod(cl.time / 16);
-			entity.angleMod = qtrue;
+			entity.angleMod = true;
 		}
 	}
 	else {
 
 		entity.angles[1] = anglemod(cl.time / 16);
-		entity.angleMod = qtrue;
+		entity.angleMod = true;
 	}
 
 	VectorNegate (center, entity.origin);
@@ -719,10 +719,10 @@ void SCR_ExecuteLayoutString3d (char *s) {
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_help")) {
-					stopRotation = qtrue;
+					stopRotation = true;
 					SCR_DrawHudModel(x, y - 24 * hud_sy, hudmodel.cl_hud_comp);
 				} else
-					stopRotation = qfalse;
+					stopRotation = false;
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_health3"))
@@ -928,11 +928,11 @@ void SCR_ExecuteLayoutString3d (char *s) {
 
 				if (!strcmp
 				(cl.configstrings[CS_IMAGES + value], "a_mslugs")) {
-					xatrix = qtrue;
+					xatrix = true;
 					SCR_DrawHudModel(x, y, hudmodel.cl_hud_mslugs);
 				}
 				else
-					xatrix = qfalse;
+					xatrix = false;
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "a_trap"))

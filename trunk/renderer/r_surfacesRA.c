@@ -33,11 +33,11 @@ int waterSurfSort(const msurface_t** a, const msurface_t** b) {
 msurface_t* interactionTranSurf[MAX_MAP_FACES/4];
 int			numInteractionTransSurfs;
 
-void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
+void R_AddAlphaSurceces(msurface_t* s, uint* indeces, bool update) {
 	int i;
 	uint numIndices;
 	float scroll = 0.0;
-	qboolean scrolling = qfalse;
+	bool scrolling = false;
 	int nv = s->polys->numVerts;
 
 	numIndices = *indeces;
@@ -50,7 +50,7 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 			if (scroll == 0.0)
 				scroll = -64.0;
 
-			scrolling = qtrue;
+			scrolling = true;
 			qglUniform1f(U_SCROLL, scroll);
 		}
 		else
@@ -76,7 +76,7 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 
 void R_DrawAlphaSurfaces() {
 	msurface_t* s;
-	qboolean	newTex;
+	bool	newTex;
 	float		ambientScale = max(r_lightmapScale->value, 0.33);
 	uint		oldTex = 0;
 	uint		numIndices = 0;
@@ -88,9 +88,9 @@ void R_DrawAlphaSurfaces() {
 	GL_SetBindlessTexture(U_TMU3, i_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, false, (const float*)r_newrefdef.projectionMatrix);
 
 	qglUniform1f(U_REFR_THICKNESS0, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
@@ -110,14 +110,14 @@ void R_DrawAlphaSurfaces() {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
 
-				R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.0, 1.0, glassProgram);
+				R_ShowTrisBSP(false, numIndices, 1.0, 0.0, 1.0, glassProgram);
 				numIndices = 0;
 			}
 			oldTex = s->texInfo->albedo->texnum;
-			newTex = qtrue;
+			newTex = true;
 		}
 		else
-			newTex = qfalse;
+			newTex = false;
 
 		R_AddAlphaSurceces(s, &numIndices, newTex);
 
@@ -125,7 +125,7 @@ void R_DrawAlphaSurfaces() {
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brushTris += numIndices / 3;
 
-			R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.0, 1.0, glassProgram);
+			R_ShowTrisBSP(false, numIndices, 1.0, 0.0, 1.0, glassProgram);
 			numIndices = 0;
 		}
 	}
@@ -133,17 +133,17 @@ void R_DrawAlphaSurfaces() {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brushTris += numIndices / 3;
 
-		R_ShowTrisBSP(qfalse, numIndices, 1.0, 0.0, 1.0, glassProgram);
+		R_ShowTrisBSP(false, numIndices, 1.0, 0.0, 1.0, glassProgram);
 		numIndices = 0;
 	}
 	numAlphaSurfaces = 0;
 }
 
-void R_AddWaterSurceces(msurface_t* s, uint* indeces, qboolean update) {
+void R_AddWaterSurceces(msurface_t* s, uint* indeces, bool update) {
 	int i;
 	uint numIndices;
 	float scroll = 0.0;
-	qboolean scrolling = qfalse;
+	bool scrolling = false;
 	int nv = s->polys->numVerts;
 
 	numIndices = *indeces;
@@ -164,10 +164,10 @@ void R_AddWaterSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	*indeces = numIndices;
 }
 
-void R_DrawWaterSurfaces(qboolean bmodel) {
+void R_DrawWaterSurfaces(bool bmodel) {
 	msurface_t* s;
 	float		ambientScale = max(r_lightmapScale->value, 0.33);
-	qboolean	newTex;
+	bool	newTex;
 	uint		oldTex = 0;
 	uint		numIndices = 0;
 
@@ -183,17 +183,17 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	if (!bmodel)
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	else
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)currententity->orMatrix);
 
 	if (r_newrefdef.rdflags & RDF_UNDERWATER)
 		qglUniform1i(U_WATER_MIRROR, 0);
 	else
 		qglUniform1i(U_WATER_MIRROR, 1);
 
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, false, (const float*)r_newrefdef.projectionMatrix);
 
 	qsort(r_reflectiveSurfaces, numReflectiveSurfaces, sizeof(msurface_t*), (int(*)(const void*, const void*))waterSurfSort);
 
@@ -210,10 +210,10 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 				numIndices = 0;
 			}
 			oldTex = s->texInfo->albedo->texnum;
-			newTex = qtrue;
+			newTex = true;
 		}
 		else
-			newTex = qfalse;
+			newTex = false;
 
 		R_AddWaterSurceces(s, &numIndices, newTex);
 
@@ -263,9 +263,9 @@ void R_DrawHeatHazeSurfaces() {
 	GL_SetBindlessTexture(U_TMU2, i_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, false, (const float*)r_newrefdef.projectionMatrix);
 
 	qglUniform1f(U_REFR_THICKNESS0, 50.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
@@ -291,7 +291,7 @@ void R_DrawHeatHazeSurfaces() {
 }
 
 
-void R_DrawSurfacesRA(qboolean bmodel) {
+void R_DrawSurfacesRA(bool bmodel) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -308,19 +308,19 @@ void R_DrawSurfacesRA(qboolean bmodel) {
 	R_DrawWaterSurfaces(bmodel);
 }
 
-qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t* light) {
+bool R_MarkLightSurfRA(msurface_t* surf, bool world, worldShadowLight_t* light) {
 	cplane_t* plane;
 	float		dist;
 	glpoly_t* poly;
 
 	if (!(surf->texInfo->flags & (SURF_TRANS66 | SURF_TRANS33)))
-		return qfalse;
+		return false;
 
 	plane = surf->plane;
 	poly = surf->polys;
 
 	if (poly->lightTimestampRA == r_lightTimestampRA)
-		return qfalse;
+		return false;
 
 	switch (plane->type)
 	{
@@ -339,7 +339,7 @@ qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t*
 	}
 
 	if (fabsf(dist) > light->maxRad)
-		return qfalse;
+		return false;
 
 	if (world)
 	{
@@ -361,18 +361,18 @@ qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t*
 		pbbox[5] = surf->maxs[2];
 
 		if (light->projector && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
-			return qfalse;
+			return false;
 
 		if (!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
-			return qfalse;
+			return false;
 	}
 
 	poly->lightTimestampRA = r_lightTimestampRA;
 
-	return qtrue;
+	return true;
 }
 
-void R_MarkLightCastingRA(mnode_t* node, qboolean precalc, worldShadowLight_t* light)
+void R_MarkLightCastingRA(mnode_t* node, bool precalc, worldShadowLight_t* light)
 {
 	cplane_t* plane;
 	float				dist;
@@ -396,7 +396,7 @@ void R_MarkLightCastingRA(mnode_t* node, qboolean precalc, worldShadowLight_t* l
 
 		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++) {
 
-			if (R_MarkLightSurfRA((*surf), qtrue, light)) {
+			if (R_MarkLightSurfRA((*surf), true, light)) {
 				if (!precalc)
 					interactionRA[numInteractionSurfsRA++] = (*surf);
 				else
@@ -424,11 +424,11 @@ void R_MarkLightCastingRA(mnode_t* node, qboolean precalc, worldShadowLight_t* l
 	R_MarkLightCastingRA(node->children[1], precalc, light);
 }
 
-void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
+void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, bool update) {
 	int i;
 	uint numIndices;
 	float scroll = 0.0;
-	qboolean scrolling = qfalse;
+	bool scrolling = false;
 	int nv = s->polys->numVerts;
 	float alpha, scale[2];
 
@@ -440,7 +440,7 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 		if (scroll == 0.0)
 			scroll = -64.0;
 
-		scrolling = qtrue;
+		scrolling = true;
 
 		qglUniform1f(U_SCROLL, scroll);
 	}
@@ -473,7 +473,7 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	*indeces = numIndices;
 }
 
-void R_UpdateLightRAuniforms(qboolean bModel){
+void R_UpdateLightRAuniforms(bool bModel){
 	mat4_t		entAttenMatrix,
 				entSpotMatrix;
 
@@ -490,18 +490,18 @@ void R_UpdateLightRAuniforms(qboolean bModel){
 		qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
 	if (!bModel) {
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
-		qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float*)currentShadowLight->attenMatrix);
-		qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float*)currentShadowLight->spotMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, false, (const float*)currentShadowLight->attenMatrix);
+		qglUniformMatrix4fv(U_SPOT_MATRIX, 1, false, (const float*)currentShadowLight->spotMatrix);
 	}
 	else {
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)currententity->orMatrix);
 
 		Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
-		qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float*)entAttenMatrix);
+		qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, false, (const float*)entAttenMatrix);
 
 		Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-		qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float*)entSpotMatrix);
+		qglUniformMatrix4fv(U_SPOT_MATRIX, 1, false, (const float*)entSpotMatrix);
 	}
 
 	qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
@@ -512,17 +512,17 @@ void R_UpdateLightRAuniforms(qboolean bModel){
 		qglUniform1i(U_SPOT_LIGHT, 0);
 
 	R_CalcCubeMapMatrix(bModel);
-	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float*)currentShadowLight->cubeMapMatrix);
+	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, false, (const float*)currentShadowLight->cubeMapMatrix);
 
 }
 void R_DrawLightAlphaSurfaces() {
 	msurface_t* s;
-	qboolean	newTex;
+	bool	newTex;
 	uint		oldTex = 0;
 	uint		oldFlag = 0;
 	uint		numIndices = 0;
 	
-	R_UpdateLightRAuniforms(qfalse);
+	R_UpdateLightRAuniforms(false);
 
 	for (int i = 0; i < currentShadowLight->numInteractionSurfsRA; i++) {
 
@@ -542,10 +542,10 @@ void R_DrawLightAlphaSurfaces() {
 			}
 			oldTex	= s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
-			newTex	= qtrue;
+			newTex	= true;
 		}
 		else
-			newTex = qfalse;
+			newTex = false;
 
 		R_AddLightAlphaSurceces(s, &numIndices, newTex);
 
@@ -563,10 +563,10 @@ void R_DrawLightAlphaSurfaces() {
 }
 
 
-void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
+void R_DrawLightAlphaSurfacesDynamic(bool bmodel, bool caustics) {
 	msurface_t* s;
 	glpoly_t*	poly;
-	qboolean	newTex;
+	bool	newTex;
 	uint		oldTex = 0;
 	uint		oldCaust = 0;
 	uint		oldFlag = 0;
@@ -596,10 +596,10 @@ void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
 			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
 			oldCaust = caustics;
-			newTex = qtrue;
+			newTex = true;
 		}
 		else
-			newTex = qfalse;
+			newTex = false;
 
 		R_AddLightAlphaSurceces(s, &numIndices, newTex);
 
@@ -623,9 +623,9 @@ void R_DrawLightRA(void){
 	else {
 		r_lightTimestampRA++;
 		numInteractionSurfsRA = 0;
-		R_MarkLightCastingRA(r_worldmodel->nodes, qfalse, currentShadowLight);
+		R_MarkLightCastingRA(r_worldmodel->nodes, false, currentShadowLight);
 		if (numInteractionSurfsRA > 0)
-			R_DrawLightAlphaSurfacesDynamic(qfalse, qfalse);
+			R_DrawLightAlphaSurfacesDynamic(false, false);
 	}
 
 }
@@ -640,7 +640,7 @@ void R_MarkLightBrushModelSurfacesRA(void) {
 
 	for (i = 0; i < clmodel->numModelSurfaces; i++, psurf++) {
 
-		if (R_MarkLightSurfRA(psurf, qfalse, currentShadowLight))
+		if (R_MarkLightSurfRA(psurf, false, currentShadowLight))
 			interactionRA[numInteractionSurfsRA++] = psurf;
 	}
 }
@@ -648,9 +648,9 @@ void R_MarkLightBrushModelSurfacesRA(void) {
 void R_DrawLightBrushModelRA(void) {
 	vec3_t		mins, maxs, org;
 	int			i;
-	qboolean	rotated;
+	bool	rotated;
 	vec3_t		tmp, oldLight;
-	qboolean	caustics;
+	bool	caustics;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -659,14 +659,14 @@ void R_DrawLightBrushModelRA(void) {
 		return;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = qtrue;
+		rotated = true;
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	}
 	else {
-		rotated = qfalse;
+		rotated = false;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -690,7 +690,7 @@ void R_DrawLightBrushModelRA(void) {
 	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
-	caustics = qfalse;
+	caustics = false;
 	currententity->minmax[0] = mins[0];
 	currententity->minmax[1] = mins[1];
 	currententity->minmax[2] = mins[2];
@@ -700,22 +700,22 @@ void R_DrawLightBrushModelRA(void) {
 
 	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
 	if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-		caustics = qtrue;
+		caustics = true;
 	else
 	{
 		VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
 		if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-			caustics = qtrue;
+			caustics = true;
 		else
 		{
 			VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
 			if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-				caustics = qtrue;
+				caustics = true;
 			else
 			{
 				VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
 				if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-					caustics = qtrue;
+					caustics = true;
 			}
 		}
 	}
@@ -726,7 +726,7 @@ void R_DrawLightBrushModelRA(void) {
 	R_MarkLightBrushModelSurfacesRA();
 
 	if (numInteractionSurfsRA > 0)
-		R_DrawLightAlphaSurfacesDynamic(qtrue, caustics);
+		R_DrawLightAlphaSurfacesDynamic(true, caustics);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 }
@@ -746,7 +746,7 @@ void R_DrawLightWorldRA(void){
 	
 	GL_BindVAO(vao.bsp);
 
-	R_PrepareShadowLightFrame(qfalse);
+	R_PrepareShadowLightFrame(false);
 
 	if (shadowLight_frame) {
 

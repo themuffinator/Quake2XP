@@ -131,13 +131,13 @@ void CL_ClipMoveToEntities (vec3_t start, vec3_t mins, vec3_t maxs,
 			trace.ent = (struct edict_s *) ent;
 			if (tr->startsolid) {
 				*tr = trace;
-				tr->startsolid = qtrue;
+				tr->startsolid = true;
 			}
 			else
 				*tr = trace;
 		}
 		else if (trace.startsolid)
-			tr->startsolid = qtrue;
+			tr->startsolid = true;
 	}
 }
 

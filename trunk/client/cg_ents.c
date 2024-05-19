@@ -534,9 +534,9 @@ void CL_ParseFrame (void) {
 	// the frame, but not use it, then ask for a non-compressed
 	// message
 	if (cl.frame.deltaframe <= 0) {
-		cl.frame.valid = qtrue;	// uncompressed frame
+		cl.frame.valid = true;	// uncompressed frame
 		old = NULL;
-		cls.demoWaiting = qfalse;	// we can start recording now
+		cls.demoWaiting = false;	// we can start recording now
 	}
 	else {
 		old = &cl.frames[cl.frame.deltaframe & UPDATE_MASK];
@@ -555,7 +555,7 @@ void CL_ParseFrame (void) {
 			Com_Printf ("Delta parse_entities too old.\n");
 		}
 		else
-			cl.frame.valid = qtrue;	// valid delta parse
+			cl.frame.valid = true;	// valid delta parse
 	}
 
 	// clamp time
@@ -591,7 +591,7 @@ void CL_ParseFrame (void) {
 		// getting a valid frame message ends the connection process
 		if (cls.state != ca_active) {
 			cls.state = ca_active;
-			cl.force_refdef = qtrue;
+			cl.force_refdef = true;
 			cl.predicted_origin[0] =
 				cl.frame.playerstate.pmove.origin[0] * 0.125;
 			cl.predicted_origin[1] =
@@ -604,7 +604,7 @@ void CL_ParseFrame (void) {
 				&& cl.refresh_prepped)
 				SCR_EndLoadingPlaque ();	// get rid of loading plaque
 		}
-		cl.sound_prepped = qtrue;	// can start mixing ambient sounds
+		cl.sound_prepped = true;	// can start mixing ambient sounds
 
 		// fire entity events
 		CL_FireEntityEvents (&cl.frame);
@@ -704,7 +704,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 	int autoanim;
 	clientinfo_t *ci;
 	unsigned int effects, renderfx;
-	qboolean predator = qfalse;
+	bool predator = false;
 	int dm_flag;
 	dm_flag = Cvar_VariableValue ("dmflags");
 
@@ -723,7 +723,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 		cent		= &cl_entities[s1->number];
 		effects		= s1->effects;
 		renderfx	= s1->renderfx;
-		qboolean	player_camera = qfalse;
+		bool	player_camera = false;
 
 		// set frame
 		if (effects & EF_ANIM01)
@@ -893,14 +893,14 @@ void CL_AddPacketEntities (frame_t * frame) {
 		else
 			ent.flags = renderfx;
 
-		ent.angleMod = qfalse;
+		ent.angleMod = false;
 
 		// calculate angles
 		if (effects & EF_ROTATE) {	// some bonus items auto-rotate
 			ent.angles[0] = 0;
 			ent.angles[1] = autorotate;
 			ent.angles[2] = 0;
-			ent.angleMod = qtrue;
+			ent.angleMod = true;
 			if (cl_itemsBobbing->integer) {
 				//bobbing items, q3 style
 				float scale = 0.005 + s1->number * 0.00001;
@@ -915,7 +915,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				ent.angles[0] = 0;
 				ent.angles[1] = anglemod(cl.time / 2) + s1->angles[1];
 				ent.angles[2] = 180;
-				ent.angleMod = qtrue;
+				ent.angleMod = true;
 				{
 					vec3_t forward;
 					vec3_t start;
@@ -930,7 +930,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				ent.angles[0] = 55.f * sinf(anglemod(cl.time * 0.001)) + s1->angles[0];
 				ent.angles[1] = s1->angles[1];
 				ent.angles[2] = s1->angles[2];
-				ent.angleMod = qtrue;
+				ent.angleMod = true;
 				
 				if (renderfx == RF_SELFSHADOW)
 					ent.flags = RF_SELFSHADOW;
@@ -1012,7 +1012,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 		// ***It's Me!!!!!!***//
 		if (s1->number == cl.playernum + 1) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
-			player_camera = qtrue;	// set filter for power shells and over
+			player_camera = true;	// set filter for power shells and over
 
 			// fix player shadow origin - restore original EGL code
 			if ((cl_predict->value) && !(cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION)) {
@@ -1483,9 +1483,9 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 		const float gun_up = -5.f;
 		trace_t trace;
 		static vec3_t mins = { -4, -4, -4 }, maxs = { 4, 4, 4 };
-		qboolean alias = qfalse;
+		bool alias = false;
 		if (cl_gunCollision->integer == 2)
-			alias = qtrue;
+			alias = true;
 
 		AngleVectors(cl.refdef.viewangles, view_dir, right_dir, up_dir);
 		VectorMA(gun.origin, gun_right, right_dir, gun_real_pos);

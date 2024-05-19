@@ -142,34 +142,34 @@ void Mat3_MultiplyVector(const mat3_t m, const vec3_t in, vec3_t out) {
 	out[2] = m[0][2] * in[0] + m[1][2] * in[1] + m[2][2] * in[2];
 }
 
-qboolean Mat3_Compare(const mat3_t a, const mat3_t b) {
+bool Mat3_Compare(const mat3_t a, const mat3_t b) {
 	int		i, j;
 
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 3; j++) {
 			if (a[i][j] != b[i][j])
-				return qfalse;
+				return false;
 		}
 	}
 
-	return qtrue;
+	return true;
 }
 
-qboolean Mat3_IsIdentity(const mat3_t mat) {
+bool Mat3_IsIdentity(const mat3_t mat) {
 	return Mat3_Compare(mat, mat3_identity);
 }
 
-qboolean Mat4_Compare(const mat4_t a, const mat4_t b) {
+bool Mat4_Compare(const mat4_t a, const mat4_t b) {
 	int		i, j;
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
 			if (a[i][j] != b[i][j])
-				return qfalse;
+				return false;
 		}
 	}
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -345,7 +345,7 @@ Mat4_Invert
 #define MATRIX_EPSILON				1e-6
 float Q_fabs (float f);
 
-qboolean Mat4_Invert (const mat4_t in, mat4_t out) {
+bool Mat4_Invert (const mat4_t in, mat4_t out) {
 	float	det2_01_01, det2_01_02, det2_01_03;
 	float	det2_01_12, det2_01_13, det2_01_23;
 
@@ -379,7 +379,7 @@ qboolean Mat4_Invert (const mat4_t in, mat4_t out) {
 	det = -det3_201_123 * in[3][0] + det3_201_023 * in[3][1] - det3_201_013 * in[3][2] + det3_201_012 * in[3][3];
 
 	if (Q_fabs (det) < MATRIX_INVERSE_EPSILON)
-		return qfalse;
+		return false;
 
 	invDet = 1.0f / det;
 
@@ -434,7 +434,7 @@ qboolean Mat4_Invert (const mat4_t in, mat4_t out) {
 	out[2][3] = -det3_201_013 * invDet;
 	out[3][3] = det3_201_012 * invDet;
 
-	return qtrue;
+	return true;
 }
 
 /*

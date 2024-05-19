@@ -164,10 +164,10 @@ void SV_Multicast (vec3_t origin, multicast_t to) {
 	byte *mask;
 	int leafnum, cluster;
 	int j;
-	qboolean reliable;
+	bool reliable;
 	int area1, area2;
 
-	reliable = qfalse;
+	reliable = false;
 
 	if (to != MULTICAST_ALL_R && to != MULTICAST_ALL) {
 		leafnum = CM_PointLeafnum (origin);
@@ -185,14 +185,14 @@ void SV_Multicast (vec3_t origin, multicast_t to) {
 
 	switch (to) {
 		case MULTICAST_ALL_R:
-			reliable = qtrue;		// intentional fallthrough
+			reliable = true;		// intentional fallthrough
 		case MULTICAST_ALL:
 			leafnum = 0;
 			mask = NULL;
 			break;
 
 		case MULTICAST_PHS_R:
-			reliable = qtrue;		// intentional fallthrough
+			reliable = true;		// intentional fallthrough
 		case MULTICAST_PHS:
 			leafnum = CM_PointLeafnum (origin);
 			cluster = CM_LeafCluster (leafnum);
@@ -200,7 +200,7 @@ void SV_Multicast (vec3_t origin, multicast_t to) {
 			break;
 
 		case MULTICAST_PVS_R:
-			reliable = qtrue;		// intentional fallthrough
+			reliable = true;		// intentional fallthrough
 		case MULTICAST_PVS:
 			leafnum = CM_PointLeafnum (origin);
 			cluster = CM_LeafCluster (leafnum);
@@ -275,7 +275,7 @@ void SV_StartSound (vec3_t origin, edict_t * entity, int channel,
 	int i;
 	int ent;
 	vec3_t origin_v;
-	qboolean use_phs;
+	bool use_phs;
 
 	if (volume < 0 || volume > 1.0)
 		Com_Error (ERR_FATAL, "SV_StartSound: volume = %f", volume);
@@ -294,11 +294,11 @@ void SV_StartSound (vec3_t origin, edict_t * entity, int channel,
 
 	if (channel & 8)			// no PHS flag
 	{
-		use_phs = qfalse;
+		use_phs = false;
 		channel &= 7;
 	}
 	else
-		use_phs = qtrue;
+		use_phs = true;
 
 	sendchan = (ent << 3) | (channel & 7);
 
@@ -355,7 +355,7 @@ void SV_StartSound (vec3_t origin, edict_t * entity, int channel,
 	// if the sound doesn't attenuate,send it to everyone
 	// (global radio chatter, voiceovers, etc)
 	if (attenuation == ATTN_NONE)
-		use_phs = qfalse;
+		use_phs = false;
 
 	if (channel & CHAN_RELIABLE) {
 		if (use_phs)
@@ -387,14 +387,14 @@ FRAME UPDATES
 SV_SendClientDatagram
 =======================
 */
-qboolean SV_SendClientDatagram (client_t * client) {
+bool SV_SendClientDatagram (client_t * client) {
 	byte msg_buf[MAX_MSGLEN];
 	sizebuf_t msg;
 
 	SV_BuildClientFrame (client);
 
 	SZ_Init (&msg, msg_buf, sizeof(msg_buf));
-	msg.allowoverflow = qtrue;
+	msg.allowoverflow = true;
 
 	// send over all the relevant entity_state_t
 	// and the player_state_t
@@ -421,7 +421,7 @@ qboolean SV_SendClientDatagram (client_t * client) {
 	// record the size for rate estimation
 	client->message_size[sv.framenum % RATE_MESSAGES] = msg.cursize;
 
-	return qtrue;
+	return true;
 }
 
 
@@ -440,17 +440,17 @@ void SV_DemoCompleted (void) {
 =======================
 SV_RateDrop
 
-Returns qtrue if the client is over its current
+Returns true if the client is over its current
 bandwidth estimation and should not be sent another packet
 =======================
 */
-qboolean SV_RateDrop (client_t * c) {
+bool SV_RateDrop (client_t * c) {
 	int total;
 	int i;
 
 	// never drop over the loopback
 	if (c->netchan.remote_address.type == NA_LOOPBACK)
-		return qfalse;
+		return false;
 
 	total = 0;
 
@@ -461,10 +461,10 @@ qboolean SV_RateDrop (client_t * c) {
 	if (total > c->rate) {
 		c->surpressCount++;
 		c->message_size[sv.framenum % RATE_MESSAGES] = 0;
-		return qtrue;
+		return true;
 	}
 
-	return qfalse;
+	return false;
 }
 
 /*

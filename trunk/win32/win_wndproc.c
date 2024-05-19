@@ -51,7 +51,7 @@ cvar_t	*r_fullScreen;
 viddef_t	viddef;				// global video state; used by other modules
 //extern viddef_t	vid;				// global video state; used by other modules
 
-qboolean	reflib_active = 0;
+bool	reflib_active = 0;
 
 HWND        cl_hwnd;            // Main window handle for life of program
 
@@ -59,7 +59,7 @@ HWND        cl_hwnd;            // Main window handle for life of program
 
 LONG WINAPI MainWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-static qboolean s_alttab_disabled;
+static bool s_alttab_disabled;
 
 extern	unsigned	sys_msg_time;
 
@@ -75,14 +75,14 @@ static void WIN_DisableAltTab (void) {
 
 	SystemParametersInfo (SPI_SCREENSAVERRUNNING, 1, &old, 0);
 	
-	s_alttab_disabled = qtrue;
+	s_alttab_disabled = true;
 }
 
 static void WIN_EnableAltTab (void) {
 	if (s_alttab_disabled) {
 			BOOL old;
 			SystemParametersInfo (SPI_SCREENSAVERRUNNING, 0, &old, 0);
-			s_alttab_disabled = qfalse;
+			s_alttab_disabled = false;
 	}
 }
 
@@ -98,7 +98,7 @@ DLL GLUE
 void Con_Printf (int print_level, char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-	static qboolean	inupdate;
+	static bool	inupdate;
 
 	va_start (argptr, fmt);
 	vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -120,7 +120,7 @@ void Con_Printf (int print_level, char *fmt, ...) {
 void VID_Error (int err_level, char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-	static qboolean	inupdate;
+	static bool	inupdate;
 
 	va_start (argptr, fmt);
 	vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -163,13 +163,13 @@ Map from windows to quake keynums
 int MapKey (int key) {
 	int result;
 	int modified = (key >> 16) & 255;
-	qboolean is_extended = qfalse;
+	bool is_extended = false;
 
 	if (modified > 127)
 		return 0;
 
 	if (key & (1 << 24))
-		is_extended = qtrue;
+		is_extended = true;
 
 	result = scantokey[modified];
 
@@ -222,8 +222,8 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 	// we don't want to act like we're active if we're minimized
 	// minimize/restore mouse-capture on demand
 	if (!fActive || Minimized) {
-		ActiveApp = qfalse;
-		IN_Activate (qfalse);
+		ActiveApp = false;
+		IN_Activate (false);
 		Music_Pause ();
 		if (win_noalttab->integer) {
 			WIN_EnableAltTab ();
@@ -231,8 +231,8 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 		if (alConfig.hALC) alcSuspendContext (alConfig.hALC); //willow: Have no success??
 	}
 	else {
-		ActiveApp = qtrue;
-		IN_Activate (qtrue);
+		ActiveApp = true;
+		IN_Activate (true);
 		Music_Resume ();
 		if (win_noalttab->integer) {
 			WIN_DisableAltTab ();
@@ -262,7 +262,7 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern cvar_t	*m_inversion;
 
-extern qboolean mouseactive;
+extern bool mouseactive;
 
 /*
 ====================
@@ -326,33 +326,33 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 						if (raw->data.mouse.usButtonFlags)
 						{
 							//RI_MOUSE_LEFT_BUTTON
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN) Key_Event(K_MOUSE1, qtrue, sys_msg_time);
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_UP) Key_Event(K_MOUSE1, qfalse, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN) Key_Event(K_MOUSE1, true, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_UP) Key_Event(K_MOUSE1, false, sys_msg_time);
 							//RI_MOUSE_RIGHT_BUTTON
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN) Key_Event(K_MOUSE2, qtrue, sys_msg_time);
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_UP) Key_Event(K_MOUSE2, qfalse, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN) Key_Event(K_MOUSE2, true, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_UP) Key_Event(K_MOUSE2, false, sys_msg_time);
 							//RI_MOUSE_MIDDLE_BUTTON
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN) Key_Event(K_MOUSE3, qtrue, sys_msg_time);
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_UP) Key_Event(K_MOUSE3, qfalse, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN) Key_Event(K_MOUSE3, true, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_UP) Key_Event(K_MOUSE3, false, sys_msg_time);
 							//RI_MOUSE_BUTTON_4
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) Key_Event(K_MOUSE4, qtrue, sys_msg_time);
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) Key_Event(K_MOUSE4, qfalse, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) Key_Event(K_MOUSE4, true, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) Key_Event(K_MOUSE4, false, sys_msg_time);
 							//RI_MOUSE_BUTTON_5
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) Key_Event(K_MOUSE5, qtrue, sys_msg_time);
-							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) Key_Event(K_MOUSE5, qfalse, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) Key_Event(K_MOUSE5, true, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) Key_Event(K_MOUSE5, false, sys_msg_time);
 							//RI_MOUSE_WHEEL
 							if (raw->data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
 							{
 								int i = (short)raw->data.mouse.usButtonData; //wheel delta, signed
 								if (i < 0)
 								{
-									Key_Event(K_MWHEELDOWN, qtrue, sys_msg_time);
-									Key_Event(K_MWHEELDOWN, qfalse, sys_msg_time);
+									Key_Event(K_MWHEELDOWN, true, sys_msg_time);
+									Key_Event(K_MWHEELDOWN, false, sys_msg_time);
 								}
 								else if (i > 0)
 								{
-									Key_Event(K_MWHEELUP, qtrue, sys_msg_time);
-									Key_Event(K_MWHEELUP, qfalse, sys_msg_time);
+									Key_Event(K_MWHEELUP, true, sys_msg_time);
+									Key_Event(K_MWHEELUP, false, sys_msg_time);
 								}
 							}
 						}
@@ -388,11 +388,11 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 		}
 		// fall through
 	case WM_KEYDOWN:
-		Key_Event(MapKey(lParam), qtrue, sys_msg_time);
+		Key_Event(MapKey(lParam), true, sys_msg_time);
 		break;
 	case WM_SYSKEYUP:
 	case WM_KEYUP:
-		Key_Event(MapKey(lParam), qfalse, sys_msg_time);
+		Key_Event(MapKey(lParam), false, sys_msg_time);
 		break;
 	case WM_HOTKEY:
 		return 0;
@@ -406,8 +406,8 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 	case WM_ACTIVATE:
 	{
 		// KJB: Watch this for problems in fullscreen modes with Alt-tabbing.
-		qboolean fActive = LOWORD(wParam);
-		qboolean fMinimized = (BOOL)HIWORD(wParam);
+		bool fActive = LOWORD(wParam);
+		bool fMinimized = (BOOL)HIWORD(wParam);
 		AppActivate(fActive != WA_INACTIVE, fMinimized);
 		if (reflib_active)
 			GLimp_AppActivate(!(fActive == WA_INACTIVE));
@@ -430,10 +430,10 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 
 			Cvar_SetValue("vid_xpos", xPos + r.left);
 			Cvar_SetValue("vid_ypos", yPos + r.top);
-			vid_xpos->modified = qfalse;
-			vid_ypos->modified = qfalse;
+			vid_xpos->modified = false;
+			vid_ypos->modified = false;
 			if (ActiveApp)
-				IN_Activate(qtrue);
+				IN_Activate(true);
 		}
 		break;
 	case WM_SYSCOMMAND:
@@ -496,7 +496,7 @@ cause the entire video mode and refresh DLL to be reset on the next frame.
 ============
 */
 void VID_Restart_f (void) {
-	vid_ref->modified = qtrue;
+	vid_ref->modified = true;
 }
 
 void VID_Front_f (void) {
@@ -533,12 +533,12 @@ void VID_NewWindow (int width, int height) {
 	viddef.width = width;
 	viddef.height = height;
 
-	cl.force_refdef = qtrue;		// can't use a paused refdef
+	cl.force_refdef = true;		// can't use a paused refdef
 }
 
 void VID_FreeReflib (void) {
 	//	memset (&re, 0, sizeof(re));
-	reflib_active = qfalse;
+	reflib_active = false;
 }
 
 /*
@@ -548,7 +548,7 @@ VID_StartRefresh
 */
 
 #include "../renderer/r_local.h"
-qboolean VID_StartRefresh (void) {
+bool VID_StartRefresh (void) {
 
 	if (reflib_active) {
 		R_Shutdown ();
@@ -560,10 +560,10 @@ qboolean VID_StartRefresh (void) {
 	if (R_Init (global_hInstance, MainWndProc) == -1) {
 		R_Shutdown ();
 		VID_FreeReflib ();
-		return qfalse;
+		return false;
 	}
-	reflib_active = qtrue;
-	return qtrue;
+	reflib_active = true;
+	return true;
 }
 
 /*
@@ -584,12 +584,12 @@ void VID_CheckChanges (void) {
 		else {
 			WIN_EnableAltTab ();
 		}
-		win_noalttab->modified = qfalse;
+		win_noalttab->modified = false;
 	}
 
 	/*	if ( vid_ref->modified )
 		{
-		cl.force_refdef = qtrue;		// can't use a paused refdef
+		cl.force_refdef = true;		// can't use a paused refdef
 		S_StopAllSounds();
 		}
 		*/
@@ -598,19 +598,19 @@ void VID_CheckChanges (void) {
 		** refresh has changed
 		*/
 
-		cl.force_refdef = qtrue;		// can't use a paused refdef
+		cl.force_refdef = true;		// can't use a paused refdef
 		S_StopAllSounds ();
 
-		vid_ref->modified = qfalse;
-		r_fullScreen->modified = qtrue;
-		cl.refresh_prepped = qfalse;
-		cls.disableScreen = qtrue;
+		vid_ref->modified = false;
+		r_fullScreen->modified = true;
+		cl.refresh_prepped = false;
+		cls.disableScreen = true;
 		CL_ClearDecals ();
 
 		if (!VID_StartRefresh ())
 			Com_Error (ERR_FATAL, "Error during initialization video");
 
-		cls.disableScreen = qfalse;
+		cls.disableScreen = false;
 	
 		int		start = 0, stop = 0;
 		float	sec;
@@ -634,8 +634,8 @@ void VID_CheckChanges (void) {
 		if (!r_fullScreen->integer)
 			VID_UpdateWindowPosAndSize (vid_xpos->integer, vid_ypos->integer);
 
-		vid_xpos->modified = qfalse;
-		vid_ypos->modified = qfalse;
+		vid_xpos->modified = false;
+		vid_ypos->modified = false;
 	}
 }
 

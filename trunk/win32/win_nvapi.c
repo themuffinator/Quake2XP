@@ -161,7 +161,7 @@ void NvApi_GetDisplayInfo() {
 	}
 }
 
-void NvApi_SetUhdDisplays(qboolean enableHDR){
+void NvApi_SetUhdDisplays(bool enableHDR){
 
 	NvAPI_Status ret = NVAPI_OK;
 	NvAPI_ShortString string;
@@ -214,11 +214,11 @@ void NvApi_SetUhdDisplays(qboolean enableHDR){
 						continue;
 					}
 					if(enableHDR)
-						gl_config.hdrDisplay = qtrue;
+						gl_config.hdrDisplay = true;
 				}
 				else {
 					Com_Printf(">%d: " S_COLOR_MAGENTA "Don't Supported Hdr.\n", j);
-					gl_config.hdrDisplay = qfalse;
+					gl_config.hdrDisplay = false;
 				}
 
 		}
@@ -239,6 +239,7 @@ typedef enum _NV_RAM_TYPE
 	NV_RAM_TYPE_GDDR5,
 	NV_RAM_TYPE_LPDDR2,
 	NV_RAM_TYPE_GDDR5X,
+	NV_RAM_TYPE_GDDR6 = 14,
 	NV_RAM_TYPE_GDDR6X = 15
 }NV_RAM_TYPE;
 
@@ -273,8 +274,8 @@ void GLimp_InitNvApi() {
 	NvAPI_Status ret = NVAPI_OK;
 	NvAPI_ShortString ver, string;
 
-	nvApiInit = qfalse;
-	gl_config.hdrDisplay = qfalse;
+	nvApiInit = false;
+	gl_config.hdrDisplay = false;
 
 	Com_Printf("\n==================================\n\n");
 
@@ -310,7 +311,7 @@ void GLimp_InitNvApi() {
 
 	Com_Printf("...found " S_COLOR_GREEN "%i " S_COLOR_WHITE "physical gpu's\n", physicalGpuCount);
 
-	nvApiInit = qtrue;
+	nvApiInit = true;
 	NvApi_GetDisplayInfo();
 
 	NvApi_SetUhdDisplays(r_useHdrDisplay->integer);
@@ -322,7 +323,7 @@ void GLimp_InitNvApi() {
 #define NV_UTIL_DOMAIN_VID  2 //video decoder don't needed
 #define NV_UTIL_DOMAIN_BUS  3
 
-extern qboolean adlInit;
+extern bool adlInit;
 
 void R_GpuInfo_f(void) {
 
@@ -418,6 +419,9 @@ void R_GpuInfo_f(void) {
 				break;
 			case NV_RAM_TYPE_GDDR5X:
 				Com_Printf(S_COLOR_GREEN"GDDR5X ");
+				break;
+			case NV_RAM_TYPE_GDDR6:
+				Com_Printf(S_COLOR_GREEN"GDDR6 ");
 				break;
 			case NV_RAM_TYPE_GDDR6X:
 				Com_Printf(S_COLOR_GREEN"GDDR6X ");

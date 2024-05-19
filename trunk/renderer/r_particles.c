@@ -37,26 +37,27 @@ int SortPart (particle_t *a, particle_t *b) {
 
 void R_DrawParticles (void) {
 	particle_t *p;
-	uint64_t		texId, bumpId, texture = 0;
-	uint		flagId, flags = 0;
-	int			i, len, loc, partVert = 0, index = 0;
+	uint64_t	texId, bumpId, texture = 0;
+	uint32_t	numIndices = 0, flagId, flags = 0;
+	int			i, len, loc, numVertices = 0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
 	vec3_t		up, right;
 	vec3_t		axis[3];
 	vec3_t		oldOrigin;
+	mat4_t		m;
 	float		scale, r, g, b, a;
 	float		c, d, s;
 	float		scroll = 0.0;
-	mat4_t		m;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	GL_Enable(GL_BLEND);
 
-	GL_BindVAO(vao.tessStream);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.dynamicIbo);
 
 	// setup program
 	GL_BindProgram(particlesProgram);
@@ -64,9 +65,9 @@ void R_DrawParticles (void) {
 	GL_SetBindlessTexture(U_TMU1, i_linearDepth->handle);
 	GL_SetBindlessTexture(U_TMU2, i_hdrBaseInterim->handle);
 
-	qglUniformMatrix4fv	(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv	(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv	(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv	(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv	(U_MODELVIEW_MATRIX, 1, false, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv	(U_PROJ_MATRIX, 1, false, (const float*)r_newrefdef.projectionMatrix);
 
 	qglUniform2f	(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform1i	(U_PARAM_INT_0, 0);
@@ -210,23 +211,20 @@ void R_DrawParticles (void) {
 
 		if (texture != texId || flags != flagId) {
 
-			if(partVert){
+			if(numVertices){
 				qglInvalidateBufferData(GL_ARRAY_BUFFER);
 				qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	partVert * sizeof(vec4_t), tess.position);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	partVert * sizeof(vec2_t), tess.texCoord);
-				qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		partVert * sizeof(vec4_t), tess.color);
-				
-				qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index * sizeof(uint), tess.indices);
+				qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
+				qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint32_t), tess3d.indices);
 
-				GL_DrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
-				c_particlesTris += index / 3;
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
+				c_particlesTris += numIndices / 3;
 			}
 
 			texture		= texId;
 			flags		= flagId;
-			partVert	= 0;
-			index		= 0;
+			numVertices	= 0;
+			numIndices		= 0;
 
 			GL_SetBindlessTexture(U_TMU0, texId);
 			GL_SetBindlessTexture(U_TMU3, bumpId);
@@ -266,9 +264,9 @@ void R_DrawParticles (void) {
 
 				Mat4_Translate	(m, -0.5f, -0.5f, -0.5f);
 
-				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
+				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)m);
 			}else
-				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
+				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)m);
 
 			if (p->flags & PARTICLE_DISTORT) {
 				glCopyTextureSubImage2D(i_hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -301,43 +299,43 @@ void R_DrawParticles (void) {
 			VectorNormalizeFast	(width);
 			VectorScale			(width, scale, width);
 
-			VA_SetElem3 (tess.position[partVert + 0],	p->origin[0] + width[0],
+			VA_SetElem3 (tess3d.v[numVertices + 0].pos,	p->origin[0] + width[0],
 														p->origin[1] + width[1],
 														p->origin[2] + width[2]);
-			VA_SetElem2 (tess.texCoord [partVert + 0], 0, 0);
-			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 0].tc, 0, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 0].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] - width[0],
+			VA_SetElem3 (tess3d.v[numVertices + 1].pos,	p->origin[0] - width[0],
 														p->origin[1] - width[1],
 														p->origin[2] - width[2]);
-			VA_SetElem2 (tess.texCoord [partVert + 1], 1, 0);
-			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 1].tc, 1, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 1].color, r, g, b, a);
 
 			VectorAdd			(point, p->length, point);
 			CrossProduct		(point, p->length, width);
 			VectorNormalizeFast	(width);
 			VectorScale			(width, scale, width);
 
-			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] + p->length[0] - width[0],
+			VA_SetElem3 (tess3d.v[numVertices + 2].pos,	p->origin[0] + p->length[0] - width[0],
 														p->origin[1] + p->length[1] - width[1],
 														p->origin[2] + p->length[2] - width[2]);
-			VA_SetElem2 (tess.texCoord [partVert + 2], 1, 1);
-			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 2].tc, 1, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 2].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 3],	p->origin[0] + p->length[0] + width[0],
+			VA_SetElem3 (tess3d.v[numVertices + 3].pos,	p->origin[0] + p->length[0] + width[0],
 														p->origin[1] + p->length[1] + width[1],
 														p->origin[2] + p->length[2] + width[2]);
-			VA_SetElem2 (tess.texCoord [partVert + 3], 0, 1);
-			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 3].tc, 0, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 3].color, r, g, b, a);
 
-			tess.indices[index++] = partVert + 0;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 2;
+			tess3d.indices[numIndices++] = numVertices + 0;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 2;
 
-			partVert += 4;
+			numVertices += 4;
 		}
 
 		if (p->flags & PARTICLE_SPIRAL) {
@@ -381,17 +379,17 @@ void R_DrawParticles (void) {
 				else
 					VectorCopy (vup, width);
 
-				VA_SetElem3 (tess.position[partVert + 0],	point[0] + width[0] + r_origin[0],
+				VA_SetElem3 (tess3d.v[numVertices + 0].pos,	point[0] + width[0] + r_origin[0],
 															point[1] + width[1] + r_origin[1],
 															point[2] + width[2] + r_origin[2]);
-				VA_SetElem2 (tess.texCoord [partVert + 0], 0.5, 1);
-				VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
+				VA_SetElem2 (tess3d.v[numVertices + 0].tc, 0.5, 1);
+				VA_SetElem4 (tess3d.v[numVertices + 0].color, r, g, b, a);
 
-				VA_SetElem3 (tess.position[partVert + 1],	point[0] - width[0] + r_origin[0],
+				VA_SetElem3 (tess3d.v[numVertices + 1].pos,	point[0] - width[0] + r_origin[0],
 															point[1] - width[1] + r_origin[1],
 															point[2] - width[2] + r_origin[2]);
-				VA_SetElem2 (tess.texCoord [partVert + 1], 0.5, 0);
-				VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
+				VA_SetElem2 (tess3d.v[numVertices + 1].tc, 0.5, 0);
+				VA_SetElem4 (tess3d.v[numVertices + 1].color, r, g, b, a);
 				
 				VectorAdd		(move,	dir2, point);
 				VectorSubtract	(dir3,	dir2, spdir);
@@ -403,26 +401,26 @@ void R_DrawParticles (void) {
 				else
 					VectorCopy (vup, width);
 
-				VA_SetElem3 (tess.position[partVert + 2],	point[0] - width[0] + r_origin[0],
+				VA_SetElem3 (tess3d.v[numVertices + 2].pos,	point[0] - width[0] + r_origin[0],
 															point[1] - width[1] + r_origin[1],
 															point[2] - width[2] + r_origin[2]);
-				VA_SetElem2 (tess.texCoord [partVert + 2], 0.5, 0);
-				VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
+				VA_SetElem2 (tess3d.v[numVertices + 2].tc, 0.5, 0);
+				VA_SetElem4 (tess3d.v[numVertices + 2].color, r, g, b, a);
 
-				VA_SetElem3 (tess.position[partVert + 3],	point[0] + width[0] + r_origin[0],
+				VA_SetElem3 (tess3d.v[numVertices + 3].pos,	point[0] + width[0] + r_origin[0],
 															point[1] + width[1] + r_origin[1],
 															point[2] + width[2] + r_origin[2]);
-				VA_SetElem2 (tess.texCoord [partVert + 3], 0.5, 1);
-				VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
+				VA_SetElem2 (tess3d.v[numVertices + 3].tc, 0.5, 1);
+				VA_SetElem4 (tess3d.v[numVertices + 3].color, r, g, b, a);
 
-				tess.indices[index++] = partVert + 0;
-				tess.indices[index++] = partVert + 1;
-				tess.indices[index++] = partVert + 3;
-				tess.indices[index++] = partVert + 3;
-				tess.indices[index++] = partVert + 1;
-				tess.indices[index++] = partVert + 2;
+				tess3d.indices[numIndices++] = numVertices + 0;
+				tess3d.indices[numIndices++] = numVertices + 1;
+				tess3d.indices[numIndices++] = numVertices + 3;
+				tess3d.indices[numIndices++] = numVertices + 3;
+				tess3d.indices[numIndices++] = numVertices + 1;
+				tess3d.indices[numIndices++] = numVertices + 2;
 
-				partVert += 4;
+				numVertices += 4;
 
 				VectorAdd (move, vec, move);
 			}
@@ -444,38 +442,38 @@ void R_DrawParticles (void) {
 			VectorScale (axis[2], p->size, axis[2]);
 
 
-			VA_SetElem3 (tess.position[partVert + 0],	oldOrigin[0] + axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 0].pos,	oldOrigin[0] + axis[2][0],
 														oldOrigin[1] + axis[2][1],
 														oldOrigin[2] + axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 0], 1, 1);
-			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 0].tc, 1, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 0].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] + axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 1].pos,	p->origin[0] + axis[2][0],
 														p->origin[1] + axis[2][1],
 														p->origin[2] + axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 1], 0, 1);
-			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 1].tc, 0, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 1].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] - axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 2].pos,	p->origin[0] - axis[2][0],
 														p->origin[1] - axis[2][1],
 														p->origin[2] - axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 2], 0, 0);
-			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 2].tc, 0, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 2].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 3],	oldOrigin[0] - axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 3].pos,	oldOrigin[0] - axis[2][0],
 														oldOrigin[1] - axis[2][1],
 														oldOrigin[2] - axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 3], 1, 0);
-			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 3].tc, 1, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 3].color, r, g, b, a);
 
-			tess.indices[index++] = partVert + 0;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 2;
+			tess3d.indices[numIndices++] = numVertices + 0;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 2;
 
-			partVert += 4;
+			numVertices += 4;
 		}
 
 		if (p->flags & PARTICLE_ALIGNED) {
@@ -487,38 +485,38 @@ void R_DrawParticles (void) {
 			VectorScale (axis[1], p->size, axis[1]);
 			VectorScale (axis[2], p->size, axis[2]);
 
-			VA_SetElem3 (tess.position[partVert + 0],	p->origin[0] + axis[1][0] + axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 0].pos,	p->origin[0] + axis[1][0] + axis[2][0],
 														p->origin[1] + axis[1][1] + axis[2][1],
 														p->origin[2] + axis[1][2] + axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 0], 0, 1);
-			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 0].tc, 0, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 0].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] - axis[1][0] + axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 1].pos,	p->origin[0] - axis[1][0] + axis[2][0],
 														p->origin[1] - axis[1][1] + axis[2][1],
 														p->origin[2] - axis[1][2] + axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 1], 0, 0);
-			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 1].tc, 0, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 1].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] - axis[1][0] - axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 2].pos,	p->origin[0] - axis[1][0] - axis[2][0],
 														p->origin[1] - axis[1][1] - axis[2][1],
 														p->origin[2] - axis[1][2] - axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 2], 1, 0);
-			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 2].tc, 1, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 2].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 3],	p->origin[0] + axis[1][0] - axis[2][0],
+			VA_SetElem3 (tess3d.v[numVertices + 3].pos,	p->origin[0] + axis[1][0] - axis[2][0],
 														p->origin[1] + axis[1][1] - axis[2][1],
 														p->origin[2] + axis[1][2] - axis[2][2]);
-			VA_SetElem2 (tess.texCoord [partVert + 3], 1, 1);
-			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 3].tc, 1, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 3].color, r, g, b, a);
 
-			tess.indices[index++] = partVert + 0;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 2;
+			tess3d.indices[numIndices++] = numVertices + 0;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 2;
 
-			partVert += 4;
+			numVertices += 4;
 		}
 
 		if (!(p->flags & PARTICLE_ALIGNED) && !(p->flags & PARTICLE_DIRECTIONAL) &&
@@ -543,53 +541,49 @@ void R_DrawParticles (void) {
 				s = scale;
 			}
 
-			VA_SetElem3 (tess.position[partVert + 0],	p->origin[0] - right[0] * c - up[0] * s,
+			VA_SetElem3 (tess3d.v[numVertices + 0].pos,	p->origin[0] - right[0] * c - up[0] * s,
 														p->origin[1] - right[1] * c - up[1] * s,
 														p->origin[2] - right[2] * c - up[2] * s);
-			VA_SetElem2 (tess.texCoord [partVert + 0], 0, 1);
-			VA_SetElem4 (tess.color[partVert + 0], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 0].tc, 0, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 0].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 1],	p->origin[0] - right[0] * s + up[0] * c,
+			VA_SetElem3 (tess3d.v[numVertices + 1].pos,	p->origin[0] - right[0] * s + up[0] * c,
 														p->origin[1] - right[1] * s + up[1] * c,
 														p->origin[2] - right[2] * s + up[2] * c);
-			VA_SetElem2 (tess.texCoord [partVert + 1], 0, 0);
-			VA_SetElem4 (tess.color[partVert + 1], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 1].tc, 0, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 1].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 2],	p->origin[0] + right[0] * c + up[0] * s,
+			VA_SetElem3 (tess3d.v[numVertices + 2].pos,	p->origin[0] + right[0] * c + up[0] * s,
 														p->origin[1] + right[1] * c + up[1] * s,
 														p->origin[2] + right[2] * c + up[2] * s);
-			VA_SetElem2 (tess.texCoord [partVert + 2], 1, 0);
-			VA_SetElem4 (tess.color[partVert + 2], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 2].tc, 1, 0);
+			VA_SetElem4 (tess3d.v[numVertices + 2].color, r, g, b, a);
 
-			VA_SetElem3 (tess.position[partVert + 3],	p->origin[0] + right[0] * s - up[0] * c,
+			VA_SetElem3 (tess3d.v[numVertices + 3].pos,	p->origin[0] + right[0] * s - up[0] * c,
 														p->origin[1] + right[1] * s - up[1] * c,
 														p->origin[2] + right[2] * s - up[2] * c);
-			VA_SetElem2 (tess.texCoord [partVert + 3], 1, 1);
-			VA_SetElem4 (tess.color[partVert + 3], r, g, b, a);
+			VA_SetElem2 (tess3d.v[numVertices + 3].tc, 1, 1);
+			VA_SetElem4 (tess3d.v[numVertices + 3].color, r, g, b, a);
 
-			tess.indices[index++] = partVert + 0;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 3;
-			tess.indices[index++] = partVert + 1;
-			tess.indices[index++] = partVert + 2;
+			tess3d.indices[numIndices++] = numVertices + 0;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 3;
+			tess3d.indices[numIndices++] = numVertices + 1;
+			tess3d.indices[numIndices++] = numVertices + 2;
 
-			partVert += 4;
+			numVertices += 4;
 		}
 	}
 
-	if (partVert) {
-
+	if (numVertices) {
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	partVert * sizeof(vec4_t), tess.position);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	partVert * sizeof(vec2_t), tess.texCoord);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		partVert * sizeof(vec4_t), tess.color);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint32_t), tess3d.indices);
 
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index * sizeof(uint), tess.indices);
-
-		GL_DrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
-		c_particlesTris += index / 3;
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
+		c_particlesTris += numIndices / 3;
 	}
 
 	GL_Disable (GL_BLEND);

@@ -31,14 +31,14 @@ cvar_t *cvar_vars;
 Cvar_InfoValidate
 ============
 */
-static qboolean Cvar_InfoValidate (char *s) {
+static bool Cvar_InfoValidate (char *s) {
 	if (strstr (s, "\\"))
-		return qfalse;
+		return false;
 	if (strstr (s, "\""))
-		return qfalse;
+		return false;
 	if (strstr (s, ";"))
-		return qfalse;
-	return qtrue;
+		return false;
+	return true;
 }
 
 /*
@@ -132,7 +132,7 @@ cvar_t *Cvar_Get (char *var_name, char *var_value, int flags) {
 
 	var->name		= CopyString (var_name);
 	var->string		= CopyString (var_value);
-	var->modified	= qtrue;
+	var->modified	= true;
 	var->value		= atof (var->string);
 	var->integer	= atoi(var->string);
 	var->qbool		= (var->integer != 0);
@@ -152,7 +152,7 @@ cvar_t *Cvar_Get (char *var_name, char *var_value, int flags) {
 Cvar_Set2
 ============
 */
-cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
+cvar_t *Cvar_Set2 (char *var_name, char *value, bool force) {
 	cvar_t *var;
 	extern cvar_t *r_debug;
 
@@ -217,10 +217,10 @@ cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
 	if (!strcmp (value, var->string))
 		return var;				// not changed
 
-	var->modified = qtrue;
+	var->modified = true;
 
 	if (var->flags & CVAR_USERINFO)
-		userinfo_modified = qtrue;	// transmit at next oportunity
+		userinfo_modified = true;	// transmit at next oportunity
 
 	Z_Free (var->string);		// free the old value string
 
@@ -237,7 +237,7 @@ Cvar_ForceSet
 ============
 */
 cvar_t *Cvar_ForceSet (char *var_name, char *value) {
-	return Cvar_Set2 (var_name, value, qtrue);
+	return Cvar_Set2 (var_name, value, true);
 }
 
 /*
@@ -246,7 +246,7 @@ Cvar_Set
 ============
 */
 cvar_t *Cvar_Set (char *var_name, char *value) {
-	return Cvar_Set2 (var_name, value, qfalse);
+	return Cvar_Set2 (var_name, value, false);
 }
 
 /*
@@ -262,10 +262,10 @@ cvar_t *Cvar_FullSet (char *var_name, char *value, int flags) {
 		return Cvar_Get (var_name, value, flags);
 	}
 
-	var->modified = qtrue;
+	var->modified = true;
 
 	if (var->flags & CVAR_USERINFO)
-		userinfo_modified = qtrue;	// transmit at next oportunity
+		userinfo_modified = true;	// transmit at next oportunity
 
 	Z_Free (var->string);		// free the old value string
 
@@ -353,13 +353,13 @@ Cvar_Command
 Handles variable inspection and changing from the console
 ============
 */
-qboolean Cvar_Command (void) {
+bool Cvar_Command (void) {
 	cvar_t *v;
 
 	// check variables
 	v = Cvar_FindVar (Cmd_Argv (0));
 	if (!v)
-		return qfalse;
+		return false;
 
 	// perform a variable print or set
 	if (Cmd_Argc () == 1) {
@@ -382,11 +382,11 @@ qboolean Cvar_Command (void) {
 		Com_Printf ("\n");
 
 		Com_Printf ("["S_COLOR_YELLOW"%s"S_COLOR_WHITE"]\n", v->help);
-		return qtrue;
+		return true;
 	}
 
 	Cvar_Set (v->name, Cmd_Argv (1));
-	return qtrue;
+	return true;
 }
 
 
@@ -435,7 +435,7 @@ int cvarsort(const void *_a, const void *_b) {
 Cvar_WriteVariables
 
 Appends lines containing "set variable value" for all variables
-with the archive flag set to qtrue.
+with the archive flag set to true.
 ============
 */
 void Cvar_WriteVariables (char *path) {
@@ -485,7 +485,7 @@ void Cvar_List_f (void) {
 	cvar_t		*var, *cvar, *sortedList;
 	int			i, num;
 	char		*hlp;
-	qboolean	help = qfalse;
+	bool	help = false;
 
 	for (var = cvar_vars, num = 0; var; var = var->next, num++) {}
 		sortedList = (cvar_t *)Z_Malloc(num * sizeof(cvar_t));
@@ -499,7 +499,7 @@ void Cvar_List_f (void) {
 	if (Cmd_Argc () == 2) {
 		hlp = Cmd_Argv (1);
 		if (!Q_strcasecmp (hlp, "?") || !Q_strcasecmp (hlp, "h") || !Q_strcasecmp (hlp, "help"))
-			help = qtrue;
+			help = true;
 	}
 
 	for (cvar = cvar_vars, i = 0; cvar; cvar = cvar->next, i++) {
@@ -546,7 +546,7 @@ void Cvar_List_f (void) {
 		Z_Free (sortedList);
 }
 
-qboolean userinfo_modified;
+bool userinfo_modified;
 
 
 char *Cvar_BitInfo (int bit) {

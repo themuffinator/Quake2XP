@@ -100,7 +100,7 @@ void S_Play (void) {
 		// TO DO - willow: do not cache this data to onboard memory!
 		// this seems to be just any random file, we do no need to store
 		// it in valuable memory.
-		S_StartLocalSound (S_FindName (name, qtrue));
+		S_StartLocalSound (S_FindName (name, true));
 		i++;
 	}
 }
@@ -404,7 +404,7 @@ ALuint S_RegisterSexedSound (entity_state_t * ent, const char *base) {
 	// see if we already know of the model specific sound
 	Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base + 1);
 
-	return S_FindName (sexedFilename, qtrue);
+	return S_FindName (sexedFilename, true);
 
 }
 
@@ -435,7 +435,7 @@ void Flag_clear (channel_task_t * task, unsigned long flags_collection) {
 	task->flags &= ~flags_collection;
 }
 
-qboolean Flag_check (channel_task_t * task, unsigned long flags_collection) {
+bool Flag_check (channel_task_t * task, unsigned long flags_collection) {
 	return task->flags & flags_collection;
 }
 
@@ -451,7 +451,7 @@ void FlagAL_clear (openal_channel_t * ch, unsigned long flags_collection) {
 	ch->flags &= ~flags_collection;
 }
 
-qboolean FlagAL_check (openal_channel_t * ch,
+bool FlagAL_check (openal_channel_t * ch,
 	unsigned long flags_collection) {
 	return ch->flags & flags_collection;
 }
@@ -477,7 +477,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 	int i;
 	int firstToDie = -1;
 	//  int                 oldestTime = cl.time;
-	qboolean is_terminate = qtrue;
+	bool is_terminate = true;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
 		i++, ch++) {
@@ -488,7 +488,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 		/*		if (!ch->sfx)							// found free channel
 				{
 				firstToDie = i;
-				is_terminate = qfalse;
+				is_terminate = false;
 				break;
 				} else {*/
 		ALuint SourceState;
@@ -504,7 +504,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 		{
 			ch->bufferNum = 0;	// ch->sfx = NULL;
 			firstToDie = i;
-			is_terminate = qfalse;
+			is_terminate = false;
 			break;
 		}
 	}
@@ -624,7 +624,7 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel, ALuint bufferNum, A
 		alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
 		if (alConfig.efx)
-			EFX_RvbProcSrc (ch, sourceNum, qtrue);
+			EFX_RvbProcSrc (ch, sourceNum, true);
 
 		alSourcePlay (sourceNum);
 	}
@@ -659,11 +659,11 @@ void S_fastsound_queue (vec3_t origin, int entnum, int entchannel,
 	//  ps->flat = is_flat;
 
 	if (origin) {
-		ps->fixed_origin = qtrue;
+		ps->fixed_origin = true;
 		VectorCopy (origin, ps->origin);
 	}
 	else
-		ps->fixed_origin = qfalse;
+		ps->fixed_origin = false;
 
 	ps->volume = fvol;
 	ps->attenuation = attenuation;
@@ -686,7 +686,7 @@ openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
-	qboolean terminate = qtrue;
+	bool terminate = true;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
 		i++, ch++) {
@@ -694,7 +694,7 @@ openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 		/*		if (!ch->sfx)							// found free channel
 				{
 				firstToDie = i;
-				terminate = qfalse;
+				terminate = false;
 				break;
 				} else {*/
 		ALuint SourceState;
@@ -704,7 +704,7 @@ openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 		// The source already out of processing.
 		if (SourceState == AL_STOPPED || SourceState == AL_INITIAL) {
 			firstToDie = i;
-			terminate = qfalse;
+			terminate = false;
 			break;
 		}
 		/*		}*/
@@ -792,7 +792,7 @@ void S_StartLocalSound (ALuint bufferNum) {
 			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
 			if (alConfig.efx)
-				EFX_RvbProcSrc (ch, sourceNum, qfalse);
+				EFX_RvbProcSrc (ch, sourceNum, false);
 
 			alSourcePlay (sourceNum);
 		}
@@ -851,7 +851,7 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
-	qboolean terminate = qfalse;
+	bool terminate = false;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels; i++, ch++) {
 
@@ -868,7 +868,7 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 		/*		if (Flag_checkAL (&Channels_TODO[i], AL_TASK_MANAGER__TERMINATE))
 				{
 				firstToDie = i;
-				terminate = qfalse;
+				terminate = false;
 				break;
 				}*/
 		else {
@@ -902,7 +902,7 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 		float len, max;
 		vec3_t delta;
 
-		terminate = qtrue;		// we need to eat weakest now :)
+		terminate = true;		// we need to eat weakest now :)
 		if (new_vec) {
 			VectorSubtract (listener, new_vec, delta);
 			max = VectorLength_Squared (delta);
@@ -1258,7 +1258,7 @@ void S_Update (vec3_t listener_position, vec3_t velocity, float orientation[6]) 
 			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 			
 			if (alConfig.efx)
-				EFX_RvbProcSrc (ch, sourceNum, qtrue);
+				EFX_RvbProcSrc (ch, sourceNum, true);
 
 			alSourcePlay (sourceNum);
 		}
@@ -1273,10 +1273,10 @@ Music Streaming
 ===============================================================================
 */
 
-qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume) {
+bool S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume) {
 	
 	if (!s_initSound->integer)
-		return qfalse;
+		return false;
 
 	if (streaming.enabled) {
 		Com_Printf (S_COLOR_YELLOW "S_Streaming_Start: interrupting active stream\n");
@@ -1293,16 +1293,16 @@ qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float 
 		streaming.sound_format = AL_FORMAT_STEREO16;
 	else {
 		Com_Printf (S_COLOR_RED "S_StreamingStart: unsupported format (%d bits and %d channels)\n", num_bits, num_channels);
-		return qfalse;
+		return false;
 	}
 
 	alSourcef (source_name[CH_STREAMING], AL_GAIN, volume);
 	streaming.sound_rate = rate;
 	streaming.bFirst = 0;
 	streaming.bNumAvail = NUM_STRBUF;
-	streaming.enabled = qtrue;
+	streaming.enabled = true;
 
-	return qtrue;
+	return true;
 }
 
 void S_Streaming_Stop (void) {
@@ -1311,7 +1311,7 @@ void S_Streaming_Stop (void) {
 		alSourceStop (source_name[CH_STREAMING]);
 		alSourcei (source_name[CH_STREAMING], AL_BUFFER, 0);
 
-		streaming.enabled = qfalse;
+		streaming.enabled = false;
 	}
 }
 

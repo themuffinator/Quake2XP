@@ -49,6 +49,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
 
 #if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
 #define id386	1
@@ -63,9 +64,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 typedef unsigned char 		byte;
-typedef enum {
-	qfalse, qtrue
-}	qboolean;
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -80,11 +78,11 @@ typedef enum {
 #endif
 
 
-extern qboolean ru_loc;
+extern bool ru_loc;
 
 float ClampCvar(float min, float max, float value);
 int ClampCvarInteger(int min, int max, int value);
-qboolean b_stricmp(char *str1, char *str2);
+bool b_stricmp(char *str1, char *str2);
 unsigned Com_HashKey(const char *string);
 
 //#ifdef _WIN32
@@ -344,9 +342,9 @@ void COM_DefaultExtension (char *path, char *extension);
 
 int com_parseLine;
 
-char *Com_SkipWhiteSpace (char *data_p, qboolean *hasNewLines);
+char *Com_SkipWhiteSpace (char *data_p, bool *hasNewLines);
 void Com_SkipRestOfLine (char **data_p);
-char *Com_ParseExt (char **data_p, qboolean allowNewLines);
+char *Com_ParseExt (char **data_p, bool allowNewLines);
 
 
 
@@ -398,7 +396,7 @@ char	*va (char *format, ...);
 char *Info_ValueForKey (char *s, char *key);
 void Info_RemoveKey (char *s, char *key);
 void Info_SetValueForKey (char *s, char *key, char *value);
-qboolean Info_Validate (char *s);
+bool Info_Validate (char *s);
 
 /*
 ==============================================================
@@ -464,11 +462,11 @@ typedef struct cvar_s {
 	char		*string;
 	char		*latched_string;	// for CVAR_LATCH vars
 	int			flags;
-	qboolean	modified;	// set each time the cvar is changed
+	bool	modified;	// set each time the cvar is changed
 
 	float		value;
 	int			integer;
-	qboolean	qbool;
+	bool	qbool;
 	const char	*help;
 
 	struct cvar_s *next;
@@ -596,8 +594,8 @@ typedef struct mapsurface_s  // used internally due to name len probs //ZOID
 
 // a trace is returned when a box is swept through the world
 typedef struct {
-	qboolean	allsolid;	// if qtrue, plane is not valid
-	qboolean	startsolid;	// if qtrue, the initial point was in a solid area
+	bool	allsolid;	// if true, plane is not valid
+	bool	startsolid;	// if true, the initial point was in a solid area
 	float		fraction;	// time completed, 1.0 = didn't hit anything
 	vec3_t		endpos;		// final position
 	cplane_t	plane;		// surface normal at impact
@@ -678,7 +676,7 @@ typedef struct {
 
 	// command (in)
 	usercmd_t		cmd;
-	qboolean		snapinitial;	// if s has been changed outside pmove
+	bool		snapinitial;	// if s has been changed outside pmove
 
 	// results (out)
 	int			numtouch;
@@ -1449,7 +1447,7 @@ typedef struct {
 	const char	*lastText;
 	int			lastLine;	// the line before last GetToken()
 
-	qboolean		ungetToken;
+	bool		ungetToken;
 } parser_t;
 
 // this just controls the comment printing, it doesn't actually load a file
@@ -1462,20 +1460,20 @@ int Parser_GetCurrentLine (parser_t *parser);
 // An empty string will only be returned at end of file.
 // GetTokenOnLine will return empty if there isn't another token on this line.
 
-qboolean Parser_GetToken (parser_t *parser, token_t *token);
-qboolean Parser_GetTokenOnLine (parser_t *parser, token_t *token);
-qboolean Parser_GetRestOfLine (parser_t *parser, token_t *token);
-//qboolean Parser_GetBracedSection(parser_t *parser, token_t *token);
+bool Parser_GetToken (parser_t *parser, token_t *token);
+bool Parser_GetTokenOnLine (parser_t *parser, token_t *token);
+bool Parser_GetRestOfLine (parser_t *parser, token_t *token);
+//bool Parser_GetBracedSection(parser_t *parser, token_t *token);
 
 void Parser_UngetToken (parser_t *parser, token_t *token);
 
-qboolean Parser_CheckToken (parser_t *parser, const char *match, qboolean warning);
-qboolean Parser_CheckTokenType (parser_t *parser, tokenType_t type, qboolean warning);
+bool Parser_CheckToken (parser_t *parser, const char *match, bool warning);
+bool Parser_CheckTokenType (parser_t *parser, tokenType_t type, bool warning);
 
 void Parser_Error (parser_t *parser, const char *msg, ...);
 void Parser_Warning (parser_t *parser, const char *msg, ...);
 
-qboolean Parser_SkipBracedSection (parser_t *parser, int depth);
+bool Parser_SkipBracedSection (parser_t *parser, int depth);
 void Parser_SkipRestOfLine (parser_t *parser);
 
 // an old one for mods

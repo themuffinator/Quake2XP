@@ -40,11 +40,11 @@ extern int precache_model_skin;
 extern byte* precache_model;
 
 // Forces all downloads to UDP.
-static qboolean forceudp;
+static bool forceudp;
 
 // Gives HTTP downloads a second chance after
 // we've fallen trough to UDP downloads.
-static qboolean httpSecondChance = qtrue;
+static bool httpSecondChance = true;
 
 /* This - and some more code down below - is the 'Crazy Fallback
    Magic'. First we're trying to download all files over HTTP with
@@ -59,10 +59,10 @@ static unsigned int precacherIteration;
 /* Another quirk: Don't restart texture downloading from the beginning,
    instead continue after the last requested texture. This is used to
    skip over a texture missing on the server. */
-static qboolean dont_restart_texture_stage;
+static bool dont_restart_texture_stage;
 
 // r1q2 searches the global filelist at /, q2pro at /gamedir...
-static qboolean gamedirForFilelist;
+static bool gamedirForFilelist;
 
 static const char* env_suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
 
@@ -100,14 +100,14 @@ CL_RequestNextDownload(void)
 		}
 
 		// Force another try with the filelist.
-		dlquirks.filelist = qtrue;
-		gamedirForFilelist = qtrue;
+		dlquirks.filelist = true;
+		gamedirForFilelist = true;
 #endif
 	}
 	else if (precacherIteration == 2)
 	{
 		// UDP Fallback.
-		forceudp = qtrue;
+		forceudp = true;
 	}
 	else
 	{
@@ -416,7 +416,7 @@ CL_RequestNextDownload(void)
 
 	if (dlquirks.error)
 	{
-		dlquirks.error = qfalse;
+		dlquirks.error = false;
 
 		/* Mkay, there were download errors. Let's start over. */
 		precacherIteration++;
@@ -432,7 +432,7 @@ CL_RequestNextDownload(void)
 		precache_check = ENV_CNT + 1;
 	}
 
-	CM_LoadMap(cl.configstrings[CS_MODELS + 1], qtrue, &map_checksum);
+	CM_LoadMap(cl.configstrings[CS_MODELS + 1], true, &map_checksum);
 
 	if (map_checksum != (int)strtol(cl.configstrings[CS_MAPCHECKSUM], (char**)NULL, 10))
 	{
@@ -510,14 +510,14 @@ CL_RequestNextDownload(void)
 #endif
 
 	/* This map is done, start over for next map. */
-	forceudp = qfalse;
+	forceudp = false;
 	precacherIteration = 0;
-	gamedirForFilelist = qfalse;
-	httpSecondChance = qtrue;
-	dont_restart_texture_stage = qfalse;
+	gamedirForFilelist = false;
+	httpSecondChance = true;
+	dont_restart_texture_stage = false;
 
 #ifdef USE_CURL
-	dlquirks.filelist = qtrue;
+	dlquirks.filelist = true;
 #endif
 
 	CL_RegisterSounds();
@@ -525,7 +525,7 @@ CL_RequestNextDownload(void)
 
 	MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 	MSG_WriteString(&cls.netchan.message, va("begin %i\n", precache_spawncount));
-	cls.forcePacket = qtrue;
+	cls.forcePacket = true;
 }
 
 void CL_DownloadFileName(char* dest, int destlen, char* fn)
@@ -545,7 +545,7 @@ void CL_DownloadFileName(char* dest, int destlen, char* fn)
  * Returns true if the file exists, otherwise it attempts
  * to start a download from the server.
  */
-qboolean
+bool
 CL_CheckOrDownloadFile(char* filename)
 {
 	FILE* fp;
@@ -561,13 +561,13 @@ CL_CheckOrDownloadFile(char* filename)
 	if (FS_LoadFile(filename, NULL) != -1)
 	{
 		/* it exists, no need to download */
-		return qtrue;
+		return true;
 	}
 
 	if (strstr(filename, "..") || strstr(filename, ":") || (*filename == '.') || (*filename == '/'))
 	{
 		Com_Printf("Refusing to download a path with ..: %s\n", filename);
-		return qtrue;
+		return true;
 	}
 
 #ifdef USE_CURL
@@ -580,7 +580,7 @@ CL_CheckOrDownloadFile(char* filename)
 			   multiple HTTP connections we want to
 			   minimize latency and be constantly sending
 			   requests, not one at a time. */
-			return qtrue;
+			return true;
 		}
 	}
 	else
@@ -593,7 +593,7 @@ CL_CheckOrDownloadFile(char* filename)
 			  In that case the HTTP code aborts all HTTP
 			  downloads and CL_QueueHTTPDownload() returns
 			  false. */
-		forceudp = qfalse;
+		forceudp = false;
 
 		/* This is one of the nasty special cases. A r1q2
 		   server might miss only one file. This missing
@@ -611,7 +611,7 @@ CL_CheckOrDownloadFile(char* filename)
 		if (httpSecondChance)
 		{
 			precacherIteration = 0;
-			httpSecondChance = qfalse;
+			httpSecondChance = false;
 		}
 	}
 #endif
@@ -652,9 +652,9 @@ CL_CheckOrDownloadFile(char* filename)
 	}
 
 	cls.downloadNumber++;
-	cls.forcePacket = qtrue;
+	cls.forcePacket = true;
 
-	return qfalse;
+	return false;
 }
 
 /*
@@ -709,7 +709,7 @@ CL_ParseDownload(void)
 {
 	char name[MAX_OSPATH];
 	int r, percent, size;
-	static qboolean second_try;
+	static bool second_try;
 
 	/* read the data */
 	size = MSG_ReadShort(&net_message);
@@ -730,19 +730,19 @@ CL_ParseDownload(void)
 		if (second_try)
 		{
 			precache_check++;
-			dont_restart_texture_stage = qtrue;
-			second_try = qfalse;
+			dont_restart_texture_stage = true;
+			second_try = false;
 		}
 		else
 		{
-			second_try = qtrue;
+			second_try = true;
 		}
 
 		CL_RequestNextDownload();
 		return;
 	}
 
-	second_try = qfalse;
+	second_try = false;
 
 	/* open the file if not opened yet */
 	if (!cls.download)
@@ -772,7 +772,7 @@ CL_ParseDownload(void)
 
 		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 		SZ_Print(&cls.netchan.message, "nextdl");
-		cls.forcePacket = qtrue;
+		cls.forcePacket = true;
 	}
 	else
 	{

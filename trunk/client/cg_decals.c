@@ -131,7 +131,7 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		for (i = 0; i < 6; i++) {
 
 			VectorMA (origin, scale, dirs[i], end);
-			trace = CL_PMTraceWorld (origin, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+			trace = CL_PMTraceWorld (origin, vec3_origin, vec3_origin, end, MASK_SOLID, false);
 			if (trace.fraction != 1.0) {
 				CL_AddDecalToScene(origin, trace.plane.normal,
 					red, green, blue, alpha,
@@ -161,13 +161,13 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 
 	for (i = 0, fr = fragments; i < numfragments; i++, fr++) {
 
-		if (fr->numverts > MAX_DECAL_VERTS)
-			fr->numverts = MAX_DECAL_VERTS;
-		else if (fr->numverts <= 0)
+		if (fr->numVerts > MAX_DECAL_VERTS)
+			fr->numVerts = MAX_DECAL_VERTS;
+		else if (fr->numVerts <= 0)
 			continue;
 
 		d = CL_AllocDecal ();
-		d->numverts = fr->numverts;
+		d->numVerts = fr->numVerts;
 		d->node = fr->node;
 		d->time = cl.refdef.time;
 		d->endTime = cl.refdef.time + endTime;
@@ -191,13 +191,13 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		if (fr->surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 			d->flags |= DF_TWOSIDE;
 
-		for (j = 0; j < fr->numverts; j++) {
+		for (j = 0; j < fr->numVerts; j++) {
 			vec3_t v;
 
-			VectorCopy (verts[fr->firstvert + j], d->verts[j]);
+			VectorCopy (verts[fr->firstVert + j], d->verts[j]);
 			VectorSubtract (d->verts[j], origin, v);
-			d->stcoords[j][0] = DotProduct (v, axis[1]) + 0.5f;
-			d->stcoords[j][1] = DotProduct (v, axis[2]) + 0.5f;
+			d->st[j][0] = DotProduct (v, axis[1]) + 0.5f;
+			d->st[j][1] = DotProduct (v, axis[2]) + 0.5f;
 		}
 	}
 

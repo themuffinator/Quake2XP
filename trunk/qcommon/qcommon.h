@@ -83,18 +83,13 @@ int Q_strlcpy(char* dst, const char* src, int size);
 int Q_strlcat(char* dst, const char* src, int size);
 
 typedef struct sizebuf_s {
-	qboolean allowoverflow;		// if qfalse, do a Com_Error
-	qboolean overflowed;		// set to qtrue if the buffer size failed
+	bool allowoverflow;		// if false, do a Com_Error
+	bool overflowed;		// set to true if the buffer size failed
 	byte *data;
 	int maxsize;
 	int cursize;
 	int readcount;
 } sizebuf_t;
-
-typedef enum {
-	H_LOW,			// static allocations (images, models, level data)
-	H_HIGH			// per-frame allocations
-} hunkMark_t;
 
 void SZ_Init (sizebuf_t * buf, byte * data, int length);
 void SZ_Clear (sizebuf_t * buf);
@@ -121,7 +116,7 @@ void MSG_WriteDeltaUsercmd (sizebuf_t * sb, struct usercmd_s *from,
 struct usercmd_s *cmd);
 void MSG_WriteDeltaEntity (struct entity_state_s *from,
 struct entity_state_s *to, sizebuf_t * msg,
-	qboolean force, qboolean newentity);
+	bool force, bool newentity);
 void MSG_WriteDir (sizebuf_t * sb, vec3_t vector);
 
 
@@ -148,7 +143,7 @@ void MSG_ReadData (sizebuf_t * sb, void *buffer, int size);
 
 //============================================================================
 
-extern qboolean bigendien;
+extern bool bigendien;
 
 extern short BigShort (short l);
 extern short LittleShort (short l);
@@ -407,12 +402,12 @@ void Cbuf_InsertText (char *text);
 void Cbuf_ExecuteText (int exec_when, char *text);
 // this can be used in place of either Cbuf_AddText or Cbuf_InsertText
 
-void Cbuf_AddEarlyCommands (qboolean clear);
+void Cbuf_AddEarlyCommands (bool clear);
 // adds all the +set commands from the command line
 
-qboolean Cbuf_AddLateCommands (void);
+bool Cbuf_AddLateCommands (void);
 // adds all the remaining + commands from the command line
-// Returns qtrue if any late commands were added, which
+// Returns true if any late commands were added, which
 // will keep the demoloop from immediately starting
 
 void Cbuf_Execute (void);
@@ -447,7 +442,7 @@ void Cmd_AddCommand (char *cmd_name, xcommand_t function);
 // as a clc_stringcmd instead of executed locally
 void Cmd_RemoveCommand (char *cmd_name);
 
-qboolean Cmd_Exists (char *cmd_name);
+bool Cmd_Exists (char *cmd_name);
 // used by the cvar code to check for cvar / command name overlap
 
 char *Cmd_CompleteCommand (char *partial);
@@ -461,7 +456,7 @@ char *Cmd_Args (void);
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are always safe.
 
-void Cmd_TokenizeString (char *text, qboolean macroExpand);
+void Cmd_TokenizeString (char *text, bool macroExpand);
 // Takes a null terminated string.  Does not need to be /n terminated.
 // breaks the string up into arg tokens.
 
@@ -533,14 +528,14 @@ int *Cvar_CompleteVariable (char *partial);
 void Cvar_GetLatchedVars (void);
 // any CVAR_LATCHED variables that have been set will now take effect
 
-qboolean Cvar_Command (void);
+bool Cvar_Command (void);
 // called by Cmd_ExecuteString when Cmd_Argv(0) doesn't match a known
-// command.  Returns qtrue if the command was a variable reference that
+// command.  Returns true if the command was a variable reference that
 // was handled. (print or change)
 
 void Cvar_WriteVariables (char *path);
 // appends lines containing "set variable value" for all variables
-// with the archive flag set to qtrue.
+// with the archive flag set to true.
 
 void Cvar_Init (void);
 
@@ -550,7 +545,7 @@ char *Cvar_Userinfo (void);
 char *Cvar_Serverinfo (void);
 // returns an info string containing all the CVAR_SERVERINFO cvars
 
-extern qboolean userinfo_modified;
+extern bool userinfo_modified;
 // this is set each time a CVAR_USERINFO variable is changed
 // so that the client knows to send it to the server
 
@@ -604,17 +599,17 @@ typedef struct {
 void NET_Init (void);
 void NET_Shutdown (void);
 
-void NET_Config (qboolean multiplayer);
+void NET_Config (bool multiplayer);
 
-qboolean NET_GetPacket (netsrc_t sock, netadr_t * net_from,
+bool NET_GetPacket (netsrc_t sock, netadr_t * net_from,
 	sizebuf_t * net_message);
 void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to);
 
-qboolean NET_CompareAdr (netadr_t a, netadr_t b);
-qboolean NET_CompareBaseAdr (netadr_t a, netadr_t b);
-qboolean NET_IsLocalAddress (netadr_t adr);
+bool NET_CompareAdr (netadr_t a, netadr_t b);
+bool NET_CompareBaseAdr (netadr_t a, netadr_t b);
+bool NET_IsLocalAddress (netadr_t adr);
 char *NET_AdrToString (netadr_t a);
-qboolean NET_StringToAdr (char *s, netadr_t * a);
+bool NET_StringToAdr (char *s, netadr_t * a);
 void NET_Sleep (int msec);
 
 //============================================================================
@@ -625,7 +620,7 @@ void NET_Sleep (int msec);
 #define	MAX_LATENT	32
 
 typedef struct {
-	qboolean fatal_error;
+	bool fatal_error;
 
 	netsrc_t sock;
 
@@ -666,15 +661,15 @@ void Netchan_Init (void);
 void Netchan_Setup (netsrc_t sock, netchan_t * chan, netadr_t adr,
 	int qport);
 
-qboolean Netchan_NeedReliable (netchan_t * chan);
+bool Netchan_NeedReliable (netchan_t * chan);
 void Netchan_Transmit (netchan_t * chan, int length, byte * data);
 void Netchan_OutOfBand (int net_socket, netadr_t adr, int length,
 	byte * data);
 void Netchan_OutOfBandPrint (int net_socket, netadr_t adr, char *format,
 	...);
-qboolean Netchan_Process (netchan_t * chan, sizebuf_t * msg);
+bool Netchan_Process (netchan_t * chan, sizebuf_t * msg);
 
-qboolean Netchan_CanReliable (netchan_t * chan);
+bool Netchan_CanReliable (netchan_t * chan);
 
 
 /*
@@ -688,7 +683,7 @@ CMODEL
 
 #include "../qcommon/qfiles.h"
 
-cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum);
+cmodel_t *CM_LoadMap (char *name, bool clientload, unsigned *checksum);
 cmodel_t *CM_InlineModel (char *name);	// *1, *2, etc
 
 int CM_NumClusters (void);
@@ -725,11 +720,11 @@ int CM_LeafContents (int leafnum);
 int CM_LeafCluster (int leafnum);
 int CM_LeafArea (int leafnum);
 
-void CM_SetAreaPortalState (int portalnum, qboolean open);
-qboolean CM_AreasConnected (int area1, int area2);
+void CM_SetAreaPortalState (int portalnum, bool open);
+bool CM_AreasConnected (int area1, int area2);
 
 int CM_WriteAreaBits (byte * buffer, int area);
-qboolean CM_HeadnodeVisible (int headnode, byte * visbits);
+bool CM_HeadnodeVisible (int headnode, byte * visbits);
 
 /*/
 typedef struct {
@@ -817,7 +812,7 @@ char *FS_FindNext (char *find);
 char *FS_FindFirst (char *find);
 
 int FS_FOpenFile (const char *filename, FILE **file);
-qboolean FS_FileExists (char *path);
+bool FS_FileExists (char *path);
 void FS_FCloseFile (FILE *f);
 // note: this can't be called from another DLL, due to MS libc issues
 
@@ -838,7 +833,7 @@ int FS_filelength (FILE *f);
 char **FS_ListFiles (char *findname, int *numfiles, unsigned musthave, unsigned canthave);
 char **FS_ListFilesAll (char *findname, int *numfiles, unsigned musthave, unsigned canthave);
 void FS_FreeList (char **list, int nfiles);
-qboolean FS_MatchPath (const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave);
+bool FS_MatchPath (const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave);
 void FS_StripExtension (const char *in, char *out, size_t size_out);
 /*
 ==============================================================
@@ -949,7 +944,7 @@ void Con_Print (char *text);
 void SCR_BeginLoadingPlaque (void);
 
 void SV_Init (void);
-void SV_Shutdown (char *finalmsg, qboolean reconnect);
+void SV_Shutdown (char *finalmsg, bool reconnect);
 void SV_Frame (int msec);
 
 

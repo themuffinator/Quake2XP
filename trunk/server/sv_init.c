@@ -33,7 +33,7 @@ SV_FindIndex
 
 ================
 */
-int SV_FindIndex (char *name, int start, int max, qboolean create) {
+int SV_FindIndex (char *name, int start, int max, bool create) {
 	int i;
 
 	if (!name || !name[0])
@@ -72,15 +72,15 @@ int SV_FindIndex (char *name, int start, int max, qboolean create) {
 
 
 int SV_ModelIndex (char *name) {
-	return SV_FindIndex (name, CS_MODELS, MAX_MODELS, qtrue);
+	return SV_FindIndex (name, CS_MODELS, MAX_MODELS, true);
 }
 
 int SV_SoundIndex (char *name) {
-	return SV_FindIndex (name, CS_SOUNDS, MAX_SOUNDS, qtrue);
+	return SV_FindIndex (name, CS_SOUNDS, MAX_SOUNDS, true);
 }
 
 int SV_ImageIndex (char *name) {
-	return SV_FindIndex (name, CS_IMAGES, MAX_IMAGES, qtrue);
+	return SV_FindIndex (name, CS_IMAGES, MAX_IMAGES, true);
 }
 
 
@@ -172,8 +172,8 @@ clients along with it.
 ================
 */
 void SV_SpawnServer (char *server, char *spawnpoint,
-	server_state_t serverstate, qboolean attractloop,
-	qboolean loadgame) {
+	server_state_t serverstate, bool attractloop,
+	bool loadgame) {
 	int i;
 	unsigned checksum;
 
@@ -230,14 +230,14 @@ void SV_SpawnServer (char *server, char *spawnpoint,
 	strcpy (sv.configstrings[CS_NAME], server);
 
 	if (serverstate != ss_game) {
-		sv.models[1] = CM_LoadMap ("", qfalse, &checksum);	// no real map
+		sv.models[1] = CM_LoadMap ("", false, &checksum);	// no real map
 	}
 	else {
 		Com_sprintf (sv.configstrings[CS_MODELS + 1],
 			sizeof(sv.configstrings[CS_MODELS + 1]), "maps/%s.bsp",
 			server);
 		sv.models[1] =
-			CM_LoadMap (sv.configstrings[CS_MODELS + 1], qfalse, &checksum);
+			CM_LoadMap (sv.configstrings[CS_MODELS + 1], false, &checksum);
 	}
 	Com_sprintf (sv.configstrings[CS_MAPCHECKSUM],
 		sizeof(sv.configstrings[CS_MAPCHECKSUM]), "%i", checksum);
@@ -300,7 +300,7 @@ void SV_InitGame (void) {
 
 	if (svs.initialized) {
 		// cause any connected clients to reconnect
-		SV_Shutdown ("Server restarted\n", qtrue);
+		SV_Shutdown ("Server restarted\n", true);
 	}
 	else {
 		// make sure the client is down
@@ -311,7 +311,7 @@ void SV_InitGame (void) {
 	// get any latched variable changes (maxclients, etc)
 	Cvar_GetLatchedVars ();
 
-	svs.initialized = qtrue;
+	svs.initialized = true;
 
 	if (Cvar_VariableValue ("coop") && Cvar_VariableValue ("deathmatch")) {
 		Com_Printf ("Deathmatch and Coop both set, disabling Coop\n");
@@ -386,7 +386,7 @@ Kirk Barnes - cut off cinematics
 ======================
 */
 #if 0
-void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
+void SV_Map (bool attractloop, char *levelstring, bool loadgame) {
 	char level[MAX_QPATH];
 	char *ch;
 	int l;
@@ -484,9 +484,9 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 	SV_BroadcastCommand("reconnect\n");
 }
 #endif
-qboolean cinServer;
+bool cinServer;
 
-void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
+void SV_Map (bool attractloop, char *levelstring, bool loadgame) {
 	char level[MAX_QPATH];
 	char *ch;
 	int l;
@@ -532,20 +532,20 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_cinematic, attractloop,
 			loadgame);
-		cinServer = qtrue;
+		cinServer = true;
 	}
 	else if (l > 4 && !strcmp (level + l - 4, ".dm2")) {
 		SCR_BeginLoadingPlaque ();	// for local system
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_demo, attractloop, loadgame);
-		cinServer = qfalse;
+		cinServer = false;
 	}
 //	else if (l > 4 && !strcmp (level + l - 4, ".pcx")) {
 	else if ((!Q_strcasecmp(level + l - 4, ".png") || !Q_strcasecmp(level + l - 4, ".tga") || !Q_strcasecmp(level + l - 4, ".pcx") || !Q_strcasecmp(level + l - 4, ".jpg") || !Q_strcasecmp(level + l - 4, ".dds"))){
 		SCR_BeginLoadingPlaque ();	// for local system
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_pic, attractloop, loadgame);
-		cinServer = qtrue;
+		cinServer = true;
 	}
 	else {
 		SCR_BeginLoadingPlaque ();	// for local system
@@ -553,7 +553,7 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 		SV_SendClientMessages ();
 		SV_SpawnServer (level, spawnpoint, ss_game, attractloop, loadgame);
 		Cbuf_CopyToDefer ();
-		cinServer = qfalse;
+		cinServer = false;
 	}
 
 	SV_BroadcastCommand ("reconnect\n");

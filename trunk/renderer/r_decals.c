@@ -70,7 +70,7 @@ extern cvar_t *cl_decals;
 
 void CL_FreeDecal(decals_t * dl);
 
-void R_RenderDecals(qboolean twoside)
+void R_RenderDecals(bool twoside)
 {
     decals_t    *dl, *next, *active; 
     vec3_t		decalColor;
@@ -86,11 +86,12 @@ void R_RenderDecals(qboolean twoside)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_BindVAO(vao.tessStream);
-	GL_BindVBO(vbo.dynamicVbo);
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+	GL_BindVBO(vbo.dynamicIbo);
 
 	GL_BindProgram(colorProgram);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniform1i(U_PARAM_INT_0, 1); // textured pass
 
 	GL_Enable(GL_POLYGON_OFFSET_FILL);
@@ -137,16 +138,16 @@ void R_RenderDecals(qboolean twoside)
 
 		texId = r_decalTexture[dl->type]->handle;
           
-        if (texture != texId || dl->flags != oldFlag) {
-        // flush array if new texture/blend
+        if ((texture != texId || dl->flags != oldFlag) 
+			|| (numIndices >= MAX_INDICES - (dl->numVerts - 2) * 3) 
+			|| (numVertices >= MAX_VERTICES - dl->numVerts)) {
+
         if (numIndices) {
 
 			qglInvalidateBufferData(GL_ARRAY_BUFFER);
 			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	numVertices * sizeof(vec4_t), tess.position);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	numVertices * sizeof(vec2_t), tess.texCoord);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		numVertices * sizeof(vec4_t), tess.color);
-			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.indices);
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
+			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess3d.indices);
 
 			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
 			c_decalsTris += numIndices/3;
@@ -163,55 +164,38 @@ void R_RenderDecals(qboolean twoside)
 			GL_Disable(GL_CULL_FACE);
         }
 
-		if ((numIndices >= MAX_INDICES - (dl->numverts - 2) * 3) || (numVertices >= MAX_VERTICES - dl->numverts)) {
-			
-			qglInvalidateBufferData(GL_ARRAY_BUFFER);
-			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	numVertices * sizeof(vec4_t), tess.position);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	numVertices * sizeof(vec2_t), tess.texCoord);
-			qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		numVertices * sizeof(vec4_t), tess.color);
-			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.indices);
-
-			 GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
-			 c_decalsTris = numIndices/3;
-			 numVertices = 0;
-			 numIndices = 0;
-		}
-
 		// set vertices
-		for (x = 0; x < dl->numverts; x++) {
+		for (x = 0; x < dl->numVerts; x++) {
+			tess3d.v[x + numVertices].pos[0] = dl->verts[x][0];
+			tess3d.v[x + numVertices].pos[1] = dl->verts[x][1];
+			tess3d.v[x + numVertices].pos[2] = dl->verts[x][2];
 
-			tess.position[x + numVertices][0] = dl->verts[x][0];
-			tess.position[x + numVertices][1] = dl->verts[x][1];
-			tess.position[x + numVertices][2] = dl->verts[x][2];
+			tess3d.v[x + numVertices].tc[0] = dl->st[x][0];
+			tess3d.v[x + numVertices].tc[1] = dl->st[x][1];
 
-			tess.texCoord[x + numVertices][0] = dl->stcoords[x][0];
-			tess.texCoord[x + numVertices][1] = dl->stcoords[x][1];
-
-			tess.color[x + numVertices][0] = decalColor[0];
-			tess.color[x + numVertices][1] = decalColor[1];
-			tess.color[x + numVertices][2] = decalColor[2];
-			tess.color[x + numVertices][3] = decalAlpha;
+			tess3d.v[x + numVertices].color[0] = decalColor[0];
+			tess3d.v[x + numVertices].color[1] = decalColor[1];
+			tess3d.v[x + numVertices].color[2] = decalColor[2];
+			tess3d.v[x + numVertices].color[3] = decalAlpha;
 		}
 
 		// set indices
-		for (x = 0; x < dl->numverts - 2; x++) {
-			tess.indices[numIndices+x*3+0] = numVertices;
-			tess.indices[numIndices+x*3+1] = numVertices + x + 1;
-			tess.indices[numIndices+x*3+2] = numVertices + x + 2;
+		for (x = 0; x < dl->numVerts - 2; x++) {
+			tess3d.indices[numIndices+x*3+0] = numVertices;
+			tess3d.indices[numIndices+x*3+1] = numVertices + x + 1;
+			tess3d.indices[numIndices+x*3+2] = numVertices + x + 2;
 		}
-		numVertices += dl->numverts;
-		numIndices += (dl->numverts - 2) * 3;
+		numVertices += dl->numVerts;
+		numIndices += (dl->numVerts - 2) * 3;
      }     
 
      // draw the rest
 	 if (numIndices){
+
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
 		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->position,	numVertices * sizeof(vec4_t), tess.position);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->texCoord,	numVertices * sizeof(vec2_t), tess.texCoord);
-		qglBufferSubData(GL_ARRAY_BUFFER, (GLintptr)((tess_t *)0)->color,		numVertices * sizeof(vec4_t), tess.color);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess.indices);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), tess3d.indices);
 
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
 		c_decalsTris += numIndices/3;
@@ -245,7 +229,7 @@ R_ClipPoly
 static void R_ClipPoly(int nump, vec4_t vecs, int stage, fragment_t * fr)
 {
 	cplane_t *plane;
-	qboolean front, back;
+	bool front, back;
 	vec4_t newv[MAX_DECAL_VERTS];
 	float *v, d, dists[MAX_DECAL_VERTS];
 	int newc, i, j, sides[MAX_DECAL_VERTS];
@@ -254,8 +238,8 @@ static void R_ClipPoly(int nump, vec4_t vecs, int stage, fragment_t * fr)
 		Com_Printf("R_ClipPoly: MAX_DECAL_VERTS");
 	if (stage == 6) {			// fully clipped
 		if (nump > 2) {
-			fr->numverts = nump;
-			fr->firstvert = numFragmentVerts;
+			fr->numVerts = nump;
+			fr->firstVert = numFragmentVerts;
 
 			if (numFragmentVerts + nump >= maxFragmentVerts)
 				nump = maxFragmentVerts - numFragmentVerts;
@@ -269,15 +253,15 @@ static void R_ClipPoly(int nump, vec4_t vecs, int stage, fragment_t * fr)
 		return;
 	}
 
-	front = back = qfalse;
+	front = back = false;
 	plane = &fragmentPlanes[stage];
 	for (i = 0, v = vecs; i < nump; i++, v += 4) {
 		d = PlaneDiff(v, plane);
 		if (d > ON_EPSILON) {
-			front = qtrue;
+			front = true;
 			sides[i] = SIDE_FRONT;
 		} else if (d < -ON_EPSILON) {
-			back = qtrue;
+			back = true;
 			sides[i] = SIDE_BACK;
 		} else {
 			sides[i] = SIDE_ON;
@@ -354,7 +338,7 @@ static void R_PlanarSurfClipFragment(mnode_t * node, msurface_t * surf,
 	// copy vertex data and clip to each triangle
 	for (i = 0; i < surf->polys->numVerts - 2; i++) {
 		fr = &clippedFragments[numClippedFragments];
-		fr->numverts = 0;
+		fr->numVerts = 0;
 		fr->node = node;
 		fr->surf = surf;
 
@@ -366,7 +350,7 @@ static void R_PlanarSurfClipFragment(mnode_t * node, msurface_t * surf,
 		VectorCopy(v3, verts[2]);
 		R_ClipPoly(3, verts[0], 0, fr);
 
-		if (fr->numverts) {
+		if (fr->numVerts) {
 			numClippedFragments++;
 
 			if ((numFragmentVerts >= maxFragmentVerts)

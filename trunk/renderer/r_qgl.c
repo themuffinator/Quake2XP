@@ -1122,7 +1122,7 @@ void QGL_Shutdown (void) {
 ** might be.
 **
 */
-qboolean QGL_Init () {
+bool QGL_Init () {
 #ifdef _WIN32
 //----------------------------------------------------------------------
 	if ((glw_state.hinstOpenGL = LoadLibraryA ("opengl32")) == 0) {
@@ -1130,12 +1130,12 @@ qboolean QGL_Init () {
 
 		FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError (), MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&buf, 0, NULL);
 		Con_Printf (PRINT_ALL, "%s\n", buf);
-		return qfalse;
+		return false;
 	}
 #else
 	if ((glw_state.hinstOpenGL = dlopen ("libGL.so.1", RTLD_LAZY)) == 0) {
 		Con_Printf (PRINT_ALL, "%s\n", dlerror ());
-		return qfalse;
+		return false;
 	}
 #endif
 
@@ -1498,7 +1498,7 @@ qboolean QGL_Init () {
 	qwglSwapBuffers = GPA ("wglSwapBuffers");
 #endif
 
-	return qtrue;
+	return true;
 }
 
 #pragma warning (default : 4113 4133 4047 )

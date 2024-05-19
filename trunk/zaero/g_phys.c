@@ -78,7 +78,7 @@ SV_RunThink
 Runs thinking code for this frame if necessary
 =============
 */
-qboolean SV_RunThink (edict_t *ent)
+bool SV_RunThink (edict_t *ent)
 {
 	float	thinktime;
 
@@ -387,7 +387,7 @@ Objects need to be moved back on a failed push,
 otherwise riders would continue to slide.
 ============
 */
-qboolean SV_Push (edict_t *pusher, vec3_t move, vec3_t amove)
+bool SV_Push (edict_t *pusher, vec3_t move, vec3_t amove)
 {
 	int			i, e;
 	edict_t		*check, *block;
@@ -667,8 +667,8 @@ void SV_Physics_Toss (edict_t *ent)
 	vec3_t		move;
 	float		backoff;
 	edict_t		*slave;
-	qboolean	wasinwater;
-	qboolean	isinwater;
+	bool	wasinwater;
+	bool	isinwater;
 	vec3_t		old_origin;
   float speed;
 
@@ -826,8 +826,8 @@ void SV_AddRotationalFriction (edict_t *ent)
 
 void SV_Physics_Step (edict_t *ent)
 {
-	qboolean	wasonground;
-	qboolean	hitsound = false;
+	bool	wasonground;
+	bool	hitsound = false;
 	float		*vel;
 	float		speed, newspeed, control;
 	float		friction;
@@ -937,8 +937,8 @@ void SV_Physics_Step (edict_t *ent)
 void SV_Physics_FallFloat (edict_t *ent)
 {
 	float gravVal = ent->gravity * sv_gravity->value * FRAMETIME;
-	qboolean wasonground = false;
-	qboolean hitsound = false;
+	bool wasonground = false;
+	bool hitsound = false;
 	
 	// check velocity
 	SV_CheckVelocity (ent);
@@ -1032,8 +1032,8 @@ void SV_Physics_FallFloat (edict_t *ent)
 
 	if (ent->velocity[0] || ent->velocity[1] || ent->velocity[2])
 	{
-		qboolean isinwater = false;
-		qboolean wasinwater = false;
+		bool isinwater = false;
+		bool wasinwater = false;
 		vec3_t old_origin;
 		VectorCopy (ent->s.origin, old_origin);
 	

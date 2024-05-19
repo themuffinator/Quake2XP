@@ -23,7 +23,7 @@ int animations_count = 0;
 /**************************************************************************
    Misc routines.
   **************************************************************************/
-qboolean cut_up_string(char **str, char **clipping)
+bool cut_up_string(char **str, char **clipping)
 {
 	char *end;
 	size_t	clippingSize;
@@ -121,7 +121,7 @@ anim_data_t *find_monster_animator(edict_t *monster)
 	return NULL;
 }
 
-qboolean anim_player_correct_aim(edict_t *self, vec3_t aim)
+bool anim_player_correct_aim(edict_t *self, vec3_t aim)
 {
 	anim_data_t *anim;
 
@@ -418,7 +418,7 @@ void calculate_buffer_actuals(anim_data_t *data)
 Console command routines.
 **************************************************************************/
 
-void anim_player_report(char *targetname, char *description, qboolean on)
+void anim_player_report(char *targetname, char *description, bool on)
 {
 	gi.dprintf("%s %s ", targetname, description);
 	if (on)
@@ -586,7 +586,7 @@ void anim_player_pause(void)
 /*=========================================================================
 Captures a monster or sets the monster current if already captured.
 =========================================================================*/
-qboolean anim_player_capture(char *targetname)
+bool anim_player_capture(char *targetname)
 {
 	edict_t *ent;
 	int i;
@@ -630,7 +630,7 @@ qboolean anim_player_capture(char *targetname)
 /*=========================================================================
 Toggles current monster stationary.
 =========================================================================*/
-void anim_player_set_active(char *targetname, qboolean active)
+void anim_player_set_active(char *targetname, bool active)
 {
 	anim_data_t *anim;
 	int i;

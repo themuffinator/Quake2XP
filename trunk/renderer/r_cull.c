@@ -58,17 +58,17 @@ int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
  BoundsAndSphereIntersect
  =================
  */
-qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius) {
+bool BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius) {
 
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	if (mins[0] > origin[0] + radius || mins[1] > origin[1] + radius || mins[2] > origin[2] + radius)
-		return qfalse;
+		return false;
 	if (maxs[0] < origin[0] - radius || maxs[1] < origin[1] - radius || maxs[2] < origin[2] - radius)
-		return qfalse;
+		return false;
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -77,113 +77,113 @@ BoundsIntersect
 
 ===========
 */
-qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2) {
+bool BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2) {
 	
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	if (mins1[0] > maxs2[0] || mins1[1] > maxs2[1] || mins1[2] > maxs2[2])
-		return qfalse;
+		return false;
 	if (maxs1[0] < mins2[0] || maxs1[1] < mins2[1] || maxs1[2] < mins2[2])
-		return qfalse;
+		return false;
 
-	return qtrue;
+	return true;
 }
 /*
 =================
 R_CullBox
 
-Returns qtrue if the box is completely outside the frustom
+Returns true if the box is completely outside the frustom
 =================
 */
-qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
+bool R_CullBox (vec3_t mins, vec3_t maxs) {
 	int i;
 
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	for (i = 0; i < 6; i++)
 	if (BOX_ON_PLANE_SIDE (mins, maxs, &frustum[i]) == 2)
-		return qtrue;
-	return qfalse;
+		return true;
+	return false;
 }
 
-qboolean R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust) {
+bool R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	int		i;
 
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	for (i = 0; i < 4; i++) {
 		if (BoxOnPlaneSide22(mins, maxs, &frust[i]) == 2)
-			return qtrue;
+			return true;
 	}
 
-	return qfalse;
+	return false;
 }
 
 /*
 =================
 R_CullOrigin
 
-Returns qtrue if the origin is completely outside the frustom
+Returns true if the origin is completely outside the frustom
 =================
 */
-qboolean R_CullOrigin (vec3_t origin) {
+bool R_CullOrigin (vec3_t origin) {
 	int i;
 
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	for (i = 0; i < 6; i++)
 	if (BOX_ON_PLANE_SIDE (origin, origin, &frustum[i]) == 2)
-		return qtrue;
-	return qfalse;
+		return true;
+	return false;
 }
 
 
-qboolean R_CullPoint (vec3_t org) {
+bool R_CullPoint (vec3_t org) {
 	int i;
 
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	for (i = 0; i < 6; i++)
 	if (DotProduct (org, frustum[i].normal) > frustum[i].dist)
-		return qtrue;
+		return true;
 
-	return qfalse;
+	return false;
 }
 
-qboolean R_CullSphere (const vec3_t centre, const float radius) {
+bool R_CullSphere (const vec3_t centre, const float radius) {
 	int		i;
 	cplane_t *p;
 
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
 	for (i = 0, p = frustum; i < 6; i++, p++) {
 		if (DotProduct (centre, p->normal) - p->dist <= -radius)
-			return qtrue;
+			return true;
 	}
 
-	return qfalse;
+	return false;
 }
 
-qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
+bool BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
 	
 	if (r_noCull->integer)
-		return qfalse;
+		return false;
 
-	if (p[0] > maxs[0]) return qfalse;
-	if (p[1] > maxs[1]) return qfalse;
-	if (p[2] > maxs[2]) return qfalse;
+	if (p[0] > maxs[0]) return false;
+	if (p[1] > maxs[1]) return false;
+	if (p[2] > maxs[2]) return false;
 
-	if (p[0] < mins[0]) return qfalse;
-	if (p[1] < mins[1]) return qfalse;
-	if (p[2] < mins[2]) return qfalse;
+	if (p[0] < mins[0]) return false;
+	if (p[1] < mins[1]) return false;
+	if (p[2] < mins[2]) return false;
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -192,14 +192,14 @@ Frustum_CullHexProjection
 
 =========================
 */
-qboolean Frustum_CullHexProjection(const vec3_t points[8], const vec3_t projOrigin, const int planeBits) {
+bool Frustum_CullHexProjection(const vec3_t points[8], const vec3_t projOrigin, const int planeBits) {
 	const cplane_t	*plane;
 	vec3_t		projPoints[8];
 	uint		side;
 	int			i, j;
 
 	if (!planeBits)
-		return qfalse;
+		return false;
 
 	for (i = 0; i < 8; i++)
 		VectorSubtract(points[i], projOrigin, projPoints[i]);
@@ -229,10 +229,10 @@ qboolean Frustum_CullHexProjection(const vec3_t points[8], const vec3_t projOrig
 		}
 
 		if (side == PLANE_BACK)
-			return qtrue;
+			return true;
 	}
 
-	return qfalse;
+	return false;
 }
 /*
 ============================
@@ -240,7 +240,7 @@ Frustum_CullBoundsProjection
 
 ============================
 */
-qboolean Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits) {
+bool Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits) {
 	vec3_t	points[8];
 	int		i;
 
@@ -258,7 +258,7 @@ Frustum_CullLocalBoundsProjection
 
 =================================
 */
-qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits) {
+bool Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits) {
 	vec3_t	tMins, tMaxs;
 	vec3_t	tmp;
 	vec3_t	points[8];
@@ -342,7 +342,7 @@ int SignbitsForPlane(cplane_t* out) {
 	return bits;
 }
 
-void R_SetFrustum(qboolean zPass) {
+void R_SetFrustum(bool zPass) {
 	int i;
 
 	RotatePointAroundVector(frustum[0].normal, vup, vpn, -(90 - r_newrefdef.fov_x * 0.5));

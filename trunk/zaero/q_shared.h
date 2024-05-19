@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
 
 #if defined _M_IX86 && !defined C_ONLY
 #define id386	1
@@ -38,8 +39,6 @@
 #endif // __APPLE__ || MACOSX
 
 typedef unsigned char 		byte;
-typedef enum {false, true}	qboolean;
-
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -282,7 +281,7 @@ void COM_DefaultExtension (char *path, size_t pathSize, char *extension);
 char *COM_Parse (char **data_p);
 // data is an in/out parm, returns a parsed out token
 
-qboolean Com_ParseColorString (const char *s, color_t outColor);	// Knightmare added
+bool Com_ParseColorString (const char *s, color_t outColor);	// Knightmare added
 
 void Com_sprintf (char *dest, size_t size, char *fmt, ...);
 // Knightmare added
@@ -322,7 +321,7 @@ char	*va(char *format, ...);
 char *Info_ValueForKey (char *s, char *key);
 void Info_RemoveKey (char *s, char *key);
 void Info_SetValueForKey (char *s, char *key, char *value);
-qboolean Info_Validate (char *s);
+bool Info_Validate (char *s);
 
 /*
 ==============================================================
@@ -388,7 +387,7 @@ typedef struct cvar_s
 	char		*string;
 	char		*latched_string;	// for CVAR_LATCH vars
 	int			flags;
-	qboolean	modified;	// set each time the cvar is changed
+	bool	modified;	// set each time the cvar is changed
 	float		value;
 	struct cvar_s *next;
 	// Knightmare- added cvar defaults
@@ -515,8 +514,8 @@ typedef struct csurface_s
 // a trace is returned when a box is swept through the world
 typedef struct
 {
-	qboolean	allsolid;	// if true, plane is not valid
-	qboolean	startsolid;	// if true, the initial point was in a solid area
+	bool	allsolid;	// if true, plane is not valid
+	bool	startsolid;	// if true, the initial point was in a solid area
 	float		fraction;	// time completed, 1.0 = didn't hit anything
 	vec3_t		endpos;		// final position
 	cplane_t	plane;		// surface normal at impact
@@ -609,7 +608,7 @@ typedef struct
 
 	// command (in)
 	usercmd_t		cmd;
-	qboolean		snapinitial;	// if s has been changed outside pmove
+	bool		snapinitial;	// if s has been changed outside pmove
 
 	// results (out)
 	int			numtouch;
