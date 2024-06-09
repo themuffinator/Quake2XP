@@ -232,7 +232,13 @@ typedef enum {
 
 typedef struct {
 	float s, t;
-} fstvert_t;
+} md2StVerts_t;
+
+typedef struct {
+	vec3_t *normals;
+	vec3_t *binormals;
+	vec3_t *tangents;
+} md2Verts_t;
 
 
 typedef struct {

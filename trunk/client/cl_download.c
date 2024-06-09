@@ -77,7 +77,7 @@ CL_RequestNextDownload(void)
 {
 	unsigned int map_checksum; /* for detecting cheater maps */
 	char fn[MAX_OSPATH];
-	dmdl_t* pheader;
+	md2Header * pheader;
 
 	if (precacherIteration == 0)
 	{
@@ -197,7 +197,7 @@ CL_RequestNextDownload(void)
 						continue;
 					}
 
-					pheader = (dmdl_t*)precache_model;
+					pheader = (md2Header *)precache_model;
 
 					if (LittleLong(pheader->version) != ALIAS_VERSION)
 					{
@@ -207,7 +207,7 @@ CL_RequestNextDownload(void)
 					}
 				}
 
-				pheader = (dmdl_t*)precache_model;
+				pheader = (md2Header *)precache_model;
 
 				while (precache_model_skin - 1 < LittleLong(pheader->num_skins))
 				{

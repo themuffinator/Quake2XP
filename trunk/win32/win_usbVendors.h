@@ -78,6 +78,8 @@ product_t product[] = {
 {0x9090, "XL-730K/XL-740K/XL-750BK/XL-755BK Mice."},
 {0xF613, "Bloody V7M Mouse."},
 {0xFA1C, "Bloody B135N Keyboard"},
+{0xE5C0, "Bloody Keyboard"},
+
 	// --------logitech
 {0XC70E,	"MX1000 Bluetooth Laser Mouse."},
 {0XC518,	"MX610 Laser Cordless Mous.e"},
@@ -106,6 +108,7 @@ product_t product[] = {
 {0XC066,	"G9x Laser Mouse."},
 {0XC068,	"G500 Laser Mouse."},
 {0xC069,	"M500 Corded Mouse."},
+{0xC092,	"G102 LightSync Mouse."},
 
 {0xc21d,	"Gamepad F310."},	
 {0xc21e,	"Gamepad F510."},

@@ -92,24 +92,24 @@ typedef struct {
 typedef struct {
 	short s;
 	short t;
-} dstvert_t;
+} md2St_t;
 
 typedef struct {
 	short index_xyz[3];
 	short index_st[3];
-} dtriangle_t;
+} md2Triangle_t;
 
 typedef struct {
 	byte v[3];					// scaled byte to fit in frame mins/maxs
 	byte lightnormalindex;
-} dtrivertx_t;
+} md2Vertex_t;
 
 typedef struct {
 	float scale[3];				// multiply byte verts by this
 	float translate[3];			// then add this
 	char name[16];				// frame name from grabbing
-	dtrivertx_t verts[1];		// variable sized
-} daliasframe_t;
+	md2Vertex_t verts[1];		// variable sized
+} md2Frame_t;
 
 
 // the glcmd format:
@@ -142,7 +142,7 @@ typedef struct {
 	int ofs_frames;				// offset for first frame
 	int ofs_glcmds;
 	int ofs_end;				// end of file
-} dmdl_t;
+} md2Header;
 
 
 

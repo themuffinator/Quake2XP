@@ -57,14 +57,8 @@ void R_Bloom (void) {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
-	if (r_hdrBloomQuality->value < 0.5 && r_hdrBloomQuality->value > 0.25)
-		Cvar_SetValue("r_hdrBloomQuality", 0.5);
-	if (r_hdrBloomQuality->value < 1.0 && r_hdrBloomQuality->value > 0.5)
-		Cvar_SetValue("r_hdrBloomQuality", 1.0);
-
-	float scale = r_hdrBloomQuality->value;
-	int w = vid.width * scale;
-	int h = vid.height * scale;
+	int w = vid.width	* 0.5;
+	int h = vid.height	* 0.5;
 
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.bloomCompute->id);
@@ -82,14 +76,14 @@ void R_Bloom (void) {
 	qglMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	int const group_size = 64;
 	
-	GL_BindProgram(blurhComputeProgram);
+	GL_BindProgram(blur_xComputeProgram);
 	qglBindImageTexture(0, i_bloomIn->texnum,		0, GL_FALSE, 0, GL_READ_ONLY,	GL_RGBA16F);
 	qglBindImageTexture(1, i_bloomInterim->texnum,	0, GL_FALSE, 0, GL_WRITE_ONLY,	GL_R11F_G11F_B10F);
 	qglDispatchCompute((w + group_size - 1) / group_size, h, 1);
-	
+
 	qglMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	
-	GL_BindProgram(blurvComputeProgram);
+	GL_BindProgram(blur_yComputeProgram);
 	qglBindImageTexture(0, i_bloomInterim->texnum,	0, GL_FALSE, 0, GL_READ_ONLY,	GL_R11F_G11F_B10F);
 	qglBindImageTexture(1, i_bloomOut->texnum,		0, GL_FALSE, 0, GL_WRITE_ONLY,	GL_R11F_G11F_B10F);
 	qglDispatchCompute(w, (h + group_size - 1) / group_size, 1);
@@ -101,7 +95,6 @@ void R_Bloom (void) {
 	//final pass
 	GL_BindProgram (bloomFinalProgram);
 	qglUniform1f(U_PARAM_FLOAT_0, r_hdrBloomIntens->value);
-	qglUniform1f(U_PARAM_FLOAT_1, scale);
 	GL_SetBindlessTexture(U_TMU0, i_hdrBaseInterim->handle);
 	GL_SetBindlessTexture(U_TMU1, i_bloomOut->handle);
 

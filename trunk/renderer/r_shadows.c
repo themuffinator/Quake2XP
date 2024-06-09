@@ -45,7 +45,7 @@ Alias Shadow Volumes
 =====================
 */
 
-void R_FindTriangleFacingLight(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg) {
+void R_FindTriangleFacingLight(md2Header *paliashdr, md2Triangle_t *tris, vec3_t lightOrg) {
 
 	vec3_t	temp, dir0, dir1, r_triNormals;
 	int		i;
@@ -72,17 +72,17 @@ void R_FindTriangleFacingLight(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t ligh
 	}
 }
 
-void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
-	dtriangle_t		*tris;
+void BuildShadowVolumeTriangles(md2Header * hdr, vec3_t lightOrg) {
+	md2Triangle_t		*tris;
 	neighbors_t		*neighbours;
 	vec4_t			v0, v1, v2;
-	daliasframe_t	*frame;
-	dtrivertx_t		*verts;
+	md2Frame_t	*frame;
+	md2Vertex_t		*verts;
 	int				i, j, numVerts = 0, numIndices = 0;
 
-	frame = (daliasframe_t *)((byte *)hdr + hdr->ofs_frames + currententity->frame * hdr->framesize);
+	frame = (md2Frame_t *)((byte *)hdr + hdr->ofs_frames + currententity->frame * hdr->framesize);
 	verts = frame->verts;
-	tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
+	tris = (md2Triangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
 
 	R_FindTriangleFacingLight(hdr, tris, lightOrg);
 
@@ -262,7 +262,7 @@ bool R_EntityCastShadow() {
 }
 
 
-void GL_LerpShadowVerts (int numVerts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
+void GL_LerpShadowVerts (int numVerts, md2Vertex_t *v, md2Vertex_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
 
 	for (i = 0; i < numVerts; i++, v++, ov++, lerp += 3) {
@@ -273,9 +273,9 @@ void GL_LerpShadowVerts (int numVerts, dtrivertx_t *v, dtrivertx_t *ov, float *l
 }
 
 void R_DrawMD2ShadowVolume () {
-	dmdl_t			*paliashdr;
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*v, *ov, *verts;
+	md2Header			*paliashdr;
+	md2Frame_t	*frame, *oldFrame;
+	md2Vertex_t		*v, *ov, *verts;
 	int				i;
 	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
@@ -283,10 +283,10 @@ void R_DrawMD2ShadowVolume () {
 	if (!R_EntityCastShadow())
 		return;
 
-	paliashdr	= (dmdl_t *)currentmodel->extraData;
-	frame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	paliashdr	= (md2Header *)currentmodel->extraData;
+	frame		= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts		= v = frame->verts;
-	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
+	oldFrame	= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	ov			= oldFrame->verts;
 
 	frontlerp	= 1.0 - currententity->backLerp;

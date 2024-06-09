@@ -254,7 +254,7 @@ BOOL GetDisplayMonitorInfo(char *monitorName, char *monitorModel)
 			char *p, *s;
 			char deviceID[128];
 			char regPath[128];
-			byte edid[128];
+			byte edid[265];
 			HKEY hKey;
 			int j = 0;
 			lstrcpy(deviceID, dd.DeviceID);

@@ -26,18 +26,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*v, *ov, *verts;
+void R_CalcAliasFrameLerp (md2Header *paliashdr, float shellScale) {
+	md2Frame_t	*frame, *oldFrame;
+	md2Vertex_t		*v, *ov, *verts;
 	float			frontlerp, backlerp, *lerp;
 	vec3_t			move, vectors[3];
 	vec3_t			frontv, backv;
 	int				i;
 	bool		noLerp = false;
 
-	frame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	frame		= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts		= v = frame->verts;
-	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
+	oldFrame	= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	ov			= oldFrame->verts;
 	backlerp	= currententity->backLerp;
 	frontlerp	= 1.0 - backlerp;
@@ -100,14 +100,14 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 
 int CL_PMpointcontents (vec3_t point);
 
-void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
+void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 	int				index_xyz, *order,	count, numVerts = 0;
 	image_t			*albedo, *normalMap, *emissive;
 	float			alphaShift, s, os, shade, backlerp, frontlerp;
 	bool			noLerp = false;
-	dtriangle_t		*tris;
-	daliasframe_t	*frame,		*oldFrame;
-	dtrivertx_t		*verts,		*oldVerts;
+	md2Triangle_t		*tris;
+	md2Frame_t	*frame,		*oldFrame;
+	md2Vertex_t		*verts,		*oldVerts;
 	vec3_t			*normals,	*oldNormals;
 	vec3_t			*tangents,	*oldTangents;
 	vec3_t			*binormals,	*oldBinormals;
@@ -196,16 +196,16 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	R_CalcAliasFrameLerp (paliashdr, 0);
 
 	c_aliasTris += paliashdr->num_tris;
-	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	tris = (md2Triangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 
-	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
+	oldFrame		= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts		= oldFrame->verts;
 	offs			= paliashdr->num_xyz * currententity->oldFrame;
 	oldNormals		= currentmodel->normals + offs;
 	oldTangents		= currentmodel->tangents + offs;
 	oldBinormals	= currentmodel->binormals + offs;
 
-	frame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	frame		= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts		= frame->verts;
 	offs		= paliashdr->num_xyz * currententity->frame;
 	normals		= currentmodel->normals + offs;
@@ -367,13 +367,13 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		GL_DepthMask(0);
 }
 
-void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
+void GL_DrawAliasFrameLerpShell (md2Header *paliashdr) {
 	int				index_xyz, *order, count, numVerts = 0;
-	dtriangle_t		*tris;
+	md2Triangle_t		*tris;
 	float			backlerp, frontlerp;
 	bool		noLerp = false;
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*verts, *oldVerts;
+	md2Frame_t	*frame, *oldFrame;
+	md2Vertex_t		*verts, *oldVerts;
 	vec3_t			*normals, *oldNormals;
 	uint			offs;
 
@@ -389,13 +389,13 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	c_aliasTris += paliashdr->num_tris;
 
-	tris		= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
-	oldFrame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
+	tris		= (md2Triangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	oldFrame	= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts	= oldFrame->verts;
 	offs		= paliashdr->num_xyz * currententity->oldFrame;
 	oldNormals	= currentmodel->normals + offs;
 
-	frame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	frame	= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts	= frame->verts;
 	offs	= paliashdr->num_xyz * currententity->frame;
 	normals = currentmodel->normals + offs;
@@ -474,14 +474,14 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 }
 
-void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
+void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 	int				index_xyz,	*order, count, numVerts = 0;
 	vec3_t			*binormals, *oldBinormals;
 	vec3_t			*tangents,	*oldTangents;
 	vec3_t			*normals,	*oldNormals;
-	dtriangle_t		*tris;
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*verts, *oldVerts;
+	md2Triangle_t		*tris;
+	md2Frame_t	*frame, *oldFrame;
+	md2Vertex_t		*verts, *oldVerts;
 	float			backlerp, frontlerp;
 	uint			offs;
 	vec3_t			maxs;
@@ -494,15 +494,15 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	if (currentmodel->noSelfShadow && r_shadows->integer)
 		GL_Disable(GL_STENCIL_TEST);
 
-	tris			= (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
-	oldFrame		= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
+	tris			= (md2Triangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	oldFrame		= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts		= oldFrame->verts;
 	offs			= paliashdr->num_xyz * currententity->oldFrame;
 	oldBinormals	= currentmodel->binormals + offs;
 	oldTangents		= currentmodel->tangents + offs;
 	oldNormals		= currentmodel->normals + offs;
 
-	frame			= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	frame			= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts			= frame->verts;
 	offs			= paliashdr->num_xyz * currententity->frame;
 	binormals		= currentmodel->binormals + offs;
@@ -681,8 +681,8 @@ ALIAS MODELS
 float	shadelight[3];
 float	ref_realtime = 0;
 
-void	GL_DrawAliasFrameLerp(dmdl_t *paliashdr, vec3_t color);
-void	GL_DrawAliasFrameLerpShell(dmdl_t *paliashdr);
+void	GL_DrawAliasFrameLerp(md2Header *paliashdr, vec3_t color);
+void	GL_DrawAliasFrameLerpShell(md2Header *paliashdr);
 
 /*
 ** R_CullAliasModel
@@ -691,13 +691,13 @@ bool R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 {
 	int i;
 	vec3_t		mins, maxs;
-	dmdl_t		*paliashdr;
+	md2Header		*paliashdr;
 	vec3_t		vectors[3];
 	vec3_t		thismins, oldmins, thismaxs, oldmaxs;
-	daliasframe_t *pframe, *poldframe;
+	md2Frame_t *pframe, *poldframe;
 	vec3_t tmp;
 
-	paliashdr = (dmdl_t *)currentmodel->extraData;
+	paliashdr = (md2Header *)currentmodel->extraData;
 
 	if ((e->frame >= paliashdr->num_frames) || (e->frame < 0)) {
 		Com_Printf("R_CullAliasModel %s: no such frame %d\n",
@@ -709,9 +709,9 @@ bool R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 		e->oldFrame = 0;
 	}
 
-	pframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + e->frame * paliashdr->framesize);
+	pframe = (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + e->frame * paliashdr->framesize);
 
-	poldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + e->oldFrame * paliashdr->framesize);
+	poldframe = (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + e->oldFrame * paliashdr->framesize);
 
 	if (pframe == poldframe) {
 		for (i = 0; i < 3; i++) {
@@ -838,7 +838,7 @@ R_DrawAliasModel
 
 void R_DrawAliasModel(entity_t *e)
 {
-	dmdl_t		*paliashdr;
+	md2Header		*paliashdr;
 	vec3_t		bbox[8];
 
 	if (!(e->flags & RF_WEAPONMODEL)) {
@@ -851,7 +851,7 @@ void R_DrawAliasModel(entity_t *e)
 			return;
 	}
 
-	paliashdr = (dmdl_t *)currentmodel->extraData;
+	paliashdr = (md2Header *)currentmodel->extraData;
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
@@ -886,7 +886,7 @@ void R_DrawAliasModel(entity_t *e)
 
 void R_DrawAliasModelLightPass(bool weapon_model)
 {
-	dmdl_t	*paliashdr;
+	md2Header	*paliashdr;
 	vec3_t	bbox[8];
 	vec3_t	oldLight, oldView, tmp;
 
@@ -920,7 +920,7 @@ void R_DrawAliasModelLightPass(bool weapon_model)
 
 visible:
 
-	paliashdr = (dmdl_t *)currentmodel->extraData;
+	paliashdr = (md2Header *)currentmodel->extraData;
 
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls

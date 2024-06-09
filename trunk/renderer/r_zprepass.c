@@ -264,12 +264,12 @@ void R_DrawDepthBrushModel (void) {
 	GL_DrawDepthBspTris();
 }
 
-void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
+void R_CalcAliasFrameLerp (md2Header *paliashdr, float shellScale);
 
-void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
+void GL_DrawAliasFrameLerpDepth(md2Header *paliashdr) {
 	int					index_xyz;
 	int					i, j, k = 0;
-	dtriangle_t			*tris;
+	md2Triangle_t			*tris;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
@@ -280,7 +280,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	c_aliasTris += paliashdr->num_tris;
-	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	tris = (md2Triangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 	k = 0;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
@@ -297,7 +297,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 void R_DrawDepthAliasModel(void){
 
-	dmdl_t		*paliashdr;
+	md2Header		*paliashdr;
 	vec3_t		bbox[8];
 	
 	if (!r_drawEntities->integer)
@@ -306,7 +306,7 @@ void R_DrawDepthAliasModel(void){
 	if (R_CullAliasModel(bbox, currententity))
 		return;
 
-	paliashdr = (dmdl_t *)currentmodel->extraData;
+	paliashdr = (md2Header *)currentmodel->extraData;
 
 	if ((currententity->frame >= paliashdr->num_frames) || (currententity->frame < 0)) {
 

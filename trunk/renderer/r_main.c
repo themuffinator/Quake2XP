@@ -1318,7 +1318,6 @@ void R_RegisterCvars(void)
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
 	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.5", CVAR_ARCHIVE);
-	r_hdrBloomQuality =					Cvar_Get("r_hdrBloomQuality", "0.5", CVAR_ARCHIVE);
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
@@ -2048,7 +2047,6 @@ void R_BeginFrame()
 	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
 	r_parallaxScale->integer = ClampCvarInteger(0, 6, r_parallaxScale->integer);
 	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
-	r_hdrBloomQuality->value = ClampCvar(0.25, 1.0, r_hdrBloomQuality->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;

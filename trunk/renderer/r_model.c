@@ -402,22 +402,22 @@ void Mod_Hunk_Free(void *base){
 size_t Mod_CalcMd3Memory(void *buffer){
 
 	int			i, numFrames, numTags, numMeshes, numSkins, numTris, numVerts;
-	dmd3_t		*pinmodel;
+	dmd3_t		*inModel;
 	dmd3mesh_t	*pinmesh;
 	size_t		headerSize, frameSize, tagSize, meshSize;
 	size_t		skinSize = 0, indexSize = 0, coordSize = 0, vertSize = 0, tri_n = 0;
 
-	pinmodel	= (dmd3_t *)buffer;
-	numFrames	= LittleLong(pinmodel->num_frames);
-	numTags		= LittleLong(pinmodel->num_tags);
-	numMeshes	= LittleLong(pinmodel->num_meshes);
+	inModel	= (dmd3_t *)buffer;
+	numFrames	= LittleLong(inModel->num_frames);
+	numTags		= LittleLong(inModel->num_tags);
+	numMeshes	= LittleLong(inModel->num_meshes);
 
 	// calc sizes rounded to cacheline
 	headerSize	= (sizeof(md3Model_t) + 31) & ~31;
 	frameSize	= ((sizeof(md3Frame_t) * numFrames) + 31) & ~31;
 	tagSize		= ((sizeof(md3Tag_t) * numFrames * numTags) + 31) & ~31;
 	meshSize	= ((sizeof(md3Mesh_t) * numMeshes) + 31) & ~31;
-	pinmesh		= (dmd3mesh_t *)((byte *)pinmodel + LittleLong(pinmodel->ofs_meshes));
+	pinmesh		= (dmd3mesh_t *)((byte *)inModel + LittleLong(inModel->ofs_meshes));
 
 	for (i = 0; i < numMeshes; i++){
 
@@ -438,13 +438,13 @@ size_t Mod_CalcMd3Memory(void *buffer){
 
 size_t Mod_CalcMd2Memory(void *buffer) {
 
-	dmdl_t *pheader;
+	md2Header *md2Hdr;
 	size_t  model, tbn, tri_n;
 
-	pheader = (dmdl_t *)buffer;
-	model	= (LittleLong(pheader->ofs_end) + 31) & ~31;
-	tbn		= ((pheader->num_xyz * pheader->num_frames * sizeof(vec3_t)) * 3 + 31) & ~31;
-	tri_n	= (pheader->num_tris * sizeof(neighbors_t) + 31) & ~31;
+	md2Hdr = (md2Header *)buffer;
+	model	= (LittleLong(md2Hdr->ofs_end) + 31) & ~31;
+	tbn		= ((md2Hdr->num_xyz * md2Hdr->num_frames * sizeof(vec3_t)) * 3 + 31) & ~31;
+	tri_n	= ((md2Hdr->num_tris * sizeof(neighbors_t) * 2) + 31) & ~31; // fix it!!!!
 
 	return model + tbn + tri_n;
 }
@@ -2177,11 +2177,11 @@ Mod_FindTriangleWithEdge
 Shadow volumes stuff
 ========================
 */
-static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, dtriangle_t * tris, int numtris, int triIndex, int edgeIndex) {
+static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, md2Triangle_t * tris, int numtris, int triIndex, int edgeIndex) {
 
 
 	int i, j, found = -1, foundj = 0;
-	dtriangle_t *current = &tris[triIndex];
+	md2Triangle_t *current = &tris[triIndex];
 	bool dup = false;
 
 	for (i = 0; i < numtris; i++) {
@@ -2189,14 +2189,8 @@ static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, dtriangle_t * tris,
 			continue;
 
 		for (j = 0; j < 3; j++) {
-			if (((current->index_xyz[edgeIndex] == tris[i].index_xyz[j]) &&
-				(current->index_xyz[(edgeIndex + 1) % 3] ==
-					tris[i].index_xyz[(j + 1) % 3]))
-				||
-				((current->index_xyz[edgeIndex] ==
-					tris[i].index_xyz[(j + 1) % 3])
-					&& (current->index_xyz[(edgeIndex + 1) % 3] ==
-						tris[i].index_xyz[j]))) {
+			if (((current->index_xyz[edgeIndex] == tris[i].index_xyz[j]) && (current->index_xyz[(edgeIndex + 1) % 3] == tris[i].index_xyz[(j + 1) % 3]))
+				|| ((current->index_xyz[edgeIndex] == tris[i].index_xyz[(j + 1) % 3]) && (current->index_xyz[(edgeIndex + 1) % 3] == tris[i].index_xyz[j]))) {
 				// no edge for this model found yet?
 				if (found == -1) {
 					found = i;
@@ -2223,8 +2217,7 @@ Mod_BuildTriangleNeighbors
 
 ===============
 */
-static void Mod_BuildTriangleNeighbors(neighbors_t * neighbors,
-	dtriangle_t * tris, int numtris) {
+static void Mod_BuildTriangleNeighbors(neighbors_t * neighbors, md2Triangle_t * tris, int numtris) {
 	int i, j;
 
 	// set neighbours to -1
@@ -2341,34 +2334,35 @@ void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st
 
 #define md2SmoothAngle cos(DEG2RAD(45.0))
 
-void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst){
+void Mod_BuildMD2Tangents(model_t * mod, md2Header *md2Hdr, md2StVerts_t *outSt){
 
 	int				i, j, k, l;
-	daliasframe_t	*frame;
-	dtrivertx_t		*verts, *v;
-	dtriangle_t		*tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-	int				sz = pheader->num_xyz * pheader->num_frames * sizeof(vec3_t);
+	md2Frame_t		*frame;
+	md2Vertex_t		*verts, *v;
+	md2Triangle_t	*tris = (md2Triangle_t *)((byte *)md2Hdr + md2Hdr->ofs_tris);
+	int				sz = md2Hdr->num_xyz * md2Hdr->num_frames * sizeof(vec3_t);
 	static vec3_t	tmpT[MAX_VERTS], tmpB[MAX_VERTS], tmpN[MAX_VERTS];
 	vec3_t			*tangents = NULL, *binormals = NULL, *normals = NULL;
+//	md2Verts_t		*vertex = (md2Verts_t *)Z_Malloc(md2Hdr->num_st * sizeof(md2Verts_t));
 
 	mod->binormals	= binormals = Mod_Hunk_Alloc(sz);
 	mod->tangents	= tangents	= Mod_Hunk_Alloc(sz);
 	mod->normals	= normals	= Mod_Hunk_Alloc(sz);
 
 	//for all frames
-	for (i = 0; i < pheader->num_frames; i++) {
+	for (i = 0; i < md2Hdr->num_frames; i++) {
 
 		//set temp to zero
-		memset(tmpT, 0, pheader->num_xyz * sizeof(vec3_t));
-		memset(tmpB, 0, pheader->num_xyz * sizeof(vec3_t));
-		memset(tmpN, 0, pheader->num_xyz * sizeof(vec3_t));
+		memset(tmpT, 0, md2Hdr->num_xyz * sizeof(vec3_t));
+		memset(tmpB, 0, md2Hdr->num_xyz * sizeof(vec3_t));
+		memset(tmpN, 0, md2Hdr->num_xyz * sizeof(vec3_t));
 
-		tris	= (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-		frame	= (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
+		tris	= (md2Triangle_t *)((byte *)md2Hdr + md2Hdr->ofs_tris);
+		frame	= (md2Frame_t *)((byte *)md2Hdr + md2Hdr->ofs_frames + i * md2Hdr->framesize);
 		verts	= frame->verts;
 
 		//for all tris
-		for (j = 0; j < pheader->num_tris; j++){
+		for (j = 0; j < md2Hdr->num_tris; j++){
 			vec3_t	edge0, edge1, edge2;
 			vec3_t	triangle[3], dir0, dir1;
 			vec3_t	tangent, binormal, normal, cross;
@@ -2399,9 +2393,9 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst){
 			edge2[2] = (float)verts[tris[j].index_xyz[2]].v[2];
 			
 			R_CalcTangentVectors(edge0, edge1, edge2,
-				&poutst[tris[j].index_st[0]].s,
-				&poutst[tris[j].index_st[1]].s,
-				&poutst[tris[j].index_st[2]].s,
+				&outSt[tris[j].index_st[0]].s,
+				&outSt[tris[j].index_st[1]].s,
+				&outSt[tris[j].index_st[2]].s,
 				tangent, binormal);
 
 			// inverse if needed
@@ -2419,8 +2413,8 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst){
 			}
 		}
 
-		for (j = 0; j<pheader->num_xyz; j++)
-			for (k = j + 1; k<pheader->num_xyz; k++)
+		for (j = 0; j<md2Hdr->num_xyz; j++)
+			for (k = j + 1; k<md2Hdr->num_xyz; k++)
 				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2]){
 
 					float *jnormal = q_byteDirs[verts[j].lightnormalindex];
@@ -2440,25 +2434,26 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst){
 				}
 
 		//normalize averages
-		for (j = 0; j < pheader->num_xyz; j++){
+		for (j = 0; j < md2Hdr->num_xyz; j++){
 
 			VectorNormalizeFast2(tmpT[j], defTBN[0]);
 			VectorNormalizeFast2(tmpB[j], defTBN[1]);
 			VectorNormalizeFast2(tmpN[j], defTBN[2]);
 
-			VectorCopy(tmpT[j],	tangents	[i * pheader->num_xyz + j]);
-			VectorCopy(tmpB[j],	binormals	[i * pheader->num_xyz + j]);
-			VectorCopy(tmpN[j],	normals		[i * pheader->num_xyz + j]);
+			VectorCopy(tmpT[j],	tangents	[i * md2Hdr->num_xyz + j]);
+			VectorCopy(tmpB[j],	binormals	[i * md2Hdr->num_xyz + j]);
+			VectorCopy(tmpN[j],	normals		[i * md2Hdr->num_xyz + j]);
 		}
 	}
+//	Z_Free(vertex);
 }
 
-static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
+static void Mod_CalcMd2Indicies(model_t *mod, md2Header *md2Hdr){
 
 	int		 *order, count, numVerts = 0, i, n;
 	uint16_t indices[MAX_VERTS * 3], index = 0;
 
-	order = (int *)((byte *)pheader + pheader->ofs_glcmds);
+	order = (int *)((byte *)md2Hdr + md2Hdr->ofs_glcmds);
 
 	while (count = *order++){
 
@@ -2516,14 +2511,14 @@ static void Mod_CalcMd2Indicies(model_t *mod, dmdl_t *pheader){
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	int				i, j;
-	int				*pincmd,	*poutcmd;
-	dmdl_t			*pinmodel,	*pheader;
-	fstvert_t		*poutst;
-	dstvert_t		*pinst;
-	dtriangle_t		*pintri, *pouttri, *tris;
-	daliasframe_t	*pinframe, *poutframe;
-	daliasframe_t	*frame;
-	dtrivertx_t		*verts;
+	int				*inCmd,		*outCmd;
+	md2Header		*inModel,	*md2Hdr;
+	md2Triangle_t	*inTris,	*outTris, *tris;
+	md2Frame_t		*inFrame,	*outFrame;
+	md2Frame_t		*frame;
+	md2Vertex_t		*verts;
+	md2StVerts_t	*outSt;
+	md2St_t			*inSt;
 	int				version;
 	float			s, t;
 	float			iw, ih;
@@ -2533,30 +2528,30 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	char			nam[MAX_OSPATH];
 	char			*buff;
 
-	pinmodel = (dmdl_t *)buffer;
+	inModel = (md2Header *)buffer;
 
-	version = LittleLong(pinmodel->version);
+	version = LittleLong(inModel->version);
 	if (version != ALIAS_VERSION)
 		VID_Error(ERR_DROP, "%s has wrong version number (%i should be %i)", mod->name, version, ALIAS_VERSION);
 
-	pheader = Mod_Hunk_Alloc(LittleLong(pinmodel->ofs_end));
+	md2Hdr = Mod_Hunk_Alloc(LittleLong(inModel->ofs_end));
 	// byte swap the header fields and sanity check
-	for (i = 0; i < sizeof(dmdl_t)* 0.25; i++)
-		((int *)pheader)[i] = LittleLong(((int *)buffer)[i]);
+	for (i = 0; i < sizeof(md2Header)* 0.25; i++)
+		((int *)md2Hdr)[i] = LittleLong(((int *)buffer)[i]);
 
-	if (pheader->num_xyz <= 0)
+	if (md2Hdr->num_xyz <= 0)
 		VID_Error(ERR_DROP, "model %s has no vertices", mod->name);
 
-	if (pheader->num_xyz > MAX_VERTS)
+	if (md2Hdr->num_xyz > MAX_VERTS)
 		VID_Error(ERR_DROP, "model %s has too many vertices", mod->name);
 
-	if (pheader->num_st <= 0)
+	if (md2Hdr->num_st <= 0)
 		VID_Error(ERR_DROP, "model %s has no st vertices", mod->name);
 
-	if (pheader->num_tris <= 0)
+	if (md2Hdr->num_tris <= 0)
 		VID_Error(ERR_DROP, "model %s has no triangles", mod->name);
 
-	if (pheader->num_frames <= 0)
+	if (md2Hdr->num_frames <= 0)
 		VID_Error(ERR_DROP, "model %s has no frames", mod->name);
 
 	mod->flags = 0;
@@ -2585,64 +2580,64 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	}
 
 	// load triangle lists
-	pintri = (dtriangle_t *)((byte *)pinmodel + pheader->ofs_tris);
-	pouttri = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
+	inTris = (md2Triangle_t *)((byte *)inModel + md2Hdr->ofs_tris);
+	outTris = (md2Triangle_t *)((byte *)md2Hdr + md2Hdr->ofs_tris);
 
-	for (i = 0, tris = pouttri; i < pheader->num_tris; i++, tris++) {
+	for (i = 0, tris = outTris; i < md2Hdr->num_tris; i++, tris++) {
 		for (j = 0; j < 3; j++) {
-			tris->index_xyz[j] = LittleShort(pintri[i].index_xyz[j]);
-			tris->index_st[j] = LittleShort(pintri[i].index_st[j]);
+			tris->index_xyz[j] = LittleShort(inTris[i].index_xyz[j]);
+			tris->index_st[j] = LittleShort(inTris[i].index_st[j]);
 		}
 	}
 
 	// find neighbours
-	mod->neighbours = (neighbors_t*)Z_Malloc(pheader->num_tris * sizeof(neighbors_t));
-	Mod_BuildTriangleNeighbors(mod->neighbours, pouttri, pheader->num_tris);
+	mod->neighbours = Mod_Hunk_Alloc(md2Hdr->num_tris * sizeof(neighbors_t));
+	Mod_BuildTriangleNeighbors(mod->neighbours, outTris, md2Hdr->num_tris);
 
 	//
 	// load the frames
 	//
-	for (i = 0; i < pheader->num_frames; i++) {
-		pinframe = (daliasframe_t *)((byte *)pinmodel
-			+ pheader->ofs_frames +
-			i * pheader->framesize);
-		poutframe =
-			(daliasframe_t *)((byte *)pheader + pheader->ofs_frames +
-				i * pheader->framesize);
+	for (i = 0; i < md2Hdr->num_frames; i++) {
+		inFrame = (md2Frame_t *)((byte *)inModel
+			+ md2Hdr->ofs_frames +
+			i * md2Hdr->framesize);
+		outFrame =
+			(md2Frame_t *)((byte *)md2Hdr + md2Hdr->ofs_frames +
+				i * md2Hdr->framesize);
 
-		Q_memcpy(poutframe->name, pinframe->name, sizeof(poutframe->name));
+		Q_memcpy(outFrame->name, inFrame->name, sizeof(outFrame->name));
 		for (j = 0; j < 3; j++) {
-			poutframe->scale[j] = LittleFloat(pinframe->scale[j]) * mod->modelScale;
-			poutframe->translate[j] = LittleFloat(pinframe->translate[j]) * mod->modelScale;
+			outFrame->scale[j] = LittleFloat(inFrame->scale[j]) * mod->modelScale;
+			outFrame->translate[j] = LittleFloat(inFrame->translate[j]) * mod->modelScale;
 		}
 		// verts are all 8 bit, so no swapping needed
-		Q_memcpy(poutframe->verts, pinframe->verts,
-			pheader->num_xyz * sizeof(dtrivertx_t));
+		Q_memcpy(outFrame->verts, inFrame->verts,
+			md2Hdr->num_xyz * sizeof(md2Vertex_t));
 
 	}
 
 	mod->type = mod_alias;
 
 	// load the glcmds
-	pincmd = (int *)((byte *)pinmodel + pheader->ofs_glcmds);
-	poutcmd = (int *)((byte *)pheader + pheader->ofs_glcmds);
-	for (i = 0; i < pheader->num_glcmds; i++){
-		poutcmd[i] = LittleLong(pincmd[i]);
+	inCmd = (int *)((byte *)inModel + md2Hdr->ofs_glcmds);
+	outCmd = (int *)((byte *)md2Hdr + md2Hdr->ofs_glcmds);
+	for (i = 0; i < md2Hdr->num_glcmds; i++){
+		outCmd[i] = LittleLong(inCmd[i]);
 	}
 
-	if (poutcmd[pheader->num_glcmds - 1] != 0){
-		Com_Printf("%s: Entity %s has possible last element issues with %d verts.\n", __func__, mod->name, poutcmd[pheader->num_glcmds - 1]);
+	if (outCmd[md2Hdr->num_glcmds - 1] != 0){
+		Com_Printf("%s: Entity %s has possible last element issues with %d verts.\n", __func__, mod->name, outCmd[md2Hdr->num_glcmds - 1]);
 	}
 
-	Mod_CalcMd2Indicies(mod, pheader);
+	Mod_CalcMd2Indicies(mod, md2Hdr);
 
 	// register all skins
-	Q_memcpy((char *)pheader + pheader->ofs_skins, (char *)pinmodel + pheader->ofs_skins, pheader->num_skins * MAX_SKINNAME);
+	Q_memcpy((char *)md2Hdr + md2Hdr->ofs_skins, (char *)inModel + md2Hdr->ofs_skins, md2Hdr->num_skins * MAX_SKINNAME);
 
-	for (i = 0; i < pheader->num_skins; i++) {
+	for (i = 0; i < md2Hdr->num_skins; i++) {
 		char *pname;
 		char gl[128];
-		pname = (char *)pheader + pheader->ofs_skins + i * MAX_SKINNAME;
+		pname = (char *)md2Hdr + md2Hdr->ofs_skins + i * MAX_SKINNAME;
 
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
@@ -2684,27 +2679,27 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	}
 
 	// Calculate texcoords for triangles (for compute tangents and binormals)
-	pinst = (dstvert_t *)((byte *)pinmodel + pheader->ofs_st);
-	poutst = (fstvert_t*)Z_Malloc(pheader->num_st * sizeof(fstvert_t));
-	iw = 1.0 / pheader->skinwidth;
-	ih = 1.0 / pheader->skinheight;
-	for (i = 0; i < pheader->num_st; i++) {
-		s = LittleShort(pinst[i].s);
-		t = LittleShort(pinst[i].t);
-		poutst[i].s = (s - 0.5) * iw;
-		poutst[i].t = (t - 0.5) * ih;
+	inSt = (md2St_t *)((byte *)inModel + md2Hdr->ofs_st);
+	outSt = (md2StVerts_t*)Z_Malloc(md2Hdr->num_st * sizeof(md2StVerts_t));
+	iw = 1.0 / md2Hdr->skinwidth;
+	ih = 1.0 / md2Hdr->skinheight;
+	for (i = 0; i < md2Hdr->num_st; i++) {
+		s = LittleShort(inSt[i].s);
+		t = LittleShort(inSt[i].t);
+		outSt[i].s = (s - 0.5) * iw;
+		outSt[i].t = (t - 0.5) * ih;
 	}
 
 	// build tangents vectors
-	Mod_BuildMD2Tangents(mod, pheader, poutst);
-	Z_Free(poutst);
+	Mod_BuildMD2Tangents(mod, md2Hdr, outSt);
+	Z_Free(outSt);
 
 	ClearBounds(mod->mins, mod->maxs);
 	VectorClear(mod->center);
-	frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames);
+	frame = (md2Frame_t *)((byte *)md2Hdr + md2Hdr->ofs_frames);
 	verts = frame->verts;
 
-	for (k = 0; k < pheader->num_xyz; k++)
+	for (k = 0; k < md2Hdr->num_xyz; k++)
 		for (l = 0; l<3; l++) {
 			if (mod->mins[l] > verts[k].v[l])	
 				mod->mins[l] = verts[k].v[l];
@@ -2822,7 +2817,7 @@ struct model_s *R_RegisterModel(char *name) {
 	model_t		*mod;
 	int			i, j;
 	dsprite_t	*sprout;
-	dmdl_t		*pheader;
+	md2Header		*md2Hdr;
 	md3Model_t	*md3Hdr;
 	md3Mesh_t	*mesh;
 
@@ -2854,9 +2849,9 @@ struct model_s *R_RegisterModel(char *name) {
 			}
 		}
 		else if (mod->type == mod_alias) {
-			pheader = (dmdl_t *)mod->extraData;
+			md2Hdr = (md2Header *)mod->extraData;
 
-			for (i = 0; i < pheader->num_skins; i++) {
+			for (i = 0; i < md2Hdr->num_skins; i++) {
 			
 				if (mod->albedo[i] && mod->albedo[i]->name[0])
 					mod->albedo[i]->registration_sequence = registration_sequence;
@@ -2871,7 +2866,7 @@ struct model_s *R_RegisterModel(char *name) {
 					mod->pbr[i]->registration_sequence = registration_sequence;
 			}
 			//PGM
-			mod->numFrames = pheader->num_frames;
+			mod->numFrames = md2Hdr->num_frames;
 			//PGM
 			//         
 		}
@@ -2969,8 +2964,6 @@ Mod_Free
 void Mod_Free(model_t * mod) {
 		
 	if (mod->type == mod_alias) {
-		if (mod->neighbours)
-			Z_Free(mod->neighbours);
 		R_DeleteVBO(mod->ibo);
 	}		
 	Mod_Hunk_Free(mod->extraData);

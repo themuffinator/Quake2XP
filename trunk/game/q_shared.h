@@ -70,7 +70,7 @@ typedef unsigned char 		byte;
 #endif
 
 #ifndef BIT
-#define BIT(num)				(1 << (num))
+#define BIT(num)(1 << (num))
 #endif
 
 #ifdef __linux__

@@ -1772,11 +1772,9 @@ void Qcommon_Init (int argc, char **argv) {
 	// the settings of the config files
 	Cbuf_AddEarlyCommands (false);
 	Cbuf_Execute ();
-
 	Con_Init ();
-	Com_Printf("Client: " S_COLOR_YELLOW "%s %s %s\n\n", VERSION, BUILDSTRING, __DATE__);
-
-	FS_InitFilesystem ();
+	Com_Printf("Client: " S_COLOR_GREEN "%s %s %s\n\n", VERSION, BUILDSTRING, __DATE__);
+	FS_InitFilesystem ();	
 	Com_Printf ("\n");
 
 	Cbuf_AddText	("exec default.cfg\n");

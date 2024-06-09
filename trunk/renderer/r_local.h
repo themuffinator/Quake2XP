@@ -91,7 +91,7 @@ typedef struct winScreenModes_s {
 	char *description;
 } winScreenModes_t;
 
-winScreenModes_t winScreenModes[64];
+winScreenModes_t winScreenModes[128];
 #define NUM_WINSCREENMODES ( sizeof( winSreenModes ) / sizeof( winSreenModes[0] ) )
 char** vid_winModes;
 
@@ -367,7 +367,6 @@ cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
-cvar_t	*r_hdrBloomQuality;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -557,7 +556,7 @@ void R_CalcCubeMapMatrix (bool model);
 void DeleteShadowVertexBuffers (void);
 void MakeFrustum4Light (worldShadowLight_t *light, bool ingame);
 bool R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust);
-void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr);
+void GL_DrawAliasFrameLerpLight (md2Header *paliashdr);
 bool SurfInFrustum (msurface_t *s);
 bool HasSharedLeafs (byte *v1, byte *v2);
 bool InLightVISEntity ();
@@ -1073,8 +1072,8 @@ glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
 glslProgram_t		*showTrisProgram;
 glslProgram_t		*fsqProgram;
-glslProgram_t		*blurhComputeProgram;
-glslProgram_t		*blurvComputeProgram;
+glslProgram_t		*blur_xComputeProgram;
+glslProgram_t		*blur_yComputeProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();

@@ -310,26 +310,24 @@ void R_InitFboBuffers() {
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	i_bloomIn = R_CreateTexture("***i_bloomIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA, 0,
-		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	i_bloomInterim = R_CreateTexture("***i_bloomInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	i_bloomOut = R_CreateTexture("***i_bloomOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_linearDepth = R_CreateTexture("***i_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_FLOAT, NULL);
+	i_linearDepth = R_CreateTexture("***i_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, 
+		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_FLOAT, NULL);
 
-	i_ssaoDepth = R_CreateTexture("***i_ssaoDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED,
-		0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+	i_ssaoDepth = R_CreateTexture("***i_ssaoDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, 
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	for (int i = 0; i < 2; i++)
-		i_ssaoColor[i] = R_CreateTexture("***i_ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
-			0, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
-			GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+		i_ssaoColor[i] = R_CreateTexture("***i_ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 0, 
+			vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 // init fbo buffers
 	Com_Printf("Load "S_COLOR_YELLOW "BASE FBO ");

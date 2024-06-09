@@ -1192,9 +1192,9 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"gauss compute program"S_COLOR_WHITE" ");
-	blurhComputeProgram = R_FindProgram("gauss_h", S_COMP);
-	blurvComputeProgram = R_FindProgram("gauss_v", S_COMP);
-	if (blurhComputeProgram->valid && blurvComputeProgram->valid) {
+	blur_xComputeProgram = R_FindProgram("gauss_x", S_COMP);
+	blur_yComputeProgram = R_FindProgram("gauss_y", S_COMP);
+	if (blur_xComputeProgram->valid && blur_yComputeProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {
