@@ -676,7 +676,7 @@ void SpinControl_Draw (menulist_s * s) {
 		CL_AddString (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, 
-			s->itemnames[s->curInteger], i_menuFont);
+			s->itemnames[s->curInteger], i_consFont);
 	}
 	else {
 		strcpy (buffer, s->itemnames[s->curInteger]);
@@ -684,13 +684,13 @@ void SpinControl_Draw (menulist_s * s) {
 		CL_AddString(RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, 
-			buffer, i_menuFont);
+			buffer, i_consFont);
 
 		strcpy (buffer, strchr (s->itemnames[s->curInteger], '\n') + 1);
 		CL_AddString(RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->integer,
 			fontscale, 
-			buffer, i_menuFont);
+			buffer, i_consFont);
 	}
 
 }

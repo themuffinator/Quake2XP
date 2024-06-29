@@ -323,7 +323,7 @@ void SCR_DrawNet (void) {
 		< CMD_BACKUP - 1)
 		return;
 
-	Draw_ScaledPic(scr_vrect.x, scr_vrect.y, ui_fontScale->value, ui_fontScale->value, i_net);
+	Draw_ScaledPic(scr_vrect.x, scr_vrect.y, ui_fontScale->value, ui_fontScale->value, 0, i_net, "null");
 }
 
 /*
@@ -342,15 +342,9 @@ void SCR_DrawPause (void) {
 	if (cls.menuActive)
 		return;
 
-	Draw_ScaledPic(	(float)viddef.width * 0.5 - (float)i_pause->width * 0.5 - 7.0 * ui_fontScale->value,
-					(float)viddef.height * 0.5f - (float)i_pause->height * 0.5 + 56.0,
-					ui_fontScale->value, ui_fontScale->value,
-					i_pause);
-
-	Draw_PicBumpScaled(	(float)viddef.width * 0.5 - (float)i_pause->width * 0.5 - 7.0 * ui_fontScale->value,
-						(float)viddef.height * 0.5f - (float)i_pause->height * 0.5 + 56.0,
-						ui_fontScale->value, ui_fontScale->value,
-						"pause", "pause_bump");
+	Draw_ScaledPic(	(float)viddef.width		* 0.5 - (float)i_pause[0]->width	* 0.5 - 7.0 * ui_fontScale->value,
+					(float)viddef.height	* 0.5 - (float)i_pause[1]->height	* 0.5 + 56.0,
+					ui_fontScale->value, ui_fontScale->value, PF_LIGHT, i_pause[0], i_pause[1]);
 }
 
 /*
@@ -366,7 +360,6 @@ void SCR_DrawLoadingBar (float percent, float scale) {
 }
 
 #include "../renderer/r_local.h"
-void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading (void) {
 	int		scaled, center;
@@ -387,26 +380,26 @@ void SCR_DrawLoading (void) {
 		strcpy (mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen (mapfile) - 4] = 0;	// cut off ".bsp"
 		
-		if (drawSaveShot[0])
-		{
+		if (drawSaveShot[0]){
+
 		strcpy(saveshot, va("/savexp/%s/shot.jpg", drawSaveShot));
 		// start from level autosave
 		if (!Q_strcasecmp(drawSaveShot, "save0")){
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
-				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
+				Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_LOADSCREEN | PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, va("/levelshots/%s.jpg", mapfile), "null");
 			else
-				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+				Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_LOADSCREEN | PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, "/gfx/defshot.jpg", "null");
 		}else // draw save shot
 			if (Draw_FindPic(va("/savexp/%s/shot.jpg", drawSaveShot)))
-				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, saveshot);
+				Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_LOADSCREEN | PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, saveshot, "null");
 			else // cant find any shots
-				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+				Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_LOADSCREEN | PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, "/gfx/defshot.jpg", "null");
 			}
 			else {
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
-				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
+				Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_LOADSCREEN | PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, va("/levelshots/%s.jpg", mapfile), "null");
 			else
-				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+				Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_LOADSCREEN | PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, "/gfx/defshot.jpg", "null");
 		}
 
 		scaled = 8 * fontscale;
@@ -751,9 +744,7 @@ void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int w
 		else
 			frame = *ptr - '0';
 
-		Draw_PicScaled (x, y, scale_x, scale_y, sb_nums[color][frame]);
-		Draw_PicBumpScaled(x, y, scale_x, scale_y, sb_nums[color][frame], sb_nums_bump[frame]);
-		
+		Draw_PicScaled (x, y, scale_x, scale_y, PF_LIGHT, sb_nums[color][frame], sb_nums_bump[frame]);
 		x += CHAR_WIDTH*scale_x;
 		ptr++;
 		l--;
@@ -934,6 +925,26 @@ void SCR_DrawFPS (void) {
 		CL_AddString(viddef.width - avrFpsLengh * scale, viddef.height * 0.65, fontScale, avrfps, i_consFont);
 }
 
+void SRC_DrawFrameTime(int start, int stop) {
+
+	if (ui_drawFPS->integer == 2 && (cls.state == ca_active) && cl.refresh_prepped) {
+		static char	frameTime[22] = { 0 };
+		static int frame = 0, lastUpdate, delta = 4;
+		static float msec;
+		int scale = 8 * ui_fontScale->integer * FONT_INTERVAL;
+
+		frame++;
+		if (curtime - lastUpdate >= 1000 / delta) {
+			lastUpdate = curtime;
+			frame = 0;
+			msec = (float)stop - (float)start;
+		}
+		Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
+		int frameTimeLenght = (int)strlen(frameTime);
+		frameTimeLenght += 1;
+		CL_AddString(viddef.width - frameTimeLenght * scale, viddef.height * 0.65, ui_fontScale->integer, frameTime, i_consFont);
+	}
+}
 
 const char *CL_NameForCompileFlags(int compileFlags)
 {
@@ -1119,6 +1130,9 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawFPS ();
 		SCR_DrawCpuUtilization();
 		SCR_ShowTexNames();
+		
+		int stop = Sys_Milliseconds();
+		SRC_DrawFrameTime(start, stop);
 
 		SCR_DrawConsole ();
 		M_Draw ();
@@ -1129,26 +1143,6 @@ void SCR_UpdateScreen (void) {
 			char pos[128];
 			Com_sprintf(pos, sizeof(pos), "%i %i %i", (int)cl.refdef.vieworg[0], (int)cl.refdef.vieworg[1], (int)cl.refdef.vieworg[2]);
 			CL_AddString(0, 8 * ui_fontScale->integer, ui_fontScale->integer, pos, i_consFont);
-		}
-
-		int stop = Sys_Milliseconds();
-
-		if (ui_drawFPS->integer == 2 && (cls.state == ca_active) && cl.refresh_prepped) {
-			static char	frameTime[22] = { 0 };
-			static int frame = 0, lastUpdate, delta = 4;
-			static float msec;
-			int scale = 8 * ui_fontScale->integer * FONT_INTERVAL;
-
-			frame++;
-			if (curtime - lastUpdate >= 1000 / delta) {
-				lastUpdate = curtime;
-				frame = 0;
-				msec = (float)stop - (float)start;
-			}
-			Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
-			int frameTimeLenght = (int)strlen(frameTime);
-			frameTimeLenght += 1;
-			CL_AddString(viddef.width - frameTimeLenght * scale, viddef.height * 0.65, ui_fontScale->integer, frameTime, i_consFont);
 		}
 	}
 	R_Flush2D();

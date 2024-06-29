@@ -625,7 +625,7 @@ void R_DrawMD3Mesh(bool weapon) {
 	}
 	else {
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(shadelight, 0.1, 0.1, 0.1);
+			VectorSet(shadelight, 0.01, 0.01, 0.01);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
@@ -713,7 +713,7 @@ void R_DrawMD3Mesh(bool weapon) {
 	else
 		GL_DepthMask(0);
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
 		qglUniform1i(U_PARAM_INT_1, 1);
 	else
 		qglUniform1i(U_PARAM_INT_1, 0);
@@ -1154,12 +1154,6 @@ void R_DrawMD3MeshLight(bool weapon) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
-	if (currententity->flags & RF_WEAPONMODEL) {
-		qglUniform1i(U_PARAM_INT_4, 1);
-	}
-	else
-		qglUniform1i(U_PARAM_INT_4, 0);
-
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		qglUniform1i(U_PARAM_INT_4, 0);
 
@@ -1192,7 +1186,7 @@ void R_DrawMD3MeshLight(bool weapon) {
 		else
 			qglUniform1i(U_PARAM_INT_1, 0);
 		
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
 			qglUniform1i(U_PARAM_INT_5, 1);
 		else
 			qglUniform1i(U_PARAM_INT_5, 0);

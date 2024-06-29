@@ -665,7 +665,8 @@ void Con_DrawConsole (float frac) {
 		lines = viddef.height;
 
 	// draw the background
-	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
+	R_Draw_StretchPic(0, lines - viddef.height, viddef.width, viddef.height, PF_LIGHT | PF_SKIPAMBIENT | PF_SCANLINE | PF_VIGNETTE | PF_SRGBGAMMA | PF_NOALPHA, i_conback[0], i_conback[1]);
+
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
 

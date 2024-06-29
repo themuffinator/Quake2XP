@@ -573,18 +573,6 @@
     <None Include="..\baseq2\glsl\bloomFinal.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\cin.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\cin.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\color.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\color.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\depthDownsample.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -627,12 +615,6 @@
     <None Include="..\baseq2\glsl\glare.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\light2d.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\light2d.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\lightAlias.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -643,12 +625,6 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\lightWorld.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\loading.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\loading.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\mblur.frag">
@@ -727,12 +703,6 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\globalFog.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\lut.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\lut.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\flare.frag">
@@ -839,6 +809,18 @@
     </None>
     <None Include="..\baseq2\glsl\include\aces.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\drawPics.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\drawPics.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\color.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\color.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

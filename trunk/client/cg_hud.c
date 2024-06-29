@@ -426,7 +426,7 @@ void SCR_ExecuteLayoutString (char *s) {
 				SCR_AddDirtyPoint (x + 23 * hud_sx, y + 23 * hud_sy);
 
 				if (!ui_3dHud->integer)
-					Draw_PicScaled (x, y, hud_sx, hud_sy, cl.configstrings[CS_IMAGES + value]);
+					Draw_PicScaled (x, y, hud_sx, hud_sy, 0, cl.configstrings[CS_IMAGES + value], "null");
 
 			}
 			continue;
@@ -466,7 +466,7 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
-			Draw_PicScaled (x, y, hud_sx, hud_sy, ci->iconname);
+			Draw_PicScaled (x, y, hud_sx, hud_sy, 0, ci->iconname, "null");
 			continue;
 		}
 
@@ -512,10 +512,10 @@ void SCR_ExecuteLayoutString (char *s) {
 			SCR_AddDirtyPoint (x, y);
 			SCR_AddDirtyPoint (x + 23 * hud_sx, y + 23 * hud_sy);
 
-			Draw_PicScaled (x, y, hud_sx, hud_sy, token);
 			strcpy(bump, token);
 			strcat(bump, "_bump");
-			Draw_PicBumpScaled(x, y, hud_sx, hud_sy, token, bump);
+			Draw_PicScaled(x, y, hud_sx, hud_sy, PF_LIGHT, token, bump);
+			//Draw_PicBumpScaled(x, y, hud_sx, hud_sy, token, bump);
 			continue;
 		}
 
@@ -1126,8 +1126,7 @@ void CL_DrawInventory (void) {
 	// repaint everything next frame
 	SCR_DirtyScreen ();
 
-	Draw_ScaledPic (x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, i_inventory);
-	Draw_PicBumpScaled(x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, "inventory", "inventory_bump");
+	Draw_ScaledPic (x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, PF_LIGHT, i_inventory[0], i_inventory[1]);
 	
 	y += 24 * ui_fontScale->integer;
 	x += 24 * ui_fontScale->integer;

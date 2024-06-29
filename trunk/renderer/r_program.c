@@ -965,40 +965,6 @@ void R_InitPrograms (void) {
 		Com_Printf (S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	
-	Com_Printf ("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
-	genericProgram = R_FindProgram ("generic", 0);
-
-	if (genericProgram->valid) {
-		Com_Printf ("succeeded\n");
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
-	Com_Printf ("Load "S_COLOR_YELLOW"cinematic program"S_COLOR_WHITE" ");
-	cinProgram	= R_FindProgram ("cin", 0);
-
-	if (cinProgram->valid) {
-		Com_Printf ("succeeded\n");
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
-	Com_Printf ("Load "S_COLOR_YELLOW"load screen program"S_COLOR_WHITE" ");
-	loadingProgram = R_FindProgram ("loading", 0);
-
-	if (loadingProgram->valid) {
-		Com_Printf ("succeeded\n");
-
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"fxaa program"S_COLOR_WHITE" ");
 	fxaaProgram = R_FindProgram ("fxaa", 0);
@@ -1045,15 +1011,6 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
 	shadowProgram = R_FindProgram("shadow", 0);
 	if (shadowProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-	Com_Printf("Load "S_COLOR_YELLOW"light2d program"S_COLOR_WHITE" ");
-	light2dProgram = R_FindProgram("light2d", 0);
-	if (light2dProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {
@@ -1181,9 +1138,9 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"full screen quad program"S_COLOR_WHITE" ");
-	fsqProgram = R_FindProgram("drawFsq", 0);
-	if (fsqProgram->valid) {
+	Com_Printf("Load "S_COLOR_YELLOW"2d program"S_COLOR_WHITE" ");
+	picProgram = R_FindProgram("drawPics", 0);
+	if (picProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

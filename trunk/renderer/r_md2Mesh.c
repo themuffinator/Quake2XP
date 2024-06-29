@@ -137,7 +137,7 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 	}
 	else {
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.1, 0.1, 0.1);
+			VectorSet(lightColor, 0.01, 0.01, 0.01);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
@@ -297,7 +297,7 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 	qglUniform1i (U_SHELL_PASS, 0);
 	qglUniform1f (U_COLOR_OFFSET, alphaShift);
 	
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
 		qglUniform1i(U_PARAM_INT_0, 1);
 	else
 		qglUniform1i(U_PARAM_INT_0, 0);
@@ -637,7 +637,7 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 	else
 		qglUniform1i(U_USE_SSAO, 0);
 	
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
 		qglUniform1i(U_PARAM_INT_5, 1);
 	else
 		qglUniform1i(U_PARAM_INT_5, 0);

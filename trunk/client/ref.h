@@ -90,12 +90,18 @@ typedef enum {
 } cDecalsFlagss_t;
 
 typedef enum {
-	PF_SCANLINE		= BIT(0),	// crt effect
-	PF_LIGHT		= BIT(1),	// phong lighting
-	PF_PANSCAN		= BIT(3),	// panscan 16:9 images on 3:4 monitors
-	PF_CROSSHAIR	= BIT(4),	// crosshair flag
-	PF_VIGNETTE		= BIT(5),
-	PF_CONLOLE		= BIT(6)
+	PF_SCANLINE		= BIT(0),
+	PF_LIGHT		= BIT(1),
+	PF_VIGNETTE		= BIT(2),
+	PF_CROSSHAIR	= BIT(3),
+	PF_SRGBGAMMA	= BIT(4),
+	PF_LOADSCREEN	= BIT(5),
+	PF_VERTEXCOLOR	= BIT(6),
+	PF_COLOREDFONT	= BIT(7),
+	PF_MEDIANFILTER = BIT(8),
+	PF_TECHCOLOR	= BIT(9),
+	PF_SKIPAMBIENT	= BIT(10),
+	PF_NOALPHA		= BIT(11)
 } pictureFlags_t;
 
 
@@ -625,17 +631,15 @@ int R_GetClippedFragments (vec3_t origin, float radius, mat3_t axis,
 	int maxfverts, vec3_t * fverts, int maxfragments,
 	fragment_t * fragments);
 
-void Draw_StretchPic2 (int x, int y, int w, int h, image_t * gl);
-void Draw_StretchPic (int x, int y, int w, int h, char *name);
+void R_Draw_StretchPic(int x, int y, int w, int h, int flags, image_t *image, image_t *imageBump);
+void Draw_StretchPic(int x, int y, int w, int h, int flags, char *imageName, char *imageName2);
 
-void Draw_PicScaled (int x, int y, float scale_x, float scale_y, char *pic);
-void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);
+void Draw_PicScaled (int x, int y, float scaleX, float scaleY, int flags, char *pic, char *pic2);
+void Draw_ScaledPic (int x, int y, float scaleX, float scaleY, int flags, image_t *gl, image_t *gl2);
 
-void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, char* pic2);
-void Draw_ScaledBumpPic(int x, int y, float scale_x, float scale_y, image_t* gl, image_t* gl2);
+//void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, char* pic2);
+//void Draw_ScaledBumpPic(int x, int y, float scale_x, float scale_y, image_t* gl, image_t* gl2);
 
-void Draw_TileClear (int x, int y, int w, int h, char *name);
-void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);
 void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, bool loading);
 void R_BeginRegistration (char *map);
 void R_SetSky (char *name, float rotate, vec3_t axis);

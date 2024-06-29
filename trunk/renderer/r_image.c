@@ -1271,7 +1271,6 @@ void GL_FreeUnusedImages(void)
 
 	i_distort->registration_sequence = registration_sequence;
 	i_defBump->registration_sequence = registration_sequence;
-	i_conBump->registration_sequence = registration_sequence;
 	i_environment->registration_sequence = registration_sequence;
 	i_whiteMap->registration_sequence = registration_sequence;
 	i_skinBump->registration_sequence = registration_sequence;

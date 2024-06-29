@@ -585,15 +585,6 @@ void SCR_PlayCinematic (char *arg) {
 	// make sure all the audio sources is free and silent
 	S_StopAllSounds ();
 
-	/*
-	// try to load hires victoty screen
-		char repName[MAX_OSPATH];
-		strcpy(repName, name);
-		repName[strlen(repName) - 4] = 0;
-		strcat(repName, ".jpg");
-		IL_LoadImage(repName, &cin.pic, &cin.width, &cin.height, IL_JPG);
-	*/
-
 	cl.cinematicframe = 0;
 	dot = strstr (arg, ".");
 	if (dot && !strcmp (dot, ".pcx")) {	// static pcx image

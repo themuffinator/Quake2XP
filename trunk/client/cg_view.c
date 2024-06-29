@@ -490,7 +490,7 @@ void SCR_DrawCrosshair (void) {
 	CL_GetColorForHealth();
 
 	Draw_PicScaled ((viddef.width * 0.5) - (size_x * 0.5), (viddef.height * 0.5) - (size_y * 0.5),
-		crossHairScale->value, crossHairScale->value, crosshair_pic);
+		crossHairScale->value, crossHairScale->value, PF_CROSSHAIR, crosshair_pic, "null");
 
 }
 

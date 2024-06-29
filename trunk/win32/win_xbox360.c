@@ -301,33 +301,34 @@ void SCR_DrawBatteryLevel() {
 
 	x360_batteryScale->value = ClampCvar(0.1, 1.0, x360_batteryScale->value);
 	float scale = x360_batteryScale->value;
+	extern image_t *i_defBump;
 
 	if (curtime - lastUpdate >= 30000) { //30sec update interval
 		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
 		qXInputGetBatteryInformation(xInputActiveController, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo);
-		Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[5]);
+		Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[5], i_defBump);
 		lastUpdate = curtime;
 	}
 	else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED) {
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[4]);
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[4], i_defBump);
 			}
 			else switch (batteryInfo.BatteryLevel) {
 
 			case BATTERY_LEVEL_EMPTY:
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[0]);
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[0], i_defBump);
 				break;
 			case BATTERY_LEVEL_LOW:
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[1]);
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[1], i_defBump);
 				break;
 			case BATTERY_LEVEL_MEDIUM:
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[2]);
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[2], i_defBump);
 				break;
 			case BATTERY_LEVEL_FULL:
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[3]);
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[3], i_defBump);
 				break;
 			default:
-				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[0]);
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[0], i_defBump);
 				break;
 			}
 }

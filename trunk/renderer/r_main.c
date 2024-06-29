@@ -1318,6 +1318,8 @@ void R_RegisterCvars(void)
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
 	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.5", CVAR_ARCHIVE);
+	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "1", CVAR_ARCHIVE);
+	r_hdrColorSpace->help = " 0 = sRGB/D65 \n| 1 = DCI-P3/D65b \n| 2 = Rec.2020/D65 \n| 3 = ACES AP0/D60 \n| 4 = ACES AP1/D60";
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
@@ -1414,10 +1416,8 @@ void R_RegisterCvars(void)
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);
 
-	r_hudLighting =						Cvar_Get("r_hudLighting", "1.5", CVAR_ARCHIVE);
-	r_hudLighting->help =				"intensity of hud light pass";
-	r_bump2D =							Cvar_Get("r_bump2D", "1", CVAR_ARCHIVE);
-	r_bump2D->help =					"draw 2d bumpmaps";
+	r_drawPicBump =						Cvar_Get("r_drawPicBump", "1", CVAR_ARCHIVE);
+	r_drawPicBump->help =				"hud pics lighing";
 
 	r_fixFovStrength =					Cvar_Get("r_fixFovStrength", "0", CVAR_ARCHIVE);
 	r_fixFovStrength->help =			"0.0 no perspective correction";

@@ -161,6 +161,30 @@ void NvApi_GetDisplayInfo() {
 	}
 }
 
+typedef struct chroma_s{
+	float red_x, red_y;
+	float green_x, green_y;
+	float blue_x, blue_y;
+	float wp_x, wp_y;
+}chroma_t;
+
+const chroma_t chromaList[] = {
+	{ 0.64000f, 0.33000f, 0.30000f, 0.60000f, 0.15000f, 0.06000f, 0.31270f, 0.32900f }, // rec709
+	{ 0.68000f, 0.32000f, 0.26500f, 0.69000f, 0.15000f, 0.06000f, 0.31400f, 0.35100f }, // DCI-P3
+	{ 0.70800f, 0.29200f, 0.17000f, 0.79700f, 0.13100f, 0.04600f, 0.31270f, 0.32900f }, // bt2020
+	{ 0.68000f, 0.32000f, 0.26500f, 0.69000f, 0.15000f, 0.06000f, 0.32168f, 0.33767f }, // D60 DCI
+	{ 0.64000f, 0.33000f, 0.21000f, 0.71000f, 0.15000f, 0.06000f, 0.31270f, 0.32900f }, // Adobe98
+};
+
+typedef enum {
+	CS_REC709 = 0,
+	CS_DCIP3 = 1,
+	CS_BT2020 = 2,
+	CS_P3D60 = 3,
+	CS_ADOBE98 = 4,
+	CS_INVALID = -1
+} colorSpace;
+
 void NvApi_SetUhdDisplays(bool enableHDR){
 
 	NvAPI_Status ret = NVAPI_OK;
@@ -200,6 +224,20 @@ void NvApi_SetUhdDisplays(bool enableHDR){
 					hdrColorData.cmd = NV_HDR_CMD_SET;
 					hdrColorData.static_metadata_descriptor_id = NV_STATIC_METADATA_TYPE_1;
 					hdrColorData.hdrMode = enableHDR ? NV_HDR_MODE_UHDBD : NV_HDR_MODE_OFF;
+
+					int cs = CS_BT2020;
+					hdrColorData.mastering_display_data.displayPrimary_x0 = (NvU16)(chromaList[cs].red_x * 50000.0f);
+					hdrColorData.mastering_display_data.displayPrimary_y0 = (NvU16)(chromaList[cs].red_y * 50000.0f);
+					hdrColorData.mastering_display_data.displayPrimary_x1 = (NvU16)(chromaList[cs].green_x * 50000.0f);
+					hdrColorData.mastering_display_data.displayPrimary_y1 = (NvU16)(chromaList[cs].green_y * 50000.0f);
+					hdrColorData.mastering_display_data.displayPrimary_x2 = (NvU16)(chromaList[cs].blue_x * 50000.0f);
+					hdrColorData.mastering_display_data.displayPrimary_y2 = (NvU16)(chromaList[cs].blue_y * 50000.0f);
+					hdrColorData.mastering_display_data.displayWhitePoint_x = (NvU16)(chromaList[cs].wp_x * 50000.0f);
+					hdrColorData.mastering_display_data.displayWhitePoint_y = (NvU16)(chromaList[cs].wp_y * 50000.0f);
+					hdrColorData.mastering_display_data.max_content_light_level = 1000;
+					hdrColorData.mastering_display_data.max_display_mastering_luminance = 1000;
+					hdrColorData.mastering_display_data.max_frame_average_light_level = 100;
+					hdrColorData.mastering_display_data.min_display_mastering_luminance = 1;
 
 					if(enableHDR)
 						Com_Printf(">%d:" S_COLOR_GREEN " Hdr Mode Enabled.\n", j);

@@ -563,12 +563,10 @@ void Draw_VideoBanner() {
 	h = i_banner_video[0]->height;
 
 	if (ui_fontScale->value == 2) {
-		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0]);
-		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0], i_banner_video[1]);
+		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, PF_LIGHT, i_banner_video[0], i_banner_video[1]);
 	}
 	else if (ui_fontScale->value == 3) {
-		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0]);
-		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0], i_banner_video[1]);
+		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, PF_LIGHT, i_banner_video[0], i_banner_video[1]);
 	}
 }
 

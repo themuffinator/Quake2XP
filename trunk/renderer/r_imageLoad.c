@@ -412,10 +412,6 @@ void R_InitEngineTextures (void) {
 	if (!i_distort)
 		i_distort = i_defBump;
 
-	i_conBump = R_LoadDDS("pics/conback_bump.dds", it_normal);
-	if (!i_conBump)
-		i_conBump = i_defBump;
-
 	i_environment = R_LoadDDS("gfx/tinfx.dds", it_wall);
 	if (!i_environment)
 		i_environment = i_missingTexture;

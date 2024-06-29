@@ -2171,6 +2171,8 @@ void R_AddLightInteraction(worldShadowLight_t *light) {
 void R_CalcStaticLightInteraction (void) {
 	
 	worldShadowLight_t *light;
+	
+	int start = Sys_Milliseconds();
 
 	for (light = shadowLight_static; light; light = light->s_next) {
 
@@ -2180,8 +2182,9 @@ void R_CalcStaticLightInteraction (void) {
 		R_DrawBspModelVolumes(true, light);
 		R_AddLightInteraction(light);
 	}
-
-	Com_Printf (""S_COLOR_MAGENTA"R_CalcStaticLightInteraction: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", r_numWorlsShadowLights);
+	int stop = Sys_Milliseconds();
+	float msec = (float)stop - (float)start;
+	Com_Printf (""S_COLOR_MAGENTA"R_CalcStaticLightInteraction: "S_COLOR_YELLOW"%5.4f"S_COLOR_WHITE" seconds for "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", msec * 0.001, r_numWorlsShadowLights);
 }
 
 void DeleteShadowVertexBuffers (void) { //todo detete it!

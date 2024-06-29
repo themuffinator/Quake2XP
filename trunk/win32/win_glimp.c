@@ -254,7 +254,7 @@ BOOL GetDisplayMonitorInfo(char *monitorName, char *monitorModel)
 			char *p, *s;
 			char deviceID[128];
 			char regPath[128];
-			byte edid[265];
+			byte edid[512];
 			HKEY hKey;
 			int j = 0;
 			lstrcpy(deviceID, dd.DeviceID);
@@ -997,21 +997,21 @@ static bool GLW_ChoosePixelFormat() {
 		WGL_DOUBLE_BUFFER_ARB,	GL_TRUE,
 		WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_FLOAT_ARB,
 		WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
-		WGL_RED_BITS_ARB,		16,
-		WGL_GREEN_BITS_ARB,		16,
-		WGL_BLUE_BITS_ARB,		16,
-		WGL_ALPHA_BITS_ARB,		16,
+		WGL_RED_BITS_ARB,		10,
+		WGL_GREEN_BITS_ARB,		10,
+		WGL_BLUE_BITS_ARB,		10,
+		WGL_ALPHA_BITS_ARB,		2,
 		WGL_DEPTH_BITS_ARB,		24,
 		WGL_STENCIL_BITS_ARB,	8,
-		WGL_SAMPLE_BUFFERS_ARB, samples ? GL_TRUE : GL_FALSE,
-		WGL_SAMPLES_ARB,		samples,
+		WGL_SAMPLE_BUFFERS_ARB, 0,
+		WGL_SAMPLES_ARB,		0,
 		0
 	};
 
 	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
-	bool useHdrDisplay = gl_config.hdrDisplay && r_useHdrDisplay->integer;
+	gl_config.useHdrDisplay = gl_config.hdrDisplay && r_useHdrDisplay->integer;
 
-	if (!qwglChoosePixelFormatARB(glw_state.hDC, useHdrDisplay ? pAttribsHDR : pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
+	if (!qwglChoosePixelFormatARB(glw_state.hDC, gl_config.useHdrDisplay ? pAttribsHDR : pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
 		Com_Printf(S_COLOR_RED "...qwglChoosePixelFormatARB() failed.");
 		ReleaseDC(glw_state.hWnd, glw_state.hDC);
 		glw_state.hDC = NULL;
@@ -1031,8 +1031,8 @@ static bool GLW_ChoosePixelFormat() {
 
 	Com_Printf(S_COLOR_GREEN "ok\n");
 
-	gl_config.colorBits = useHdrDisplay ? 48 : 32;
-	gl_config.alphaBits = useHdrDisplay ? 16 : 8;
+	gl_config.colorBits = gl_config.useHdrDisplay ? 48 : 32;
+	gl_config.alphaBits = gl_config.useHdrDisplay ? 16 : 8;
 	gl_config.depthBits = 24;
 	gl_config.stencilBits = 8;
 	gl_config.samples = samples;

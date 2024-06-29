@@ -24,19 +24,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
-extern image_t *i_blackTexture1x1;
-
 void CL_InitImages () {
 
-	i_conback = Draw_FindPic ("conback");
-	i_inventory = Draw_FindPic ("inventory");
-	i_net = Draw_FindPic ("net");
-	i_pause = Draw_FindPic ("pause");
-	i_loading = Draw_FindPic ("loading");
+	i_conback[0]	= Draw_FindPic("conback");
+	i_conback[1]	= Draw_FindPic("conback_bump");
+	i_inventory[0]	= Draw_FindPic("inventory");
+	i_inventory[1]	= Draw_FindPic("inventory_bump");
+	i_pause[0]		= Draw_FindPic("pause");
+	i_pause[1]		= Draw_FindPic("pause_bump");
 
-	i_backtile = Draw_FindPic ("backtile");
-	i_turtle = Draw_FindPic ("turtle");
-	i_nosaveshot = Draw_FindPic("nosaveshot");
+	i_loading		= Draw_FindPic ("loading");
+	i_backtile		= Draw_FindPic ("backtile");
+	i_turtle		= Draw_FindPic ("turtle");
+	i_nosaveshot	= Draw_FindPic("nosaveshot");
+	i_net			= Draw_FindPic("net");
 
 	i_menuBackground	= Draw_FindPic("menuback");
 	i_main_plaque[0]	= Draw_FindPic("m_main_plaque");

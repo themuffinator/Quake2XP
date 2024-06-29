@@ -91,12 +91,10 @@ static void M_Banner(image_t *banner[2]) {
 	h = banner[0]->height;
 
 	if (ui_fontScale->value == 2) {
-		Draw_ScaledPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0]);
-		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
+		Draw_ScaledPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, PF_LIGHT, banner[0], banner[1]);
 	}
 	else if (ui_fontScale->value >= 3) {
-		Draw_ScaledPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0]);
-		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
+		Draw_ScaledPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, PF_LIGHT, banner[0], banner[1]);
 	}
 }
 
@@ -399,28 +397,22 @@ void M_Main_Draw(void) {
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor) {
-			Draw_ScaledPic(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu[i]);
-			Draw_ScaledBumpPic(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu[i], i_main_menu_bump[i]);
+			Draw_ScaledPic(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, PF_LIGHT, i_main_menu[i], i_main_menu_bump[i]);
 		}
 	}
 
-	Draw_ScaledPic(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu_sel[m_main_cursor]);
-	Draw_ScaledBumpPic(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu_sel[m_main_cursor], i_main_menu_bump_sel[m_main_cursor]);
+	Draw_ScaledPic(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, PF_LIGHT, i_main_menu_sel[m_main_cursor], i_main_menu_bump_sel[m_main_cursor]);
 
 	w = i_main_plaque[0]->width;
-	Draw_ScaledPic((xoffset - 30) - w, ystart, fontscale, fontscale, i_main_plaque[0]);
-	Draw_ScaledBumpPic((xoffset - 30) - w, ystart, fontscale, fontscale, i_main_plaque[0], i_main_plaque[1]);
+	Draw_ScaledPic((xoffset - 30) - w, ystart, fontscale, fontscale, PF_LIGHT, i_main_plaque[0], i_main_plaque[1]);
 
 	w = i_main_logo[0]->width;
 	h = i_main_logo[0]->height;
 	if (ui_fontScale->value == 3) {
-		Draw_ScaledPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, i_main_logo[0]);
-		Draw_ScaledBumpPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, i_main_logo[0], i_main_logo[1]);
+		Draw_ScaledPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, PF_LIGHT, i_main_logo[0], i_main_logo[1]);
 	}
 	else if (ui_fontScale->value == 2) {
-		Draw_ScaledPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, i_main_logo[0]);
-		Draw_ScaledBumpPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, i_main_logo[0], i_main_logo[1]);
-
+		Draw_ScaledPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, PF_LIGHT, i_main_logo[0], i_main_logo[1]);
 	}
 	M_Main_DrawQuad(xoffset - 30, ystart + (m_main_cursor * 40 + 5)* fontscale);
 	drawIDlogo = true;
@@ -1298,7 +1290,7 @@ void DrawCrossHairPic(void* m) {
 	int size = CROSSHAIRSIZE * crossHairScale->value;
 	VectorSet(hColor, 1.0, 1.0, 1.0);
 	Draw_ScaledPic((viddef.width * 0.5)-(size * 0.5), (viddef.height * 0.5) -(size * 0.5),
-					crossHairScale->value, crossHairScale->value, i_crossHair[crossHair->integer]);
+					crossHairScale->value, crossHairScale->value, PF_CROSSHAIR, i_crossHair[crossHair->integer], i_defBump);
 
 }
 
@@ -1742,13 +1734,11 @@ void M_Option_Banner(image_t *banner[2]) {
 
 	move += h;
 	if (ui_fontScale->value == 2) {
-		Draw_ScaledPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0]);
-		Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
+		Draw_ScaledPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, PF_LIGHT,  banner[0], banner[1]);
 	}
 	else 
 		if (ui_fontScale->value == 3) {
-			Draw_ScaledPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0]);
-			Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
+			Draw_ScaledPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, PF_LIGHT, banner[0], banner[1]);
 	}
 }
 
@@ -1801,6 +1791,7 @@ static char *idcredits[] = {
 	"KriGSSv1N",
 	"Pavel 'VorteX' Timofeyev",
 	"Willow",
+	"Paril",
 	"Linux port by Alejandro Pulver",
 	"FreeBSD port by Alexey 'danfe' Dokuchaev",
 	"",
@@ -2379,11 +2370,11 @@ void DrawModShot(void* m)
 
 	if (Draw_FindPic(m_mod_names[s_mods_menu.cursor])) {
 		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, false);
-		Draw_StretchPic(w, h, size, size, m_mod_names[s_mods_menu.cursor]);
+		Draw_StretchPic(w, h, size, size, PF_SCANLINE | PF_VIGNETTE, m_mod_names[s_mods_menu.cursor], "null");
 	}
 	else {
 		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, false);
-		Draw_StretchPic(w, h, size, size, "idlog");
+		Draw_StretchPic(w, h, size, size, PF_SCANLINE | PF_VIGNETTE, "idlog", "null");
 	}
 }
 
@@ -2806,7 +2797,7 @@ void DrawSavedShot(void* m)
 {
 	int				i, w, h, picWidth, center;
 	menuaction_s	*menu = (menuaction_s*)m;
-	char			savePic[MAX_QPATH];
+	char			savePic[MAX_OSPATH];
 	float			aspect;
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
@@ -2831,7 +2822,7 @@ void DrawSavedShot(void* m)
 
 		R_FreePic(savePic); // update pic cache
 		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
-		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, savePic, "null");
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5)-7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
@@ -2844,7 +2835,7 @@ void DrawSavedShot(void* m)
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
 			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
-			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, savePic, "null");
 		}
 	else
 		{
@@ -2858,7 +2849,7 @@ void DrawSavedShot(void* m)
 
 		aspect = (float)w / (float)h;
 		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
-		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, savePic, "null");
 		}
 				
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
@@ -2873,7 +2864,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, false);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Save Data") * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Save Data", i_menuFont);
-		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE, "nosaveshot", "null");
 	}
 
 }
@@ -2882,7 +2873,7 @@ void DrawQuickSavedShot(void* m)
 {
 	int				w, h, picWidth, center;
 	menuaction_s*	menu = (menuaction_s*)m;
-	char			savePic[MAX_QPATH];
+	char			savePic[MAX_OSPATH];
 	float			aspect;
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
@@ -2904,7 +2895,7 @@ void DrawQuickSavedShot(void* m)
 
 		R_FreePic(savePic); // update pic cache
 		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, false);
-		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE | PF_NOALPHA, savePic, "null");
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_quickSavesInfos) * 5 * ui_fontScale->integer) * 0.5);
@@ -2916,7 +2907,7 @@ void DrawQuickSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, false);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Quick Save Data") * 5 * ui_fontScale->integer) * 0.5);
 		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Quick Save Data", i_menuFont);
-		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE, savePic, "null");
 	}
 }	
 
@@ -4703,7 +4694,7 @@ void PlayerConfig_MenuDraw(void) {
 					skindisplaynames[s_player_skin_box.curInteger]);
 
 		float y = viddef.height / 2 - 72 * ui_fontScale->value;
-		Draw_PicScaled(s_player_config_menu.x - 40 * ui_fontScale->value, y, ui_fontScale->value, ui_fontScale->value, scratch);
+		Draw_PicScaled(s_player_config_menu.x - 40 * ui_fontScale->value, y, ui_fontScale->value, 0, ui_fontScale->value, scratch, "null");
 
 	}
 }
@@ -4804,9 +4795,7 @@ void M_Quit_Draw(void) {
 	int h = 240;
 	drawIDlogo = false;
 //	Draw_GetPicSize(&w, &h, "quit");
-	Draw_ScaledPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, i_quit[0]);
-	Draw_ScaledBumpPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, i_quit[0], i_quit[1]);
-
+	Draw_ScaledPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, PF_LIGHT, i_quit[0], i_quit[1]);
 }
 
 
@@ -4906,8 +4895,7 @@ void M_Draw(void) {
 	SCR_DirtyScreen();	
 	
 	if (cls.state != ca_active || !cl.refresh_prepped) {
-		Draw_StretchPic2(0, 0, viddef.width, viddef.height, i_menuBackground);
-
+		R_Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_SCANLINE | PF_VIGNETTE, i_menuBackground, i_defBump);
 		if (!drawIDlogo)
 			R_MenuBackGround();
 

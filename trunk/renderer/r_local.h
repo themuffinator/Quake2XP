@@ -285,7 +285,6 @@ image_t *i_distort;
 image_t	*i_defBump;
 image_t	*i_environment;
 image_t	*i_ssaoRandomNormal;
-image_t	*i_conBump;
 image_t	*i_whiteMap;
 image_t *i_skinBump;
 image_t *i_ssaoDepth;
@@ -367,6 +366,7 @@ cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
+cvar_t	*r_hdrColorSpace;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -450,8 +450,7 @@ cvar_t	*r_debug;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
 
-cvar_t	*r_hudLighting;
-cvar_t	*r_bump2D;
+cvar_t	*r_drawPicBump;
 
 cvar_t	*r_filmicFx;
 cvar_t	*r_filmicFxVignetSize;
@@ -685,11 +684,11 @@ void R_DrawSkyBox();
 void COM_StripExtension (char *in, char *out);
 
 void Draw_GetPicSize (int *w, int *h, char *name);
-void Draw_StretchPic (int x, int y, int w, int h, char *name);
-void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, bool loading);
-void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows,
-	byte * data);
+void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte * data);
+
+void R_Draw_StretchPic(int x, int y, int w, int h, int flags, image_t *image, image_t *imageBump);
+void Draw_StretchPic(int x, int y, int w, int h, int flags, char *imageName, char *imageName2);
 
 void R_BeginFrame ();
 void R_SetPalette (const unsigned char *palette);
@@ -749,7 +748,8 @@ typedef struct {
 	int			stencilBits;
 	int			samples;
 	int			maxSamples;
-	bool	hdrDisplay;
+	bool		hdrDisplay;
+	bool		useHdrDisplay;
 } glconfig_t;
 
 
@@ -1049,15 +1049,11 @@ glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
 glslProgram_t		*particlesProgram;
 glslProgram_t		*shadowProgram;
-glslProgram_t		*genericProgram;
-glslProgram_t		*cinProgram;
-glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmicFxProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*lutProgram;
 glslProgram_t		*whiteBalanceProgram;
-glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
 glslProgram_t		*skyProgram;
@@ -1071,7 +1067,7 @@ glslProgram_t		*tonemapProgram;
 glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
 glslProgram_t		*showTrisProgram;
-glslProgram_t		*fsqProgram;
+glslProgram_t		*picProgram;
 glslProgram_t		*blur_xComputeProgram;
 glslProgram_t		*blur_yComputeProgram;
 

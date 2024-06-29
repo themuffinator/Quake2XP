@@ -4,6 +4,7 @@
 */
 /*
 Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 2004-2024 Quake2xp Team.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,9 +22,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-
-// draw.c   test
-
 #include "r_local.h"
 
 /*
@@ -63,10 +61,8 @@ void R_Flush2D() {
 	if (!tess2dArray.numVerts || tess2dArray.numVerts < 4)
 		return;
 
-	GL_BindProgram(genericProgram);
-	qglUniform1i(U_2D_PICS, 1);
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 0);
+	GL_BindProgram(picProgram);
+	qglUniform1i(U_PARAM_INT_0, PF_COLOREDFONT);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, tess2dArray.handle);
@@ -179,6 +175,8 @@ void Draw_GetPicSize(int* w, int* h, char* pic)
 #define HEIGHT_FHD 1080.0
 #define WIDE_SCREEN_16x9  WIDTH_FHD / HEIGHT_FHD
 
+float loadScreenColorFade;
+float loadingLod;
 
 /*
 =============
@@ -186,237 +184,24 @@ Draw_StretchPic
 =============
 */
 
-void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
+void R_Draw_StretchPic(int x, int y, int w, int h, int flags, image_t *image, image_t *imageBump)
 {
 	float		offsX, offsY;
-	float		woh = (float)vid.width / (float)vid.height;
-	bool	console;
+	float		aspect = (float)vid.width / (float)vid.height;
 
-	if (!gl) {
-		Com_Printf("NULL pic in Draw_StretchPic\n");
-		return;
-	}
-	if (strstr(gl->name, "conback"))
-		console = true;
-	else
-		console = false;
-
-	GL_BindProgram(genericProgram);
-
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 0);
-	
-	if (woh < WIDE_SCREEN_16x9) {  // quad screen
-		offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
+	if (aspect < WIDE_SCREEN_16x9) {  // quad screen
+		offsX = (WIDTH_FHD - (HEIGHT_FHD * aspect)) / (WIDTH_FHD * 2.0);
 		offsY = 0;
 	}
-	else if (woh > WIDE_SCREEN_16x9) {   // super wide screen (21 x 9)
+	else if (aspect > WIDE_SCREEN_16x9) {   // super wide screen (21 x 9)
 		offsX = 0;
-		offsY = (HEIGHT_FHD - (WIDTH_FHD / woh)) / (HEIGHT_FHD * 2.0);
+		offsY = (HEIGHT_FHD - (WIDTH_FHD / aspect)) / (HEIGHT_FHD * 2.0);
 	}
 	else {
 		offsX = offsY = 0;
 	}
-	if(w==h)
+	if (w == h)
 		offsX = offsY = 0;
-
-	if (console) {
-		qglUniform1i(U_CONSOLE_BACK, 1);
-	//	qglUniform1i(U_PARAM_INT_0, PF_PANSCAN);
-		float	t;
-		vec4_t	lPos;
-		t = Sys_Milliseconds() * 0.001;
-		lPos[0] = sin(t);
-		lPos[1] = cos(t);
-		lPos[2] = 0.5;
-		lPos[3] = ((float)h + (float)y) / (float)h;
-		VectorNormalize(lPos);
-		lPos[0] = lPos[0] * 0.5 + 0.5;
-		lPos[1] = lPos[1] * 0.5 + 0.5;
-		lPos[2] = lPos[2] * 0.5 + 0.5;
-
-		qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
-	}
-	else {
-		qglUniform1i(U_2D_PICS, 1);
-	}
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-
-	GL_SetBindlessTexture(U_TMU0, gl->handle);
-	GL_SetBindlessTexture(U_TMU1, i_conBump->handle);
-
-	VA_SetElem2(tess2d.v[0].pos, x, y);
-	VA_SetElem2(tess2d.v[1].pos, x + w, y);
-	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.v[3].pos, x, y + h);
-		
-	VA_SetElem2(tess2d.v[0].tc, gl->sl + offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.v[1].tc, gl->sh - offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.v[2].tc, gl->sh - offsX, gl->th - offsY);
-	VA_SetElem2(tess2d.v[3].tc, gl->sl + offsX, gl->th - offsY);
-
-	for (int i = 0; i < 4; i++)
-		VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
-
-	R_DrawTexturedQuad();
-}
-
-
-
-void Draw_StretchPic(int x, int y, int w, int h, char* pic)
-{
-	bool cons = 0;
-	image_t* gl;
-
-	gl = Draw_FindPic(pic);
-
-	if (!gl) {
-		Com_Printf("Can't find pic: %s\n", pic);
-		return;
-	}
-	Draw_StretchPic2(x, y, w, h, gl);
-}
-
-float loadScreenColorFade;
-float loadingLod;
-
-void Draw_LoadingScreen2(int x, int y, int w, int h, image_t* gl)
-{
-	float offsX, offsY;
-	float woh = (float)vid.width / (float)vid.height;
-
-	if (!gl) {
-		Com_Printf("NULL pic in Draw_LoadingScreen2\n");
-		return;
-	}
-
-	if (woh < WIDE_SCREEN_16x9) {  // quad screen
-		offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
-		offsY = 0;
-	}
-	else if (woh > WIDE_SCREEN_16x9) {   // super wide screen (21 x 9)
-		offsX = 0;
-		offsY = (HEIGHT_FHD - (WIDTH_FHD / woh)) / (HEIGHT_FHD * 2.0);
-	}
-	else {
-		offsX = offsY = 0;
-	}
-
-	GL_BindProgram(loadingProgram);
-
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
-	qglUniform1f(U_PARAM_FLOAT_0, loadingLod);
-	qglUniform1f(U_PARAM_FLOAT_1, loadScreenColorFade);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-
-	GL_SetBindlessTexture(U_TMU0, gl->handle);
-
-	VA_SetElem2(tess2d.v[0].pos, x, y);
-	VA_SetElem2(tess2d.v[1].pos, x + w, y);
-	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.v[3].pos, x, y + h);
-
-	VA_SetElem2(tess2d.v[0].tc, gl->sl + offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.v[1].tc, gl->sh - offsX, gl->tl + offsY);
-	VA_SetElem2(tess2d.v[2].tc, gl->sh - offsX, gl->th - offsY);
-	VA_SetElem2(tess2d.v[3].tc, gl->sl + offsX, gl->th - offsY);
-
-	R_DrawTexturedQuad();
-}
-
-void Draw_LoadingScreen(int x, int y, int w, int h, char* pic)
-{
-	image_t* gl;
-
-	gl = GL_FindImage(pic + 1, it_mipmap);
-	Draw_LoadingScreen2(x, y, w, h, gl);
-}
-
-/*
-=============
-Draw_Pic
-=============
-*/
-
-
-void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
-{
-	int w, h;
-
-	if (!gl) {
-		Com_Printf("NULL pic in Draw_Pic\n");
-		return;
-	}
-
-	w = gl->width * sX * gl->picScale_w;
-	h = gl->height * sY * gl->picScale_h;
-
-	if (!gl->has_alpha)
-		GL_Disable(GL_BLEND);
-
-	if (strstr(gl->name, "chx")) { // crosshair hack
-		GL_Enable(GL_BLEND);
-		GL_BlendFunc(GL_ONE, GL_ONE);
-		w = gl->width * sX;
-		h = gl->height * sY;
-	}
-
-	GL_BindProgram(genericProgram);
-	qglUniform1i(U_2D_PICS, 1);
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 0);
-
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
-
-	GL_SetBindlessTexture(U_TMU0, gl->handle);
-
-	VA_SetElem2(tess2d.v[0].tc, gl->sl, gl->tl);
-	VA_SetElem2(tess2d.v[1].tc, gl->sh, gl->tl);
-	VA_SetElem2(tess2d.v[2].tc, gl->sh, gl->th);
-	VA_SetElem2(tess2d.v[3].tc, gl->sl, gl->th);
-
-	VA_SetElem2(tess2d.v[0].pos, x, y);
-	VA_SetElem2(tess2d.v[1].pos, x + w, y);
-	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.v[3].pos, x, y + h);
-
-
-	for (int i = 0; i < 4; i++) {
-		if (strstr(gl->name, "chx"))
-			VA_SetElem4(tess2d.v[i].color, hColor[0], hColor[1], hColor[2], 1.0);
-		else
-			VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
-	}
-
-	R_DrawTexturedQuad();
-
-	if (!gl->has_alpha)
-		GL_Enable(GL_BLEND);
-
-	if (strstr(gl->name, "chx"))
-		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* gl2)
-{
-	int w, h;
-	
-	if (!r_bump2D->integer)
-		return;
-
-	if (!gl2)
-		gl2 = i_defBump;
-
-	if (strstr(gl->name, "chx"))
-		return;
-
-	w = gl->width	* sX * gl->picScale_w;
-	h = gl->height	* sY * gl->picScale_h;
-
-	GL_BlendFunc(GL_ONE, GL_ONE); // use addative alpha blending
-
-	GL_BindProgram(light2dProgram);
 
 	float	t;
 	vec4_t	lPos;
@@ -429,93 +214,28 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	lPos[0] = lPos[0] * 0.5 + 0.5;
 	lPos[1] = lPos[1] * 0.5 + 0.5;
 	lPos[2] = lPos[2] * 0.5 + 0.5;
-	lPos[3] = lPos[3] * 0.5 + 0.5;
 
+	GL_BindProgram(picProgram);
+
+	qglUniform1i(U_PARAM_INT_0, flags);
+	qglUniform1i(U_PARAM_INT_1, gl_config.useHdrDisplay);
 	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
-
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
-
-	GL_SetBindlessTexture(U_TMU0, gl->handle);
-	GL_SetBindlessTexture(U_TMU1, gl2->handle);
-
-	VA_SetElem2(tess2d.v[0].tc, gl->sl, gl->tl);
-	VA_SetElem2(tess2d.v[1].tc, gl->sh, gl->tl);
-	VA_SetElem2(tess2d.v[2].tc, gl->sh, gl->th);
-	VA_SetElem2(tess2d.v[3].tc, gl->sl, gl->th);
-
-	VA_SetElem2(tess2d.v[0].pos, x, y);
-	VA_SetElem2(tess2d.v[1].pos, x + w, y);
-	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
-	VA_SetElem2(tess2d.v[3].pos, x, y + h);
-
-	R_DrawTexturedQuad();
-
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char* pic)
-{
-	image_t* gl;
-
-	gl = Draw_FindPic(pic);
-	if (!gl) {
-		gl = i_missingTexture;
-	}
-	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
-}
-
-void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, char* pic2)
-{
-	image_t* gl;
-	image_t* gl2;
-
-	if (!r_bump2D->integer)
-		return;
-
-	gl = Draw_FindPic(pic);
-	if (!gl) {
-		gl = i_missingTexture;
-	}
-
-	gl2 = Draw_FindPic(pic2);
-	if (!gl2) {
-		gl2 = i_defBump;
-	}
-	Draw_ScaledBumpPic(x, y, scale_x, scale_y, gl, gl2);
-}
-
-/*
-=============
-Draw_TileClear
-
-This repeats a 64*64 tile graphic to fill the screen around a sized down
-refresh window.
-=============
-*/
-void Draw_TileClear2(int x, int y, int w, int h, image_t* image)
-{
-	if (!image) {
-		Com_Printf("NULL pic in Draw_TileClear\n");
-		return;
-	}
-
-	GL_BindProgram(genericProgram);
-	qglUniform1i(U_2D_PICS, 1);
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
+	qglUniform1f(U_PARAM_FLOAT_0, loadingLod);
+	qglUniform1f(U_PARAM_FLOAT_1, loadScreenColorFade);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, image->handle);
-
-	VA_SetElem2(tess2d.v[0].tc, x / 64.0, y / 64.0);
-	VA_SetElem2(tess2d.v[1].tc, (x + w) / 64.0, y / 64.0);
-	VA_SetElem2(tess2d.v[2].tc, (x + w) / 64.0, y / 64.0);
-	VA_SetElem2(tess2d.v[3].tc, x / 64.0, (y + h) / 64.0);
+	GL_SetBindlessTexture(U_TMU1, imageBump->handle);
 
 	VA_SetElem2(tess2d.v[0].pos, x, y);
 	VA_SetElem2(tess2d.v[1].pos, x + w, y);
 	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
 	VA_SetElem2(tess2d.v[3].pos, x, y + h);
+
+	VA_SetElem2(tess2d.v[0].tc, image->sl + offsX, image->tl + offsY);
+	VA_SetElem2(tess2d.v[1].tc, image->sh - offsX, image->tl + offsY);
+	VA_SetElem2(tess2d.v[2].tc, image->sh - offsX, image->th - offsY);
+	VA_SetElem2(tess2d.v[3].tc, image->sl + offsX, image->th - offsY);
 
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
@@ -523,16 +243,118 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t* image)
 	R_DrawTexturedQuad();
 }
 
-void Draw_TileClear(int x, int y, int w, int h, char* pic)
-{
-	image_t* image;
-	image = Draw_FindPic(pic);
+void Draw_StretchPic(int x, int y, int w, int h, int flags, char *imageName, char *imageName2){
+	image_t *image, *bumpImage;
 
-	if (!image) {
-		Com_Printf("Can't find pic: %s\n", pic);
-		return;
+	if (flags & PF_LOADSCREEN) {
+		image = GL_FindImage(imageName + 1, it_mipmap);
+	}else
+		image = Draw_FindPic(imageName);
+	
+	if (strstr(imageName2, "null"))
+		bumpImage = i_defBump;
+	else
+		bumpImage	= Draw_FindPic(imageName2);
+
+	if (!image)
+		image = i_missingTexture;
+	if (!bumpImage)
+		bumpImage = i_defBump;
+
+	R_Draw_StretchPic(x, y, w, h, flags, image, bumpImage);
+}
+
+
+/*
+=============
+Draw_Pic
+=============
+*/
+void Draw_ScaledPic(int x, int y, float scaleX, float scaleY, int flags, image_t *image, image_t *imageBump){
+	int w, h;
+
+	w = image->width * scaleX * image->picScale_w;
+	h = image->height * scaleY * image->picScale_h;
+
+	if (!image->has_alpha)
+		GL_Disable(GL_BLEND);
+
+	if (flags & PF_CROSSHAIR) { 
+		GL_Enable(GL_BLEND);
+		GL_BlendFunc(GL_ONE, GL_ONE);
+		w = image->width * scaleX;
+		h = image->height * scaleY;
 	}
-	Draw_TileClear2(x, y, w, h, image);
+
+	if (!r_drawPicBump->integer)
+		flags &= ~PF_LIGHT;
+
+	float	t;
+	vec4_t	lPos;
+	t = Sys_Milliseconds() * 0.001;
+	lPos[0] = sin(t);
+	lPos[1] = cos(t);
+	lPos[2] = 0.5;
+	lPos[3] = ((float)h + (float)y) / (float)h;
+	VectorNormalize(lPos);
+	lPos[0] = lPos[0] * 0.5 + 0.5;
+	lPos[1] = lPos[1] * 0.5 + 0.5;
+	lPos[2] = lPos[2] * 0.5 + 0.5;
+
+	GL_BindProgram(picProgram);
+
+	qglUniform1i(U_PARAM_INT_0, flags);
+	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
+
+	GL_SetBindlessTexture(U_TMU0, image->handle);
+	GL_SetBindlessTexture(U_TMU1, imageBump->handle);
+
+	VA_SetElem2(tess2d.v[0].tc, image->sl, image->tl);
+	VA_SetElem2(tess2d.v[1].tc, image->sh, image->tl);
+	VA_SetElem2(tess2d.v[2].tc, image->sh, image->th);
+	VA_SetElem2(tess2d.v[3].tc, image->sl, image->th);
+
+	VA_SetElem2(tess2d.v[0].pos, x, y);
+	VA_SetElem2(tess2d.v[1].pos, x + w, y);
+	VA_SetElem2(tess2d.v[2].pos, x + w, y + h);
+	VA_SetElem2(tess2d.v[3].pos, x, y + h);
+
+
+	for (int i = 0; i < 4; i++) {
+		if (flags & PF_CROSSHAIR)
+			VA_SetElem4(tess2d.v[i].color, hColor[0], hColor[1], hColor[2], 1.0);
+		else
+			VA_SetElem4(tess2d.v[i].color, 1.0, 1.0, 1.0, 1.0);
+	}
+
+	R_DrawTexturedQuad();
+
+	if (!image->has_alpha)
+		GL_Enable(GL_BLEND);
+
+	if (flags & PF_CROSSHAIR)
+		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+
+void Draw_PicScaled(int x, int y, float scaleX, float scaleY, int flags, char *imageName, char *imageName2)
+{
+	image_t *image, *bumpImage;
+
+	image = Draw_FindPic(imageName);
+
+	if (strstr(imageName2, "null"))
+		bumpImage = i_defBump;
+	else
+		bumpImage = Draw_FindPic(imageName2);
+
+	if (!image)
+		image = i_missingTexture;
+	if (!bumpImage)
+		bumpImage = i_defBump;
+
+	Draw_ScaledPic(x, y, scaleX, scaleY, flags, image, bumpImage);
 }
 
 
@@ -545,10 +367,8 @@ Fills a box of pixels with a single color
 */
 void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, bool loading) {
 
-	GL_BindProgram(genericProgram);
-	qglUniform1i(U_2D_PICS, 0);
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 1);
+	GL_BindProgram(picProgram);
+	qglUniform1i(U_PARAM_INT_0, PF_VERTEXCOLOR);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
@@ -620,11 +440,10 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	glTextureSubImage2D(i_cinematic->texnum, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 
 	// setup program
-	GL_BindProgram(cinProgram);
-
+	GL_BindProgram(picProgram);
+	qglUniform1i(U_PARAM_INT_0, PF_TECHCOLOR | PF_MEDIANFILTER | PF_SCANLINE);
 	GL_SetBindlessTexture(U_TMU0, i_cinematic->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	VA_SetElem2(tess2d.v[0].pos, x, y);
 	VA_SetElem2(tess2d.v[1].pos, x + w, y);

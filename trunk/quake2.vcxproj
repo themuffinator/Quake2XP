@@ -149,6 +149,7 @@
       <OpenMPSupport>false</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <DisableSpecificWarnings>6244</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -359,6 +360,7 @@
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>CompileAsC</CompileAs>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <DisableSpecificWarnings>6244</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -759,10 +761,12 @@
     <None Include="..\baseq2\glsl\ambientMd3.vert" />
     <None Include="..\baseq2\glsl\bloomBlur.frag" />
     <None Include="..\baseq2\glsl\bloomBlur.vert" />
-    <None Include="..\baseq2\glsl\gauss_x.comp" />
-    <None Include="..\baseq2\glsl\gauss_y.comp" />
     <None Include="..\baseq2\glsl\color.frag" />
     <None Include="..\baseq2\glsl\color.vert" />
+    <None Include="..\baseq2\glsl\drawPics.frag" />
+    <None Include="..\baseq2\glsl\drawPics.vert" />
+    <None Include="..\baseq2\glsl\gauss_x.comp" />
+    <None Include="..\baseq2\glsl\gauss_y.comp" />
     <None Include="..\baseq2\glsl\depthDownsample.frag" />
     <None Include="..\baseq2\glsl\depthDownsample.vert" />
     <None Include="..\baseq2\glsl\finalPass.frag" />
@@ -795,8 +799,6 @@
     <None Include="..\baseq2\glsl\bright.vert" />
     <None Include="..\baseq2\glsl\bloomFinal.frag" />
     <None Include="..\baseq2\glsl\bloomFinal.vert" />
-    <None Include="..\baseq2\glsl\cin.frag" />
-    <None Include="..\baseq2\glsl\cin.vert" />
     <None Include="..\baseq2\glsl\dof.frag" />
     <None Include="..\baseq2\glsl\dof.vert" />
     <None Include="..\baseq2\glsl\filmicFx.frag" />
@@ -812,12 +814,6 @@
     <None Include="..\baseq2\glsl\lightWorld.vert" />
     <None Include="..\baseq2\glsl\linearDepth.frag" />
     <None Include="..\baseq2\glsl\linearDepth.vert" />
-    <None Include="..\baseq2\glsl\loading.frag" />
-    <None Include="..\baseq2\glsl\loading.vert" />
-    <None Include="..\baseq2\glsl\light2d.frag" />
-    <None Include="..\baseq2\glsl\light2d.vert" />
-    <None Include="..\baseq2\glsl\lut.frag" />
-    <None Include="..\baseq2\glsl\lut.vert" />
     <None Include="..\baseq2\glsl\mblur.frag" />
     <None Include="..\baseq2\glsl\mblur.vert" />
     <None Include="..\baseq2\glsl\menu.frag" />
