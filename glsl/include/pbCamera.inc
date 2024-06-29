@@ -39,3 +39,24 @@ float getStandardOutputBasedExposure(float aperture, float shutterSpeed, float i
     float l_avg = (1000.0f / 65.0f) * sqrt(aperture) / (iso * shutterSpeed);
     return middleGrey / l_avg;
 }
+
+float ComputeExposure(float lum, float EVcomp){
+    
+    float targetEV      = ComputeTargetEV(lum);
+    float aperture      = 4.0;
+    float focalLength   = 70.0;
+    float shutterSpeed  = 1.0 / (focalLength * 1000.0);
+    
+    targetEV            = targetEV + EVcomp;
+
+    // Compute the resulting ISO if we left both shutter and aperture here
+    float iso = clamp(ComputeISO(aperture, shutterSpeed, targetEV), MIN_ISO, MAX_ISO);
+    // Apply half the difference in EV to the aperture
+    float evDiff = targetEV - ComputeEV(aperture, shutterSpeed, iso);
+    aperture = clamp(aperture * pow(sqrt(2.0f), evDiff * 0.5f), MIN_APERTURE, MIN_APERTURE);
+    // Apply the remaining difference to the shutter speed
+    evDiff = targetEV - ComputeEV(aperture, shutterSpeed, iso);
+    shutterSpeed = clamp(shutterSpeed * pow(2.0f, -evDiff), MIN_SHUTTER, MAX_SHUTTER);
+
+    return getStandardOutputBasedExposure(aperture, shutterSpeed, iso, 0.18f);
+}

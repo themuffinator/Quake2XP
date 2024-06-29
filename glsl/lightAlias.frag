@@ -41,7 +41,6 @@ in mat3			v_tangentToView;
 in mat4			v_mvMatrix;
 in vec3	v_t, v_b, v_n;
 
-//#include depth.inc		//!#include "include/depth.inc"
 #include lighting.inc	//!#include "include/lighting.inc"
 #include blur.inc		//!#include "include/blur.inc"
 
@@ -191,7 +190,7 @@ void main (void) {
 
 	if (u_isAmbient == 1) {
 		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS); 
-    vec3 ambient = Diffuse_Lambert(diffuseMap.rgb);
+		vec3 ambient = Diffuse_Lambert(diffuseMap.rgb);
 		fragData = vec4(ambient, 1.0)/*diffuseMap * LambertLighting(curNormal, L)*/ * u_lightColor * attenMap;
 		return;
 	}
