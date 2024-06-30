@@ -1320,7 +1320,7 @@ void R_RegisterCvars(void)
 	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.5", CVAR_ARCHIVE);
 	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "1", CVAR_ARCHIVE);
 	r_hdrColorSpace->help =				" 0 = sRGB/D65 \n| 1 = DCI-P3/D65b \n| 2 = Rec.2020/D65 \n| 3 = ACES AP0/D60 \n| 4 = ACES AP1/D60";
-	r_hdr_uiNits =						Cvar_Get("r_hdr_uiNits", "100.0", CVAR_ARCHIVE);
+	r_hdrUiNits =						Cvar_Get("r_hdrUiNits", "100.0", CVAR_ARCHIVE);
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
@@ -1821,7 +1821,7 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
 
 	qglClampColor		=	(PFNGLCLAMPCOLORPROC)		qwglGetProcAddress("glClampColor");
-//	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
+	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
 
 	glFenceSync = (PFNGLFENCESYNCPROC)	qwglGetProcAddress("glFenceSync");
 	glGetSynciv = (PFNGLGETSYNCIVPROC)	qwglGetProcAddress("glGetSynciv");
@@ -1835,19 +1835,24 @@ int R_Init(void *hinstance, void *hWnd)
 	qglNamedBufferData		= (PFNGLNAMEDBUFFERDATAPROC)	qwglGetProcAddress("glNamedBufferData");
 	qglNamedBufferSubData	= (PFNGLNAMEDBUFFERSUBDATAPROC)	qwglGetProcAddress("glNamedBufferSubData");
 
-	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
-	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
+	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,	&gl_state.numFormats);
+	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS,		&gl_state.binaryFormats);
 
 	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
 	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
 	gl_config.version_string				= (const char*)qglGetString(GL_VERSION);
 	gl_config.shadingLanguageVersionString	= (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION);
 
+	qglGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE,		&gl_config.glFbCB[0]);
+	qglGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE,	&gl_config.glFbCB[1]);
+	qglGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE,	&gl_config.glFbCB[2]);
+	qglGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE,	&gl_config.glFbCB[3]);
+
 	Com_Printf("GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
 	Com_Printf("GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
 	Com_Printf("GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
 	Com_Printf("GLSL_VERSION:" S_COLOR_GREEN " %s\n", gl_config.shadingLanguageVersionString);
-
+	Com_Printf("GL_FRAMEBUFFER Color Bits: " S_COLOR_YELLOW "R:" S_COLOR_GREEN "%i " S_COLOR_YELLOW "G:" S_COLOR_GREEN "%i " S_COLOR_YELLOW "B:" S_COLOR_GREEN "%i " S_COLOR_YELLOW "A:" S_COLOR_GREEN "%i\n", gl_config.glFbCB[0], gl_config.glFbCB[1], gl_config.glFbCB[2], gl_config.glFbCB[3]);
 	
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,	&gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS,	&gl_config.maxVertexUniformComponents);
@@ -2044,10 +2049,11 @@ void R_BeginFrame()
 	/* 
 	 ** change modes if necessary
 	 */
-	r_lightmapScale->value = ClampCvar(0.0, 1.0, r_lightmapScale->value);
-	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
-	r_parallaxScale->integer = ClampCvarInteger(0, 6, r_parallaxScale->integer);
-	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_lightmapScale->value		= ClampCvar(0.0, 1.0, r_lightmapScale->value);
+	r_parallaxMapping->integer	= ClampCvarInteger(0, 3, r_parallaxMapping->integer);
+	r_parallaxScale->integer	= ClampCvarInteger(0, 6, r_parallaxScale->integer);
+	r_colorTempK->integer		= ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_hdrUiNits->value			= ClampCvar(100.0, 300.0, r_hdrUiNits->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;

@@ -367,7 +367,7 @@ cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrBloomIntens;
 cvar_t	*r_hdrColorSpace;
-cvar_t	*r_hdr_uiNits;
+cvar_t	*r_hdrUiNits;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -742,12 +742,8 @@ typedef struct {
 
 	int			glMajorVersion;
 	int			glMinorVersion;
+	int			glFbCB[4];
 
-	int			colorBits;
-	int			alphaBits;
-	int			depthBits;
-	int			stencilBits;
-	int			samples;
 	int			maxSamples;
 	bool		hdrDisplay;
 	bool		useHdrDisplay;

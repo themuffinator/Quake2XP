@@ -52,11 +52,7 @@ typedef struct {
 	bool		doubleBuffer;
 	bool		rgba;
 
-	int				colorBits;
-	int				alphaBits;
-	int				depthBits;
-	int				stencilBits;
-	int				samples;
+	int			samples;
 } glwPixelFormatDescriptor_t;
 
 static LRESULT CALLBACK FakeWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1030,17 +1026,6 @@ static bool GLW_ChoosePixelFormat() {
 	SetPixelFormat(glw_state.hDC, pixelFormat, &PFD);
 
 	Com_Printf(S_COLOR_GREEN "ok\n");
-
-	gl_config.colorBits = gl_config.useHdrDisplay ? 48 : 32;
-	gl_config.alphaBits = gl_config.useHdrDisplay ? 16 : 8;
-	gl_config.depthBits = 24;
-	gl_config.stencilBits = 8;
-	gl_config.samples = samples;
-
-
-	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n\n",
-		32, 24, 8, 8, gl_config.maxSamples, gl_config.samples);
-
 	return true;
 }
 
