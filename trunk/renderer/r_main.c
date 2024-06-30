@@ -1319,7 +1319,8 @@ void R_RegisterCvars(void)
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
 	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.5", CVAR_ARCHIVE);
 	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "1", CVAR_ARCHIVE);
-	r_hdrColorSpace->help = " 0 = sRGB/D65 \n| 1 = DCI-P3/D65b \n| 2 = Rec.2020/D65 \n| 3 = ACES AP0/D60 \n| 4 = ACES AP1/D60";
+	r_hdrColorSpace->help =				" 0 = sRGB/D65 \n| 1 = DCI-P3/D65b \n| 2 = Rec.2020/D65 \n| 3 = ACES AP0/D60 \n| 4 = ACES AP1/D60";
+	r_hdr_uiNits =						Cvar_Get("r_hdr_uiNits", "100.0", CVAR_ARCHIVE);
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);

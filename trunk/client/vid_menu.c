@@ -56,6 +56,7 @@ static menuslider_s		s_gamma_slider;
 static menuslider_s		s_vibrance_slider;
 static menuslider_s		s_fixfov_slider;
 //static menulist_s		s_lut_list;
+static menuslider_s		s_hdrNits_slider;
 
 static menuslider_s		s_bloomIntens_slider;
 static menuslider_s		s_bloomIntens2_slider;
@@ -139,6 +140,13 @@ static void BrightnessCallback (void *s) {
 	brt = s_brightness_slider.curValue / 10;
 
 	Cvar_SetValue ("r_brightness", brt);
+}
+
+static void hdrNitsCallback(void *s) {
+	float nits;
+	nits = s_hdrNits_slider.curValue / 1;
+
+	Cvar_SetValue("r_hdr_uiNits", nits);
 }
 
 static void ContrastCallback(void *s) {
@@ -247,6 +255,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_filmicFx", s_film_grain.curInteger);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curInteger);
 	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curValue);
+	Cvar_SetValue("r_hdr_uiNits", s_hdrNits_slider.curValue);
 
 	switch (s_aniso_list.curInteger)
 	{
@@ -337,6 +346,8 @@ static void ApplyChanges (void *unused) {
 	if (r_hdrGlareIntens->modified)
 		vid_ref->modified = true;
 
+	if (r_hdr_uiNits->modified)
+		vid_ref->modified = true;
 
 	if (r_fixFovStrength->modified)
 		vid_ref->modified = true;
@@ -401,7 +412,10 @@ void M_ColorInit() {
 
 	if (!r_fixFovStrength)
 		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
+	if(!r_hdr_uiNits)
+		r_hdr_uiNits = Cvar_Get("r_hdr_uiNits", "100.0", CVAR_ARCHIVE);
 
+	r_hdr_uiNits->value = ClampCvar(100.0, 600.0, r_hdr_uiNits->value);
 	r_gamma->value = ClampCvar(1.5, 2.2, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
@@ -479,10 +493,22 @@ void M_ColorInit() {
 	s_vibrance_slider.divRange = 10;
 	s_vibrance_slider.generic.statusbar = "Color Vibrance";
 
+	s_hdrNits_slider.generic.type = MTYPE_SLIDER;
+	s_hdrNits_slider.generic.x = 0;
+	s_hdrNits_slider.generic.y = 70 * ui_fontScale->value;
+	s_hdrNits_slider.generic.name = "HDR UI Brightness";
+	s_hdrNits_slider.generic.callback = hdrNitsCallback;
+	s_hdrNits_slider.minValue = 100;
+	s_hdrNits_slider.maxValue = 600;
+	s_hdrNits_slider.curValue = r_hdr_uiNits->value * 1;
+	s_hdrNits_slider.divRange = 1;
+	s_hdrNits_slider.name = "Nits";
+	s_hdrNits_slider.generic.statusbar = "UI Brightness in HDR Mode";
+
 
 	s_bloomIntens_slider.generic.type = MTYPE_SLIDER;
 	s_bloomIntens_slider.generic.x = 0;
-	s_bloomIntens_slider.generic.y = 70 * ui_fontScale->value;
+	s_bloomIntens_slider.generic.y = 90 * ui_fontScale->value;
 	s_bloomIntens_slider.generic.name = "Glare Intensity";
 	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
 	s_bloomIntens_slider.minValue = 12;
@@ -493,7 +519,7 @@ void M_ColorInit() {
 
 	s_bloomIntens2_slider.generic.type = MTYPE_SLIDER;
 	s_bloomIntens2_slider.generic.x = 0;
-	s_bloomIntens2_slider.generic.y = 80 * ui_fontScale->value;
+	s_bloomIntens2_slider.generic.y = 100 * ui_fontScale->value;
 	s_bloomIntens2_slider.generic.name = "Bloom Intensity";
 	s_bloomIntens2_slider.generic.callback = bloomLevelCallback2;
 	s_bloomIntens2_slider.minValue = 1;
@@ -504,7 +530,7 @@ void M_ColorInit() {
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
-	s_fixfov_slider.generic.y = 100 * ui_fontScale->value;
+	s_fixfov_slider.generic.y = 110 * ui_fontScale->value;
 	s_fixfov_slider.generic.name = "Hi-FOV Corection";
 	s_fixfov_slider.generic.callback = FixFovCallback;
 	s_fixfov_slider.minValue = 0;
@@ -526,7 +552,7 @@ void M_ColorInit() {
 	s_menuColorTemp.generic.name = "Color Temperature";
 	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
 	s_menuColorTemp.generic.x = 0;
-	s_menuColorTemp.generic.y = 120 * ui_fontScale->value;
+	s_menuColorTemp.generic.y = 130 * ui_fontScale->value;
 	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
 	s_menuColorTemp.length = 9;
 	s_menuColorTemp.visible_length = 9;
@@ -541,6 +567,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_contrast_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_saturation_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_hdrNits_slider);
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
 	Menu_AddItem(&s_opengl2_menu, (void*)&s_bloomIntens2_slider);

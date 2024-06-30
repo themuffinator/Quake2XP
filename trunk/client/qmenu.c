@@ -633,12 +633,21 @@ void Slider_Draw (menuslider_s * s) {
 	R_AddCharsToList((int)(RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x + (SLIDER_RANGE - 1) * 8 * s->range * fontscale),
 					s->generic.y + s->generic.parent->y, fontscale, 131, i_menuFont);
 
-	char data[8];
+	char data[8], type[64];
 	if (s->percent) {
 		Com_sprintf(data, sizeof(data), " %.0f%%", (s->curValue / s->divRange) * 100);
 	} else
 		Com_sprintf(data, sizeof(data), " %.1f", s->curValue / s->divRange);
 	CL_AddString(RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8, s->generic.y + s->generic.parent->y, fontscale-1, data, i_consFont);
+	
+	if (s->name) {
+		Com_sprintf(type, sizeof(type), " %s", s->name);
+		int len = strlen(type);
+		if (len > 0) {
+			CL_AddString(RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8 + strlen(data) * fontscale * 3,
+				s->generic.y + s->generic.parent->y, fontscale - 1, type, i_consFont);
+		}
+	}
 }
 
 void SpinControl_DoEnter (menulist_s * s) {

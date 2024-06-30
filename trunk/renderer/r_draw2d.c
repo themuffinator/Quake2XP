@@ -222,6 +222,8 @@ void R_Draw_StretchPic(int x, int y, int w, int h, int flags, image_t *image, im
 	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
 	qglUniform1f(U_PARAM_FLOAT_0, loadingLod);
 	qglUniform1f(U_PARAM_FLOAT_1, loadScreenColorFade);
+	qglUniform1f(U_PARAM_FLOAT_2, r_hdr_uiNits->value);
+
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, image->handle);
@@ -305,6 +307,7 @@ void Draw_ScaledPic(int x, int y, float scaleX, float scaleY, int flags, image_t
 
 	qglUniform1i(U_PARAM_INT_0, flags);
 	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
+	qglUniform1f(U_PARAM_FLOAT_2, r_hdr_uiNits->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, image->handle);
@@ -442,6 +445,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	// setup program
 	GL_BindProgram(picProgram);
 	qglUniform1i(U_PARAM_INT_0, PF_TECHCOLOR | PF_MEDIANFILTER | PF_SCANLINE);
+	qglUniform1f(U_PARAM_FLOAT_2, r_hdr_uiNits->value);
 	GL_SetBindlessTexture(U_TMU0, i_cinematic->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 

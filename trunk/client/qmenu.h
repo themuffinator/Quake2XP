@@ -97,6 +97,7 @@ typedef struct {
 	int		intVal;
 	bool percent;
 	float range;
+	char *name;
 } menuslider_s;
 
 typedef struct {
