@@ -7,6 +7,7 @@ layout (location = U_PARAM_INT_1)	uniform int		u_hdrOutput;
 layout (location = U_PARAM_VEC4_0)	uniform vec4	u_light;
 layout (location = U_PARAM_FLOAT_0) uniform float	u_lod;
 layout (location = U_PARAM_FLOAT_1) uniform float	u_colorFade;
+layout (location = U_PARAM_FLOAT_2) uniform float	u_hdr_nits;
 
 in vec2		v_texCoord;
 in vec4		v_color;
@@ -135,11 +136,10 @@ void main(void){
 		image = pow(image, vec4(1.0/2.2));
 
 	if(bool(u_flags & (PF_COLOREDFONT | PF_CROSSHAIR))){
-		
-		if((u_flags & PF_CROSSHAIR) == PF_CROSSHAIR){ // scale for hdr device output
-			if(u_hdrOutput == 1)
-				image *= 14.0;			
-			}
+
+		if(u_hdrOutput == 1)
+			image *= (u_hdr_nits / 80.0);			
+	
 		fragData = image * v_color;
 		return;
 	}
@@ -179,6 +179,10 @@ void main(void){
 		float vignetting = clamp((OuterVignetting - d) / (OuterVignetting - InnerVignetting), 0.0, 1.0);
 		image.rgb *= vignetting;
 	}
+
+	if(u_hdrOutput == 1)
+		image.rgb *= u_hdr_nits / 80.0;
+
 	fragData = image;
 
 	if((u_flags & PF_NOALPHA) == PF_NOALPHA)
