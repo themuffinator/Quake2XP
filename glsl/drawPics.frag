@@ -112,6 +112,10 @@ vec4 TechniColor(in vec4 color){
 void main(void){
 
 	if(bool(u_flags & PF_VERTEXCOLOR)){
+		
+		if(u_hdrOutput == 1)
+			fragData.rgb *= (u_hdr_nits / 80.0);	
+
 		fragData = v_color;
 		return;
 	}
@@ -138,7 +142,7 @@ void main(void){
 	if(bool(u_flags & (PF_COLOREDFONT | PF_CROSSHAIR))){
 
 		if(u_hdrOutput == 1)
-			image *= (u_hdr_nits / 80.0);			
+			image.rgb *= (u_hdr_nits / 80.0);			
 	
 		fragData = image * v_color;
 		return;
