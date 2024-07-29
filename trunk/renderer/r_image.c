@@ -155,7 +155,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	if (len < 5)
 		return NULL;
 
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++){
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++){
 
 		if (image->hash == hash){
 
@@ -308,20 +308,20 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	}
 
 	// find a free image_t
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++){
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++){
 		if (!image->texnum)
 			break;
 	}
-	if (i == r_numTextures){
-		if (r_numTextures == MAX_GLTEXTURES)
+	if (i == gi.r_numTextures){
+		if (gi.r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-		r_numTextures++;
+		gi.r_numTextures++;
 	}
 
 	width = header->dwWidth;
 	height = header->dwHeight;
 	
-	image = &r_textures[i];
+	image = &gi.r_textures[i];
 	strcpy(image->name, texName);
 
 	image->width = width;
@@ -540,7 +540,7 @@ void R_CaptureColorBuffer(){
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	glCopyTextureSubImage2D(i_hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(gi.hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 
@@ -558,7 +558,7 @@ void GL_ImageList_f(void)
 
 	Com_Printf("------------------\n");
 
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 		
 		if (image->texnum <= 0)
 			continue;
@@ -816,7 +816,7 @@ image_t *GL_LoadWal(char *name)
 
 	if (!mt) {
 		Com_Printf("GL_FindImage: can't load %s\n", name);
-		return i_missingTexture;
+		return gi.missingTexture;
 	}
 
 	width = LittleLong(mt->width);
@@ -961,7 +961,7 @@ void R_FreePic(char* name)
 	int		i;
 	image_t* image;
 
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++)
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++)
 	{
 		if (!image->registration_sequence)
 			continue;		// free image_t slot
@@ -983,7 +983,7 @@ void R_FreePic(char* name)
 ================
 GL_LoadPic
 
-This is also used as an entry point for the generated i_blackTexture1x1
+This is also used as an entry point for the generated blackTexture1x1
 ================
 */
 
@@ -996,18 +996,18 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	char s[128];
 
 	// find a free image_t
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
 
-	if (i == r_numTextures) {
-		if (r_numTextures == MAX_GLTEXTURES)
+	if (i == gi.r_numTextures) {
+		if (gi.r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_DROP, "MAX_GLTEXTURES");
-		r_numTextures++;
+		gi.r_numTextures++;
 	}
 
-	image = &r_textures[i];
+	image = &gi.r_textures[i];
 
 	if (strlen(name) >= sizeof(image->name))
 		VID_Error(ERR_DROP, "Draw_LoadPic: \"%s\" is too long", name);
@@ -1108,7 +1108,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		return NULL;			
 
 	// look for it
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++){
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++){
 		if (image->type != type)
 			continue;
 		if (image->hash == hash)
@@ -1181,7 +1181,7 @@ struct image_s *R_RegisterSkin(char *name){
 	img = R_LoadDDS(gl, it_skin);
 
 	if (!img)
-		img = i_missingTexture;
+		img = gi.missingTexture;
 	
 	return img;
 }
@@ -1197,7 +1197,7 @@ struct image_s *R_RegisterPlayerBump (char *name){
 	img = R_LoadDDS(gl, it_skin);
 
 	if(!img)
-		img = i_defBump;
+		img = gi.defBump;
 
 	return img;
 }
@@ -1218,66 +1218,66 @@ void GL_FreeUnusedImages(void)
 
 	// image cache
 	//=========================
-	i_blackTexture1x1->registration_sequence = registration_sequence;
-	i_missingTexture->registration_sequence = registration_sequence;
+	gi.blackTexture1x1->registration_sequence = registration_sequence;
+	gi.missingTexture->registration_sequence = registration_sequence;
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
-		r_caustic[i]->registration_sequence = registration_sequence;
+		gi.causticTexture[i]->registration_sequence = registration_sequence;
 	}
 
 	for (i = 0; i < MAX_WATER_NORMALS; i++) {
-		r_waterNormals[i]->registration_sequence = registration_sequence;
+		gi.waterNormals[i]->registration_sequence = registration_sequence;
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {
-		fly[i]->registration_sequence = registration_sequence;
+		gi.flyTexture[i]->registration_sequence = registration_sequence;
 	}
 
 	for (i = 0; i < MAX_FLAMEANIM; i++) {
-		flameanim[i]->registration_sequence = registration_sequence;
+		gi.flameAnimTex[i]->registration_sequence = registration_sequence;
 	}
 
 	for (i = 0; i < MAX_BLOOD; i++) {
-		r_blood[i]->registration_sequence = registration_sequence;
+		gi.bloodTexture[i]->registration_sequence = registration_sequence;
 	}
 	
 	for (i = 0; i < MAX_xBLOOD; i++) {
-		r_xblood[i]->registration_sequence = registration_sequence;
+		gi.xBloodTexture[i]->registration_sequence = registration_sequence;
 	}
 
 
 	for (i = 0; i < MAX_EXPLODE; i++) {
-		r_explode[i]->registration_sequence = registration_sequence;
+		gi.explosionTex[i]->registration_sequence = registration_sequence;
 	}
 
 	for (i = 0; i < MAX_BFG_EXPL; i++) {
-		r_bfg_expl[i]->registration_sequence = registration_sequence;
+		gi.bfgExplosionTex[i]->registration_sequence = registration_sequence;
 	}
 
 	for (i = 0; i < DECAL_MAX; i++) {
-		r_decalTexture[i]->registration_sequence = registration_sequence;
+		gi.decalTexture[i]->registration_sequence = registration_sequence;
 	}
 	
 	for (i = 0; i < PT_MAX; i++) {
-		r_particleTexture[i]->registration_sequence = registration_sequence;
+		gi.particleTexture[i]->registration_sequence = registration_sequence;
 	}
 	
 	for (i = 0; i < MAX_SHELLS; i++){
-		r_texshell[i]->registration_sequence = registration_sequence;
+		gi.aliasShellTex[i]->registration_sequence = registration_sequence;
 	}
 	
 	for(i=0; i<MAX_GLOBAL_FILTERS; i++)
-			r_lightCubeMap[i]->registration_sequence = registration_sequence;
+		gi.lightCubeMaps[i]->registration_sequence = registration_sequence;
 
-	i_distort->registration_sequence = registration_sequence;
-	i_defBump->registration_sequence = registration_sequence;
-	i_environment->registration_sequence = registration_sequence;
-	i_whiteMap->registration_sequence = registration_sequence;
-	i_skinBump->registration_sequence = registration_sequence;
-	i_laserNormal->registration_sequence = registration_sequence;
-	i_lensDirt->registration_sequence = registration_sequence;
+	gi.distort->registration_sequence = registration_sequence;
+	gi.defBump->registration_sequence = registration_sequence;
+	gi.environment->registration_sequence = registration_sequence;
+	gi.whiteMap->registration_sequence = registration_sequence;
+	gi.skinBump->registration_sequence = registration_sequence;
+	gi.laserNormal->registration_sequence = registration_sequence;
+	gi.lensDirt->registration_sequence = registration_sequence;
 
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
 			continue;			// used this sequence
 
@@ -1354,7 +1354,7 @@ void GL_ShutdownImages(void) {
 	int i;
 	image_t *image;
 
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 	//	if (!image->registration_sequence)
 		//	continue;			// free image_t slot
 
@@ -1363,7 +1363,7 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures(1, (GLuint*)&image->texnum);
 		memset(image, 0, sizeof(*image));
 	}
-	r_numTextures = 0;
+	gi.r_numTextures = 0;
 
 	if (gl_lms.handle) {
 		glMakeTextureHandleNonResidentARB(gl_lms.handle[0]);

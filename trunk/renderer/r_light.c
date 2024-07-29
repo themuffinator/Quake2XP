@@ -2549,8 +2549,8 @@ void R_DrawLightFlare () {
 	for(i = 0; i<3; i++)
 		color[i] *= r_newrefdef.lightstyles[currentShadowLight->style].rgb[i];
 
-	GL_SetBindlessTexture(U_TMU0, r_particleTexture[PT_FLARE]->handle);
-	GL_SetBindlessTexture(U_TMU1, i_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.particleTexture[PT_FLARE]->handle);
+	GL_SetBindlessTexture(U_TMU1, gi.linearDepth->handle);
 
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
 	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);

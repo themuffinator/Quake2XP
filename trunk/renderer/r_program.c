@@ -148,30 +148,26 @@ static const char * glslGlobals =
 "#define	U_WATER_TRANS			90\n"
 "#define	U_WATER_MIRROR			91\n"
 
-"#define	U_CONSOLE_BACK			92\n"
-"#define	U_2D_PICS				93\n"
-"#define	U_FRAG_COLOR			94\n"
+"#define		U_PARAM_iVEC2_0 92\n"
+"#define		U_PARAM_iVEC2_1 93\n"
+"#define		U_PARAM_iVEC2_2 94\n"
+"#define		U_PARAM_iVEC2_3 95\n"
+"#define		U_PARAM_iVEC2_4 96\n"
+"#define		U_PARAM_iVEC2_5 97\n"
 
-"#define	U_BINDLESS_ARRAY		95\n"
+"#define	U_TMU0		98\n"
+"#define	U_TMU1		99\n"
+"#define	U_TMU2		100\n"
+"#define	U_TMU3		101\n"
+"#define	U_TMU4		102\n"
+"#define	U_TMU5		103\n"
+"#define	U_TMU6		104\n"
+"#define	U_TMU7		105\n"
+"#define	U_TMU8		106\n"
+"#define	U_TMU9		107\n"
+"#define	U_TMU10		108\n"
 
-"#define		U_PARAM_iVEC2_0 96\n"
-"#define		U_PARAM_iVEC2_1 97\n"
-"#define		U_PARAM_iVEC2_2 98\n"
-"#define		U_PARAM_iVEC2_3 99\n"
-"#define		U_PARAM_iVEC2_4 100\n"
-"#define		U_PARAM_iVEC2_5 101\n"
-
-"#define	U_TMU0		102\n"
-"#define	U_TMU1		103\n"
-"#define	U_TMU2		104\n"
-"#define	U_TMU3		105\n"
-"#define	U_TMU4		106\n"
-"#define	U_TMU5		107\n"
-"#define	U_TMU6		108\n"
-"#define	U_TMU7		109\n"
-"#define	U_TMU8		110\n"
-"#define	U_TMU9		111\n"
-"#define	U_TMU10		112\n"
+"#define	U_PARAM_INT_6 109\n"
 ;
 
 typedef enum {
@@ -884,6 +880,17 @@ void R_InitPrograms (void) {
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"averange luminance program"S_COLOR_WHITE" ");
+	avrLuminance = R_FindProgram("avrLum", 0);
+
+	if (avrLuminance->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
 

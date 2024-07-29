@@ -136,7 +136,7 @@ void R_RenderDecals(bool twoside)
 
 		decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
 
-		texId = r_decalTexture[dl->type]->handle;
+		texId = gi.decalTexture[dl->type]->handle;
           
         if ((texture != texId || dl->flags != oldFlag) 
 			|| (numIndices >= MAX_INDICES - (dl->numVerts - 2) * 3) 

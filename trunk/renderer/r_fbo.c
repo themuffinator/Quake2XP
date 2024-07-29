@@ -273,60 +273,60 @@ void R_InitFboBuffers() {
 
 	Com_Printf("Initializing Frame Buffers...\n\n");
 // init fbo textures
-	i_hdrBase = R_CreateTexture("***i_hdrBase***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
+	gi.hdrBase = R_CreateTexture("***hdrBase***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
 		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, NULL);
 
-	i_hdrBaseInterim = R_CreateTexture("***i_hdrBaseInterim***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
+	gi.hdrBaseInterim = R_CreateTexture("***hdrBaseInterim***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
 		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, NULL);
 
-	i_depthStencil = R_CreateTexture("***i_depthStencil***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
+	gi.depthStencil = R_CreateTexture("***depthStencil***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
 		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_UNSIGNED_INT_24_8, NULL);
 
-	i_ldrBase = R_CreateTexture("***i_ldrBase***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
+	gi.ldrBase = R_CreateTexture("***ldrBase***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
 		0, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR,
 		GL_FLOAT, NULL);
 
-	i_hdrInterim2D = R_CreateTexture("***i_hdrInterim2D***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA,
+	gi.hdrInterim2D = R_CreateTexture("***hdrInterim2D***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGBA,
 		0, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_hdrLuminance = R_CreateTexture("***i_hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+	gi.hdrLuminance = R_CreateTexture("***hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
 		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 	
-	i_prevHdrLuminance = R_CreateTexture("***i_prevHdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
+	gi.prevHdrLuminance = R_CreateTexture("***prevHdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
 		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_glare = R_CreateTexture("***i_glare***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+	gi.glareImage = R_CreateTexture("***glareImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_thermal = R_CreateTexture("***i_thermal***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+	gi.thermalImage = R_CreateTexture("***thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_bloomIn = R_CreateTexture("***i_bloomIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA, 0,
+	gi.bloomIn = R_CreateTexture("***bloomIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_bloomInterim = R_CreateTexture("***i_bloomInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+	gi.bloomInterim = R_CreateTexture("***bloomInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_bloomOut = R_CreateTexture("***i_bloomOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+	gi.bloomOut = R_CreateTexture("***bloomOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	i_linearDepth = R_CreateTexture("***i_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, 
+	gi.linearDepth = R_CreateTexture("***linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0,
 		vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_FLOAT, NULL);
 
-	i_ssaoDepth = R_CreateTexture("***i_ssaoDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0, 
+	gi.ssaoDepth = R_CreateTexture("***ssaoDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 	for (int i = 0; i < 2; i++)
-		i_ssaoColor[i] = R_CreateTexture("***i_ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 0, 
+		gi.ssaoColor[i] = R_CreateTexture("***ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 0,
 			vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
 // init fbo buffers
@@ -334,59 +334,59 @@ void R_InitFboBuffers() {
 	rb.depthStencil = R_Create_RBO("***rbo_depth_stencil***", GL_DEPTH24_STENCIL8, vid.width, vid.height);
 	fb.hdrBase = R_Create_FBO("***hdrBase_fbo***");
 	R_AttachRBO(rb.depthStencil, GL_DEPTH_STENCIL_ATTACHMENT);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrBase, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, i_hdrBaseInterim, 0);
-	R_FB_AttachImage(GL_DEPTH_STENCIL_ATTACHMENT, i_depthStencil, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrBase, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.hdrBaseInterim, 0);
+	R_FB_AttachImage(GL_DEPTH_STENCIL_ATTACHMENT, gi.depthStencil, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "FINAL FBO ");
 	fb.ldrBase = R_Create_FBO("***ldrBase_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_ldrBase, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.ldrBase, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "BASE 2D FBO ");
 	fb.hdrBase2D = R_Create_FBO("***hdrBase2D_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrInterim2D, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrInterim2D, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
 	fb.hdrLum = R_Create_FBO("***hdrLum_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_hdrLuminance, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrLuminance, 0);
 	R_FB_Check();
 	
 	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE 2 FBO ");
 	fb.prevHdrLum = R_Create_FBO("***prevHdrLum_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_prevHdrLuminance, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.prevHdrLuminance, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");
 	fb.glare = R_Create_FBO("***glare_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_glare, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.glareImage, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
 	fb.thermal = R_Create_FBO("***thermal_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_thermal, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.thermalImage, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 	fb.bloomCompute = R_Create_FBO("***comp_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_bloomIn, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, i_bloomInterim, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, i_bloomOut, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.bloomIn, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.bloomInterim, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.bloomOut, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "LINEAR DEPTH FBO ");
 	fb.linearDepth = R_Create_FBO("***linearDepth_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_linearDepth, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.linearDepth, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "SSAO FBO ");
 	i_ssaoColorIndex = 0;
 	fb.ssao = R_Create_FBO("***ssao_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, i_ssaoColor[0], 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, i_ssaoColor[1], 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, i_ssaoDepth, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.ssaoColor[0], 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.ssaoColor[1], 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.ssaoDepth, 0);
 	R_FB_Check();
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);

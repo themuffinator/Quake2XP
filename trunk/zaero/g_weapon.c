@@ -724,7 +724,7 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 	ent->s.effects = 0;
 //  ent->s.renderfx = RF_TRANSLUCENT | RF_FULLBRIGHT;
   ent->s.renderfx = RF_TRANSLUCENT | RF_FULLBRIGHT;
-	ent->s.modelindex = gi.modelindex ("models/objects/r_explode/tris.md2");
+	ent->s.modelindex = gi.modelindex ("models/objects/explosionTex/tris.md2");
 	ent->touch = NULL;
   ent->nextthink = level.time + FRAMETIME;
 	ent->think = animrocket;

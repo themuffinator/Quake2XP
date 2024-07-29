@@ -35,7 +35,7 @@ cvar_t *r_customHeight;
 
 /* Global variables used internally by this module */
 viddef_t	viddef;		/* global video state; used by other modules */
-qboolean	reflib_active = 0;
+bool	reflib_active = 0;
 
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
@@ -89,7 +89,7 @@ VID_Error(int err_level, char *fmt,...)
 void
 VID_Restart_f(void)
 {
-	vid_ref->modified = qtrue;
+	vid_ref->modified = true;
 }
 
 /*
@@ -133,11 +133,10 @@ static vidmode_t vid_modes[] = {
 	{ "Custom",		-1, -1, 21 }		// custom
 };
 
-qboolean
-VID_GetModeInfo(int *width, int *height, int mode)
+bool VID_GetModeInfo(int *width, int *height, int mode)
 {
 	if (mode < 0 || mode >= VID_NUM_MODES)
-		return qfalse;
+		return false;
   
   if (mode == 0) {
   Display* d = XOpenDisplay(NULL);
@@ -179,7 +178,7 @@ VID_GetModeInfo(int *width, int *height, int mode)
   
     }
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -191,16 +190,16 @@ VID_NewWindow(int width, int height)
 	viddef.width = width;
 	viddef.height = height;
 
-	cl.force_refdef = qtrue;		// can't use a paused refdef
+	cl.force_refdef = true;		// can't use a paused refdef
 }
 
 void
 VID_FreeReflib(void)
 {
-	reflib_active = qfalse;
+	reflib_active = false;
 }
 
-qboolean VID_StartRefresh()
+bool VID_StartRefresh()
 {
 	if (reflib_active) {
         R_Shutdown();
@@ -211,13 +210,13 @@ qboolean VID_StartRefresh()
 	{
 		R_Shutdown();
 		VID_FreeReflib();
-		return qfalse;
+		return false;
 	}
 
 	Key_ClearStates();
-	reflib_active = qtrue;
+	reflib_active = true;
 
-	return qtrue;
+	return true;
 }
 
 
@@ -237,13 +236,13 @@ VID_CheckChanges(void)
          * * refresh has changed
          */
 
-        cl.force_refdef = qtrue;
+        cl.force_refdef = true;
         S_StopAllSounds();
 
-        vid_ref->modified = qfalse;
-		r_fullScreen->modified = qtrue;
-		cl.refresh_prepped = qfalse;
-		cls.disableScreen = qtrue;
+        vid_ref->modified = false;
+		r_fullScreen->modified = true;
+		cl.refresh_prepped = false;
+		cls.disableScreen = true;
         CL_ClearDecals();
 
 		if (!VID_StartRefresh()) {
@@ -253,7 +252,7 @@ VID_CheckChanges(void)
 			if (cls.key_dest != key_console) 
 				Con_ToggleConsole_f();
 		}
-		cls.disableScreen = qfalse;
+		cls.disableScreen = false;
 		CL_InitImages(); 
     CL_CacheMenuModels();
 

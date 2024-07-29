@@ -197,7 +197,7 @@ strlwr(char *s)
 
 /* ============================================ */
 
-static qboolean
+static bool
 CompareAttributes(char *path, char *name, unsigned musthave, unsigned canthave)
 {
 	struct stat	st;
@@ -205,26 +205,26 @@ CompareAttributes(char *path, char *name, unsigned musthave, unsigned canthave)
 
 	/* . and .. never match */
 	if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-		return qfalse;
+		return false;
 
 	Com_sprintf(fn, sizeof(fn), "%s/%s", path, name);
 
 	if (stat(fn, &st) == -1)
-		return (qfalse);	/* shouldn't happen */
+		return (false);	/* shouldn't happen */
 
 	if (((musthave & SFF_HIDDEN) && name[0] != '.') ||
 	    ((canthave & SFF_HIDDEN) && name[0] == '.'))
-		return (qfalse);
+		return (false);
 
 	if (((musthave & SFF_RDONLY) && access(fn, W_OK) != 0) ||
 	    ((canthave & SFF_RDONLY) && access(fn, W_OK) == 0))
-		return (qfalse);
+		return (false);
 
 	if (((musthave & SFF_SUBDIR) && !(st.st_mode & S_IFDIR)) ||
 	    ((canthave & SFF_SUBDIR) && (st.st_mode & S_IFDIR)))
-		return (qfalse);
+		return (false);
 
-	return (qtrue);
+	return (true);
 }
 
 char *

@@ -658,7 +658,7 @@ TOSS / BOUNCE
 =============
 SV_Physics_Toss
 
-Toss, bounce, and fly movement.  When onground, do nothing.
+Toss, bounce, and flyTexture movement.  When onground, do nothing.
 =============
 */
 void SV_Physics_Toss (edict_t *ent)

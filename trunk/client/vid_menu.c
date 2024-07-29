@@ -415,7 +415,7 @@ void M_ColorInit() {
 	if(!r_hdrUiNits)
 		r_hdrUiNits = Cvar_Get("r_hdr_uiNits", "100.0", CVAR_ARCHIVE);
 
-	r_hdrUiNits->value = ClampCvar(100.0, 300.0, r_hdrUiNits->value);
+	r_hdrUiNits->value = ClampCvar(100.0, 1000.0, r_hdrUiNits->value);
 	r_gamma->value = ClampCvar(1.5, 2.2, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
@@ -499,7 +499,7 @@ void M_ColorInit() {
 	s_hdrNits_slider.generic.name = "HDR UI Brightness";
 	s_hdrNits_slider.generic.callback = hdrNitsCallback;
 	s_hdrNits_slider.minValue = 100;
-	s_hdrNits_slider.maxValue = 300;
+	s_hdrNits_slider.maxValue = 1000;
 	s_hdrNits_slider.curValue = r_hdrUiNits->value * 1;
 	s_hdrNits_slider.divRange = 1;
 	s_hdrNits_slider.name = "Nits";

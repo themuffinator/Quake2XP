@@ -62,8 +62,8 @@ void R_DrawParticles (void) {
 	// setup program
 	GL_BindProgram(particlesProgram);
 
-	GL_SetBindlessTexture(U_TMU1, i_linearDepth->handle);
-	GL_SetBindlessTexture(U_TMU2, i_hdrBaseInterim->handle);
+	GL_SetBindlessTexture(U_TMU1, gi.linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.hdrBaseInterim->handle);
 
 	qglUniformMatrix4fv	(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv	(U_MODELVIEW_MATRIX, 1, false, (const float *)r_newrefdef.modelViewMatrix);
@@ -82,128 +82,128 @@ void R_DrawParticles (void) {
 		switch (p->type) {
 
 			case PT_BUBBLE:
-				texId = r_particleTexture[PT_BUBBLE]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BUBBLE]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_FLY:
-				texId = fly[((int)(r_newrefdef.time * 10)) & (MAX_FLY - 1)]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.flyTexture[((int)(r_newrefdef.time * 10)) & (MAX_FLY - 1)]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLOOD:
-				texId = r_particleTexture[PT_BLOOD]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BLOOD]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLOOD2:
-				texId = r_particleTexture[PT_BLOOD2]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BLOOD2]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLASTER:
-				texId = r_particleTexture[PT_BLASTER]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BLASTER]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_SMOKE:
-				texId = r_particleTexture[PT_SMOKE]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_SMOKE]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_SPLASH:
-				texId = r_particleTexture[PT_SPLASH]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_SPLASH]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_SPARK:
-				texId = r_particleTexture[PT_SPARK]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_SPARK]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BEAM:
-				texId = r_particleTexture[PT_BEAM]->handle;
-				bumpId = i_laserNormal->handle;
+				texId = gi.particleTexture[PT_BEAM]->handle;
+				bumpId = gi.laserNormal->handle;
 				break;
 
 			case PT_SPIRAL:
-				texId = r_particleTexture[PT_SPIRAL]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_SPIRAL]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_FLAME:
-				texId = flameanim[((int)((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.flameAnimTex[((int)((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLOODSPRAY:
-				texId = r_blood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.bloodTexture[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_xBLOODSPRAY:
-				texId = r_xblood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.xBloodTexture[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_EXPLODE:
-				texId = r_explode[((int)((r_newrefdef.time - p->time) * 20)) % MAX_EXPLODE]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.explosionTex[((int)((r_newrefdef.time - p->time) * 20)) % MAX_EXPLODE]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_WATERPULME:
-				texId = r_particleTexture[PT_WATERPULME]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_WATERPULME]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_WATERCIRCLE:
-				texId = r_particleTexture[PT_WATERCIRCLE]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_WATERCIRCLE]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLOODDRIP:
-				texId = r_particleTexture[PT_BLOODDRIP]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BLOODDRIP]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLOODMIST:
-				texId = r_particleTexture[PT_BLOODMIST]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BLOODMIST]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BLASTER_BOLT:
-				texId = r_particleTexture[PT_BLASTER_BOLT]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BLASTER_BOLT]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BFG_BALL:
-				texId = r_particleTexture[PT_BFG_BALL]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BFG_BALL]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BFG_EXPL:
-				texId = r_bfg_expl[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.bfgExplosionTex[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 			
 			case PT_BFG_EXPL2:
-				texId = r_particleTexture[PT_BFG_EXPL2]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BFG_EXPL2]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_BFG_LASER:
-				texId = r_particleTexture[PT_BFG_LASER]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_BFG_LASER]->handle;
+				bumpId = gi.defBump->handle;
 				break;
 
 			case PT_RAILBEAM:
-				texId = r_particleTexture[PT_RAILBEAM]->handle;
-				bumpId = i_distort->handle;
+				texId = gi.particleTexture[PT_RAILBEAM]->handle;
+				bumpId = gi.distort->handle;
 				break;
 
 			default:
-				texId = r_particleTexture[PT_DEFAULT]->handle;
-				bumpId = i_defBump->handle;
+				texId = gi.particleTexture[PT_DEFAULT]->handle;
+				bumpId = gi.defBump->handle;
 		}
 
 		scale	= p->size;
@@ -269,7 +269,7 @@ void R_DrawParticles (void) {
 				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)m);
 
 			if (p->flags & PARTICLE_DISTORT) {
-				glCopyTextureSubImage2D(i_hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+				glCopyTextureSubImage2D(gi.hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 				qglUniform1i(U_PARAM_INT_0, 1); 
 
 				if (p->type == PT_BEAM) {

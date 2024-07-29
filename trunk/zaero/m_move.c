@@ -138,7 +138,7 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 			}
 			trace = gi.trace (ent->s.origin, ent->mins, ent->maxs, neworg, ent, MASK_MONSTERSOLID);
 	
-			// fly monsters don't enter water voluntarily
+			// flyTexture monsters don't enter water voluntarily
 			if (ent->flags & FL_FLY)
 			{
 				if (!ent->waterlevel)

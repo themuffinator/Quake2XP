@@ -264,7 +264,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			{
 				outMesh->albedo[j] = 
 				outMesh->normalmap[j] = outMesh->emissive[j] =
-				outMesh->envmap[j]	= outMesh->pbr[j] = outMesh->aomap[j] = i_missingTexture;
+				outMesh->envmap[j]	= outMesh->pbr[j] = outMesh->aomap[j] = gi.missingTexture;
 				continue;
 			}
 
@@ -275,7 +275,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, ".dds");
 			outMesh->albedo[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->albedo[j])
-				outMesh->albedo[j] = i_missingTexture;
+				outMesh->albedo[j] = gi.missingTexture;
 
 			// GlowMaps loading
 			strcpy(tex, name);
@@ -283,7 +283,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_light.dds");
 			outMesh->emissive[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->emissive[j])
-				outMesh->emissive[j] = i_blackTexture1x1;
+				outMesh->emissive[j] = gi.blackTexture1x1;
 
 			// Normal maps loading
 			strcpy(tex, name);
@@ -292,7 +292,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			outMesh->normalmap[j] = R_LoadDDS(tex, it_normal);
 
 			if (!outMesh->normalmap[j])
-				outMesh->normalmap[j] = i_defBump;
+				outMesh->normalmap[j] = gi.defBump;
 
 			// Roughness maps loading
 			strcpy(tex, name);
@@ -300,7 +300,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_rgh.dds");
 			outMesh->pbr[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->pbr[j])
-				outMesh->pbr[j] = i_blackTexture1x1;
+				outMesh->pbr[j] = gi.blackTexture1x1;
 
 			// Env maps loading
 			strcpy(tex, name);
@@ -308,14 +308,14 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcat(tex, "_env.dds");
 			outMesh->envmap[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->envmap[j])
-				outMesh->envmap[j] = i_blackTexture1x1;
+				outMesh->envmap[j] = gi.blackTexture1x1;
 
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_ao.dds");
 			outMesh->aomap[j] = R_LoadDDS(tex, it_skin);
 			if (!outMesh->aomap[j])
-				outMesh->aomap[j] = i_whiteMap;
+				outMesh->aomap[j] = gi.whiteMap;
 		}
 
 		//
@@ -618,14 +618,11 @@ void R_DrawMD3Mesh(bool weapon) {
 
 	SetModelsLight();
 
-	if (r_skipStaticLights->integer) {
-
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
+		if(gl_config.hdrDisplay)
+			VectorSet(shadelight, 0.1, 0.1, 0.1);
+		else
 			VectorSet(shadelight, 0.5, 0.5, 0.5);
-	}
-	else {
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(shadelight, 0.01, 0.01, 0.01);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
@@ -713,11 +710,6 @@ void R_DrawMD3Mesh(bool weapon) {
 	else
 		GL_DepthMask(0);
 
-	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
-		qglUniform1i(U_PARAM_INT_1, 1);
-	else
-		qglUniform1i(U_PARAM_INT_1, 0);
-	
 	if (frame == oldFrame)
 		noLerp = true;
 
@@ -745,27 +737,27 @@ void R_DrawMD3Mesh(bool weapon) {
 			GL_DepthMask(1);
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!albedo || albedo == i_missingTexture){
+		if (!albedo || albedo == gi.missingTexture){
 
 			if (currententity->skin){
 				albedo = currententity->skin;	// custom player skin
 			}
 		}
 		if (!albedo)
-			albedo = i_missingTexture;
+			albedo = gi.missingTexture;
 
 		emissive = mesh->emissive[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!emissive)
-			emissive = i_blackTexture1x1;
+			emissive = gi.blackTexture1x1;
 
 		normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = i_defBump;
+			normal = gi.defBump;
 		
 		if (currententity->flags & RF_WEAPONMODEL && r_ssao->integer)
 			ao = mesh->pbr[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		else
-			ao = i_whiteMap;
+			ao = gi.whiteMap;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
@@ -831,9 +823,9 @@ void R_DrawMD3Mesh(bool weapon) {
 
 		GL_SetBindlessTexture(U_TMU0, albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, emissive->handle);
-		GL_SetBindlessTexture(U_TMU2, i_environment->handle);
+		GL_SetBindlessTexture(U_TMU2, gi.environment->handle);
 		GL_SetBindlessTexture(U_TMU3, normal->handle);
-		GL_SetBindlessTexture(U_TMU4, i_ssaoColor[i_ssaoColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU4, gi.ssaoColor[i_ssaoColorIndex]->handle);
 		GL_SetBindlessTexture(U_TMU5, ao->handle);
 
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
@@ -901,18 +893,18 @@ void R_DrawMD3Mesh(bool weapon) {
 				continue;
 
 			albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-			if (!albedo || albedo == i_missingTexture){
+			if (!albedo || albedo == gi.missingTexture){
 
 				if (currententity->skin){
 					albedo = currententity->skin;	// custom player skin
 				}
 			}
 			if (!albedo)
-				albedo = i_missingTexture;
+				albedo = gi.missingTexture;
 
 			normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 			if (!normal)
-				normal = i_defBump;
+				normal = gi.defBump;
 
 			for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 				
@@ -970,8 +962,8 @@ void R_DrawMD3Mesh(bool weapon) {
 			}
 
 			GL_SetBindlessTexture(U_TMU0, albedo->handle);
-			GL_SetBindlessTexture(U_TMU1, i_blackTexture1x1->handle);
-			GL_SetBindlessTexture(U_TMU2, i_environment->handle);
+			GL_SetBindlessTexture(U_TMU1, gi.blackTexture1x1->handle);
+			GL_SetBindlessTexture(U_TMU2, gi.environment->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
 
 			qglInvalidateBufferData(GL_ARRAY_BUFFER);
@@ -1157,6 +1149,7 @@ void R_DrawMD3MeshLight(bool weapon) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		qglUniform1i(U_PARAM_INT_4, 0);
 
+
 	if (frame == oldFrame)
 		noLerp = true;
 	
@@ -1186,30 +1179,26 @@ void R_DrawMD3MeshLight(bool weapon) {
 		else
 			qglUniform1i(U_PARAM_INT_1, 0);
 		
-		if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
-			qglUniform1i(U_PARAM_INT_5, 1);
-		else
-			qglUniform1i(U_PARAM_INT_5, 0);
 
 		c_litAliasTris += md3Hdr->meshes[i].num_tris;
 
 		albedo = mesh->albedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!albedo || albedo == i_missingTexture){
+		if (!albedo || albedo == gi.missingTexture){
 
 			if (currententity->skin){
 				albedo = currententity->skin;	// custom player skin
 			}
 		}
 		if (!albedo)
-			albedo = i_missingTexture;
+			albedo = gi.missingTexture;
 
 		normal = mesh->normalmap[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = i_defBump;
+			normal = gi.defBump;
 
 		pbr = mesh->pbr[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!pbr)
-			pbr = i_blackTexture1x1;
+			pbr = gi.blackTexture1x1;
 
 		for (j = 0; j < mesh->num_verts; j++, verts++, oldVerts++) {
 
@@ -1263,18 +1252,18 @@ void R_DrawMD3MeshLight(bool weapon) {
 		
 		GL_SetBindlessTexture(U_TMU0, normal->handle);
 		GL_SetBindlessTexture(U_TMU1, albedo->handle);
-		GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
-		GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
+		GL_SetBindlessTexture(U_TMU2, gi.causticTexture[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		GL_SetBindlessTexture(U_TMU3, gi.lightCubeMaps[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU4, pbr->handle);
-		GL_SetBindlessTexture(U_TMU5, i_skinBump->handle);
-		GL_SetBindlessTexture(U_TMU6, i_hdrBaseInterim->handle);
-		GL_SetBindlessTexture(U_TMU7, i_linearDepth->handle);
-		GL_SetBindlessTexture(U_TMU8, i_ssaoColor[i_ssaoColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU5, gi.skinBump->handle);
+		GL_SetBindlessTexture(U_TMU6, gi.hdrBaseInterim->handle);
+		GL_SetBindlessTexture(U_TMU7, gi.linearDepth->handle);
+		GL_SetBindlessTexture(U_TMU8, gi.ssaoColor[i_ssaoColorIndex]->handle);
 
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, false, (const float*)r_newrefdef.projectionMatrix);
 
-		if (pbr == i_blackTexture1x1)
+		if (pbr == gi.blackTexture1x1)
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
@@ -1360,17 +1349,17 @@ void R_DrawMD3ShellMesh(bool weapon) {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 	
 	if (currententity->flags & RF_SHELL_BLUE)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[0]->handle);
 	if (currententity->flags & RF_SHELL_RED)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[1]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[1]->handle);
 	if (currententity->flags & RF_SHELL_GREEN)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[2]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[2]->handle);
 	if (currententity->flags & RF_SHELL_GOD)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[3]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[3]->handle);
 	if (currententity->flags & RF_SHELL_HALF_DAM)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[4]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[4]->handle);
 	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[5]->handle);
 	
 	if (frame == oldFrame)
 		noLerp = true;

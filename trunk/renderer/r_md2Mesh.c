@@ -130,15 +130,14 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (r_skipStaticLights->integer) {
 
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.5, 0.5, 0.5);
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
+		if (gl_config.hdrDisplay)
+			VectorSet(shadelight, 0.1, 0.1, 0.1);
+		else
+			VectorSet(shadelight, 0.5, 0.5, 0.5);
 	}
-	else {
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.01, 0.01, 0.01);
-	}
+
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		VectorSet(lightColor, 1, 1, 1);
@@ -164,7 +163,7 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 	}
 
 	if (!albedo)
-		albedo = i_missingTexture;
+		albedo = gi.missingTexture;
 
 	// select skin
 	if (currententity->bump)
@@ -183,15 +182,15 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 		}
 	}
 	if (!normalMap)
-		normalMap = i_defBump;
+		normalMap = gi.defBump;
 
 	emissive = currentmodel->emissive[currententity->skinnum];
 
 	if (!emissive)
-		emissive = i_blackTexture1x1;
+		emissive = gi.blackTexture1x1;
 
 	if (!albedo)
-		albedo = i_missingTexture;
+		albedo = gi.missingTexture;
 
 	R_CalcAliasFrameLerp (paliashdr, 0);
 
@@ -296,21 +295,16 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 
 	qglUniform1i (U_SHELL_PASS, 0);
 	qglUniform1f (U_COLOR_OFFSET, alphaShift);
-	
-	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
-		qglUniform1i(U_PARAM_INT_0, 1);
-	else
-		qglUniform1i(U_PARAM_INT_0, 0);
 
 	GL_SetBindlessTexture(U_TMU0, albedo->handle);
 	GL_SetBindlessTexture(U_TMU1, emissive->handle);
-	GL_SetBindlessTexture(U_TMU2, i_environment->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.environment->handle);
 	GL_SetBindlessTexture(U_TMU3, normalMap->handle);
 
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
 	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-		GL_SetBindlessTexture(U_TMU4, i_ssaoColor[i_ssaoColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU4, gi.ssaoColor[i_ssaoColorIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -419,17 +413,17 @@ void GL_DrawAliasFrameLerpShell (md2Header *paliashdr) {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	if (currententity->flags & RF_SHELL_BLUE)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[0]->handle);
 	if (currententity->flags & RF_SHELL_RED)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[1]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[1]->handle);
 	if (currententity->flags & RF_SHELL_GREEN)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[2]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[2]->handle);
 	if (currententity->flags & RF_SHELL_GOD)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[3]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[3]->handle);
 	if (currententity->flags & RF_SHELL_HALF_DAM)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[4]->handle);
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[4]->handle);
 	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);	
+		GL_SetBindlessTexture(U_TMU0, gi.aliasShellTex[5]->handle);
 
 	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
@@ -532,7 +526,7 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 		}
 	}
 	if (!albedo)
-		albedo = i_missingTexture;
+		albedo = gi.missingTexture;
 
 	// select skin
 	if (currententity->bump)
@@ -551,11 +545,11 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 		}
 	}
 	if (!normalMap)
-		normalMap = i_defBump;
+		normalMap = gi.defBump;
 	
 	pbr = currentmodel->pbr[currententity->skinnum];
 	if (!pbr)
-		pbr = i_blackTexture1x1;
+		pbr = gi.blackTexture1x1;
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
@@ -620,7 +614,7 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 
 	R_UpdateLightAliasUniforms();
 	
-	if (r_imageAutoBump->integer && normalMap == i_defBump) {
+	if (r_imageAutoBump->integer && normalMap == gi.defBump) {
 		qglUniform1i(U_USE_AUTOBUMP, 1);
 		qglUniform2f(U_AUTOBUMP_PARAMS, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 	}
@@ -636,21 +630,16 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 		qglUniform1i(U_USE_SSAO, 1);
 	else
 		qglUniform1i(U_USE_SSAO, 0);
-	
-	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !gl_config.useHdrDisplay)
-		qglUniform1i(U_PARAM_INT_5, 1);
-	else
-		qglUniform1i(U_PARAM_INT_5, 0);
 
 	GL_SetBindlessTexture(U_TMU0, normalMap->handle);
 	GL_SetBindlessTexture(U_TMU1, albedo->handle);
-	GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
-	GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.causticTexture[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+	GL_SetBindlessTexture(U_TMU3, gi.lightCubeMaps[currentShadowLight->filter]->handle);
 	GL_SetBindlessTexture(U_TMU4, pbr->handle);
-	GL_SetBindlessTexture(U_TMU5, i_skinBump->handle);
-	GL_SetBindlessTexture(U_TMU8, i_ssaoColor[i_ssaoColorIndex]->handle);
+	GL_SetBindlessTexture(U_TMU5, gi.skinBump->handle);
+	GL_SetBindlessTexture(U_TMU8, gi.ssaoColor[i_ssaoColorIndex]->handle);
 
-	if (pbr == i_blackTexture1x1)
+	if (pbr == gi.blackTexture1x1)
 		qglUniform1i(U_USE_RGH_MAP, 0);
 	else 
 		qglUniform1i(U_USE_RGH_MAP, 1);

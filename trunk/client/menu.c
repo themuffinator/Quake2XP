@@ -247,7 +247,7 @@ higher res screens.
 void M_DrawCharacter(int cx, int cy, int num) {
 	int	fontscale = ui_fontScale->integer;
 
-	R_AddCharsToList(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, num, i_menuFont);
+	R_AddCharsToList(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, num, gi.menuFont);
 }
 
 void M_Print(int cx, int cy, char *str) {
@@ -657,7 +657,7 @@ static void M_FindKeysForCommand(char *command, int *twokeys) {
 static void KeyCursorDrawFunc(menuframework_s * menu) {
 	R_AddCharsToList(menu->x,
 		menu->y + menu->cursor * 9 * ui_fontScale->value,
-		ui_fontScale->integer, bind_grab ? '=' : 12 + ((int)(Sys_Milliseconds() / 250) & 1), i_menuFont);
+		ui_fontScale->integer, bind_grab ? '=' : 12 + ((int)(Sys_Milliseconds() / 250) & 1), gi.menuFont);
 }
 
 static void DrawKeyBindingFunc(void *self) {
@@ -670,7 +670,7 @@ static void DrawKeyBindingFunc(void *self) {
 
 	if (keys[0] == -1) {
 		CL_AddString(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->integer, a->generic.y + a->generic.parent->y,
-			ui_fontScale->integer, "???", i_menuFont);
+			ui_fontScale->integer, "???", gi.menuFont);
 	}
 	else {
 		size_t x;
@@ -690,7 +690,7 @@ static void DrawKeyBindingFunc(void *self) {
 
 
 		CL_AddString(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->integer,
-			a->generic.y + a->generic.parent->y, ui_fontScale->integer, name, i_menuFont);
+			a->generic.y + a->generic.parent->y, ui_fontScale->integer, name, gi.menuFont);
 
 		x = strlen(name) * 8 * ui_fontScale->value;
 
@@ -700,7 +700,7 @@ static void DrawKeyBindingFunc(void *self) {
 			RE_SetColor(colorWhite);
 
 			CL_AddString(a->generic.x + a->generic.parent->x + 24 + x,
-				a->generic.y + a->generic.parent->y, ui_fontScale->integer, "  ", i_menuFont);
+				a->generic.y + a->generic.parent->y, ui_fontScale->integer, "  ", gi.menuFont);
 
 			if (strstr(name2, "XPAD_"))
 				RE_SetColor(colorGold);
@@ -714,7 +714,7 @@ static void DrawKeyBindingFunc(void *self) {
 				RE_SetColor(colorYellow);
 
 			CL_AddString(a->generic.x + a->generic.parent->x + 48 + x,
-				a->generic.y + a->generic.parent->y, ui_fontScale->integer, name2, i_menuFont);
+				a->generic.y + a->generic.parent->y, ui_fontScale->integer, name2, gi.menuFont);
 		}
 	}
 	RE_SetColor(colorWhite);
@@ -1290,7 +1290,7 @@ void DrawCrossHairPic(void* m) {
 	int size = CROSSHAIRSIZE * crossHairScale->value;
 	VectorSet(hColor, 1.0, 1.0, 1.0);
 	Draw_ScaledPic((viddef.width * 0.5)-(size * 0.5), (viddef.height * 0.5) -(size * 0.5),
-					crossHairScale->value, crossHairScale->value, PF_CROSSHAIR, i_crossHair[crossHair->integer], i_defBump);
+					crossHairScale->value, crossHairScale->value, PF_CROSSHAIR, i_crossHair[crossHair->integer], gi.defBump);
 
 }
 
@@ -2197,7 +2197,7 @@ void M_Credits_MenuDraw(void) {
 		{
 			x = (viddef.width - strlen(credits[i]) * i6s - stringoffset * i6s) / 2 + (j + stringoffset) * i6s;
 
-			R_AddCharsToList(x, y, ui_fontScale->integer, credits[i][j + stringoffset] + bold, i_menuFont);
+			R_AddCharsToList(x, y, ui_fontScale->integer, credits[i][j + stringoffset] + bold, gi.menuFont);
 		}
 	}
 
@@ -2826,7 +2826,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5)-7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], i_menuFont);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], gi.menuFont);
 		}
 	else {
 
@@ -2855,7 +2855,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_savesInfos[i]) * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], i_menuFont);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_savesInfos[i], gi.menuFont);
 		}
 	}
 	else {
@@ -2863,7 +2863,7 @@ void DrawSavedShot(void* m)
 		aspect = (float)w / (float)h;
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, false);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Save Data") * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Save Data", i_menuFont);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Save Data", gi.menuFont);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE, "nosaveshot", "null");
 	}
 
@@ -2899,14 +2899,14 @@ void DrawQuickSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, false);
 
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen(m_quickSavesInfos) * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_quickSavesInfos, i_menuFont);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, m_quickSavesInfos, gi.menuFont);
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
 		aspect = (float)w / (float)h;
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.5, 0.0, 0.0, 1.0, false);
 		center = (viddef.width * 0.5) - 7 + (picWidth * 0.5) - ((strlen("No Quick Save Data") * 5 * ui_fontScale->integer) * 0.5);
-		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Quick Save Data", i_menuFont);
+		CL_AddString(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->integer, "No Quick Save Data", gi.menuFont);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, PF_SCANLINE | PF_VIGNETTE, savePic, "null");
 	}
 }	
@@ -4895,7 +4895,7 @@ void M_Draw(void) {
 	SCR_DirtyScreen();	
 	
 	if (cls.state != ca_active || !cl.refresh_prepped) {
-		R_Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_SCANLINE | PF_VIGNETTE, i_menuBackground, i_defBump);
+		R_Draw_StretchPic(0, 0, viddef.width, viddef.height, PF_SCANLINE | PF_VIGNETTE, i_menuBackground, gi.defBump);
 		if (!drawIDlogo)
 			R_MenuBackGround();
 

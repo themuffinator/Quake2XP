@@ -48,7 +48,7 @@ void S_SoundInfo_f(void);
  AL_Init
  =================
 */
-qboolean AL_StartOpenAL (void);
+bool AL_StartOpenAL (void);
 extern cvar_t *s_useHRTF;
 extern const char* al_resemplers[];
 
@@ -58,7 +58,7 @@ static int ClampCvarInteger2(int min, int max, int value) {
 	return value;
 }
 
-qboolean AL_Init (int hardreset)
+bool AL_Init (int hardreset)
 {
     Com_Printf("\n");
     Com_Printf("==="S_COLOR_YELLOW"Starting OpenAL audio subsystem"S_COLOR_WHITE"===\n");
@@ -69,8 +69,8 @@ qboolean AL_Init (int hardreset)
 	{
 		// Let the user continue without sound
 		Com_Printf (S_COLOR_RED"WARNING: OpenAL initialization failed\n");
-		openalStop = qtrue;
-		return qfalse;
+		openalStop = true;
+		return false;
 	}
   
   if (!alIsExtensionPresent("AL_SOFT_source_resampler"))
@@ -95,7 +95,7 @@ qboolean AL_Init (int hardreset)
  
   
 	// Initialize extensions
-	alConfig.efx = qfalse;
+	alConfig.efx = false;
 
 	// Check for ALC Extensions
   	
@@ -108,7 +108,7 @@ qboolean AL_Init (int hardreset)
             ALint		iEffectSlotsGenerated;
             ALint		iSends;
 
-            alConfig.efx = qtrue;
+            alConfig.efx = true;
 
             // To determine how many Auxiliary Effects Slots are available, create as many as possible (up to 128)
             // until the call fails.
@@ -183,5 +183,5 @@ qboolean AL_Init (int hardreset)
             alDeleteAuxiliaryEffectSlots(iEffectSlotsGenerated, uiEffectSlots);
         }
     }
-	return qtrue;
+	return true;
 }

@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_hud.c -- 3d-2d hud stuff
 
 #include "client.h"
-
+#include "../renderer/r_local.h"
 
 void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int width, int value);
 
@@ -460,9 +460,9 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			CL_AddAltString(x + 32 * hud_sx, y, hud_sx, ci->name);
 
-			CL_AddString(x + 32 * hud_sx, y + 8	 * hud_sy, hud_sx, va ("Score:  %i", score), i_consFont);
-			CL_AddString(x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, va ("Ping:  %i", ping), i_consFont);
-			CL_AddString(x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, va ("Time:  %i", time), i_consFont);
+			CL_AddString(x + 32 * hud_sx, y + 8	 * hud_sy, hud_sx, va ("Score:  %i", score),	gi.consFont);
+			CL_AddString(x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, va ("Ping:  %i", ping),		gi.consFont);
+			CL_AddString(x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, va ("Time:  %i", time),		gi.consFont);
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
@@ -501,7 +501,7 @@ void SCR_ExecuteLayoutString (char *s) {
 				CL_AddAltString(x, y, hud_sx, block);
 				}
 			else {
-				CL_AddString(x, y, hud_sx, block, i_consFont);
+				CL_AddString(x, y, hud_sx, block, gi.consFont);
 				continue;
 			}
 		}
@@ -599,7 +599,7 @@ void SCR_ExecuteLayoutString (char *s) {
 			if (index < 0 || index >= MAX_CONFIGSTRINGS)
 				Com_Error (ERR_DROP, "Bad stat_string index");
 			
-			CL_AddString(x, y, hud_sx, cl.configstrings[index], i_consFont);
+			CL_AddString(x, y, hud_sx, cl.configstrings[index], gi.consFont);
 			continue;
 		}
 
@@ -611,7 +611,7 @@ void SCR_ExecuteLayoutString (char *s) {
 
 		if (!strcmp (token, "string")) {
 			token = COM_Parse (&s);
-			CL_AddString(x, y, hud_sx, token, i_menuFont);
+			CL_AddString(x, y, hud_sx, token, gi.menuFont);
 			continue;
 		}
 
@@ -1131,8 +1131,8 @@ void CL_DrawInventory (void) {
 	y += 24 * ui_fontScale->integer;
 	x += 24 * ui_fontScale->integer;
 
-	CL_AddString(x, y, ui_fontScale->integer, "hotkey ### item", i_consFont);
-	CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, "------ --- ----", i_consFont);
+	CL_AddString(x, y, ui_fontScale->integer, "hotkey ### item", gi.consFont);
+	CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, "------ --- ----", gi.consFont);
 
 	y += 8 * ui_fontScale->integer;
 
@@ -1158,9 +1158,9 @@ void CL_DrawInventory (void) {
 		else{
 		// draw a blinky cursor by the selected item
 		if ( (int)(cls.realTime >> 8) & 1 ) 
-			CL_AddString(x - 8, y+8 * ui_fontScale->integer, ui_fontScale->integer, ".", i_consFont);
+			CL_AddString(x - 8, y+8 * ui_fontScale->integer, ui_fontScale->integer, ".", gi.consFont);
 		}
-		CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, string, i_menuFont);
+		CL_AddString(x, y + 8 * ui_fontScale->integer, ui_fontScale->integer, string, gi.menuFont);
 		y += 8 * ui_fontScale->integer;
 	}
 }

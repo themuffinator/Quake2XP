@@ -321,7 +321,7 @@ void R_UpdateAmbientBspUniforms(bool bmodel) {
 	else
 		qglUniform1i(U_USE_SSAO, 0);
 
-	GL_SetBindlessTexture(U_TMU6, i_ssaoColor[i_ssaoColorIndex]->handle);
+	GL_SetBindlessTexture(U_TMU6, gi.ssaoColor[i_ssaoColorIndex]->handle);
 }
 
 static void GL_DrawLightmappedPoly(bool bmodel)
@@ -412,7 +412,7 @@ bool R_FillLightBatch(msurface_t *surf, bool newBatch, unsigned *indeces, bool b
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
 		rghMap		= R_TextureAnimationPbr		(surf->texInfo);
 
-		if (rghMap == i_blackTexture1x1) {
+		if (rghMap == gi.blackTexture1x1) {
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		}
 		else {
@@ -452,7 +452,7 @@ bool R_FillLightBatch(msurface_t *surf, bool newBatch, unsigned *indeces, bool b
 		else
 			qglUniform1i(U_PARAM_INT_0, 0);
 
-		if (r_imageAutoBump->integer && normalMap == i_defBump) {
+		if (r_imageAutoBump->integer && normalMap == gi.defBump) {
 			qglUniform1i(U_USE_AUTOBUMP, 1);
 			qglUniform2f(U_AUTOBUMP_PARAMS, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 		}
@@ -473,8 +473,8 @@ bool R_FillLightBatch(msurface_t *surf, bool newBatch, unsigned *indeces, bool b
 
 		GL_SetBindlessTexture(U_TMU0, image->handle);
 		GL_SetBindlessTexture(U_TMU1, normalMap->handle);
-		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
-		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		GL_SetBindlessTexture(U_TMU2, gi.lightCubeMaps[currentShadowLight->filter]->handle);
+		GL_SetBindlessTexture(U_TMU3, gi.causticTexture[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 		GL_SetBindlessTexture(U_TMU4, rghMap->handle);
 	}
 	// create indexes
@@ -555,7 +555,7 @@ void R_UpdateLightUniforms(bool bModel)
 	 else
 		 qglUniform1i(U_USE_SSAO, 0);
 
-	 GL_SetBindlessTexture(U_TMU5, i_ssaoColor[i_ssaoColorIndex]->handle);
+	 GL_SetBindlessTexture(U_TMU5, gi.ssaoColor[i_ssaoColorIndex]->handle);
 		 
  }
 

@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 #include "qmenu.h"
+#include "../renderer/r_local.h"
 
 static void Action_DoEnter (menuaction_s * a);
 static void Action_Draw (menuaction_s * a);
@@ -70,7 +71,7 @@ void Action_Draw (menuaction_s * a) {
 			CL_AddString(a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET*fontscale,
 			a->generic.y + a->generic.parent->y,
 			fontscale,
-			(char*)a->generic.name, i_menuFont);
+			(char*)a->generic.name, gi.menuFont);
 	}
 	else {
 		if (a->generic.flags & QMF_GRAYED)
@@ -113,41 +114,41 @@ void Field_Draw (menufield_s * f) {
 	R_AddCharsToList(f->generic.x + f->generic.parent->x + 16 / fontscale,
 		f->generic.y + f->generic.parent->y - 4,
 		fontscale,
-		18, i_menuFont);
+		18, gi.menuFont);
 	// buttom left
 	R_AddCharsToList(f->generic.x + f->generic.parent->x + 16 / fontscale,
 		f->generic.y + f->generic.parent->y + 4,
 		fontscale,
-		24, i_menuFont);
+		24, gi.menuFont);
 
 	//right top
 	R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8 * fontscale,
 		f->generic.y + f->generic.parent->y - 4,
 		fontscale,
-		20, i_menuFont);
+		20, gi.menuFont);
 	//right buttom
 	R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8 * fontscale,
 		f->generic.y + f->generic.parent->y + 4,
 		fontscale,
-		26, i_menuFont);
+		26, gi.menuFont);
 
 	for (i = 0; i < f->visible_length; i++) {
 
 		R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + i * 8 * fontscale,
 			f->generic.y + f->generic.parent->y - 4,
 			fontscale,
-			19, i_menuFont);
+			19, gi.menuFont);
 
 		R_AddCharsToList(f->generic.x + f->generic.parent->x + 24 + i * 8 * fontscale,
 			f->generic.y + f->generic.parent->y + 4,
 			fontscale,
-			25, i_menuFont);
+			25, gi.menuFont);
 	}
 
 		CL_AddString (f->generic.x + f->generic.parent->x + 24,
 		f->generic.y + f->generic.parent->y,
 		fontscale,
-		tempbuffer, i_menuFont);
+		tempbuffer, gi.menuFont);
 
 	if (Menu_ItemAtCursor (f->generic.parent) == f) {
 		int offset;
@@ -161,13 +162,13 @@ void Field_Draw (menufield_s * f) {
 			R_AddCharsToList(f->generic.x + f->generic.parent->x + (offset + 2) * 8 + 8,
 				f->generic.y + f->generic.parent->y,
 				fontscale,
-				11, i_menuFont);
+				11, gi.menuFont);
 		}
 		else {
 			R_AddCharsToList(f->generic.x + f->generic.parent->x + (offset + 2) * 8 + 8,
 				f->generic.y + f->generic.parent->y,
 				fontscale,
-				' ', i_menuFont);
+				' ', gi.menuFont);
 		}
 	}
 }
@@ -408,13 +409,13 @@ void Menu_Draw (menuframework_s * menu) {
 			R_AddCharsToList(menu->x + item->x - 24 * ui_fontScale->integer + item->cursor_offset+8,
 				menu->y + item->y,
 				ui_fontScale->integer, 
-				12 + ((int)(Sys_Milliseconds () * 0.004) & 1), i_menuFont);
+				12 + ((int)(Sys_Milliseconds () * 0.004) & 1), gi.menuFont);
 		}
 		else {
 			R_AddCharsToList(menu->x + item->cursor_offset*ui_fontScale->integer+8,
 				menu->y + item->y,
 				ui_fontScale->integer, 
-				12 + ((int)(Sys_Milliseconds () * 0.004) & 1), i_menuFont);
+				12 + ((int)(Sys_Milliseconds () * 0.004) & 1), gi.menuFont);
 		}
 	}
 
@@ -442,7 +443,7 @@ void Menu_DrawStatusBar (const char *string) {
 		int center = ((int)strlen(string) * fontscale * 5) * 0.5;
 
 		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88, false);
-		CL_AddString ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, (char*)string, i_menuFont);
+		CL_AddString ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, (char*)string, gi.menuFont);
 	}
 	else {
 		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0, false);
@@ -454,7 +455,7 @@ void Menu_DrawStringDark (int x, int y, const char *string) {
 	int		fontscale = ui_fontScale->integer;
 
 	for (i = 0; i < strlen (string); i++) {
-		R_AddCharsToList ((x + i * 8 * fontscale), y, fontscale, string[i] + 128, i_menuFont);
+		R_AddCharsToList ((x + i * 8 * fontscale), y, fontscale, string[i] + 128, gi.menuFont);
 	}
 }
 
@@ -463,7 +464,7 @@ void Menu_DrawStringR2L (int x, int y, const char *string) {
 	int		fontscale = ui_fontScale->integer;
 
 	for (i = 0; i < strlen (string); i++) {
-		R_AddCharsToList((x - i * 8 * fontscale), y, fontscale, string[strlen (string) - i - 1], i_menuFont);
+		R_AddCharsToList((x - i * 8 * fontscale), y, fontscale, string[strlen (string) - i - 1], gi.menuFont);
 	}
 }
 
@@ -472,7 +473,7 @@ void Menu_DrawStringR2LDark (int x, int y, const char *string) {
 	int		fontscale = ui_fontScale->integer;
 
 	for (i = 0; i < strlen (string); i++) {
-		R_AddCharsToList ((x - i * 8 * fontscale), y, fontscale, string[strlen (string) - i - 1] + 128, i_menuFont);
+		R_AddCharsToList ((x - i * 8 * fontscale), y, fontscale, string[strlen (string) - i - 1] + 128, gi.menuFont);
 	}
 }
 
@@ -627,25 +628,25 @@ void Slider_Draw (menuslider_s * s) {
 	// slider line
 	for (i = 0; i < SLIDER_RANGE; i++)
 		R_AddCharsToList (RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x,
-		s->generic.y + s->generic.parent->y, fontscale, 129, i_menuFont);
+		s->generic.y + s->generic.parent->y, fontscale, 129, gi.menuFont);
 
 	//slider	
 	R_AddCharsToList((int)(RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x + (SLIDER_RANGE - 1) * 8 * s->range * fontscale),
-					s->generic.y + s->generic.parent->y, fontscale, 131, i_menuFont);
+					s->generic.y + s->generic.parent->y, fontscale, 131, gi.menuFont);
 
 	char data[8], type[64];
 	if (s->percent) {
 		Com_sprintf(data, sizeof(data), " %.0f%%", (s->curValue / s->divRange) * 100);
 	} else
 		Com_sprintf(data, sizeof(data), " %.1f", s->curValue / s->divRange);
-	CL_AddString(RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8, s->generic.y + s->generic.parent->y, fontscale-1, data, i_consFont);
+	CL_AddString(RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8, s->generic.y + s->generic.parent->y, fontscale-1, data, gi.consFont);
 	
 	if (s->name) {
 		Com_sprintf(type, sizeof(type), " %s", s->name);
 		int len = strlen(type);
 		if (len > 0) {
 			CL_AddString(RCOLUMN_OFFSET + s->generic.x + i * 8 * fontscale + s->generic.parent->x + 8 + strlen(data) * fontscale * 3,
-				s->generic.y + s->generic.parent->y, fontscale - 1, type, i_consFont);
+				s->generic.y + s->generic.parent->y, fontscale - 1, type, gi.consFont);
 		}
 	}
 }
@@ -685,7 +686,7 @@ void SpinControl_Draw (menulist_s * s) {
 		CL_AddString (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, 
-			s->itemnames[s->curInteger], i_consFont);
+			s->itemnames[s->curInteger], gi.consFont);
 	}
 	else {
 		strcpy (buffer, s->itemnames[s->curInteger]);
@@ -693,13 +694,13 @@ void SpinControl_Draw (menulist_s * s) {
 		CL_AddString(RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, 
-			buffer, i_consFont);
+			buffer, gi.consFont);
 
 		strcpy (buffer, strchr (s->itemnames[s->curInteger], '\n') + 1);
 		CL_AddString(RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->integer,
 			fontscale, 
-			buffer, i_consFont);
+			buffer, gi.consFont);
 	}
 
 }

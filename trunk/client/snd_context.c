@@ -156,8 +156,6 @@ int convert_utf8_to_windows1251(const char* utf8, char* windows1251, size_t n)
 }
 
 
-#define LINE_MAX 512
-
 extern bool ru_loc;
 /*
  =================
@@ -176,11 +174,11 @@ static bool AL_InitDriver (void) {
 	
 
 	if (alGetStringiSOFT) {
-		deviceName1251 = malloc(sizeof(char) * LINE_MAX);
+		deviceName1251 = malloc(sizeof(char) * 512);
 
 		if (deviceName) {
 			if (ru_loc) {
-				convert_utf8_to_windows1251(deviceName, deviceName1251, LINE_MAX);
+				convert_utf8_to_windows1251(deviceName, deviceName1251, 512);
 				Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName1251);
 			} else 
 				Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
@@ -246,6 +244,23 @@ static bool AL_InitDriver (void) {
 	{
 		const char* modename = "(error)";
 		ALCenum mode = 0;
+
+#ifdef __linux__
+#ifndef ALC_SOFT_output_mode
+#define ALC_SOFT_output_mode
+#define ALC_OUTPUT_MODE_SOFT                     0x19AC
+#define ALC_ANY_SOFT                             0x19AD
+#define ALC_MONO_SOFT		                     0x1500
+#define ALC_STEREO_SOFT			                 0x1501
+#define ALC_STEREO_BASIC_SOFT                    0x19AE
+#define ALC_STEREO_UHJ_SOFT                      0x19AF
+#define ALC_STEREO_HRTF_SOFT                     0x19B2
+#define ALC_QUAD_SOFT                            0x1503
+#define ALC_SURROUND_5_1_SOFT                    0x1504
+#define ALC_SURROUND_6_1_SOFT                    0x1505
+#define ALC_SURROUND_7_1_SOFT                    0x1506
+#endif
+#endif
 
 		alcGetIntegerv(alConfig.hDevice, ALC_OUTPUT_MODE_SOFT, 1, &mode);
 
@@ -335,7 +350,7 @@ static bool AL_InitDriver (void) {
 					Com_DPrintf("> " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %s\n", i, hrtfName);
 				else
 					Com_DPrintf("  " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %s\n", i, hrtfName);
-				(const*)hrtfNames[i] = hrtfName;
+				hrtfNames[i] = (char *)hrtfName;
 			}
 			Com_Printf("HRTF Selected: " S_COLOR_GREEN "%s\n", selected);
 			
@@ -393,8 +408,8 @@ bool AL_StartOpenAL (void) {
 		const ALCchar *b = alcGetString (NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
 
 		if (alGetStringiSOFT && ru_loc) {
-			playback1251_def = malloc(sizeof(char) * LINE_MAX);
-			convert_utf8_to_windows1251(b, playback1251_def, LINE_MAX);
+			playback1251_def = malloc(sizeof(char) * 512);
+			convert_utf8_to_windows1251(b, playback1251_def, 512);
 		}
 
 		if (!a) {
@@ -413,8 +428,8 @@ bool AL_StartOpenAL (void) {
 			}
 			else {
 				if (ru_loc) {
-					playback1251[i] = malloc(sizeof(char) * LINE_MAX);
-					convert_utf8_to_windows1251((const char*)al_device[i], playback1251[i], LINE_MAX);
+					playback1251[i] = malloc(sizeof(char) * 512);
+					convert_utf8_to_windows1251((const char*)al_device[i], playback1251[i], 512);
 					Com_Printf(">:" S_COLOR_GREEN " %s\n", playback1251[i]);
 				}
 				else {

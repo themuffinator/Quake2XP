@@ -297,7 +297,7 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker) {
 		return;
 	}
 
-	// it's the same base (walk/swim/fly) type and a different classname and it's not a tank
+	// it's the same base (walk/swim/flyTexture) type and a different classname and it's not a tank
 	// (they spray too much), get mad at them
 	if (((targ->flags & (FL_FLY | FL_SWIM)) == (attacker->flags & (FL_FLY | FL_SWIM))) &&
 		(strcmp (targ->classname, attacker->classname) != 0) &&

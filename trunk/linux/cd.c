@@ -33,10 +33,10 @@
 #include "../qcommon/qcommon.h"
 #include "../client/cdaudio.h"
 
-static qboolean cdValid = qfalse;
-static qboolean initialized = qfalse;
-static qboolean enabled = qtrue;
-static qboolean playLooping = qfalse;
+static bool cdValid = false;
+static bool initialized = false;
+static bool enabled = true;
+static bool playLooping = false;
 static SDL_CD *cd_id;
 static int lastTrack = 0;
 static int loopcounter = 0;
@@ -60,7 +60,7 @@ CDAudio_Eject ()
 }
 
 void
-CDAudio_Play ( int track, qboolean looping )
+CDAudio_Play ( int track, bool looping )
 {
 	CDstatus cd_stat;
 
@@ -78,7 +78,7 @@ CDAudio_Play ( int track, qboolean looping )
 			return;
 		}
 
-		cdValid = qtrue;
+		cdValid = true;
 	}
 
 	if ( ( track < 1 ) || ( track >= cd_id->numtracks ) )
@@ -176,9 +176,9 @@ CDAudio_Update ()
 			 ( SDL_CDStatus( cd_id ) != CD_PAUSED ) )
 		{
 			if (loopcounter >= cd_loopcount->value) {
-				CDAudio_Play( cd_looptrack->value, qtrue );
+				CDAudio_Play( cd_looptrack->value, true );
 			} else {
-				CDAudio_Play( lastTrack, qtrue );
+				CDAudio_Play( lastTrack, true );
 				loopcounter++;
 			}
 		}
@@ -231,20 +231,20 @@ CDAudio_Init ()
 		return ( -1 );
 	}
 
-	initialized = qtrue;
-	enabled = qtrue;
-	cdValid = qtrue;
+	initialized = true;
+	enabled = true;
+	cdValid = true;
 
 	if ( !CD_INDRIVE( SDL_CDStatus( cd_id ) ) )
 	{
 		Com_Printf( "CDAudio_Init: No CD in drive.\n" );
-		cdValid = qfalse;
+		cdValid = false;
 	}
 
 	if ( !cd_id->numtracks )
 	{
 		Com_Printf( "CDAudio_Init: CD contains no audio tracks.\n" );
-		cdValid = qfalse;
+		cdValid = false;
 	}
 
 	Cmd_AddCommand( "cd", CD_f );
@@ -268,7 +268,7 @@ CDAudio_Shutdown ()
 		SDL_QuitSubSystem( SDL_INIT_CDROM );
 	}
 
-	initialized = qfalse;
+	initialized = false;
 }
 
 static void
@@ -283,7 +283,7 @@ CD_f ()
 	command = Cmd_Argv( 1 );
 
 	if ( !Q_strcasecmp( command, "on" ) )
-		enabled = qtrue;
+		enabled = true;
 
 	if ( !Q_strcasecmp( command, "off" ) )
 	{
@@ -295,19 +295,19 @@ CD_f ()
 		if ( ( cdstate == CD_PLAYING ) || ( cdstate == CD_PAUSED ) )
 			CDAudio_Stop();
 
-		enabled = qfalse;
+		enabled = false;
 		return;
 	}
 
 	if ( !Q_strcasecmp( command, "play" ) )
 	{
-		CDAudio_Play( (byte) atoi( Cmd_Argv( 2 ) ), qfalse );
+		CDAudio_Play( (byte) atoi( Cmd_Argv( 2 ) ), false );
 		return;
 	}
 
 	if ( !Q_strcasecmp( command, "loop" ) )
 	{
-		CDAudio_Play( (byte) atoi( Cmd_Argv( 2 ) ), qtrue );
+		CDAudio_Play( (byte) atoi( Cmd_Argv( 2 ) ), true );
 		return;
 	}
 
@@ -363,7 +363,7 @@ CD_f ()
 }
 
 void
-CDAudio_Activate ( qboolean active )
+CDAudio_Activate ( bool active )
 {
 	if ( active )
 		CDAudio_Resume();

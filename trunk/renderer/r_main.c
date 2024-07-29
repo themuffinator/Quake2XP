@@ -235,7 +235,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(U_REFR_THICKNESS1, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE) {
-		GL_SetBindlessTexture(U_TMU1, i_blackTexture1x1->handle);
+		GL_SetBindlessTexture(U_TMU1, gi.blackTexture1x1->handle);
 		scaled = 2;
 	}
 	else		
@@ -754,9 +754,9 @@ void R_RenderSprites(void)
 	// setup program
 	GL_BindProgram(spriteProgram);
 
-	GL_SetBindlessTexture(U_TMU0, i_distort->handle);
-	GL_SetBindlessTexture(U_TMU2, i_hdrBaseInterim->handle);
-	GL_SetBindlessTexture(U_TMU3, i_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.distort->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.hdrBaseInterim->handle);
+	GL_SetBindlessTexture(U_TMU3, gi.linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -921,7 +921,7 @@ void R_linearDepth(void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, fb.linearDepth->id);
 
 	GL_BindProgram(linearDepthProgram);
-	GL_SetBindlessTexture(U_TMU0, i_depthStencil->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.depthStencil->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
@@ -1107,26 +1107,26 @@ void R_RenderFrame(refdef_t * fd) {
 	
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
-		CL_AddString(0, VID_CENTER_H,       3, buff0, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, i_consFont);
-		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, i_consFont);
+		CL_AddString(0, VID_CENTER_H,       3, buff0, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 25,  3, buff1, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 50,  3, buff2, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 75,  3, buff3, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 100, 3, buff4, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 125, 3, buff5, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 150, 3, buff6, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 175, 3, buff7, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 200, 3, buff8, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 225, 3, buff9, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 250, 3, buff12, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 275, 3, buff13, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 300, 3, buff10, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 325, 3, buff11, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 350, 3, buff14, gi.consFont);
+		CL_AddString(0, VID_CENTER_H + 375, 3, buff15, gi.consFont);
 
 //		Draw_StringScaled(0, VID_CENTER_H + 325, 2, 2, buff16, true);
 	//	Draw_StringScaled(0, VID_CENTER_H + 345, 2, 2, buff17, true);
-		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, i_consFont);
+		CL_AddString(0, VID_CENTER_H + 400, 3, buff18, gi.consFont);
 		RE_SetColor(colorWhite);
 	}
 }
@@ -2053,7 +2053,7 @@ void R_BeginFrame()
 	r_parallaxMapping->integer	= ClampCvarInteger(0, 3, r_parallaxMapping->integer);
 	r_parallaxScale->integer	= ClampCvarInteger(0, 6, r_parallaxScale->integer);
 	r_colorTempK->integer		= ClampCvarInteger(1000, 40000, r_colorTempK->integer);
-	r_hdrUiNits->value			= ClampCvar(100.0, 300.0, r_hdrUiNits->value);
+	r_hdrUiNits->value			= ClampCvar(100.0, 1000.0, r_hdrUiNits->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;

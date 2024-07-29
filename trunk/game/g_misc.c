@@ -1250,7 +1250,7 @@ This is the Viper for the flyby bombing.
 It is trigger_spawned, so you must have something use it for it to show up.
 There must be a path for it to follow once it is activated.
 
-"speed"		How fast the Viper should fly
+"speed"		How fast the Viper should flyTexture
 */
 
 extern void train_use (edict_t *self, edict_t *other, edict_t *activator);
@@ -1372,7 +1372,7 @@ This is a Storgg ship for the flybys.
 It is trigger_spawned, so you must have something use it for it to show up.
 There must be a path for it to follow once it is activated.
 
-"speed"		How fast it should fly
+"speed"		How fast it should flyTexture
 */
 
 extern void train_use (edict_t *self, edict_t *other, edict_t *activator);

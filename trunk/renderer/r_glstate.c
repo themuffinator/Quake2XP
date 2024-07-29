@@ -582,6 +582,7 @@ void GL_SetDefaultState(void) {
 	Vector4Set (clearColor, 0.0, 0.0, 0.0, 1.0);
 	clearDepth = 1.0;
 	clearStencil = 128;
+	r_newrefdef.hdrTime = 0.0;
 
 	GL_UpdateSwapInterval();
 }

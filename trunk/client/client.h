@@ -276,8 +276,8 @@ void CL_AddAltString(int x, int y, int scale, char *s);
 void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex);
 void R_Flush2D();
 
-extern image_t *i_consFont;
-extern image_t *i_menuFont;
+extern image_t *consFont;
+extern image_t *menuFont;
 #define FONT_INTERVAL 0.666
 #define CURSOR_INTERVAL 0.75
 

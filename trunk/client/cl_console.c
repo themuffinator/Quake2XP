@@ -539,8 +539,8 @@ void Con_DrawInput (void) {
 	}
 
 	for (i = 0; i < con.lineWidth; i++) {
-		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, output[i], i_consFont);
-		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, cursor[i], i_consFont);
+		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, output[i], gi.consFont);
+		R_AddCharsToList(1 + i * 8 * FONT_INTERVAL * fontscale, con.vislines - 12 * (int)fontscale, (int)fontscale, cursor[i], gi.consFont);
 	}
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
@@ -593,7 +593,7 @@ void Con_DrawNotify (void) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
-			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), v, fontscale, text[x], i_consFont);
+			R_AddCharsToList((x * fontscale + 1) * (8 * FONT_INTERVAL), v, fontscale, text[x], gi.consFont);
 		}
 
 		v += 8 * fontscale;
@@ -603,11 +603,11 @@ void Con_DrawNotify (void) {
 
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
-			CL_AddString(0, v, fontscale, "say_team:", i_consFont);
+			CL_AddString(0, v, fontscale, "say_team:", gi.consFont);
 			skip = 9;
 		}
 		else {
-			CL_AddString(0, v, fontscale, "say:", i_consFont);
+			CL_AddString(0, v, fontscale, "say:", gi.consFont);
 			skip = 4; 
 		}
 
@@ -619,10 +619,10 @@ void Con_DrawNotify (void) {
 		x = 0;
 		while (s[x])
 		{
-			R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, s[x], i_consFont);
+			R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, s[x], gi.consFont);
 			x++;
 		}
-		R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, 10 + ((cls.realTime >> 8) & 1), i_consFont);
+		R_AddCharsToList((x + skip) * 8 * fontscale * FONT_INTERVAL, v, fontscale, 10 + ((cls.realTime >> 8) & 1), gi.consFont);
 		v += 8;
 	}
 	RE_SetColor		(colorWhite);
@@ -681,14 +681,14 @@ void Con_DrawConsole (float frac) {
 	len += 1;
 
 	RE_SetColor(colorGreen);
-	CL_AddString(viddef.width - len * scale, lines - 12 * ui_fontScale->integer, ui_fontScale->integer, outBuf, i_consFont);
+	CL_AddString(viddef.width - len * scale, lines - 12 * ui_fontScale->integer, ui_fontScale->integer, outBuf, gi.consFont);
 
 	Com_sprintf(version, sizeof(version), "q2xp %s (%s)", VERSION, __DATE__);
 	len = strlen(version);
 	len += 1;
 	for (x = 0; x < len; x++)
 		R_AddCharsToList((viddef.width - len * scale) + (x * scale),
-						lines - 20 * ui_fontScale->integer, ui_fontScale->integer, version[x], i_consFont);
+						lines - 20 * ui_fontScale->integer, ui_fontScale->integer, version[x], gi.consFont);
 	// draw the text
 	con.vislines = lines;
 
@@ -700,7 +700,7 @@ void Con_DrawConsole (float frac) {
 		// draw arrows to show the buffer is backscrolled
 		RE_SetColor (colorCyan);
 		for (x = 0; x < con.lineWidth; x += 4)
-			R_AddCharsToList((x * ui_fontScale->integer + 1) * 8, y, ui_fontScale->integer, '^', i_consFont);
+			R_AddCharsToList((x * ui_fontScale->integer + 1) * 8, y, ui_fontScale->integer, '^', gi.consFont);
 		RE_SetColor (colorWhite);
 		y -= 8 * ui_fontScale->integer;
 		rows--;
@@ -736,7 +736,7 @@ void Con_DrawConsole (float frac) {
 				//Reset Current font color
 				RE_SetColor(ColorTable[currentColor]);
 
-			R_AddCharsToList((x * ui_fontScale->integer + 1) * (8 * FONT_INTERVAL), y, (int)ui_fontScale->integer, text[x], i_consFont);
+			R_AddCharsToList((x * ui_fontScale->integer + 1) * (8 * FONT_INTERVAL), y, (int)ui_fontScale->integer, text[x], gi.consFont);
 
 			if (text[x] < 190)
 				currentColor = oldColor;
@@ -792,7 +792,7 @@ void Con_DrawConsole (float frac) {
 		for (i = 0; i < strlen (dlbar); i++)
 			//	Draw_Char((i + 1) << 3, y, dlbar[i]);
 		//	Draw_CharScaled ((i*fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
-			R_AddCharsToList((i * ui_fontScale->integer + 1) * 8, y, ui_fontScale->integer, dlbar[i], i_menuFont);
+			R_AddCharsToList((i * ui_fontScale->integer + 1) * 8, y, ui_fontScale->integer, dlbar[i], gi.menuFont);
 	}
 	//ZOID
 

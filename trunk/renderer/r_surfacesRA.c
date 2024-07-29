@@ -57,7 +57,7 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, bool update) {
 			qglUniform1f(U_SCROLL, 0.0);
 
 		if (scrolling)
-			GL_SetBindlessTexture(U_TMU0, i_waterDistort->handle);
+			GL_SetBindlessTexture(U_TMU0, gi.waterDistort->handle);
 		else
 			GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
 
@@ -84,8 +84,8 @@ void R_DrawAlphaSurfaces() {
 	// setup program
 	GL_BindProgram(glassProgram);
 
-	GL_SetBindlessTexture(U_TMU2, i_hdrBaseInterim->handle);
-	GL_SetBindlessTexture(U_TMU3, i_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.hdrBaseInterim->handle);
+	GL_SetBindlessTexture(U_TMU3, gi.linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -173,9 +173,9 @@ void R_DrawWaterSurfaces(bool bmodel) {
 
 	GL_BindProgram(waterProgram);
 
-	GL_SetBindlessTexture(U_TMU1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
-	GL_SetBindlessTexture(U_TMU2, i_hdrBaseInterim->handle);
-	GL_SetBindlessTexture(U_TMU3, i_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU1, gi.waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.hdrBaseInterim->handle);
+	GL_SetBindlessTexture(U_TMU3, gi.linearDepth->handle);
 
 	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
 	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
@@ -258,9 +258,9 @@ void R_DrawHeatHazeSurfaces() {
 	// setup program
 	GL_BindProgram(heatHazeProgram);
 
-	GL_SetBindlessTexture(U_TMU0, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
-	GL_SetBindlessTexture(U_TMU1, i_hdrBaseInterim->handle);
-	GL_SetBindlessTexture(U_TMU2, i_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
+	GL_SetBindlessTexture(U_TMU1, gi.hdrBaseInterim->handle);
+	GL_SetBindlessTexture(U_TMU2, gi.linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -461,8 +461,8 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, bool update) {
 	if (update) {
 		GL_SetBindlessTexture(U_TMU0, s->texInfo->albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, s->texInfo->normalmap->handle);
-		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
-		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		GL_SetBindlessTexture(U_TMU2, gi.lightCubeMaps[currentShadowLight->filter]->handle);
+		GL_SetBindlessTexture(U_TMU3, gi.causticTexture[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 	}
 
 	for (i = 0; i < nv - 2; i++) {

@@ -236,75 +236,74 @@ extern double gldepthmin, gldepthmax;
 //====================================================
 
 #define		MAX_CAUSTICS		32
-image_t *r_caustic[MAX_CAUSTICS];
-
-#define		MAX_WATER_NORMALS		32
-image_t *r_waterNormals[MAX_WATER_NORMALS];
-
-#define		MAX_FLY		2
-image_t *fly[MAX_FLY];
-
+#define		MAX_WATER_NORMALS	32
+#define		MAX_FLY				2
 #define		MAX_FLAMEANIM		5
-image_t *flameanim[MAX_FLAMEANIM];
-
-#define		MAX_BLOOD 6
-image_t *r_blood[MAX_BLOOD];
-
-#define		MAX_xBLOOD 6
-image_t *r_xblood[MAX_BLOOD];
-
-#define	MAX_SHELLS 6
-image_t	*r_texshell[MAX_SHELLS];
-
-#define		MAX_EXPLODE 8
-image_t *r_explode[MAX_EXPLODE];
-
+#define		MAX_BLOOD			6
+#define		MAX_xBLOOD			6
+#define		MAX_SHELLS			6
+#define		MAX_EXPLODE			8
 #define		MAX_BFG_EXPL		32
-image_t *r_bfg_expl[MAX_BFG_EXPL];
-
-#define		MAX_FILTERS 256
-image_t* r_lightCubeMap[MAX_FILTERS];
+#define		MAX_FILTERS			256
 #define		MAX_GLOBAL_FILTERS	38
 
-image_t *r_particleTexture[PT_MAX];
-image_t *r_decalTexture[DECAL_MAX];
 
 //#define		MAX_LUTS 8
 //image_t* r_3dLut[MAX_LUTS];
 //int			lutCount;
 
-image_t r_textures[MAX_GLTEXTURES];
-int		r_numTextures;
 
-image_t *i_blackTexture1x1;
-image_t	*i_missingTexture;
-image_t *i_waterDistort;
-image_t	*i_laserNormal;
-image_t *i_menuFont, *i_consFont;
-image_t *i_distort;
-image_t	*i_defBump;
-image_t	*i_environment;
-image_t	*i_ssaoRandomNormal;
-image_t	*i_whiteMap;
-image_t *i_skinBump;
-image_t *i_ssaoDepth;
-image_t *i_ssaoColor[2];
-image_t	*i_hdrBase;
-image_t	*i_hdrBaseInterim;
-image_t	*i_depthStencil;
-image_t	*i_hdrInterim2D;
-image_t	*i_ldrBase;
-image_t	*i_linearDepth;
-image_t *i_hdrLuminance; 
-image_t *i_prevHdrLuminance;
-image_t	*i_cinematic;
-image_t	*i_glare;
-image_t	*i_thermal;
-image_t	*i_lensDirt;
-image_t *i_levelSkyBox;
-image_t *i_bloomIn;
-image_t *i_bloomInterim;
-image_t *i_bloomOut;
+typedef struct globalImage_s {
+
+	image_t r_textures[MAX_GLTEXTURES];
+	int		r_numTextures;
+	
+	image_t *particleTexture[PT_MAX];
+	image_t *decalTexture[DECAL_MAX];
+
+	image_t *causticTexture[MAX_CAUSTICS];
+	image_t *waterNormals[MAX_WATER_NORMALS];
+	image_t *flyTexture[MAX_FLY];
+	image_t *flameAnimTex[MAX_FLAMEANIM];
+	image_t *bloodTexture[MAX_BLOOD];
+	image_t *xBloodTexture[MAX_BLOOD];
+	image_t *aliasShellTex[MAX_SHELLS];
+	image_t *explosionTex[MAX_EXPLODE];
+	image_t *bfgExplosionTex[MAX_BFG_EXPL];
+	image_t *lightCubeMaps[MAX_FILTERS];
+
+	image_t *blackTexture1x1;
+	image_t *missingTexture;
+	image_t *waterDistort;
+	image_t *laserNormal;
+	image_t *menuFont, *consFont;
+	image_t *distort;
+	image_t *defBump;
+	image_t *environment;
+	image_t *ssaoRandomNormal;
+	image_t *whiteMap;
+	image_t *skinBump;
+	image_t *ssaoDepth;
+	image_t *ssaoColor[2];
+	image_t *hdrBase;
+	image_t *hdrBaseInterim;
+	image_t *depthStencil;
+	image_t *hdrInterim2D;
+	image_t *ldrBase;
+	image_t *linearDepth;
+	image_t *hdrLuminance;
+	image_t *prevHdrLuminance;
+	image_t *cinematic;
+	image_t *glareImage;
+	image_t *thermalImage;
+	image_t *lensDirt;
+	image_t *levelSkyBox;
+	image_t *bloomIn;
+	image_t *bloomInterim;
+	image_t *bloomOut;
+}globalImage_t;
+
+globalImage_t gi;
 
 int			i_stencilView;
 uint64_t	i_stencilView_handle;
@@ -510,6 +509,7 @@ int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore);
 void VID_MenuInit (void);
 void AnglesToMat3 (const vec3_t angles, mat3_t m);
 void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out);
+float lerp(float a, float b, float weight);
 void R_ShutdownPrograms (void);
 void R_Bloom (void);
 void R_ThermalVision (void);
@@ -1067,6 +1067,7 @@ glslProgram_t		*showTrisProgram;
 glslProgram_t		*picProgram;
 glslProgram_t		*blur_xComputeProgram;
 glslProgram_t		*blur_yComputeProgram;
+glslProgram_t		*avrLuminance;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();
@@ -1205,11 +1206,6 @@ typedef enum {
 	U_WATER_TRANS,
 	U_WATER_MIRROR,
 
-	U_CONSOLE_BACK,
-	U_2D_PICS,
-	U_FRAG_COLOR,
-	U_BINDLESS_ARRAY,
-		
 	U_PARAM_iVEC2_0,
 	U_PARAM_iVEC2_1,
 	U_PARAM_iVEC2_2,
@@ -1228,6 +1224,7 @@ typedef enum {
 	U_TMU8,
 	U_TMU9,
 	U_TMU10,
+	U_PARAM_INT_6
 }glsl_uniform;
 
 void R_DrawFullScreenQuad();

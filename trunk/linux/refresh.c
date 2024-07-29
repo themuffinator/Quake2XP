@@ -42,7 +42,7 @@ SDL_Surface		*surface = NULL;
 /*
  * Initialzes the SDL OpenGL context
  */
-qboolean GLimp_Init(void *hinstance, void *wndproc)
+bool GLimp_Init(void *hinstance, void *wndproc)
 {
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
     {
@@ -51,13 +51,13 @@ qboolean GLimp_Init(void *hinstance, void *wndproc)
         if (SDL_Init(SDL_INIT_VIDEO) == -1)
         {
 			Com_Printf(S_COLOR_RED "Couldn't init SDL video: %s.\n", SDL_GetError());
-            return qfalse;
+            return false;
         }
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
         Com_Printf(S_COLOR_GREEN "\nInitialized SDL video, driver is \"%s\".\n\n", driverName );
 	}
 
-	return qtrue;
+	return true;
 }
 
 /*
@@ -126,7 +126,7 @@ void GLimp_EndFrame (void)
 /*
  * Changes the video mode, and initializes the OpenGL window
  */
-rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen)
+rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, bool fullscreen)
 {
     int width, height;
 	int flags;

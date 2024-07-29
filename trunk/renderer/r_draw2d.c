@@ -32,17 +32,17 @@ R_LoadFont
 
 void R_Init2D(void)
 {
-	i_menuFont = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
+	gi.menuFont = R_LoadDDS("gfx/fonts/engfont.dds", it_nomips);
 
-	if (!i_menuFont)
-		i_menuFont = GL_FindImage("pics/conchars.pcx", it_nomips);
+	if (!gi.menuFont)
+		gi.menuFont = GL_FindImage("pics/conchars.pcx", it_nomips);
 
-	if (!i_menuFont)
+	if (!gi.menuFont)
 		VID_Error(ERR_DROP, "couldn't load pics/conchars");
 
-	i_consFont = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
-	if (!i_consFont)
-		i_consFont = i_missingTexture;
+	gi.consFont = R_LoadDDS("gfx/fonts/intfont.dds", it_nomips);
+	if (!gi.consFont)
+		gi.consFont = gi.missingTexture;
 }
 
 void R_DrawTexturedQuad() {
@@ -64,6 +64,7 @@ void R_Flush2D() {
 	GL_BindProgram(picProgram);
 	qglUniform1i(U_PARAM_INT_0, PF_COLOREDFONT);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1f(U_PARAM_FLOAT_2, r_hdrUiNits->value);
 
 	GL_SetBindlessTexture(U_TMU0, tess2dArray.handle);
 
@@ -146,7 +147,7 @@ image_t* Draw_FindPic(char* name)
 		gl = GL_FindImage(name + 1, it_pic);
 	}
 	if (gl)
-		if (gl != i_missingTexture)
+		if (gl != gi.missingTexture)
 			strcpy(gl->bare_name, name);
 
 	return gl;
@@ -254,14 +255,14 @@ void Draw_StretchPic(int x, int y, int w, int h, int flags, char *imageName, cha
 		image = Draw_FindPic(imageName);
 	
 	if (strstr(imageName2, "null"))
-		bumpImage = i_defBump;
+		bumpImage = gi.defBump;
 	else
 		bumpImage	= Draw_FindPic(imageName2);
 
 	if (!image)
-		image = i_missingTexture;
+		image = gi.missingTexture;
 	if (!bumpImage)
-		bumpImage = i_defBump;
+		bumpImage = gi.defBump;
 
 	R_Draw_StretchPic(x, y, w, h, flags, image, bumpImage);
 }
@@ -348,14 +349,14 @@ void Draw_PicScaled(int x, int y, float scaleX, float scaleY, int flags, char *i
 	image = Draw_FindPic(imageName);
 
 	if (strstr(imageName2, "null"))
-		bumpImage = i_defBump;
+		bumpImage = gi.defBump;
 	else
 		bumpImage = Draw_FindPic(imageName2);
 
 	if (!image)
-		image = i_missingTexture;
+		image = gi.missingTexture;
 	if (!bumpImage)
-		bumpImage = i_defBump;
+		bumpImage = gi.defBump;
 
 	Draw_ScaledPic(x, y, scaleX, scaleY, flags, image, bumpImage);
 }
@@ -440,13 +441,13 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	}
 
 	// update cin texture
-	glTextureSubImage2D(i_cinematic->texnum, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
+	glTextureSubImage2D(gi.cinematic->texnum, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 
 	// setup program
 	GL_BindProgram(picProgram);
 	qglUniform1i(U_PARAM_INT_0, PF_TECHCOLOR | PF_MEDIANFILTER | PF_SCANLINE);
 	qglUniform1f(U_PARAM_FLOAT_2, r_hdrUiNits->value);
-	GL_SetBindlessTexture(U_TMU0, i_cinematic->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.cinematic->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
 	VA_SetElem2(tess2d.v[0].pos, x, y);

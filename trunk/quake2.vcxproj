@@ -759,6 +759,8 @@
   <ItemGroup>
     <None Include="..\baseq2\glsl\ambientMd3.frag" />
     <None Include="..\baseq2\glsl\ambientMd3.vert" />
+    <None Include="..\baseq2\glsl\avrLum.frag" />
+    <None Include="..\baseq2\glsl\avrLum.vert" />
     <None Include="..\baseq2\glsl\bloomBlur.frag" />
     <None Include="..\baseq2\glsl\bloomBlur.vert" />
     <None Include="..\baseq2\glsl\color.frag" />

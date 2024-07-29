@@ -49,7 +49,7 @@ void R_DrawSkyBox(){
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)r_newrefdef.skyMatrix);
 
-	GL_SetBindlessTexture(U_TMU0, i_levelSkyBox->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.levelSkyBox->handle);
 
 	GL_BindVAO(vao.sky);
 	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
@@ -82,7 +82,7 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 	if (len < 5)
 		return NULL;
 
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 
 		if (image->hash == hash) {
 
@@ -95,18 +95,18 @@ image_t *R_MakeLegacySkyCubeMap(char *name) {
 	}
 	
 	// find a free image_t
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
-	if (i == r_numTextures) {
-		if (r_numTextures == MAX_GLTEXTURES)
+	if (i == gi.r_numTextures) {
+		if (gi.r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
 
-		r_numTextures++;
+		gi.r_numTextures++;
 	}
 
-	image = &r_textures[i];
+	image = &gi.r_textures[i];
 	strcpy(image->name, name);
 	image->type = it_sky;
 	image->hash = hash;
@@ -160,11 +160,11 @@ void R_GenSkyCubeMap(char* name) {
 	strncpy(skyname, name, sizeof(skyname) - 1);
 	
 	Com_sprintf(ddsName, sizeof(ddsName), "env/dds/%s.dds", skyname);
-	i_levelSkyBox = R_LoadDDS(ddsName, it_sky);
+	gi.levelSkyBox = R_LoadDDS(ddsName, it_sky);
 
-	if (!i_levelSkyBox)
-		i_levelSkyBox = R_MakeLegacySkyCubeMap(skyname);
+	if (!gi.levelSkyBox)
+		gi.levelSkyBox = R_MakeLegacySkyCubeMap(skyname);
 	
-	if (!i_levelSkyBox)
-		i_levelSkyBox = i_missingTexture;
+	if (!gi.levelSkyBox)
+		gi.levelSkyBox = gi.missingTexture;
 }

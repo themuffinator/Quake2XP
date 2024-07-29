@@ -63,16 +63,16 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 		clearData = false;
 
 	// find a free image_t
-	for (i = 0, image = r_textures; i < r_numTextures; i++, image++) {
+	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 		if (!image->texnum)
 			break;
 	}
-	if (i == r_numTextures) {
-		if (r_numTextures == MAX_GLTEXTURES)
+	if (i == gi.r_numTextures) {
+		if (gi.r_numTextures == MAX_GLTEXTURES)
 			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
-		r_numTextures++;
+		gi.r_numTextures++;
 	}
-	image = &r_textures[i];
+	image = &gi.r_textures[i];
 
 	strcpy(image->name, texName);
 
@@ -250,97 +250,97 @@ void R_InitEngineTextures (void) {
 		}
 	}
 
-	i_defBump = R_CreateTexture("***i_defBump***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
+	gi.defBump = R_CreateTexture("***defBump***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
 	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint*)bump);
 
-	i_whiteMap	= R_CreateTexture("***i_whiteMap***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
+	gi.whiteMap	= R_CreateTexture("***whiteMap***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
 	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint *)white);
 
-	i_blackTexture1x1 = R_CreateTexture("***i_blackTexture1x1***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
+	gi.blackTexture1x1 = R_CreateTexture("***blackTexture1x1***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
 	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint *)black);
 
-	i_missingTexture = R_CreateTexture("***i_missingTexture***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16,
+	gi.missingTexture = R_CreateTexture("***missingTexture***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16,
 	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint *)mt);
 
-	i_waterDistort = R_CreateTexture("***i_waterDistort***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16, 
+	gi.waterDistort = R_CreateTexture("***waterDistort***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16,
 	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint *)wd);
 
-	i_cinematic = R_CreateTexture("***i_cinematic***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
+	gi.cinematic = R_CreateTexture("***cinematic***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
 	GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, NULL);
 
-	r_particleTexture[PT_DEFAULT] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
-	r_particleTexture[PT_BUBBLE] = R_LoadDDS("gfx/particles/bubble.dds", it_part);
+	gi.particleTexture[PT_DEFAULT] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
+	gi.particleTexture[PT_BUBBLE] = R_LoadDDS("gfx/particles/bubble.dds", it_part);
 
-	r_particleTexture[PT_FLY] = R_LoadDDS("gfx/fly/fly0.dds", it_part);
+	gi.particleTexture[PT_FLY] = R_LoadDDS("gfx/flyTexture/fly0.dds", it_part);
 
-	r_particleTexture[PT_BLOOD] = R_LoadDDS("gfx/particles/bloodTrail.dds", it_part);	// default
-	r_particleTexture[PT_BLOOD2] = R_LoadDDS("gfx/particles/bloodTrail2.dds", it_part);	// xatrix
-	r_particleTexture[PT_BLASTER] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
-	r_particleTexture[PT_SMOKE] = R_LoadDDS("gfx/particles/smoke.dds", it_part);
-	r_particleTexture[PT_SPLASH] = R_LoadDDS("gfx/particles/drop.dds", it_part);
-	r_particleTexture[PT_SPARK] = R_LoadDDS("gfx/particles/spark.dds", it_part);
+	gi.particleTexture[PT_BLOOD] = R_LoadDDS("gfx/particles/bloodTrail.dds", it_part);	// default
+	gi.particleTexture[PT_BLOOD2] = R_LoadDDS("gfx/particles/bloodTrail2.dds", it_part);	// xatrix
+	gi.particleTexture[PT_BLASTER] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
+	gi.particleTexture[PT_SMOKE] = R_LoadDDS("gfx/particles/smoke.dds", it_part);
+	gi.particleTexture[PT_SPLASH] = R_LoadDDS("gfx/particles/drop.dds", it_part);
+	gi.particleTexture[PT_SPARK] = R_LoadDDS("gfx/particles/spark.dds", it_part);
 
-	r_particleTexture[PT_BEAM] = R_LoadDDS("gfx/particles/pt_beam.dds", it_part);
-	r_particleTexture[PT_SPIRAL] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
+	gi.particleTexture[PT_BEAM] = R_LoadDDS("gfx/particles/pt_beam.dds", it_part);
+	gi.particleTexture[PT_SPIRAL] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
 
-	r_particleTexture[PT_FLAME] = R_LoadDDS("gfx/flame/fire_00.dds", it_part);
+	gi.particleTexture[PT_FLAME] = R_LoadDDS("gfx/flame/fire_00.dds", it_part);
 
-	r_particleTexture[PT_BLOODSPRAY] = R_LoadDDS("gfx/particles/bloodhit0.dds", it_part);
-	r_particleTexture[PT_xBLOODSPRAY] = R_LoadDDS("gfx/particles/xbloodhit0.dds", it_part);
+	gi.particleTexture[PT_BLOODSPRAY] = R_LoadDDS("gfx/particles/bloodhit0.dds", it_part);
+	gi.particleTexture[PT_xBLOODSPRAY] = R_LoadDDS("gfx/particles/xbloodhit0.dds", it_part);
 
-	r_particleTexture[PT_EXPLODE]		= R_LoadDDS("gfx/explode/rlboom_0.dds", it_part);
+	gi.particleTexture[PT_EXPLODE]		= R_LoadDDS("gfx/explode/rlboom_0.dds", it_part);
 
-	r_particleTexture[PT_WATERPULME]	= R_LoadDDS("gfx/particles/waterplume.dds", it_part);
-	r_particleTexture[PT_WATERCIRCLE]	= R_LoadDDS("gfx/particles/waterripples.dds", it_part);
-	r_particleTexture[PT_BLOODDRIP]		= R_LoadDDS("gfx/particles/blooddrip.dds", it_part);
-	r_particleTexture[PT_BLOODMIST]		= R_LoadDDS("gfx/particles/bloodmist.dds", it_part);
-	r_particleTexture[PT_BLOOD_SPLAT]	= R_LoadDDS("gfx/decals/decal_splat.dds", it_part);
-	r_particleTexture[PT_BLASTER_BOLT]	= R_LoadDDS("gfx/particles/blaster_bolt.dds", it_part);
-	r_particleTexture[PT_BFG_LASER]		= R_LoadDDS("gfx/particles/bfglaser.dds", it_part);
-	r_particleTexture[PT_RAILBEAM]		= R_LoadDDS("gfx/particles/rail_beam.dds", it_part);
+	gi.particleTexture[PT_WATERPULME]	= R_LoadDDS("gfx/particles/waterplume.dds", it_part);
+	gi.particleTexture[PT_WATERCIRCLE]	= R_LoadDDS("gfx/particles/waterripples.dds", it_part);
+	gi.particleTexture[PT_BLOODDRIP]		= R_LoadDDS("gfx/particles/blooddrip.dds", it_part);
+	gi.particleTexture[PT_BLOODMIST]		= R_LoadDDS("gfx/particles/bloodmist.dds", it_part);
+	gi.particleTexture[PT_BLOOD_SPLAT]	= R_LoadDDS("gfx/decals/decal_splat.dds", it_part);
+	gi.particleTexture[PT_BLASTER_BOLT]	= R_LoadDDS("gfx/particles/blaster_bolt.dds", it_part);
+	gi.particleTexture[PT_BFG_LASER]		= R_LoadDDS("gfx/particles/bfglaser.dds", it_part);
+	gi.particleTexture[PT_RAILBEAM]		= R_LoadDDS("gfx/particles/rail_beam.dds", it_part);
 
-	r_particleTexture[PT_BFG_BALL]		= R_LoadDDS("gfx/bfg/bfgBall.dds", it_part);
-	r_particleTexture[PT_BFG_REFR]		= R_LoadDDS("gfx/bfg/bfgRefr.dds", it_part);
-	r_particleTexture[PT_BFG_EXPL]		= R_LoadDDS("gfx/bfg/bfg_expl.dds", it_part);
-	r_particleTexture[PT_BFG_EXPL2]		= R_LoadDDS("gfx/bfg/bfgballblast.dds", it_part);
+	gi.particleTexture[PT_BFG_BALL]		= R_LoadDDS("gfx/bfg/bfgBall.dds", it_part);
+	gi.particleTexture[PT_BFG_REFR]		= R_LoadDDS("gfx/bfg/bfgRefr.dds", it_part);
+	gi.particleTexture[PT_BFG_EXPL]		= R_LoadDDS("gfx/bfg/bfg_expl.dds", it_part);
+	gi.particleTexture[PT_BFG_EXPL2]		= R_LoadDDS("gfx/bfg/bfgballblast.dds", it_part);
 
-	r_particleTexture[PT_FLARE]			= R_LoadDDS("gfx/flares/flare0.dds", it_part);
+	gi.particleTexture[PT_FLARE]			= R_LoadDDS("gfx/flares/flare0.dds", it_part);
 
 	for (i = 0; i < MAX_BFG_EXPL; i++) {
 		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.dds", i);
-		r_bfg_expl[i] = R_LoadDDS(name, it_part);
-		if (!r_bfg_expl[i])
-			r_bfg_expl[i] = i_missingTexture;
+		gi.bfgExplosionTex[i] = R_LoadDDS(name, it_part);
+		if (!gi.bfgExplosionTex[i])
+			gi.bfgExplosionTex[i] = gi.missingTexture;
 	}
 
-	i_laserNormal = R_LoadDDS("gfx/particles/lasei_distort.dds", it_normal);
-	if (!i_laserNormal)
-		i_laserNormal = i_defBump;
+	gi.laserNormal = R_LoadDDS("gfx/particles/lasei_distort.dds", it_normal);
+	if (!gi.laserNormal)
+		gi.laserNormal = gi.defBump;
 
 	for (i = 0; i < PT_MAX; i++)
-	if (!r_particleTexture[i])
-		r_particleTexture[i] = i_missingTexture;
+	if (!gi.particleTexture[i])
+		gi.particleTexture[i] = gi.missingTexture;
 
-	r_decalTexture[DECAL_RAIL]		= R_LoadDDS("gfx/decals/decal_railgun.dds", it_part);
-	r_decalTexture[DECAL_BULLET]	= R_LoadDDS("gfx/decals/decal_bullet2.dds", it_part);
-	r_decalTexture[DECAL_BLASTER]	= R_LoadDDS("gfx/decals/decal_blaster2.dds", it_part);
-	r_decalTexture[DECAL_EXPLODE]	= R_LoadDDS("gfx/decals/decal_explode.dds", it_part);
-	r_decalTexture[DECAL_BLOOD1]	= R_LoadDDS("gfx/decals/decal_blood1.dds", it_part);
-	r_decalTexture[DECAL_BLOOD2]	= R_LoadDDS("gfx/decals/decal_blood2.dds", it_part);
-	r_decalTexture[DECAL_BLOOD3]	= R_LoadDDS("gfx/decals/decal_blood3.dds", it_part);
-	r_decalTexture[DECAL_BLOOD4]	= R_LoadDDS("gfx/decals/decal_blood4.dds", it_part);
-	r_decalTexture[DECAL_BLOOD5]	= R_LoadDDS("gfx/decals/decal_blood5.dds", it_part);
-	r_decalTexture[DECAL_BLOOD6]	= R_LoadDDS("gfx/decals/decal_blood6.dds", it_part);
-	r_decalTexture[DECAL_BLOOD7]	= R_LoadDDS("gfx/decals/decal_blood7.dds", it_part);
-	r_decalTexture[DECAL_BLOOD8]	= R_LoadDDS("gfx/decals/decal_blood8.dds", it_part);
-	r_decalTexture[DECAL_BLOOD9]	= R_LoadDDS("gfx/decals/decal_splat.dds", it_part);
-	r_decalTexture[DECAL_ACIDMARK]	= R_LoadDDS("gfx/decals/decal_acidmark.dds", it_part);
-	r_decalTexture[DECAL_BFG]		= R_LoadDDS("gfx/decals/decal_bfg.dds", it_part);
+	gi.decalTexture[DECAL_RAIL]		= R_LoadDDS("gfx/decals/decal_railgun.dds", it_part);
+	gi.decalTexture[DECAL_BULLET]	= R_LoadDDS("gfx/decals/decal_bullet2.dds", it_part);
+	gi.decalTexture[DECAL_BLASTER]	= R_LoadDDS("gfx/decals/decal_blaster2.dds", it_part);
+	gi.decalTexture[DECAL_EXPLODE]	= R_LoadDDS("gfx/decals/decal_explode.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD1]	= R_LoadDDS("gfx/decals/decal_blood1.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD2]	= R_LoadDDS("gfx/decals/decal_blood2.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD3]	= R_LoadDDS("gfx/decals/decal_blood3.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD4]	= R_LoadDDS("gfx/decals/decal_blood4.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD5]	= R_LoadDDS("gfx/decals/decal_blood5.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD6]	= R_LoadDDS("gfx/decals/decal_blood6.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD7]	= R_LoadDDS("gfx/decals/decal_blood7.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD8]	= R_LoadDDS("gfx/decals/decal_blood8.dds", it_part);
+	gi.decalTexture[DECAL_BLOOD9]	= R_LoadDDS("gfx/decals/decal_splat.dds", it_part);
+	gi.decalTexture[DECAL_ACIDMARK]	= R_LoadDDS("gfx/decals/decal_acidmark.dds", it_part);
+	gi.decalTexture[DECAL_BFG]		= R_LoadDDS("gfx/decals/decal_bfg.dds", it_part);
 
 
 	for (i = 0; i < DECAL_MAX; i++) {
-		if (!r_decalTexture[i])
-			r_decalTexture[i] = i_missingTexture;
+		if (!gi.decalTexture[i])
+			gi.decalTexture[i] = gi.missingTexture;
 	}
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
@@ -348,9 +348,9 @@ void R_InitEngineTextures (void) {
 			Com_sprintf (name, sizeof(name), "gfx/caust/caust_0%i.dds", i);
 		else
 			Com_sprintf (name, sizeof(name), "gfx/caust/caust_%i.dds", i);
-		r_caustic[i] = R_LoadDDS(name, it_wall);
-		if (!r_caustic[i])
-			r_caustic[i] = i_missingTexture;
+		gi.causticTexture[i] = R_LoadDDS(name, it_wall);
+		if (!gi.causticTexture[i])
+			gi.causticTexture[i] = gi.missingTexture;
 	}
 
 	for (i = 0; i < MAX_WATER_NORMALS; i++) {
@@ -358,82 +358,82 @@ void R_InitEngineTextures (void) {
 			Com_sprintf(name, sizeof(name), "gfx/water/00%iNormal.dds", i);
 		else
 			Com_sprintf(name, sizeof(name), "gfx/water/0%iNormal.dds", i);
-		r_waterNormals[i] = R_LoadDDS(name, it_normal);
-		if (!r_waterNormals[i])
-			r_waterNormals[i] = i_defBump;
+		gi.waterNormals[i] = R_LoadDDS(name, it_normal);
+		if (!gi.waterNormals[i])
+			gi.waterNormals[i] = gi.defBump;
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {
-		Com_sprintf (name, sizeof(name), "gfx/fly/fly%i.dds", i);
-		fly[i] = R_LoadDDS(name, it_wall);
-		if (!fly[i])
-			fly[i] = i_missingTexture;
+		Com_sprintf (name, sizeof(name), "gfx/flyTexture/flyTexture%i.dds", i);
+		gi.flyTexture[i] = R_LoadDDS(name, it_wall);
+		if (!gi.flyTexture[i])
+			gi.flyTexture[i] = gi.missingTexture;
 	}
 
 	for (i = 0; i < MAX_FLAMEANIM; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/flame/fire_0%i.dds", i);
-		flameanim[i] = R_LoadDDS(name, it_wall);
-		if (!flameanim[i])
-			flameanim[i] = i_missingTexture;
+		gi.flameAnimTex[i] = R_LoadDDS(name, it_wall);
+		if (!gi.flameAnimTex[i])
+			gi.flameAnimTex[i] = gi.missingTexture;
 	}
 
 
 	for (i = 0; i < MAX_BLOOD; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/particles/bloodhit%i.dds", i);
-		r_blood[i] = R_LoadDDS(name, it_wall);
-		if (!r_blood[i])
-			r_blood[i] = i_missingTexture;
+		gi.bloodTexture[i] = R_LoadDDS(name, it_wall);
+		if (!gi.bloodTexture[i])
+			gi.bloodTexture[i] = gi.missingTexture;
 
 	}
 
 	for (i = 0; i < MAX_xBLOOD; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/particles/xbloodhit%i.dds", i);
-		r_xblood[i] = R_LoadDDS(name, it_wall);
-		if (!r_xblood[i])
-			r_xblood[i] = i_missingTexture;
+		gi.xBloodTexture[i] = R_LoadDDS(name, it_wall);
+		if (!gi.xBloodTexture[i])
+			gi.xBloodTexture[i] = gi.missingTexture;
 
 	}
 
 	for (i = 0; i < MAX_EXPLODE; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/explode/rlboom_%i.dds", i);
-		r_explode[i] = R_LoadDDS(name, it_part);
-		if (!r_explode[i])
-			r_explode[i] = i_missingTexture;
+		gi.explosionTex[i] = R_LoadDDS(name, it_part);
+		if (!gi.explosionTex[i])
+			gi.explosionTex[i] = gi.missingTexture;
 	}
 
 	for (i = 0; i < MAX_SHELLS; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/shells/shell%i.dds", i);
-		r_texshell[i] = R_LoadDDS(name, it_wall);
-		if (!r_texshell[i])
-			r_texshell[i] = i_missingTexture;
+		gi.aliasShellTex[i] = R_LoadDDS(name, it_wall);
+		if (!gi.aliasShellTex[i])
+			gi.aliasShellTex[i] = gi.missingTexture;
 	}
 
-	i_distort = R_LoadDDS("gfx/explosion/explosion.dds", it_normal);
-	if (!i_distort)
-		i_distort = i_defBump;
+	gi.distort = R_LoadDDS("gfx/explosion/explosion.dds", it_normal);
+	if (!gi.distort)
+		gi.distort = gi.defBump;
 
-	i_environment = R_LoadDDS("gfx/tinfx.dds", it_wall);
-	if (!i_environment)
-		i_environment = i_missingTexture;
+	gi.environment = R_LoadDDS("gfx/tinfx.dds", it_wall);
+	if (!gi.environment)
+		gi.environment = gi.missingTexture;
 
-	i_ssaoRandomNormal = R_LoadDDS("gfx/randomNormal.dds", it_screen);
-	if (!i_ssaoRandomNormal)
-		i_ssaoRandomNormal = i_defBump;
+	gi.ssaoRandomNormal = R_LoadDDS("gfx/randomNormal.dds", it_screen);
+	if (!gi.ssaoRandomNormal)
+		gi.ssaoRandomNormal = gi.defBump;
 	
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++) {
 		Com_sprintf(name, sizeof(name), "gfx/lights/lf_%i.dds", i+1);
-		r_lightCubeMap[i] = R_LoadDDS(name, it_wall);
-		if (!r_lightCubeMap[i])
-			r_lightCubeMap[i] = i_missingTexture;
+		gi.lightCubeMaps[i] = R_LoadDDS(name, it_wall);
+		if (!gi.lightCubeMaps[i])
+			gi.lightCubeMaps[i] = gi.missingTexture;
 	}
 
-	i_skinBump = R_LoadDDS("gfx/skinBlend_bump.dds", it_normal);
-	if (!i_skinBump)
-		i_skinBump = i_defBump;
+	gi.skinBump = R_LoadDDS("gfx/skinBlend_bump.dds", it_normal);
+	if (!gi.skinBump)
+		gi.skinBump = gi.defBump;
 
-	i_lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_screen);
-	if (!i_lensDirt)
-		i_lensDirt = i_missingTexture;
+	gi.lensDirt = R_LoadDDS("gfx/lens_dirt.dds", it_screen);
+	if (!gi.lensDirt)
+		gi.lensDirt = gi.missingTexture;
 
 }
 

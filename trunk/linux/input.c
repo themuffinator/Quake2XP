@@ -33,12 +33,12 @@
 #include "../client/client.h"
 #include "../renderer/r_local.h"
 
-static qboolean input_started = qfalse;
+static bool input_started = false;
 
 #define MOUSE_MAX 3000
 #define MOUSE_MIN 40
 
-static qboolean	grab_on;
+static bool	grab_on;
 static cvar_t   *in_grab;
 static cvar_t	*fullscreen;
 static int		mouse_x, mouse_y;
@@ -58,13 +58,13 @@ int my;
 
 extern SDL_Surface	 *surface; 
 static unsigned char KeyStates[SDLK_LAST];
-static qboolean		 mlooking;
+static bool		 mlooking;
 
 static cvar_t *m_filter;
 static cvar_t *exponential_speedup;
 
 inline void
-Do_Key_Event (int key, qboolean down)
+Do_Key_Event (int key, bool down)
 {
 	Key_Event(key, down, Sys_Milliseconds());
 }
@@ -165,19 +165,19 @@ IN_GetEvent(SDL_Event *event)
 			if (event->button.button == 4) 
 			{
 				keyq[keyq_head].key = K_MWHEELUP;
-				keyq[keyq_head].down = qtrue;
+				keyq[keyq_head].down = true;
 				keyq_head = (keyq_head + 1) & 127;
 				keyq[keyq_head].key = K_MWHEELUP;
-				keyq[keyq_head].down = qfalse;
+				keyq[keyq_head].down = false;
 				keyq_head = (keyq_head + 1) & 127;
 			} 
 			else if (event->button.button == 5) 
 			{
 				keyq[keyq_head].key = K_MWHEELDOWN;
-				keyq[keyq_head].down = qtrue;
+				keyq[keyq_head].down = true;
 				keyq_head = (keyq_head + 1) & 127;
 				keyq[keyq_head].key = K_MWHEELDOWN;
-				keyq[keyq_head].down = qfalse;
+				keyq[keyq_head].down = false;
 				keyq_head = (keyq_head + 1) & 127;
 			} 
 			break;
@@ -198,7 +198,7 @@ IN_GetEvent(SDL_Event *event)
 				else 
 					Cvar_SetValue( "r_fullScreen", 0 );
 
-				fullscreen->modified = qfalse; 
+				fullscreen->modified = false; 
 				gl_state.fullscreen = fullscreen->value;
 				break;
 			}
@@ -210,7 +210,7 @@ IN_GetEvent(SDL_Event *event)
 			if (key)
 			{
 				keyq[keyq_head].key = key;
-				keyq[keyq_head].down = qtrue;
+				keyq[keyq_head].down = true;
 				keyq_head = (keyq_head + 1) & 127;
 			}
 			break;
@@ -226,7 +226,7 @@ IN_GetEvent(SDL_Event *event)
 				if (key) 
 				{
 					keyq[keyq_head].key = key;
-					keyq[keyq_head].down = qfalse;
+					keyq[keyq_head].down = false;
 					keyq_head = (keyq_head + 1) & 127;
 				}
 			}
@@ -279,10 +279,10 @@ SDL_Event event;
 	case 2:
 		if (!grab_on && cl_paused->value == 0) {
 			SDL_WM_GrabInput(SDL_GRAB_ON);
-			grab_on = qtrue;
+			grab_on = true;
 		} else if (grab_on && cl_paused->value != 0) {
 			SDL_WM_GrabInput(SDL_GRAB_OFF);
-			grab_on = qfalse;
+			grab_on = false;
 		}
 		break;
 	default:
@@ -341,11 +341,11 @@ IN_Init ( void )
 
 	in_grab = Cvar_Get ("in_grab", "2", CVAR_ARCHIVE);
 	fullscreen = Cvar_Get ("r_fullScreen", "1", CVAR_ARCHIVE);
-	grab_on = qfalse;
+	grab_on = false;
 	SDL_WM_GrabInput(SDL_GRAB_OFF);
 
 	Com_Printf( "Input initialized.\n" );
-	input_started = qtrue;
+	input_started = true;
 }
 
 /*
@@ -363,7 +363,7 @@ IN_Shutdown ( void )
 	memset(keyq, 0, sizeof(keyq));
 
 	Com_Printf("Input shut down.\n");
-	input_started = qfalse;
+	input_started = false;
 }
 
 /*
@@ -379,23 +379,23 @@ IN_MouseButtons ( void )
 	for ( i = 0; i < 3; i++ )
 	{
 		if ( ( mouse_buttonstate & ( 1 << i ) ) && !( mouse_oldbuttonstate & ( 1 << i ) ) )
-			Do_Key_Event( K_MOUSE1 + i, qtrue );
+			Do_Key_Event( K_MOUSE1 + i, true );
 
 		if ( !( mouse_buttonstate & ( 1 << i ) ) && ( mouse_oldbuttonstate & ( 1 << i ) ) )
-			Do_Key_Event( K_MOUSE1 + i, qfalse );
+			Do_Key_Event( K_MOUSE1 + i, false );
 	}
 
 	if ( ( mouse_buttonstate & ( 1 << 3 ) ) && !( mouse_oldbuttonstate & ( 1 << 3 ) ) )
-		Do_Key_Event( K_MOUSE4, qtrue );
+		Do_Key_Event( K_MOUSE4, true );
 
 	if ( !( mouse_buttonstate & ( 1 << 3 ) ) && ( mouse_oldbuttonstate & ( 1 << 3 ) ) )
-		Do_Key_Event( K_MOUSE4, qfalse );
+		Do_Key_Event( K_MOUSE4, false );
 
 	if ( ( mouse_buttonstate & ( 1 << 4 ) ) && !( mouse_oldbuttonstate & ( 1 << 4 ) ) )
-		Do_Key_Event( K_MOUSE5, qtrue );
+		Do_Key_Event( K_MOUSE5, true );
 
 	if ( !( mouse_buttonstate & ( 1 << 4 ) ) && ( mouse_oldbuttonstate & ( 1 << 4 ) ) )
-		Do_Key_Event( K_MOUSE5, qfalse );
+		Do_Key_Event( K_MOUSE5, false );
 
 	mouse_oldbuttonstate = mouse_buttonstate;
 }

@@ -583,6 +583,7 @@ typedef struct {
 
 	float blend[4];				// rgba 0-1 full screen blend
 	float time;					// time is uesed to auto animate
+	float hdrTime;
 	int rdflags;				// RDF_UNDERWATER, etc
 	bool mirrorView;
 	byte *areabits;				// if not NULL, only areas with set bits

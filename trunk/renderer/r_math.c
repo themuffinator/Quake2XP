@@ -62,6 +62,12 @@ __inline void Q_sincos (float a, float *s, float *c) {
 }
 #endif
 
+float lerp(float a, float b, float weight)
+{
+	// Ключевой момент: сумма коэффициентов `weight` и `1 - weight` равна 1.
+	return a * weight + b * (1 - weight);
+}
+
 /*
 =================
 AnglesToMat3

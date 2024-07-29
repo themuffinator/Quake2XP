@@ -831,7 +831,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 		if (!out->albedo){
 			// failed to load WAL, use default
 			Com_Printf("Couldn't load %s\n", name);
-			out->albedo = i_missingTexture;
+			out->albedo = gi.missingTexture;
 			continue;
 		}
 
@@ -881,7 +881,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			out->normalmap = R_LoadDDS(name, it_normal);
 
 			if (!out->normalmap)
-				out->normalmap = i_defBump;
+				out->normalmap = gi.defBump;
 		}
 
 		//
@@ -896,7 +896,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			out->emissive = R_LoadDDS(name, it_wall);
 
 			if (!out->emissive)
-				out->emissive = i_blackTexture1x1;
+				out->emissive = gi.blackTexture1x1;
 		}
 
 		//
@@ -911,7 +911,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			out->envmap = R_LoadDDS(name, it_wall);
 			
 			if (!out->envmap)
-				out->envmap = i_blackTexture1x1;
+				out->envmap = gi.blackTexture1x1;
 		}
 		//
 		// pbr load
@@ -925,7 +925,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			out->pbr = R_LoadDDS(name, it_wall);
 
 			if (!out->pbr)
-				out->pbr = i_blackTexture1x1;
+				out->pbr = gi.blackTexture1x1;
 
 		}		
 		//
@@ -939,7 +939,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 			out->maskmap = R_LoadDDS(name, it_wall);
 
 			if (!out->maskmap)
-				out->maskmap = i_whiteMap;
+				out->maskmap = gi.whiteMap;
 
 		}
 
@@ -2646,7 +2646,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		if (!mod->albedo[i]) {
 			//	mod->albedo[i] = GL_FindImage(pname, it_skin);
 			//	if (!mod->albedo[i])
-			mod->albedo[i] = i_missingTexture;
+			mod->albedo[i] = gi.missingTexture;
 		}
 
 		// GlowMaps loading
@@ -2656,7 +2656,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		mod->emissive[i] = R_LoadDDS(gl, it_skin);
 
 		if (!mod->emissive[i])
-			mod->emissive[i] = i_blackTexture1x1;
+			mod->emissive[i] = gi.blackTexture1x1;
 
 		// Loading Normal maps
 		strcpy(gl, pname);
@@ -2665,7 +2665,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		mod->normalmap[i] = R_LoadDDS(gl, it_normal);
 
 		if (!mod->normalmap[i])
-			mod->normalmap[i] = i_defBump;
+			mod->normalmap[i] = gi.defBump;
 
 		// Loading roughness maps
 		strcpy(gl, pname);
@@ -2674,7 +2674,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		mod->pbr[i] = R_LoadDDS(gl, it_wall);
 
 		if (!mod->pbr[i])
-			mod->pbr[i] = i_blackTexture1x1;
+			mod->pbr[i] = gi.blackTexture1x1;
 		
 	}
 
@@ -2766,7 +2766,7 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer) {
 			MAX_SKINNAME);
 		mod->albedo[i] = GL_FindImage(sprout->frames[i].name, it_sprite);
 		if (!mod->albedo[i])
-			mod->albedo[i] = i_missingTexture;
+			mod->albedo[i] = gi.missingTexture;
 	}
 	mod->type = mod_sprite;
 }
@@ -2845,7 +2845,7 @@ struct model_s *R_RegisterModel(char *name) {
 			for (i = 0; i < sprout->numFrames; i++) {
 				mod->albedo[i] = GL_FindImage(sprout->frames[i].name, it_sprite);
 				if (!mod->albedo[i])
-					mod->albedo[i] = i_missingTexture;
+					mod->albedo[i] = gi.missingTexture;
 			}
 		}
 		else if (mod->type == mod_alias) {
