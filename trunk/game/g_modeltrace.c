@@ -9,6 +9,10 @@
  // «#include <limits.h>
 #endif
 
+#ifdef __linux__
+#include <sys/stat.h>
+#endif
+
 typedef struct{
 
 	vec3_t v;
@@ -336,7 +340,7 @@ void TR_Model_Save(modelTR_t* model, const char* name){
 #ifdef _WIN32
 	_mkdir(path);
 #else
-	mkdir(path);
+	mkdir(path, S_IRWXO | S_IRWXU);
 #endif
 
 	if (!*game->string)
@@ -351,7 +355,7 @@ void TR_Model_Save(modelTR_t* model, const char* name){
 #ifdef _WIN32
 		_mkdir(path);
 #else
-		mkdir(path);
+		mkdir(path, S_IRWXO| S_IRWXU);
 #endif
 		sprintf(path, "%s/collision/%s.col", GAMEVERSION, name);
 		fp = fopen(path, "wb");

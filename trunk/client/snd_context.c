@@ -351,6 +351,7 @@ static bool AL_InitDriver (void) {
 				else
 					Com_DPrintf("  " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %s\n", i, hrtfName);
 				hrtfNames[i] = (char *)hrtfName;
+
 			}
 			Com_Printf("HRTF Selected: " S_COLOR_GREEN "%s\n", selected);
 			
