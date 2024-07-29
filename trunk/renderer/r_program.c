@@ -20,7 +20,7 @@ int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 
 static const char * glslGlobals =
-"#version 450 core\n"
+"#version 460 core\n"
 "#extension GL_ARB_bindless_texture : enable\n"
 "#extension GL_ARB_gpu_shader5 : enable\n"
 "#extension GL_ARB_explicit_uniform_location : enable\n"
