@@ -125,31 +125,25 @@ out vec4 mrtData[3]; // out mrt
 #define	U_WATER_TRANS			90 
 #define	U_WATER_MIRROR			91 
 
-#define	U_CONSOLE_BACK			92 
-#define	U_2D_PICS				93 
-#define	U_FRAG_COLOR			94 
+#define		U_PARAM_iVEC2_0 92
+#define		U_PARAM_iVEC2_1 93
+#define		U_PARAM_iVEC2_2 94
+#define		U_PARAM_iVEC2_3 95
+#define		U_PARAM_iVEC2_4 96
+#define		U_PARAM_iVEC2_5 97
 
-#define	U_BINDLESS_ARRAY		95 
-
-#define		U_PARAM_iVEC2_0 96
-#define		U_PARAM_iVEC2_1 97
-#define		U_PARAM_iVEC2_2 98
-#define		U_PARAM_iVEC2_3 99
-#define		U_PARAM_iVEC2_4 100
-#define		U_PARAM_iVEC2_5 101
-
-#define	U_TMU0		102 
-#define	U_TMU1		103 
-#define	U_TMU2		104 
-#define	U_TMU3		105 
-#define	U_TMU4		106 
-#define	U_TMU5		107 
-#define	U_TMU6		108 
-#define	U_TMU7		109 
-#define	U_TMU8		110 
-#define	U_TMU9		111 
-#define	U_TMU10		112 
-#define	U_SCREEN_ST	113 
+#define	U_TMU0		98 
+#define	U_TMU1		99 
+#define	U_TMU2		100 
+#define	U_TMU3		101 
+#define	U_TMU4		102 
+#define	U_TMU5		103 
+#define	U_TMU6		104 
+#define	U_TMU7		105 
+#define	U_TMU8		106 
+#define	U_TMU9		107 
+#define	U_TMU10		108
+#define U_PARAM_INT_6 109
 
 #ifndef saturate
 #define saturate(x)    clamp(x, 0.0, 1.0)

@@ -9,6 +9,7 @@ layout (bindless_sampler, location  = U_TMU6) uniform sampler2DRect	g_colorBuffe
 layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	g_depthBufferMap;
 layout (bindless_sampler, location  = U_TMU8) uniform sampler2DRect	u_SSAOMap;
 
+layout(location = U_COLOR)				uniform vec4	u_lightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
 layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
 layout(location = U_USE_CAUSTICS)		uniform int		u_isCaustics;
@@ -25,8 +26,7 @@ layout(location = U_PARAM_INT_4)		uniform int		u_useSSLR;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_USE_SSAO)			uniform int		u_ssao;
-layout(location = U_PARAM_INT_5)		uniform bool	u_nwm;
-layout(location = U_COLOR)				uniform vec4	u_lightColor;
+
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -224,8 +224,6 @@ void main (void) {
 
 	//		vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
 			fragData = mix(u_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
-			if(u_nwm)
-				fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 			return;
 		}
 	
@@ -260,6 +258,4 @@ void main (void) {
 		fragData.rgb *= texture(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
 		fragData.rgb *= vec3(backedAO);
 	}
-	if(u_nwm)
-		fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 }
