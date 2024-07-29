@@ -719,7 +719,7 @@ void Con_DrawConsole (float frac) {
 
 		text = con.text + (row % con.totalLines) * con.lineWidth;
 
-		Com_sprintf(output, sizeof(output), "");
+		Com_sprintf((char*)output, sizeof(output), "");
 		for (x = 0; x < con.lineWidth; x++) {
 			if ((text[x] & 0xFF) == ' ')
 				continue;
