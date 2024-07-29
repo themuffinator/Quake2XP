@@ -126,6 +126,8 @@ void GLimp_EndFrame (void)
 /*
  * Changes the video mode, and initializes the OpenGL window
  */
+bool VID_GetModeInfo(int *width, int *height, int mode);
+
 rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, bool fullscreen)
 {
     int width, height;
