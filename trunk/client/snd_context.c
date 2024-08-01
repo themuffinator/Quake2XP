@@ -208,20 +208,13 @@ static bool AL_InitDriver (void) {
 	// Create the AL context and make it current
 	Com_Printf ("...Creating AL Context: ");
 
-	bool hrtf = false;
+	alConfig.hrtfSupport = false;
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
-		hrtf = true;
+		alConfig.hrtfSupport = true;
 	}
 
-//	int quality;
-//	#ifdef _WIN32
-//		quality = 48000;
-//	#else
-//		quality = 44100; //wtf? soft al under linux use only 44100hz
-//	#endif
-
 		ALCint attrlist[5] = {	
-			ALC_HRTF_SOFT,		s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
+			ALC_HRTF_SOFT,		s_useHRTF->integer && alConfig.hrtfSupport ? ALC_TRUE : AL_FALSE,
 			ALC_HRTF_ID_SOFT,	s_hrtfIndex->integer, 0 
 		};
 		
@@ -307,13 +300,13 @@ static bool AL_InitDriver (void) {
 	Com_Printf("...Sound Frequency: " S_COLOR_GREEN "%i " S_COLOR_WHITE "Hz\n", srate);
 
 	Com_Printf("\n=====================================\n\n");
-
-	if (hrtf) {
+	
+	if (alConfig.hrtfSupport) {
 		Com_Printf("...using " S_COLOR_YELLOW "ALC_SOFT_HRTF\n");
 		ALCint	hrtfState, hrtfStatus;
-		extern char** al_hrtfs;
 		char* hrtfNames[256]={0};
 		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+
 		if (!hrtfState)
 			Com_Printf("...HRTF:" S_COLOR_GREEN " off\n");
 		else {

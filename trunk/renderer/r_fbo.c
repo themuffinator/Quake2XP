@@ -229,7 +229,7 @@ void R_FB_AttachImage(const GLenum attachment, const image_t *image, const int i
 fbo_t *R_Create_FBO(const char *name) {
 	fbo_t *fb;
 	int i;
-
+	
 	if (r_numRbos == MAX_FBOS)
 		VID_Error(ERR_DROP, "R_Create_FBO: MAX_FBOS hit");
 

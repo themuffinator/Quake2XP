@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include "client.h"
+#ifdef __linux__
+#include <ctype.h>
+#endif
 
 /*
 
@@ -794,7 +797,7 @@ void Key_Event (int key, bool down, unsigned time) {
 
 		if (!cls.menuActive) { // stop spam in to console!
 
-			if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP && key != K_XPAD_START) // т.к. K_XPAD_START захардоден для меню
+			if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP && key != K_XPAD_START) // пїЅ.пїЅ. K_XPAD_START пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 				Com_Printf("%s is unbound, hit F4 to set.\n", Key_KeynumToString(key));
 		}
 	}

@@ -42,6 +42,12 @@
 
 #include "../qcommon/qcommon.h"
 
+# define FAPPEND        O_APPEND
+# define FFSYNC                O_FSYNC
+# define FASYNC                O_ASYNC
+# define FNONBLOCK        O_NONBLOCK
+# define FNDELAY        O_NDELAY
+
 unsigned	sys_frame_time;
 bool	stdin_active = true;
 uid_t		saved_euid;

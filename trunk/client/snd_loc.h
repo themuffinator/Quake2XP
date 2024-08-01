@@ -254,7 +254,8 @@ typedef struct {
 	ALint numResamplers;
 	ALint defResampler;
 	ALint numHrtfs;
-
+	bool hrtfSupport;
+	bool SourceResampler;
 } alConfig_t;
 
 extern alConfig_t alConfig;

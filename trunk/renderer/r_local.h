@@ -190,7 +190,7 @@ int	r_numRbos;
 
 typedef struct {
 	rbo_t *depthStencil;
-}rb_t;
+}	rb_t;
 rb_t rb;
 
 typedef struct {

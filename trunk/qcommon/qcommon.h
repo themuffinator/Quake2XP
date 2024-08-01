@@ -74,6 +74,13 @@ extern char purelist[4096];
 
 #define DEFAULTPAK			"pak"
 
+#if defined __GNUC__ && __GNUC__ >= 14
+#pragma GCC diagnostic warning "-Wimplicit-function-declaration"
+#pragma GCC diagnostic warning "-Wincompatible-pointer-types"
+#pragma GCC diagnostic warning "-Wint-conversion"
+#pragma GCC diagnostic warning "-Wreturn-mismatch"
+#endif
+
 extern	int file_from_pak;
 extern	int	zipdata;
 

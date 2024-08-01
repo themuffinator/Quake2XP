@@ -422,10 +422,13 @@ bool AL_Init (int hardreset) {
 	if (!alIsExtensionPresent("AL_SOFT_source_resampler"))
 	{
 		Com_Printf(S_COLOR_MAGENTA"...AL_SOFT_source_resampler not found!\n");
-	}else
+		alConfig.SourceResampler = false;
+	}
+	else {
 		Com_Printf("...using " S_COLOR_YELLOW "AL_SOFT_source_resampler\n");
-
-	if (alGetStringiSOFT) {
+		alConfig.SourceResampler = true;
+	}
+	if (alConfig.SourceResampler) {
 		alConfig.numResamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
 		alConfig.defResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
 		extern char** al_resemplers;

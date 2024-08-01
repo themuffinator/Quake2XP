@@ -621,7 +621,8 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel, ALuint bufferNum, A
 		alSourcef (sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
 		alSourcef (sourceNum, AL_GAIN, gain * s_effectsVolume->value);
 
-		alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
+		if(alConfig.SourceResampler)
+			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
 		if (alConfig.efx)
 			EFX_RvbProcSrc (ch, sourceNum, true);
@@ -789,7 +790,8 @@ void S_StartLocalSound (ALuint bufferNum) {
 			alSourcei (sourceNum, AL_LOOPING, AL_FALSE);
 			alSourcef (sourceNum, AL_GAIN, 0.47 * s_effectsVolume->value);
 			
-			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
+			if (alConfig.SourceResampler)
+				alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
 			if (alConfig.efx)
 				EFX_RvbProcSrc (ch, sourceNum, false);
@@ -1255,7 +1257,9 @@ void S_Update (vec3_t listener_position, vec3_t velocity, float orientation[6]) 
 			// AL_TASK_MANAGER__IS_SOURCE_RELATIVE));
 			alSourcei (sourceNum, AL_LOOPING, FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
 			alSourcef (sourceNum, AL_GAIN, current_task->TASK_AL_GAIN * s_effectsVolume->value);
-			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
+			
+			if (alConfig.SourceResampler)
+				alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 			
 			if (alConfig.efx)
 				EFX_RvbProcSrc (ch, sourceNum, true);
