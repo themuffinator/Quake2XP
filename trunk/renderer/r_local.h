@@ -84,11 +84,11 @@ typedef enum {
 } rserr_t;
 
 typedef struct winScreenModes_s {
-	int num;
-	int w;
-	int h;
-	int hz;
-	char *description;
+	int		num;
+	int		w;
+	int		h;
+	int		hz;
+	char	*description;
 } winScreenModes_t;
 
 winScreenModes_t winScreenModes[128];
@@ -96,41 +96,66 @@ winScreenModes_t winScreenModes[128];
 char** vid_winModes;
 
 typedef struct vertexObject_s {
-
 	char	name[MAX_QPATH];
 	GLuint	id;
 } vertexObject_t;
 
 typedef struct vertexBuffer_s {
-
-	char	name[MAX_QPATH];
-	GLuint	id;
-	GLuint	size;
+	char		name[MAX_QPATH];
+	GLuint		id;
+	GLuint		size;
 	const void *data;
-	GLuint	usage;
-	GLuint	target;
+	GLuint		usage;
+	GLuint		target;
 } vertexBuffer_t;
 
 #define MAX_VERTEX_OBJECTS 2048
-vertexObject_t	r_vertexObject[MAX_VERTEX_OBJECTS];
-int	r_numVertexObject;
-
-vertexBuffer_t	r_vertexBuffer[MAX_VERTEX_OBJECTS];
-int	r_numVertexBuffers;
 
 typedef struct {
-	vertexObject_t *sky;
-	vertexObject_t *stream3d;
-	vertexObject_t *tess2dArray;
-	vertexObject_t *tess2d;
-	vertexObject_t *fsq;
-	vertexObject_t *md3shadow;
-	vertexObject_t *md2shadow;
-	vertexObject_t *dynamic;
-	vertexObject_t *bsp;
-	vertexObject_t *depthBsp;
+	vertexObject_t	r_vertexObject[MAX_VERTEX_OBJECTS];
+	int				r_numVertexObject;
+	vertexObject_t	*sky;
+	vertexObject_t	*stream3d;
+	vertexObject_t	*tess2dArray;
+	vertexObject_t	*tess2d;
+	vertexObject_t	*fsq;
+	vertexObject_t	*md3shadow;
+	vertexObject_t	*md2shadow;
+	vertexObject_t	*dynamic;
+	vertexObject_t	*bsp;
+	vertexObject_t	*depthBsp;
 }vao_t;
 vao_t vao;
+
+typedef struct {
+	vertexBuffer_t	r_vertexBuffer[MAX_VERTEX_OBJECTS];
+	int				r_numVertexBuffers;
+	int				xyz_offset;
+	int				st_offset;
+	int				lm_offset;
+	int				tg_offset;
+	int				bn_offset;
+	int				nm_offset;
+	int				col_offset;
+
+	vertexBuffer_t	*stream3d;
+	vertexBuffer_t	*quadIbo;
+	vertexBuffer_t	*quadStringIbo;
+	vertexBuffer_t	*tess2dVbo;
+	vertexBuffer_t	*tess2dArrayVbo;
+	vertexBuffer_t	*fsqVbo;
+	vertexBuffer_t	*md3ShadowVbo;
+	vertexBuffer_t	*md2ShadowVbo;
+	vertexBuffer_t	*md2ShadowIbo;
+	vertexBuffer_t	*md3ShadowIbo;
+	vertexBuffer_t	*bspShadowVbo;
+	vertexBuffer_t	*dynamicIbo;
+	vertexBuffer_t	*cubeIbo;
+	vertexBuffer_t	*skyBoxVbo;
+	vertexBuffer_t	*bspVbo;
+	vertexBuffer_t	*twoPointLineIbo;
+}vbo_t;
+vbo_t vbo;
 
 vertexObject_t *R_Alloc_VAO(const char *name, int flags);
 void GL_BindVAO(vertexObject_t *va);
@@ -147,72 +172,43 @@ void R_DeleteVBO(vertexBuffer_t *vbin);
 void R_ShotdownVBO(void);
 char *q_pretifymem(float value);
 
-typedef struct {
-
-	vertexBuffer_t *stream3d;
-	vertexBuffer_t *quadIbo;
-	vertexBuffer_t *quadStringIbo;
-	vertexBuffer_t *tess2dVbo;
-	vertexBuffer_t *tess2dArrayVbo;
-	vertexBuffer_t *fsqVbo;
-	vertexBuffer_t *md3ShadowVbo;
-	vertexBuffer_t *md2ShadowVbo;
-	vertexBuffer_t *md2ShadowIbo;
-	vertexBuffer_t *md3ShadowIbo;
-	vertexBuffer_t *bspShadowVbo;
-	vertexBuffer_t *dynamicIbo;
-	vertexBuffer_t *cubeIbo;
-	vertexBuffer_t *skyBoxVbo;
-	vertexBuffer_t *bspVbo;
-	vertexBuffer_t *twoPointLineIbo;
-
-	int xyz_offset;
-	int st_offset;
-	int lm_offset;
-	int tg_offset;
-	int bn_offset;
-	int nm_offset;
-	int col_offset;
-}vbo_t;
-vbo_t vbo;
+#define MAX_RBOS 64
+#define MAX_FBOS 256
 
 typedef struct {
-	char		name[MAX_QPATH];
-	GLenum		internalFormat;
-	GLuint		id;
-	int			width;
-	int			height;
+	char	name[MAX_QPATH];
+	GLenum	internalFormat;
+	GLuint	id;
+	int		width;
+	int		height;
 } rbo_t;
 
-#define MAX_RBOS 64
-rbo_t r_rbo[MAX_RBOS];
-int	r_numRbos;
-
 typedef struct {
-	rbo_t *depthStencil;
-}	rb_t;
+	rbo_t	r_rbo[MAX_RBOS];
+	int		r_numRbos;
+	rbo_t	*depthStencil;
+}rb_t;
+
 rb_t rb;
 
 typedef struct {
-	char		name[MAX_QPATH];
-	GLuint		id;
+	char	name[MAX_QPATH];
+	GLuint	id;
 } fbo_t;
 
-#define MAX_FBOS 256
-fbo_t	r_fbo[MAX_FBOS];
-int	r_numFbos;
-
 typedef struct {
-	fbo_t *hdrBase;
-	fbo_t *ldrBase;
-	fbo_t *hdrBase2D;
-	fbo_t *glare;
-	fbo_t *thermal;
-	fbo_t *ssao;
-	fbo_t *linearDepth;
-	fbo_t *bloomCompute;
-	fbo_t *hdrLum;
-	fbo_t *prevHdrLum;
+	fbo_t	r_fbo[MAX_FBOS];
+	int		r_numFbos;
+	fbo_t	*hdrBase;
+	fbo_t	*ldrBase;
+	fbo_t	*hdrBase2D;
+	fbo_t	*glare;
+	fbo_t	*thermal;
+	fbo_t	*ssao;
+	fbo_t	*linearDepth;
+	fbo_t	*bloomCompute;
+	fbo_t	*hdrLum;
+	fbo_t	*prevHdrLum;
 }fb_t;
 fb_t fb;
 

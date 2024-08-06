@@ -44,39 +44,39 @@ static void R_FB_Check() {
 }
 
 void R_FboListing_f(void) {
-	rbo_t *rb;
-	fbo_t *fb;
+	rbo_t	*rbo;
+	fbo_t	*fbo;
 	int i;
 
 	Com_Printf(S_COLOR_YELLOW"RBO List:\n");
-	for (i = 0, rb = r_rbo; i < r_numRbos; i++, rb++) {
-		Com_Printf(">" S_COLOR_GREEN "%s\n", rb->name);
+	for (i = 0, rbo = rb.r_rbo; i < rb.r_numRbos; i++, rbo++) {
+		Com_Printf(">" S_COLOR_GREEN "%s\n", rbo->name);
 	}
 	Com_Printf(S_COLOR_YELLOW"FBO List:\n");
-	for (i = 0, fb = r_fbo; i < r_numFbos; i++, fb++) {
-		Com_Printf(">" S_COLOR_GREEN "%s\n", fb->name);
+	for (i = 0, fbo = fb.r_fbo; i < fb.r_numFbos; i++, fbo++) {
+		Com_Printf(">" S_COLOR_GREEN "%s\n", fbo->name);
 	}
 }
 
 void R_ShotdownFBO(void) {
-	rbo_t *rb;
-	fbo_t *fb;
+	rbo_t *rbo;
+	fbo_t *fbo;
 	int i;
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	for (i = 0, rb = r_rbo; i < r_numRbos; i++, rb++) {
-		qglDeleteRenderbuffers(1, &rb->id);
-		memset(rb, 0, sizeof(*rb));
+	for (i = 0, rbo = rb.r_rbo; i < rb.r_numRbos; i++, rbo++) {
+		qglDeleteRenderbuffers(1, &rbo->id);
+		memset(rbo, 0, sizeof(*rbo));
 	}
-	for (i = 0, fb = r_fbo; i < r_numFbos; i++, fb++) {
-		qglDeleteFramebuffers(1, &fb->id);
-		memset(fb, 0, sizeof(*fb));
+	for (i = 0, fbo = fb.r_fbo; i < fb.r_numFbos; i++, fbo++) {
+		qglDeleteFramebuffers(1, &fbo->id);
+		memset(fbo, 0, sizeof(*fbo));
 	}
 }
 
-rb_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int height) {
-	rbo_t *rb;
+rbo_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int height) {
+	rbo_t *rbo;
 	int i;
 
 	switch (internalFormat) {
@@ -142,31 +142,31 @@ rb_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int heigh
 		VID_Error(ERR_DROP, "R_Create_RBO: format 0x%x is non-renderable\n", internalFormat);
 	}
 
-	if (r_numRbos == MAX_RBOS)
+	if (rb.r_numRbos == MAX_RBOS)
 		VID_Error(ERR_DROP, "R_Create_RBO: MAX_RBOS hit");
 
-	for (i = 0, rb = r_rbo; i < r_numRbos; i++, rb++) {
-		if (!rb->id)
+	for (i = 0, rbo = rb.r_rbo; i < rb.r_numRbos; i++, rbo++) {
+		if (!rbo->id)
 			break;
 	}
 
-	if (i == r_numRbos) {
-		if (r_numRbos == MAX_RBOS)
+	if (i == rb.r_numRbos) {
+		if (rb.r_numRbos == MAX_RBOS)
 			VID_Error(ERR_DROP, "MAX_RBOS");
-		r_numRbos++;
+		rb.r_numRbos++;
 	}
 
-	strcpy(rb->name, name);
-	rb->width = width;
-	rb->height = height;
+	strcpy(rbo->name, name);
+	rbo->width = width;
+	rbo->height = height;
 
-	qglGenRenderbuffers(1, &rb->id);
-	qglBindRenderbuffer(GL_RENDERBUFFER, rb->id);
-	qglRenderbufferStorage(GL_RENDERBUFFER, internalFormat, rb->width, rb->height);
-	qglObjectLabel(GL_RENDERBUFFER, rb->id, strlen(rb->name), rb->name);
+	qglGenRenderbuffers(1, &rbo->id);
+	qglBindRenderbuffer(GL_RENDERBUFFER, rbo->id);
+	qglRenderbufferStorage(GL_RENDERBUFFER, internalFormat, rbo->width, rbo->height);
+	qglObjectLabel(GL_RENDERBUFFER, rbo->id, strlen(rbo->name), rbo->name);
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	return rb;
+	return rbo;
 }
 
 static void R_AttachRBO(const rbo_t *rb, const GLenum attachment) {
@@ -227,30 +227,30 @@ void R_FB_AttachImage(const GLenum attachment, const image_t *image, const int i
 }
 
 fbo_t *R_Create_FBO(const char *name) {
-	fbo_t *fb;
+	fbo_t *fbo;
 	int i;
 	
-	if (r_numRbos == MAX_FBOS)
+	if (rb.r_numRbos == MAX_FBOS)
 		VID_Error(ERR_DROP, "R_Create_FBO: MAX_FBOS hit");
 
-	for (i = 0, fb = r_fbo; i < r_numFbos; i++, fb++) {
-		if (!fb->id)
+	for (i = 0, fbo = fb.r_fbo; i < fb.r_numFbos; i++, fbo++) {
+		if (!fbo->id)
 			break;
 	}
 
-	if (i == r_numFbos) {
-		if (r_numFbos == MAX_FBOS)
+	if (i == fb.r_numFbos) {
+		if (fb.r_numFbos == MAX_FBOS)
 			VID_Error(ERR_DROP, "MAX_FBOS");
-		r_numFbos++;
+		fb.r_numFbos++;
 	}
 
-	strcpy(fb->name, name);
+	strcpy(fbo->name, name);
 
-	qglGenFramebuffers	(1, &fb->id);
-	qglBindFramebuffer	(GL_FRAMEBUFFER, fb->id);
-	qglObjectLabel		(GL_FRAMEBUFFER, fb->id, strlen(fb->name), fb->name);
+	qglGenFramebuffers	(1, &fbo->id);
+	qglBindFramebuffer	(GL_FRAMEBUFFER, fbo->id);
+	qglObjectLabel		(GL_FRAMEBUFFER, fbo->id, strlen(fbo->name), fbo->name);
 
-	return fb;
+	return fbo;
 }
 
 void R_InitPboBuffers() {

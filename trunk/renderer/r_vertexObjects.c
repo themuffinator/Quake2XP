@@ -27,18 +27,18 @@ vertexObject_t *R_Alloc_VAO(const char *name, int flags) {
 	vertexObject_t *va;
 	int		i;
 
-	if (r_numVertexObject == MAX_VERTEX_OBJECTS)
+	if (vao.r_numVertexObject == MAX_VERTEX_OBJECTS)
 		VID_Error(ERR_DROP, "R_Alloc_VAO: MAX_VERTEX_OBJECTS hit");
 
-	for (i = 0, va = r_vertexObject; i < r_numVertexObject; i++, va++) {
+	for (i = 0, va = vao.r_vertexObject; i < vao.r_numVertexObject; i++, va++) {
 		if (!va->id)
 			break;
 	}
 
-	if (i == r_numVertexObject) {
-		if (r_numVertexObject == MAX_VERTEX_OBJECTS)
+	if (i == vao.r_numVertexObject) {
+		if (vao.r_numVertexObject == MAX_VERTEX_OBJECTS)
 			VID_Error(ERR_DROP, "MAX_VERTEX_OBJECTS");
-		r_numVertexObject++;
+		vao.r_numVertexObject++;
 	}
 	strcpy(va->name, name);
 
@@ -93,7 +93,7 @@ void R_VaoListing_f(void) {
 	int i;
 
 	Com_Printf(S_COLOR_YELLOW"VAO List:\n");
-	for (i = 0, va = r_vertexObject; i < r_numVertexObject; i++, va++) {
+	for (i = 0, va = vao.r_vertexObject; i < vao.r_numVertexObject; i++, va++) {
 		Com_Printf(">" S_COLOR_GREEN "%s\n", va->name );
 	}
 }
@@ -102,7 +102,7 @@ void R_ShotdownVAO(void) {
 	int    i;
 	vertexObject_t *va;
 
-	for (i = 0, va = r_vertexObject; i < r_numVertexObject; i++, va++) {
+	for (i = 0, va = vao.r_vertexObject; i < vao.r_numVertexObject; i++, va++) {
 		glDeleteVertexArrays(1, &va->id);
 		memset(va, 0, sizeof(*va));
 	}
@@ -115,18 +115,18 @@ vertexBuffer_t *R_Alloc_VBO(const char *name, GLuint target, GLuint size, const 
 	vertexBuffer_t *vb;
 	int i;
 
-	if (r_numVertexBuffers == MAX_VERTEX_OBJECTS)
+	if (vbo.r_numVertexBuffers == MAX_VERTEX_OBJECTS)
 		VID_Error(ERR_DROP, "R_AllocVertexBuffer: MAX_VERTEX_OBJECTS hit");
 
-	for (i = 0, vb = r_vertexBuffer; i < r_numVertexBuffers; i++, vb++) {
+	for (i = 0, vb = vbo.r_vertexBuffer; i < vbo.r_numVertexBuffers; i++, vb++) {
 		if (!vb->id)
 			break;
 	}
 
-	if (i == r_numVertexBuffers) {
-		if (r_numVertexBuffers == MAX_VERTEX_OBJECTS)
+	if (i == vbo.r_numVertexBuffers) {
+		if (vbo.r_numVertexBuffers == MAX_VERTEX_OBJECTS)
 			VID_Error(ERR_DROP, "MAX_VERTEX_OBJECTS");
-		r_numVertexBuffers++;
+		vbo.r_numVertexBuffers++;
 	}
 	strcpy(vb->name, name);
 
@@ -147,15 +147,15 @@ void GL_BindVBO(vertexBuffer_t *vb) {
 
 	if (vb->target == GL_ARRAY_BUFFER) {
 		if (gl_state.vboId != vb->id) {
-			qglBindBuffer(vb->target, vb->id);
+			qglBindBuffer(GL_ARRAY_BUFFER, vb->id);
 			gl_state.vboId = vb->id;
 		}
 	}
 	else if (vb->target == GL_ELEMENT_ARRAY_BUFFER) {
-	//	if (gl_state.iboId != vb->id) {
-			qglBindBuffer(vb->target, vb->id);
+		if (gl_state.iboId != vb->id) {
+			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vb->id);
 			gl_state.iboId = vb->id;
-	//	}
+		}
 	}
 }
 
@@ -214,7 +214,7 @@ void R_VboListing_f(void) {
 
 	Com_Printf(S_COLOR_YELLOW "VBO List:\n");
 
-	for (i = 0, vb = r_vertexBuffer; i < r_numVertexBuffers; i++, vb++) {
+	for (i = 0, vb = vbo.r_vertexBuffer; i < vbo.r_numVertexBuffers; i++, vb++) {
 		
 		if(vb->target == GL_ARRAY_BUFFER)
 			strcpy(S1, "GL_ARRAY_BUFFER");
@@ -240,7 +240,7 @@ void R_ShotdownVBO(void) {
 	int    i;
 	vertexBuffer_t *vb;
 
-	for (i = 0, vb = r_vertexBuffer; i < r_numVertexBuffers; i++, vb++) {
+	for (i = 0, vb = vbo.r_vertexBuffer; i < vbo.r_numVertexBuffers; i++, vb++) {
 		qglDeleteBuffers(1, &vb->id);
 		memset(vb, 0, sizeof(*vb));
 	}
