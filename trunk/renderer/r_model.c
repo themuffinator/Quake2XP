@@ -1093,7 +1093,8 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 
 	// reserve space for neighbour pointers
 	// FIXME: pointers don't need to be 4 bytes
-	poly->neighbours = (glpoly_t **)Mod_Hunk_Alloc(numVerts * 4);
+//	poly->neighbours = (glpoly_t **)Mod_Hunk_Alloc(numVerts * 4);
+	poly->neighbours = (glpoly_t **)Mod_Hunk_Alloc(numVerts * sizeof(void *)); //linux
 
 	for (i = 0; i < numVerts; i++) {
 		index = currentmodel->surfEdges[fa->firstedge + i];
@@ -2495,7 +2496,7 @@ static void Mod_CalcMd2Indicies(model_t *mod, md2Header *md2Hdr){
 
 	memcpy(mod->indexArray, indices, index * sizeof(uint16_t));
 
-/*	char pname[64];
+	char pname[64];
 	strcpy(pname, mod->name);
 	if (strstr(pname, "models")) {
 		memmove(pname, pname + 7, strlen(pname));
@@ -2506,7 +2507,7 @@ static void Mod_CalcMd2Indicies(model_t *mod, md2Header *md2Hdr){
 		pname[strlen(pname) - 4] = 0;
 	}
 	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(uint16_t), mod->indexArray, GL_STATIC_DRAW);
-	*/
+	
 }
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
@@ -2629,8 +2630,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		Com_Printf("%s: Entity %s has possible last element issues with %d verts.\n", __func__, mod->name, outCmd[md2Hdr->num_glcmds - 1]);
 	}
 
-	Mod_CalcMd2Indicies(mod, md2Hdr);
-
 	// register all skins
 	Q_memcpy((char *)md2Hdr + md2Hdr->ofs_skins, (char *)inModel + md2Hdr->ofs_skins, md2Hdr->num_skins * MAX_SKINNAME);
 
@@ -2693,6 +2692,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	// build tangents vectors
 	Mod_BuildMD2Tangents(mod, md2Hdr, outSt);
 	Z_Free(outSt);
+
+	Mod_CalcMd2Indicies(mod, md2Hdr);
 
 	ClearBounds(mod->mins, mod->maxs);
 	VectorClear(mod->center);
@@ -2965,7 +2966,21 @@ void Mod_Free(model_t * mod) {
 		
 	if (mod->type == mod_alias) {
 		R_DeleteVBO(mod->ibo);
-	}		
+	}
+
+	md3Model_t *md3Hdr;
+	md3Mesh_t *mesh;
+	
+	if (mod->type == mod_alias_md3) {
+
+		md3Hdr = (md3Model_t *)mod->extraData;
+		mesh = md3Hdr->meshes;
+
+		for (int i = 0; i < md3Hdr->num_meshes; i++, mesh++) {
+			R_DeleteVBO(mesh->ibo);
+		}
+	}
+
 	Mod_Hunk_Free(mod->extraData);
 
 	memset(mod, 0, sizeof(*mod));

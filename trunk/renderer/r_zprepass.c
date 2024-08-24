@@ -289,6 +289,7 @@ void GL_DrawAliasFrameLerpDepth(md2Header *paliashdr) {
 			VectorCopy(s_lerped[index_xyz], tess3d.v[k].pos);
 		}
 	}
+	GL_BindVBO(currentmodel->ibo);
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, k * sizeof(vertex3d_t), &tess3d);
 	GL_DrawArrays(GL_TRIANGLES, 0, k);
@@ -398,10 +399,11 @@ void R_DrawDepthMD3Model(void) {
 			tess3d.v[j].pos[1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
 			tess3d.v[j].pos[2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
+		GL_BindVBO(mesh->ibo);
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
-		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+	//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
+	//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
 
@@ -449,7 +451,7 @@ void R_DrawDepthScene (void) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+//	GL_BindVBO(vbo.dynamicIbo);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

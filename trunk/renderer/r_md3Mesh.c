@@ -231,7 +231,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		if (strncmp((const char *)inMesh->id, "IDP3", 4))
 		{
 			VID_Error(ERR_DROP, "mesh %s in model %s has wrong id (%i should be %i)",
-				outMesh->name, mod->name, LittleLong((int)inMesh->id), IDMD3HEADER);
+				outMesh->name, mod->name, LittleLong((long)inMesh->id), IDMD3HEADER);
 		}
 
 		outMesh->num_tris = LittleLong(inMesh->num_tris);
@@ -330,6 +330,13 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			outIndex[1] = (uint16_t)LittleLong(inIndex[1]);
 			outIndex[2] = (uint16_t)LittleLong(inIndex[2]);
 		}
+		char pname[64];
+		strcpy(pname, mod->name);
+		if (strstr(pname, "models")) {
+			memmove(pname, pname + 7, strlen(pname));
+			pname[strlen(pname) - 4] = 0;
+		}
+		outMesh->ibo = R_Alloc_VBO(va("" S_COLOR_WHITE " mesh " S_COLOR_GREEN "%s " S_COLOR_WHITE "from model " S_COLOR_GREEN "%s\n", outMesh->name, pname), GL_ELEMENT_ARRAY_BUFFER, outMesh->num_tris * 3 * sizeof(uint16_t), outMesh->indexes, GL_STATIC_DRAW);
 
 		//
 		// load the texture coordinates
@@ -668,7 +675,7 @@ void R_DrawMD3Mesh(bool weapon) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+//	GL_BindVBO(vbo.dynamicIbo);
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
@@ -815,11 +822,11 @@ void R_DrawMD3Mesh(bool weapon) {
 				}
 			}
 		}
-
+		GL_BindVBO(mesh->ibo);
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
-		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+	//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
+	//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 		GL_SetBindlessTexture(U_TMU0, albedo->handle);
 		GL_SetBindlessTexture(U_TMU1, emissive->handle);
@@ -965,11 +972,12 @@ void R_DrawMD3Mesh(bool weapon) {
 			GL_SetBindlessTexture(U_TMU1, gi.blackTexture1x1->handle);
 			GL_SetBindlessTexture(U_TMU2, gi.environment->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
-
+			
+			GL_BindVBO(mesh->ibo);
 			qglInvalidateBufferData(GL_ARRAY_BUFFER);
-			qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 			qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
-			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
+		//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 
@@ -1118,7 +1126,7 @@ void R_DrawMD3MeshLight(bool weapon) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+//	GL_BindVBO(vbo.dynamicIbo);
 
 	GL_StencilFunc(GL_EQUAL, 128, 255);
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -1269,10 +1277,12 @@ void R_DrawMD3MeshLight(bool weapon) {
 			qglUniform1i(U_USE_RGH_MAP, 1);
 		}
 
+		GL_BindVBO(mesh->ibo);
+
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
-		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+		//qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
+		//qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -1336,7 +1346,7 @@ void R_DrawMD3ShellMesh(bool weapon) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+//	GL_BindVBO(vbo.dynamicIbo);
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
@@ -1399,11 +1409,12 @@ void R_DrawMD3ShellMesh(bool weapon) {
 				tess3d.v[j].normal[2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
 			}
 		}
+		GL_BindVBO(mesh->ibo);
 
 		qglInvalidateBufferData(GL_ARRAY_BUFFER);
-		qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+	//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vertex3d_t), &tess3d);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
+	//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint16_t), mesh->indexes);
 
 		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, NULL);
 	}

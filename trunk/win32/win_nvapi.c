@@ -296,16 +296,78 @@ typedef enum _NV_RAM_MAKER
 	NV_RAM_MAKER_MICRON
 }NV_RAM_MAKER;
 
+typedef enum _NV_GPU_FOUNDRY
+{
+	NV_GPU_FOUNDRY_UNKNOWN,
+	NV_GPU_FOUNDRY_TSMC,
+	NV_GPU_FOUNDRY_UMC,
+	NV_GPU_FOUNDRY_IBM,
+	NV_GPU_FOUNDRY_SMIC,
+	NV_GPU_FOUNDRY_CSM,
+	NV_GPU_FOUNDRY_TOSHIBA
+}NV_GPU_FOUNDRY;
+
+typedef enum _NV_FOUNDRY
+{
+	NV_FOUNDRY_NONE,
+	NV_FOUNDRY_TSMC,
+	NV_FOUNDRY_UMC,
+	NV_FOUNDRY_IBM,
+	NV_FOUNDRY_SMIC,
+	NV_FOUNDRY_CSM,
+	NV_FOUNDRY_TOSHIBA
+} NV_FOUNDRY;
+
+#define NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER MAKE_NVAPI_VERSION(NV_GPU_DYNAMIC_PSTATES_INFO_EX,1)
+
+#define NVAPI_MAX_COOLER_PER_GPU 20
+#define GPU_COOLER_SETTINGS_VER  0x20000
+
+typedef struct
+{
+	NvS32 Type;
+	NvS32 Controller;
+	NvS32 DefaultMin;
+	NvS32 DefaultMax;
+	NvS32 CurrentMin;
+	NvS32 CurrentMax;
+	NvS32 CurrentLevel;
+	NvS32 DefaultPolicy;
+	NvS32 CurrentPolicy;
+	NvS32 Target;
+	NvS32 ControlType;
+	NvS32 Active;
+
+} NvCooler;
+
+// Used in NvAPI_GPU_GetCoolerSettings().
+typedef struct
+{
+	NvU32    Version;
+	NvU32    Count;
+	NvCooler Cooler[NVAPI_MAX_COOLER_PER_GPU];
+
+} NV_GPU_COOLER_SETTINGS;
+
 HINSTANCE nv_hDLL;
 
-typedef void *(*NvAPI_QueryInterface_t)(unsigned int offset);
-typedef int		(*NvAPI_GPU_GetRamType_t)(int *handle, NV_RAM_TYPE *pRamType);
-typedef int		(*NvAPI_GPU_GetRamMaker_t)(int *handle, NV_RAM_MAKER *pRamMaker);
+typedef void *(*NvAPI_QueryInterface_t)			(unsigned int offset);
+typedef int		(*NvAPI_GPU_GetRamType_t)		(int *handle, NV_RAM_TYPE *pRamType);
+typedef int		(*NvAPI_GPU_GetRamMaker_t)		(int *handle, NV_RAM_MAKER *pRamMaker);
+typedef int		(*NvAPI_GPU_GetRamBusWidth_t)	(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pBusWidth);
+//typedef  int	(*NvAPI_GPU_GetFoundry_t)		(NvPhysicalGpuHandle hPhysicalGpu, NV_FOUNDRY *pFoundry);
 
-NvAPI_QueryInterface_t	NvAPI_GPU_QueryInterface = NULL;
-NvAPI_GPU_GetRamType_t	NvAPI_GPU_GetRamType = NULL;
-NvAPI_GPU_GetRamMaker_t NvAPI_GPU_GetMemMarker = NULL;
+NvAPI_QueryInterface_t		NvAPI_GPU_QueryInterface	= NULL;
+NvAPI_GPU_GetRamType_t		NvAPI_GPU_GetRamType		= NULL;
+NvAPI_GPU_GetRamMaker_t		NvAPI_GPU_GetMemMarker		= NULL;
+NvAPI_GPU_GetRamBusWidth_t	NvAPI_GPU_GetRamBusWidth_	= NULL;
+//NvAPI_GPU_GetFoundry_t	NvAPI_GPU_GetFoundry		= NULL;
 
+typedef NvAPI_Status (WINAPIV *_NvAPI_GPU_GetFoundry)(_In_ NvPhysicalGpuHandle hPhysicalGPU, NV_FOUNDRY* pFoundry);
+_NvAPI_GPU_GetFoundry NvAPI_GPU_GetFoundry;
+
+typedef NvAPI_Status(WINAPIV *_NvAPI_GPU_GetCoolerSettings)(_In_ NvPhysicalGpuHandle hPhysicalGpu, NvU32 coolerIndex, NV_GPU_COOLER_SETTINGS *pCoolerInfo);
+_NvAPI_GPU_GetCoolerSettings NvAPI_GPU_GetCoolerSettings;
 
 void GLimp_InitNvApi() {
 
@@ -326,8 +388,11 @@ void GLimp_InitNvApi() {
 
 	if (nv_hDLL) {
 		NvAPI_GPU_QueryInterface	= (void*)GetProcAddress(nv_hDLL, "nvapi_QueryInterface");
-		NvAPI_GPU_GetRamType		= NvAPI_GPU_QueryInterface(0x57F7CAACUL);
-		NvAPI_GPU_GetMemMarker		= NvAPI_GPU_QueryInterface(0x42AEA16AUL);
+		NvAPI_GPU_GetRamType		= NvAPI_GPU_QueryInterface(0x57F7CAAC);
+		NvAPI_GPU_GetMemMarker		= NvAPI_GPU_QueryInterface(0x42AEA16A);
+		NvAPI_GPU_GetRamBusWidth_	= NvAPI_GPU_QueryInterface(0x7975C581);
+		NvAPI_GPU_GetFoundry		= NvAPI_GPU_QueryInterface(0x5D857A00);
+		NvAPI_GPU_GetCoolerSettings = NvAPI_GPU_QueryInterface(0xDA141340/*0x814B209F*/);
 	}
 	if (ret != NVAPI_OK) { // check for nvapi error
 		Com_Printf(S_COLOR_MAGENTA"...not supported\n");
@@ -365,9 +430,11 @@ extern bool adlInit;
 
 void R_GpuInfo_f(void) {
 
-	NvAPI_Status		ret			= NVAPI_OK;
-	NV_RAM_TYPE			memtype		= NV_RAM_TYPE_UNKNOWN;
-	NV_RAM_MAKER		memmarker	= NV_RAM_MAKER_NONE;
+	NvAPI_Status		ret				= NVAPI_OK;
+	NV_RAM_TYPE			memtype			= NV_RAM_TYPE_UNKNOWN;
+	NV_RAM_MAKER		memmarker		= NV_RAM_MAKER_NONE;
+	NV_FOUNDRY			nvFoundryType	= NV_FOUNDRY_NONE;
+
 	NvAPI_ShortString	string;
 
 	if (adlInit) {
@@ -400,6 +467,34 @@ void R_GpuInfo_f(void) {
 		}
 		else
 			Com_Printf("...Bios Version: " S_COLOR_GREEN "%s\n", string);
+
+/*		ret = NvAPI_GPU_GetFoundry(hPhysicalGpu[i], &nvFoundryType);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetFoundry() fail: %\n", string);
+		}
+		else{
+			Com_Printf("...GPU Foundty: ");
+			switch (nvFoundryType)
+			{
+			case NV_FOUNDRY_TSMC:
+				Com_Printf(S_COLOR_GREEN"Taiwan Semiconductor Manufacturing Company (TSMC)\n");
+			case NV_FOUNDRY_UMC:
+				Com_Printf(S_COLOR_GREEN"United Microelectronics Corporation (UMC)\n");
+			case NV_FOUNDRY_IBM:
+				Com_Printf(S_COLOR_GREEN"IBM Microelectronics\n");
+			case NV_FOUNDRY_SMIC:
+				Com_Printf(S_COLOR_GREEN"Semiconductor Manufacturing International Corporation (SMIC)\n");
+			case NV_FOUNDRY_CSM:
+				Com_Printf(S_COLOR_GREEN"Chartered Semiconductor Manufacturing (CSM)\n");
+			case NV_FOUNDRY_TOSHIBA:
+				Com_Printf(S_COLOR_GREEN"Toshiba Corporation\n");
+			default:
+				Com_Printf(S_COLOR_GREEN"%lu\n", nvFoundryType);
+			}
+
+		}
+*/			
 
 		int total = 0;
 		float used = 0.0;
@@ -513,6 +608,27 @@ void R_GpuInfo_f(void) {
 			}
 			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
 		}
+		NvU32 busWidth = 0;
+		ret = NvAPI_GPU_GetRamBusWidth_(hPhysicalGpu[i], &busWidth);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetRamBusWidth() fail: %\n", string);
+		}
+		else {
+			Com_Printf("...Memory Bus Width: " S_COLOR_GREEN "%i" S_COLOR_WHITE " bit\n", busWidth);
+		}
+
+		NvU32 pWidth;
+		uint pcieLines = 0;
+		ret = NvAPI_GPU_GetCurrentPCIEDownstreamWidth(hPhysicalGpu[i], &pWidth);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetCurrentPCIEDownstreamWidth() fail: %\n", string);
+		}
+		else {
+			pcieLines = (uint)pWidth;
+			Com_Printf("...PCIe Lines: " S_COLOR_GREEN "%i" S_COLOR_WHITE "\n", pcieLines);
+		}
 
 		// get gpu temperature
 		NV_GPU_THERMAL_SETTINGS	thermal;
@@ -540,25 +656,27 @@ void R_GpuInfo_f(void) {
 			}
 
 		}
-		// get fans speed
-		//NvU32 rpm = 0;
-		//ret = NvAPI_GPU_GetTachReading(hPhysicalGpu[i], &rpm);
-		//if (ret != NVAPI_OK) {
-		//	NvAPI_GetErrorMessage(ret, string);
-		//	Com_Printf(S_COLOR_RED"NvAPI_GPU_GetTachReading() fail: %s\n", string);
-		//}
-		//else
-		//	Com_Printf("...fan speed: " S_COLOR_GREEN "%u" S_COLOR_WHITE " rpm\n", rpm);
-
-		NvU32 pWidth;
-		uint pcieLines = 0;
-		ret = NvAPI_GPU_GetCurrentPCIEDownstreamWidth(hPhysicalGpu[i], &pWidth);
+/*		// get fans speed
+		NvU32 rpm = 0;
+		ret = NvAPI_GPU_GetTachReading(hPhysicalGpu[i], &rpm);
 		if (ret != NVAPI_OK) {
 			NvAPI_GetErrorMessage(ret, string);
-			Com_Printf(S_COLOR_RED"...NvAPI_GPU_GetCurrentPCIEDownstreamWidth() fail: %\n", string);
+			Com_Printf(S_COLOR_RED"NvAPI_GPU_GetTachReading() fail: %s\n", string);
 		}
 		else
-			pcieLines = (uint)pWidth;
+			Com_Printf("...fan speed: " S_COLOR_GREEN "%u" S_COLOR_WHITE " rpm\n", rpm);
+
+		NV_GPU_COOLER_SETTINGS pCoolerSettings;
+		pCoolerSettings.Version = GPU_COOLER_SETTINGS_VER | sizeof(NV_GPU_COOLER_SETTINGS);
+
+		ret = NvAPI_GPU_GetCoolerSettings(hPhysicalGpu[i], 0, &pCoolerSettings);
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"NvAPI_GPU_GetCoolerSettings() fail: %s\n", string);
+		}
+		else
+			Com_Printf("...fan speed: " S_COLOR_GREEN "%u" S_COLOR_WHITE " rpm\n", pCoolerSettings.Cooler[0].CurrentLevel);
+*/
 
 		NV_GPU_DYNAMIC_PSTATES_INFO_EX	m_DynamicPStateInfo;
 		m_DynamicPStateInfo.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;

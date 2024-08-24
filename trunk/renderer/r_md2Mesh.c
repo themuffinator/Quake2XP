@@ -315,12 +315,12 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);	
-	GL_BindVBO(vbo.dynamicIbo);
+	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vertex3d_t), &tess3d);
-	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, currentmodel->numIndices * sizeof(uint16_t), currentmodel->indexArray);
+//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, currentmodel->numIndices * sizeof(uint16_t), currentmodel->indexArray);
 
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 
@@ -458,12 +458,12 @@ void GL_DrawAliasFrameLerpShell (md2Header *paliashdr) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vertex3d_t), &tess3d);
-	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, currentmodel->numIndices * sizeof(uint16_t), currentmodel->indexArray);
+//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, currentmodel->numIndices * sizeof(uint16_t), currentmodel->indexArray);
 	
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 }
@@ -650,12 +650,12 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
+//	qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vertex3d_t), &tess3d);
-	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, currentmodel->numIndices * sizeof(uint16_t), currentmodel->indexArray);
+//	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, currentmodel->numIndices * sizeof(uint16_t), currentmodel->indexArray);
 
 	GL_DrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_SHORT, NULL);
 }

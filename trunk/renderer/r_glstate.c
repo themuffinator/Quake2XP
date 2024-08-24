@@ -565,7 +565,7 @@ void GL_SetDefaultState(void) {
 
 	gl_state.vaoId	= 0;
 	gl_state.fboId	= 0;
-	gl_state.vboId	= 0;
+	gl_state.vboId = 0;
 	gl_state.iboId	= 0;
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);

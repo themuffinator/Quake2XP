@@ -151,13 +151,20 @@ void GL_BindVBO(vertexBuffer_t *vb) {
 			gl_state.vboId = vb->id;
 		}
 	}
-	else if (vb->target == GL_ELEMENT_ARRAY_BUFFER) {
-		if (gl_state.iboId != vb->id) {
+	if (vb->target == GL_ELEMENT_ARRAY_BUFFER) {
+//		if (gl_state.iboId != vb->id) {
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vb->id);
-			gl_state.iboId = vb->id;
+//			gl_state.iboId = vb->id;
 		}
 	}
-}
+
+//	int i = vb->target == GL_ARRAY_BUFFER ? 0 : 1;
+
+//	if (gl_state.vboId[i] != vb->id) {
+//		qglBindBuffer(vb->target, vb->id);
+//		gl_state.vboId[i] = vb->id;
+//	}
+//}
 
 
 void R_DeleteVBO(vertexBuffer_t *in) {
@@ -173,6 +180,12 @@ void R_DeleteVBO(vertexBuffer_t *in) {
 		if (gl_state.iboId == in->id)
 			gl_state.iboId = 0;
 	}
+//	int i = in->target == GL_ARRAY_BUFFER ? 0 : 1;
+
+//	if (gl_state.vboId[i] != in->id) {
+//		gl_state.vboId[i] = in->id;
+//	}
+
 	Com_Printf("delete vbo %s\n", in->name);
 			
 	qglDeleteBuffers(1, &in->id);
@@ -185,10 +198,7 @@ char *q_pretifymem(float value) { // based on valve idea :-)
 	float   oneKb = 1024.0f;
 	float   oneMb = oneKb * oneKb;
 	static	int  current;
-	static	char  output[6][13];
-	char	*out = output[current];
-
-	current = (current + 1) & (8 - 1);
+	static	char  out[24];
 
 	if (value > oneMb) {
 		value /= oneMb;

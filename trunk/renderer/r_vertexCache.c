@@ -107,7 +107,7 @@ void R_InitVertexBuffers() {
 
 	vao.stream3d = R_Alloc_VAO("stream3dVao", ATTF_POS | ATTF_ST0 | ATTF_COLOR | ATTF_TANGENT | ATTF_BINORMAL | ATTF_NORMAL);
 	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.dynamicIbo);
+//	GL_BindVBO(vbo.dynamicIbo);
 	qglVertexAttribPointer(ATT_POSITION,	4, GL_FLOAT, false, sizeof(vertex3d_t), TESS_OFFSET_POS);
 	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, false, sizeof(vertex3d_t), TESS_OFFSET_TC);
 	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, false, sizeof(vertex3d_t), TESS_OFFSET_COLOR);

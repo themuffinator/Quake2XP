@@ -1,3 +1,4 @@
+#include "r_local.h"
 #define IDMD3HEADER		(('3'<<24)+('P'<<16)+('D'<<8)+'I')
 
 #define MD3_ALIAS_VERSION	15
@@ -153,6 +154,7 @@ typedef struct
 	int				num_tris;
 	uint16_t		*indexes;
 	neighbours_t	*triangles;
+	vertexBuffer_t	*ibo;
 
 	int				num_skins;
 	int				flags;

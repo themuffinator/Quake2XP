@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <math.h>
 
 #include "../client/ref.h"
-#include "r_md3.h"
 
 #ifdef _WIN32
 #include "wglext.h"
@@ -101,7 +100,7 @@ typedef struct vertexObject_s {
 } vertexObject_t;
 
 typedef struct vertexBuffer_s {
-	char		name[MAX_QPATH];
+	char		name[MAX_OSPATH];
 	GLuint		id;
 	GLuint		size;
 	const void *data;
@@ -220,6 +219,7 @@ float	clearDepth;
 int		clearStencil;
 
 #include "r_model.h"
+#include "r_md3.h"
 
 void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
