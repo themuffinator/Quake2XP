@@ -1,4 +1,7 @@
-
+/*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
 #include "r_local.h"
 
 int VA_GetCompileFlags(int compileFlags) {
@@ -155,7 +158,7 @@ void GL_BindVBO(vertexBuffer_t *vb) {
 //		if (gl_state.iboId != vb->id) {
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vb->id);
 //			gl_state.iboId = vb->id;
-		}
+//		}
 	}
 
 //	int i = vb->target == GL_ARRAY_BUFFER ? 0 : 1;
@@ -164,7 +167,7 @@ void GL_BindVBO(vertexBuffer_t *vb) {
 //		qglBindBuffer(vb->target, vb->id);
 //		gl_state.vboId[i] = vb->id;
 //	}
-//}
+}
 
 
 void R_DeleteVBO(vertexBuffer_t *in) {

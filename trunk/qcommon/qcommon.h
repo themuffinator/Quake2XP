@@ -27,10 +27,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	BASEDIRNAME	"baseq2"
 
+#ifdef _WIN64
+#define	CPUSTRING	"x64"
+#endif
+
 #ifdef WIN32
 
 #ifdef NDEBUG
-#define BUILDSTRING "Win32 RELEASE"
+#ifdef _WIN64
+#define BUILDSTRING "Win64 RELEASE"
+#else
+
+#endif
 #else
 #define BUILDSTRING "Win32 DEBUG"
 #endif

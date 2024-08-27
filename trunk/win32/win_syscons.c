@@ -1,4 +1,8 @@
 /*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+/*
 Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
@@ -421,9 +425,9 @@ void Sys_ShutdownConsole (void)
 		DeleteObject(sys_console.hFontBold);
 
 	if (sys_console.defOutputProc)
-		SetWindowLong(sys_console.hWndOutput, GWLP_WNDPROC, (LONG)sys_console.defOutputProc);
+		SetWindowLongPtr(sys_console.hWndOutput, GWLP_WNDPROC, (intptr_t)sys_console.defOutputProc);
 	if (sys_console.defInputProc)
-		SetWindowLong(sys_console.hWndInput, GWLP_WNDPROC, (LONG)sys_console.defInputProc);
+		SetWindowLongPtr(sys_console.hWndInput, GWLP_WNDPROC, (intptr_t)sys_console.defInputProc);
 
 	ShowWindow(sys_console.hWnd, SW_HIDE);
 	DestroyWindow(sys_console.hWnd);
@@ -521,8 +525,8 @@ void Sys_InitDedConsole (void)
 	sys_console.hBrushInput = CreateSolidBrush(RGB(255, 255, 255));
 
 	// Subclass edit boxes
-	sys_console.defOutputProc = (WNDPROC)SetWindowLong(sys_console.hWndOutput, GWLP_WNDPROC, (LONG)Sys_ConsoleEditProc);
-	sys_console.defInputProc = (WNDPROC)SetWindowLong(sys_console.hWndInput, GWLP_WNDPROC, (LONG)Sys_ConsoleEditProc);
+	sys_console.defOutputProc = (WNDPROC)SetWindowLongPtr(sys_console.hWndOutput, GWLP_WNDPROC, (intptr_t)Sys_ConsoleEditProc);
+	sys_console.defInputProc = (WNDPROC)SetWindowLongPtr(sys_console.hWndInput, GWLP_WNDPROC, (intptr_t)Sys_ConsoleEditProc);
 
 	// Set text limit for input edit box
 	SendMessage(sys_console.hWndInput, EM_SETLIMITTEXT, (WPARAM)(MAX_INPUT-1), 0);

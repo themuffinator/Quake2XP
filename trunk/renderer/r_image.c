@@ -387,8 +387,8 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		image->dataType = GL_COMPRESSED_RGBA;
 
 	if (header->dwCaps2 & DDSCAPS2_CUBEMAP) {
-		glCreateTextures(GL_TEXTURE_CUBE_MAP_ARRAY, 1, &image->texnum);
-		image->texType = GL_TEXTURE_CUBE_MAP_ARRAY;
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &image->texnum);
+		image->texType = GL_TEXTURE_CUBE_MAP;
 	}
 	else {
 		glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
@@ -429,7 +429,7 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		
 		uint numLayers = header->dwDepth;
 
-		glTextureStorage3D(image->texnum, image->numMips, intFormat, width, height, 6);
+		glTextureStorage2D(image->texnum, image->numMips, intFormat, width, height);
 	
 		int faceOffset = 0;
 

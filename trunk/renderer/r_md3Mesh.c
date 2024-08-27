@@ -231,7 +231,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		if (strncmp((const char *)inMesh->id, "IDP3", 4))
 		{
 			VID_Error(ERR_DROP, "mesh %s in model %s has wrong id (%i should be %i)",
-				outMesh->name, mod->name, LittleLong((long)inMesh->id), IDMD3HEADER);
+				outMesh->name, mod->name, LittleLong((intptr_t)inMesh->id), IDMD3HEADER);
 		}
 
 		outMesh->num_tris = LittleLong(inMesh->num_tris);

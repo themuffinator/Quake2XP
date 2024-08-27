@@ -44,6 +44,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#include "../win32/nvapi/nvapi.h"
 #endif
 
+#ifdef _WIN64
+#include "../win32/nvapi/nvml.h"
+#endif
+
 // up / down
 #define	PITCH	0
 
@@ -1227,6 +1231,8 @@ void R_DrawFullScreenQuad();
 static GLenum	drawbuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 
 bool nvApiInit;
+bool nvMlInit;
+
 
 void R_GpuInfo_f(void);
 void ADL_PrintGpuInfo();

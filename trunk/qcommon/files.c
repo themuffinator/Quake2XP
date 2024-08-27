@@ -1067,14 +1067,33 @@ bool FS_LocalFileExists(char* path)
 void FS_ScanForGameDLL (void) {
 	FILE		*fp;
 	char		*path;
+
+#ifndef _WIN64
+
 #ifdef _WIN32
 	static const char	*gamenames[] = { "gamex86xp.dll", "gamex86.dll" };
 #else
 	static const char	*gamenames[] = { "gamexp.so", "game.so" };
 #endif
+#endif
 
 	path = NULL;
-	
+
+#ifdef _WIN64
+	static const char *gamename = "gamex64xp.dll";
+
+	while ((path = FS_NextPath(path)) != NULL) {
+
+			Com_sprintf(gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamename);
+			fp = fopen(gameDLLPath, "rb");
+			if(fp)
+				Cvar_ForceSetValue("net_compatibility", 0);
+		fclose(fp);
+		return;
+	}
+#endif
+
+#ifndef _WIN64
 	while ((path = FS_NextPath (path)) != NULL) {
 			int i;
 			for (i = 0; i < 2; i++) {
@@ -1091,6 +1110,7 @@ void FS_ScanForGameDLL (void) {
 		fclose (fp);
 		return;
 	}
+#endif
 
 	Com_Error (ERR_FATAL, "Could not find any game DLLs\n");
 }

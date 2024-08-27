@@ -23,7 +23,10 @@
  *
  * =======================================================================
  */
-
+/*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
 #ifdef USE_CURL
 
 // --------
@@ -90,7 +93,13 @@ bool qcurlInit(void)
 		"libcurl-gnutls.so.4", "libcurl-nss.so.3", "libcurl-nss.so.4", "libcurl.so",
 		NULL };
 #elif _WIN32
+
+#ifdef _WIN64
+	const char *libcurl[] = { "curl64.dll", "libcurl64.dll", NULL };
+#else
 	const char *libcurl[] = { "curl.dll", "libcurl.dll", NULL };
+#endif
+
 #else
 	const char *libcurl[] = { "libcurl.so", NULL };
 #endif

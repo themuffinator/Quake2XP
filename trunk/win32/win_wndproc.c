@@ -281,8 +281,8 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 	{
 		if (uMsg == WM_INPUT)
 			{
-				UINT dwSize = 40;
-				static BYTE lpb[40];
+				UINT dwSize = 48;
+				static BYTE lpb[48];
 
 				if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != -1)
 				{
@@ -425,7 +425,7 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 			r.right = 1;
 			r.bottom = 1;
 
-			int style = GetWindowLong(hWnd, GWL_STYLE);
+			int style = GetWindowLongPtr(hWnd, GWL_STYLE);
 			AdjustWindowRect(&r, style, FALSE);
 
 			Cvar_SetValue("vid_xpos", xPos + r.left);
@@ -452,7 +452,7 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 			Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 			Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 			Rid[0].dwFlags =
-				(r_fullScreen && r_fullScreen->value) ?
+				(r_fullScreen && r_fullScreen->integer) ?
 				//If set, the mouse button click does not activate the other window
 				RIDEV_CAPTUREMOUSE
 				//If set, this enables the caller to receive the input even when the caller is not in the foreground.
@@ -500,7 +500,7 @@ void VID_Restart_f (void) {
 }
 
 void VID_Front_f (void) {
-	SetWindowLong (cl_hwnd, GWL_EXSTYLE, WS_EX_TOPMOST);
+	SetWindowLongPtr (cl_hwnd, GWL_EXSTYLE, WS_EX_TOPMOST);
 	SetForegroundWindow (cl_hwnd);
 }
 
@@ -517,7 +517,7 @@ void VID_UpdateWindowPosAndSize (int x, int y) {
 	r.right = viddef.width;
 	r.bottom = viddef.height;
 
-	style = GetWindowLong (cl_hwnd, GWL_STYLE);
+	style = GetWindowLongPtr (cl_hwnd, GWL_STYLE);
 	AdjustWindowRect (&r, style, FALSE);
 
 	w = r.right - r.left;

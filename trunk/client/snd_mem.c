@@ -95,7 +95,7 @@ bool LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorbis_i
 	// 2 is the data type short's size, mine is 2
 	// 1 is the signedness you want, I want short not unsigned short (for openal) so 1
 	
-	for (size_t size = 0, offset = 0, sel = 0; (size = ov_read(&vf, (char*)pcmout + offset, 4096, 0, 2, 1, (int*)&sel)) != 0; offset += size) {
+	for (size_t size = 0, offset = 0, sel = 0; (size = ov_read(&vf, (char*)pcmout + offset, 4096, 0, 2, 1, (intptr_t*)&sel)) != 0; offset += size) {
 		
 		if (size < 0) {
 			Com_Printf("Faulty ogg file :o");

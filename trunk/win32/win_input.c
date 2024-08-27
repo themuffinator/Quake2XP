@@ -174,7 +174,7 @@ IN_MouseMove
 void IN_PrintRawDevicesList() {
 
 	PRAWINPUTDEVICELIST pRawInputDeviceList;
-	UINT  numDevices;
+	UINT  numDevices = {0};
 	UINT  cbSize = sizeof(RAWINPUTDEVICELIST);
 
 	Com_Printf("====== Init RAW Input Devices ======\n\n");

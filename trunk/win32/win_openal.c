@@ -309,15 +309,28 @@ bool AL_Init (int hardreset) {
 		Com_Printf ("==="S_COLOR_YELLOW"Starting OpenAL audio subsystem"S_COLOR_WHITE"===\n");
 		Com_Printf ("\n");
 
-		if (!SearchPath (NULL, "OpenAL32.dll", NULL, sizeof(path), path, NULL)) {
-			Sys_Error("...ERROR: couldn't find OpenAL driver 'OpenAL32.dll'\n");
+#ifdef _WIN64
+		if (!SearchPath (NULL, "OpenAL64.dll", NULL, sizeof(path), path, NULL)) {
+			Sys_Error("...ERROR: couldn't find OpenAL driver 'OpenAL64.dll'\n");
 			openalStop = true;
 			return false;
 		}
+#else
+		if (!SearchPath(NULL, "OpenAL32.dll", NULL, sizeof(path), path, NULL)) {
+			Sys_Error("...ERROR: couldn't find OpenAL driver 'OpenAL32.dll'\n");
+			openalStop = true;
+			return false;
+	}
+#endif
 
 		Com_DPrintf ("...LoadLibrary( '%s' ) \n", path);
 		if ((alConfig.hInstOpenAL = LoadLibrary (path)) == NULL) {
+#ifdef _WIN64
+			Sys_Error("...ERROR: couldn't load OpenAL driver 'OpenAL64.dll'\n");
+#else
 			Sys_Error("...ERROR: couldn't load OpenAL driver 'OpenAL32.dll'\n");
+#endif
+
 			openalStop = true;
 			return false;
 		}

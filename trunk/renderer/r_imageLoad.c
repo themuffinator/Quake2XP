@@ -251,19 +251,19 @@ void R_InitEngineTextures (void) {
 	}
 
 	gi.defBump = R_CreateTexture("***defBump***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
-	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint*)bump);
+	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uintptr_t*)bump);
 
 	gi.whiteMap	= R_CreateTexture("***whiteMap***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
-	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint *)white);
+	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uintptr_t *)white);
 
 	gi.blackTexture1x1 = R_CreateTexture("***blackTexture1x1***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, 0, 1, 1,
-	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uint *)black);
+	GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, (uintptr_t *)black);
 
 	gi.missingTexture = R_CreateTexture("***missingTexture***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16,
-	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint *)mt);
+	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uintptr_t *)mt);
 
 	gi.waterDistort = R_CreateTexture("***waterDistort***", GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, IF_MIPMAP, 16, 16,
-	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uint *)wd);
+	GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, (uintptr_t *)wd);
 
 	gi.cinematic = R_CreateTexture("***cinematic***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, 0, 256, 256,
 	GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, NULL);

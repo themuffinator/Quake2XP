@@ -692,6 +692,9 @@ void GLimp_Shutdown( void )
 	}
 	if(adlInit)
 		ADL_Shutdown();
+
+	if (nvMlInit)
+		nvmlShutdown();
 }
 
 
