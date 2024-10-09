@@ -1,0 +1,607 @@
+/*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+/*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+// xBox 360 controller support
+// based on DirectQuake by MH
+
+#include "../client/client.h"
+#include "../renderer/r_local.h"
+
+#include "winquake.h"
+#include "xinput.h"
+
+/*
+//quake2xp xbox360
+//controller default binding
+
+bind XPAD_BACK "+flashlight"
+bind XPAD_LEFT_THUMBSTICK "cmd help"
+bind XPAD_RIGHT_THUMBSTICK "invuse"
+bind XPAD_LEFT_BUMPER "+movedown"
+bind XPAD_RIGHT_BUMPER "+moveup"
+bind XPAD_A "invnext"
+bind XPAD_B "invprev"
+bind XPAD_X "weapprev"
+bind XPAD_Y "weapnext"
+bind XPAD_DPAD_LEFT "invdrop"
+bind XPAD_LEFT_TRIGGER "+zoom"
+bind XPAD_RIGHT_TRIGGER "+attack"
+
+// Ballmer's binding
+bind XPAD_BACK "cmd help"
+bind XPAD_LEFT_THUMBSTICK "+speed"
+bind XPAD_LEFT_BUMPER "weapprev"
+bind XPAD_RIGHT_BUMPER "weapnext"
+bind XPAD_A "+moveup"
+bind XPAD_B "+movedown"
+bind XPAD_X "invuse"
+bind XPAD_Y "+flashlight"
+bind XPAD_DPAD_UP "invdrop"
+bind XPAD_DPAD_DOWN "inven"
+bind XPAD_DPAD_LEFT "invprev"
+bind XPAD_DPAD_RIGHT "invnext"
+bind XPAD_LEFT_TRIGGER "+zoom"
+bind XPAD_RIGHT_TRIGGER "+attack"
+*/
+
+extern	unsigned	sys_msg_time;
+
+bool	xInputActive			= false;
+int			xInputActiveController	= -1;
+int			xInputOldButtonState	= 0;
+
+typedef struct {
+	HINSTANCE device;
+} xInput_t;
+
+xInput_t xInput;
+
+typedef struct _XINPUT_CAPABILITIES_EX //undocumented stuff
+{
+	XINPUT_CAPABILITIES Capabilities;
+	WORD VendorId;
+	WORD ProductId;
+	WORD VersionNumber;
+	WORD unk1;
+	DWORD unk2;
+} XINPUT_CAPABILITIES_EX, * PXINPUT_CAPABILITIES_EX;
+
+typedef DWORD(_stdcall* _XInputGetCapabilitiesEx)(DWORD a1, DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES_EX* pCapabilities);
+_XInputGetCapabilitiesEx qXInputGetCapabilitiesEx;
+
+#define XINPUT_LIB4	"xinput1_4.dll"
+#define XINPUT_LIB3	"xinput1_3.dll" // win7 support
+
+#define XINPUT_MAX_CONTROLLERS 4
+#define XINPUT_MAX_CONTROLLER_BUTTONS 16
+
+typedef void	(__stdcall	* _xInputEnable)(BOOL);
+typedef DWORD	(__stdcall	* _xInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
+typedef DWORD	(__stdcall	* _xInputGetState)(DWORD, PXINPUT_STATE);
+typedef DWORD	(__stdcall	* _xInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
+typedef DWORD	(__stdcall	* _xInputSetState)(DWORD, XINPUT_VIBRATION*);
+typedef DWORD	(__stdcall	* _xInputGetDSoundAudioDeviceGuids)(DWORD, GUID*, GUID*);
+typedef DWORD	(__stdcall	* _xInputGetAudioDeviceIds)(DWORD, LPWSTR, UINT*, LPWSTR, UINT*);
+
+static	void	(WINAPI * qXInputEnable)(BOOL enable);
+static	DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
+static	DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
+static	DWORD	(WINAPI * qXInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
+static	DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+static	DWORD	(WINAPI	* qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
+static	DWORD	(WINAPI	* qXInputGetAudioDeviceIds)(DWORD  dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount);
+
+
+void IN_ShutDownXinput() {
+
+	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
+
+	if (xInput.device) {
+		Com_Printf("..." S_COLOR_YELLOW "unloading " S_COLOR_GREEN "%s\n", XINPUT_LIB4);
+		FreeLibrary(xInput.device);
+	}
+	memset(&xInput, 0, sizeof(xInput_t));
+}
+
+XINPUT_BATTERY_INFORMATION batteryInfo;
+
+void IN_StartupXInput(void)
+{
+	int numDev, firstDev;
+	XINPUT_CAPABILITIES xiCaps;
+	char batteryLevel[64], batteryType[64], padInfo[64];
+
+	// reset to -1 each time as this can be called at runtime
+	xInputActiveController = -1;
+	xInputActive = false;
+	
+	in_useXInput = Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
+	x360_useControllerID = Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
+	
+	x360_sensXleft = Cvar_Get("x360_sensXleft", "1.0", CVAR_ARCHIVE);
+	x360_sensYleft = Cvar_Get("x360_sensYlleft", "1.0", CVAR_ARCHIVE);
+	
+	x360_sensXright = Cvar_Get("x360_sensXright", "1.0", CVAR_ARCHIVE);
+	x360_sensYright = Cvar_Get("x360_sensYright", "1.0", CVAR_ARCHIVE);
+	
+	x360_pitchInversion = Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
+	x360_swapSticks = Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
+	
+	x360_triggerTreshold = Cvar_Get("x360_triggerTreshold", "0.2", CVAR_ARCHIVE);
+	x360_triggerTreshold->help = "Scale lower triggers theshold.\n[0.01 - 1.0]";
+	
+	x360_deadZoneLeft = Cvar_Get("x360_deadZoneLeft", "1.0", CVAR_ARCHIVE);
+	x360_deadZoneLeft->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	x360_deadZoneRight = Cvar_Get("x360_deadZoneRight", "1.0", CVAR_ARCHIVE);
+	x360_deadZoneRight->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	
+	x360_vibration = Cvar_Get("x360_vibration", "1", CVAR_ARCHIVE);
+	x360_batteryScale = Cvar_Get("x360_batteryScale", "0.2", CVAR_ARCHIVE);
+	x360_batteryStatus = Cvar_Get("x360_batteryStatus", "1", CVAR_ARCHIVE);
+
+	Com_Printf("\n======= Init xInput Devices =======\n\n");
+	 
+	// Load the xInput dll
+	Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB4);
+	if ((xInput.device = LoadLibrary(XINPUT_LIB4)) == NULL)
+	{
+		Com_Printf(S_COLOR_RED"failed!\n");
+
+		Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB3);
+		if ((xInput.device = LoadLibrary(XINPUT_LIB3)) == NULL)
+		{
+			Com_Printf(S_COLOR_RED"failed!\n");
+			Com_Printf("\n-----------------------------------\n\n");
+			return;
+		}
+	}
+
+	qXInputGetCapabilitiesEx = (_XInputGetCapabilitiesEx)GetProcAddress(xInput.device, (char*)108);
+
+	qXInputEnable = (_xInputEnable)GetProcAddress(xInput.device, "XInputEnable");
+	qXInputGetCapabilities = (_xInputGetCapabilities)GetProcAddress(xInput.device, "XInputGetCapabilities");
+	qXInputGetState = (_xInputGetState)GetProcAddress(xInput.device, "XInputGetState");
+	qXInputGetBatteryInformation = (_xInputGetBatteryInformation)GetProcAddress(xInput.device, "XInputGetBatteryInformation");
+	qXInputSetState = (_xInputSetState)GetProcAddress(xInput.device, "XInputSetState");
+
+	qXInputGetDSoundAudioDeviceGuids = (_xInputGetDSoundAudioDeviceGuids)GetProcAddress(xInput.device, "XInputGetDSoundAudioDeviceGuids"); //win 7 (xinput1_3.dll)
+	qXInputGetAudioDeviceIds = (_xInputGetAudioDeviceIds)GetProcAddress(xInput.device, "XInputGetAudioDeviceIds"); // win 8 - 10 feature (xinput1_4.dll)
+
+	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState)
+	{
+		Com_Printf(S_COLOR_RED"can't find xInput procedures adresses.\n");
+		IN_ShutDownXinput();
+		Com_Printf("\n-----------------------------------\n\n");
+		return;
+	}
+	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
+
+	if (!qXInputGetCapabilitiesEx)
+		Com_Printf(S_COLOR_MAGENTA"can't find qXInputGetCapabilitiesEx procedures adresses.\n");
+
+	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n");
+	firstDev = -1;
+	for (numDev = 0; numDev < XINPUT_MAX_CONTROLLERS; numDev++)
+	{
+		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
+		if (qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps) == ERROR_SUCCESS)
+		{
+			memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
+			if (qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
+			{
+				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
+					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection " S_COLOR_WHITE);
+				else {
+					if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
+						strcpy(batteryType, S_COLOR_YELLOW"Alkalyne " S_COLOR_WHITE);
+					else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
+						strcpy(batteryType, S_COLOR_YELLOW"Ni-MH " S_COLOR_WHITE);
+					else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
+						strcpy(batteryType, S_COLOR_YELLOW"Unknow Type " S_COLOR_WHITE);
+
+					if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
+						strcpy(batteryLevel, S_COLOR_RED"empity" S_COLOR_WHITE);
+					else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
+						strcpy(batteryLevel, S_COLOR_MAGENTA"level low" S_COLOR_WHITE);
+					else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
+						strcpy(batteryLevel, S_COLOR_YELLOW"level medium" S_COLOR_WHITE);
+					else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
+						strcpy(batteryLevel, S_COLOR_GREEN"level full" S_COLOR_WHITE);
+					else
+						strcpy(batteryLevel, S_COLOR_CYAN"unknown level" S_COLOR_WHITE);
+				}
+				XINPUT_CAPABILITIES_EX capsEx;
+				if (qXInputGetCapabilitiesEx(1, numDev, 0, &capsEx) != ERROR_SUCCESS) 
+					sprintf(padInfo, S_COLOR_CYAN"Unknown Vendor");
+	
+				Com_Printf("]" S_COLOR_GREEN "%i" S_COLOR_WHITE ":\n", numDev);
+				
+				#include "win_usbVendors.h"
+				DWORD value = capsEx.VendorId;
+				int z;
+				for (z = 0; z < NUM_VENDORS; z++) {
+					if (value == usb_Vendors[z].vendorId) {
+						Com_Printf("Vendor:  " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
+
+						break;					
+					} 						
+				}
+				if(z == NUM_VENDORS)
+					Com_Printf("Vendor:  " S_COLOR_GREEN "0x%04X\n", capsEx.VendorId);
+
+				value = capsEx.ProductId;
+				for (z = 0; z < NUM_INPUT_DEVICES; z++) {
+					if (value == product[z].Id) {
+						Com_Printf("Model:   " S_COLOR_GREEN "%s\n", product[z].description);
+						break;
+					}					
+				}
+				if(z == NUM_INPUT_DEVICES)
+					Com_Printf("Model:   " S_COLOR_GREEN "0x%04X\n", capsEx.ProductId);
+
+				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
+					Com_Printf("Battery: %s\n", batteryType);
+				else
+					Com_Printf("Battery: %s<%s>\n", batteryType, batteryLevel);
+			}
+				if (firstDev == -1)
+					firstDev = numDev;
+
+				// store to global active controller
+				if (x360_useControllerID->integer < 0)  /// automatic select
+					xInputActiveController = numDev;
+				else
+				{
+					if (x360_useControllerID->integer == numDev)
+						xInputActiveController = numDev;
+				}
+		}
+
+	}
+	if (xInputActiveController == -1 && firstDev != -1)
+		xInputActiveController = firstDev;
+
+	if (xInputActiveController != -1)
+	{
+		qXInputEnable(TRUE);
+		xInputActive = true;
+	}
+	else
+	{
+		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
+		xInputActive = false;
+		qXInputEnable(FALSE);
+		IN_ShutDownXinput();
+	}
+	Com_Printf("\n-----------------------------------\n\n");
+}
+
+void SCR_DrawBatteryLevel() {
+	static int lastUpdate;
+
+	if (!in_useXInput->integer || !xInputActive || !x360_batteryStatus->integer)
+		return;
+
+	x360_batteryScale->value = ClampCvar(0.1, 1.0, x360_batteryScale->value);
+	float scale = x360_batteryScale->value;
+
+	if (curtime - lastUpdate >= 30000) { //30sec update interval
+		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
+		qXInputGetBatteryInformation(xInputActiveController, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo);
+		Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[5], gi.defBump);
+		lastUpdate = curtime;
+	}
+	else
+			if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED) {
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[4], gi.defBump);
+			}
+			else switch (batteryInfo.BatteryLevel) {
+
+			case BATTERY_LEVEL_EMPTY:
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[0], gi.defBump);
+				break;
+			case BATTERY_LEVEL_LOW:
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[1], gi.defBump);
+				break;
+			case BATTERY_LEVEL_MEDIUM:
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[2], gi.defBump);
+				break;
+			case BATTERY_LEVEL_FULL:
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[3], gi.defBump);
+				break;
+			default:
+				Draw_ScaledPic(3, 3, scale, scale, 0, i_batteryLevel[0], gi.defBump);
+				break;
+			}
+}
+
+
+void IN_ToggleXInput()
+{
+
+	if (in_useXInput->integer){
+		
+		if (xInputActive)
+			return;
+
+		if (xInputActiveController != -1) {
+			qXInputEnable(TRUE);
+			xInputActive = true;
+		}
+	}
+	else 
+	{
+		if (!xInputActive)
+			return;
+
+		qXInputEnable(FALSE);
+		xInputActive = false;
+	}
+}
+
+void IN_SetRumble(int devNum, int rumbleLow, int rumbleHigh) {
+
+	if (!xInputActive)
+		return;
+
+	if (!x360_vibration->integer)
+		return;
+
+	if (devNum < 0 || devNum >= XINPUT_MAX_CONTROLLERS)
+		return;
+
+	if (!in_useXInput->integer)
+		return;
+
+	XINPUT_VIBRATION vibration;
+	vibration.wLeftMotorSpeed = clamp(rumbleLow, 0, 65535);
+	vibration.wRightMotorSpeed = clamp(rumbleHigh, 0, 65535);
+	DWORD err = qXInputSetState(devNum, &vibration);
+
+	if (err != ERROR_SUCCESS)
+		Com_Printf(S_COLOR_RED"XInputSetState error: 0x%x", err);
+}
+
+extern cvar_t *cl_forwardspeed;
+extern cvar_t *cl_sidespeed;
+
+extern cvar_t *cl_yawspeed;
+extern cvar_t *cl_pitchspeed;
+
+#define XINPUT_AXIS_NONE		0
+#define XINPUT_AXIS_LOOK		1
+#define XINPUT_AXIS_MOVE		2
+#define XINPUT_AXIS_TURN		3	
+#define XINPUT_AXIS_STRAFE		4
+
+#define XINPUT_AXIS_INVLOOK		5
+#define XINPUT_AXIS_INVMOVE		6
+#define XINPUT_AXIS_INVTURN		7
+#define XINPUT_AXIS_INVSTRAFE	8
+
+#define	XINPUT_LEFT_THUMB_X		4
+#define XINPUT_LEFT_THUMB_Y		2
+#define XINPUT_RIGHT_THUMB_X	3
+#define XINPUT_RIGHT_THUMB_Y	1
+
+void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axismax, int type)
+{
+	// not using this axis
+	if (type <= XINPUT_AXIS_NONE)
+		return;
+
+	// unimplemented
+	if (type > XINPUT_AXIS_INVSTRAFE)
+		return;
+
+	int		outDz = 0;
+	float	sensX = 0.0, sensY = 0.0;
+
+	switch (type) {
+		case XINPUT_LEFT_THUMB_X:
+			outDz = (float)deadZone * x360_deadZoneLeft->value;
+			sensX = x360_sensXleft->value;
+			break;
+		case XINPUT_LEFT_THUMB_Y:
+			outDz = (float)deadZone * x360_deadZoneLeft->value;
+			sensY = x360_sensYleft->value;
+			break;
+		case XINPUT_RIGHT_THUMB_X:
+			outDz = (float)deadZone * x360_deadZoneRight->value;
+			sensX = x360_sensXright->value;
+			break;
+		case XINPUT_RIGHT_THUMB_Y:
+			outDz = (float)deadZone * x360_deadZoneRight->value;
+			sensY = x360_sensYright->value;
+			break;
+		default:
+			Com_Printf(S_COLOR_RED, "IN_ControllerAxisMove: Invalid type: %i\n", type);
+		break;
+	}
+	
+	// get the amount moved less the deadzone
+	int realmove = abs(axisval) - outDz;
+
+	// move is within deadzone threshold
+	if (realmove < outDz)
+		return;
+
+	// 0 to 1 scale
+	float fmove = (float)realmove / (axismax - outDz);
+
+	float speed;
+	if ((in_speed.state & 1) ^ cl_run->integer)
+		speed = 2;
+	else
+		speed = 1;
+
+	// square it to get better scale at small moves
+	fmove *= fmove;
+
+	// go back to negative
+	if (axisval < 0) 
+		fmove *= -1;
+
+	// check for inverse scale
+	if (type > XINPUT_AXIS_STRAFE)
+		fmove *= -1;
+	
+	float inv = 1;
+
+	if(x360_pitchInversion->integer)
+		inv *= -1;
+
+	// decode the move
+	switch ( type )
+	{
+	case XINPUT_AXIS_LOOK:
+	case XINPUT_AXIS_INVLOOK:
+		cl.viewangles[PITCH] -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * sensY * inv;
+		break;
+
+	case XINPUT_AXIS_MOVE:
+	case XINPUT_AXIS_INVMOVE:
+		cmd->forwardmove += fmove * speed * cl_forwardspeed->value;
+		break;
+
+	case XINPUT_AXIS_TURN:
+	case XINPUT_AXIS_INVTURN:
+		// slow this down because the default cl_yawspeed is too fast here
+		// invert it so that positive move = right
+		cl.viewangles[YAW] -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * sensX;
+		break;
+
+	case XINPUT_AXIS_STRAFE:
+	case XINPUT_AXIS_INVSTRAFE:
+		cmd->sidemove = fmove * speed * cl_sidespeed->value;
+		break;
+
+	default:
+		// unimplemented
+		break;
+	}
+}
+
+void IN_ControllerMove(usercmd_t *cmd)
+{
+	// no controller to use
+	if (!xInputActive)
+		return;
+
+	if (xInputActiveController < 0)
+		return;
+
+	if (!in_useXInput->integer)
+		return;
+
+	XINPUT_STATE xInputStage;
+	static DWORD xInputLastPacket = 666;
+
+	// get current state
+	DWORD xInputResult = qXInputGetState(xInputActiveController, &xInputStage);
+
+	if (xInputResult != ERROR_SUCCESS)
+		return;
+	
+	//clamp values
+	x360_triggerTreshold->value = ClampCvar(0.01, 1.0, x360_triggerTreshold->value);
+	x360_deadZoneLeft->value = ClampCvar(0.1, 1.5, x360_deadZoneLeft->value);
+	x360_deadZoneRight->value = ClampCvar(0.1, 1.5, x360_deadZoneRight->value);
+
+	if (!x360_swapSticks->integer) {
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
+	}
+	else {
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
+	}
+
+	// fix up the command (bound/etc)
+	if (cl.viewangles[0] > 80.0) 
+		cl.viewangles[0] = 80.0;
+
+	if (cl.viewangles[0] < -70.0) 
+		cl.viewangles[0] = -70.0;
+
+	// check for a change of state
+	if (xInputLastPacket == xInputStage.dwPacketNumber)
+		return;
+
+	// store back last packet
+	xInputLastPacket = xInputStage.dwPacketNumber;
+
+	int buttonState = 0;
+
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_START)			
+		buttonState |= BIT(0);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				
+		buttonState |= BIT(1);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		
+		buttonState |= BIT(2); // down
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		
+		buttonState |= BIT(3); // down
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	
+		buttonState |= BIT(4); // up
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	
+		buttonState |= BIT(5); // up
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_A)				
+		buttonState |= BIT(6);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_B)				
+		buttonState |= BIT(7);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_X)				
+		buttonState |= BIT(8);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				
+		buttonState |= BIT(9);
+
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)			
+		buttonState |= BIT(10);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)		
+		buttonState |= BIT(11);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)		
+		buttonState |= BIT(12);
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)		
+		buttonState |= BIT(13);
+
+	int treshold = 255.0 * x360_triggerTreshold->value;
+
+	if (xInputStage.Gamepad.bLeftTrigger >= treshold)
+		buttonState |= BIT(14); 
+	if (xInputStage.Gamepad.bRightTrigger >= treshold)
+		buttonState |= BIT(15); 
+
+	// check for event changes
+	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)
+	{
+		if ((buttonState & (1 << i)) && !(xInputOldButtonState & (1 << i)))
+			Key_Event(K_XPAD_START + i, true, sys_msg_time);
+
+		if (!(buttonState & (1 << i)) && (xInputOldButtonState & (1 << i)))
+			Key_Event(K_XPAD_START + i, false, sys_msg_time);
+	}
+	// store back
+	xInputOldButtonState = buttonState;
+}

@@ -1,0 +1,1183 @@
+/*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+/*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
+** GLW_IMP.C
+**
+** This file contains ALL Win32 specific stuff having to do with the
+** OpenGL refresh.  When a port is being made the following functions
+** must be implemented by the port:
+**
+** GLimp_EndFrame
+** GLimp_Init
+** GLimp_Shutdown
+** GLimp_SwitchFullscreen
+**
+*/
+
+#include "../renderer/r_local.h"
+
+// Enable High Performance Graphics while using Integrated Graphics.
+__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
+__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
+
+#define	WINDOWBORDERLESS_STYLE	(WS_VISIBLE | WS_POPUP)
+
+#define	WINDOW_STYLE	(WS_CAPTION|WS_VISIBLE)
+
+typedef struct {
+	bool		accelerated;
+	bool		drawToWindow;
+	bool		supportOpenGL;
+	bool		doubleBuffer;
+	bool		rgba;
+
+	int			samples;
+} glwPixelFormatDescriptor_t;
+
+static LRESULT CALLBACK FakeWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+#define	WINDOW_CLASS_FAKE		"quake2xp Fake Window"
+#define	WINDOW_NAME				"quake2xp"
+
+bool GLW_InitDriver(void);
+
+glwstate_t glw_state;
+
+void Com_Printf(char* fmt, ...);
+
+/*
+** VID_CreateWindow
+*/
+#define	WINDOW_CLASS_NAME	"quake2xp"
+
+bool VID_CreateWindow( int width, int height, bool fullscreen )
+{
+	WNDCLASS		wc;
+	RECT			r;
+	cvar_t			*vid_xpos, *vid_ypos, *vid_BorderlessWindow;
+	int				stylebits;
+	int				x, y, w, h;
+	int				exstyle;
+	DEVMODE			dm;
+
+	/* Register the frame class */
+    wc.style         = 0;
+    wc.lpfnWndProc   = (WNDPROC)glw_state.wndproc;
+    wc.cbClsExtra    = 0;
+    wc.cbWndExtra    = 0;
+    wc.hInstance     = glw_state.hInstance;
+    wc.hIcon         = 0;
+    wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)COLOR_GRAYTEXT;
+    wc.lpszMenuName  = 0;
+    wc.lpszClassName = WINDOW_CLASS_NAME;
+
+    if (!RegisterClass (&wc) )
+		VID_Error (ERR_FATAL, "Couldn't register window class");
+
+	// compute width and height
+	memset(&dm, 0, sizeof(dm));
+	dm.dmSize = sizeof(dm);
+	if (glw_state.desktopName[0])
+	{
+		if (!EnumDisplaySettings(glw_state.desktopName, ENUM_CURRENT_SETTINGS, &dm))
+		{
+			memset(&dm, 0, sizeof(dm));
+			dm.dmSize = sizeof(dm);
+		}
+	}
+	/// save real monitor position in the virtual monitor
+	glw_state.desktopPosX = dm.dmPosition.x;
+	glw_state.desktopPosY = dm.dmPosition.y;
+	
+	vid_BorderlessWindow = Cvar_Get("vid_BorderlessWindow", "0", CVAR_ARCHIVE);
+
+	if (fullscreen)
+	{
+		exstyle = WS_EX_TOPMOST;
+		stylebits = WS_POPUP|WS_VISIBLE;
+	}
+	else
+	{
+		exstyle = 0;
+		if(!vid_BorderlessWindow->integer)
+			stylebits = WINDOW_STYLE;
+		else
+			stylebits = WINDOWBORDERLESS_STYLE;
+	}
+
+	r.left = glw_state.desktopPosX;
+	r.top = glw_state.desktopPosY;
+	r.right = width + glw_state.desktopPosX;
+	r.bottom = height + glw_state.desktopPosY;
+	
+	glw_state.virtualX = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	glw_state.virtualY = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	glw_state.virtualWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	glw_state.virtualHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	glw_state.borderWidth = GetSystemMetrics(SM_CXBORDER) * 3;
+	glw_state.borderHeight = GetSystemMetrics(SM_CYBORDER) * 3 + GetSystemMetrics(SM_CYCAPTION);
+	vid_xpos = Cvar_Get("vid_xpos", "0", CVAR_ARCHIVE);
+	vid_ypos = Cvar_Get("vid_ypos", "0", CVAR_ARCHIVE);
+
+	AdjustWindowRect (&r, stylebits, FALSE);
+	w = width;
+	h = height;
+
+	if (fullscreen)
+	{
+		x = glw_state.desktopPosX;
+		y = glw_state.desktopPosY;
+	}
+	else
+	{
+		x = vid_xpos->integer;
+		y = vid_ypos->integer;
+
+		w = r.right - r.left;
+		h = r.bottom - r.top;
+
+		// adjust window coordinates if necessary
+		// so that the window is completely on screen
+		if (x < glw_state.virtualX)
+			x = glw_state.virtualX;
+		if (x > glw_state.virtualX + glw_state.virtualWidth - 64)
+			x = glw_state.virtualX + glw_state.virtualWidth - 64;
+		if (y < glw_state.virtualY)
+			y = glw_state.virtualY;
+		if (y > glw_state.virtualY + glw_state.virtualHeight - 64)
+			y = glw_state.virtualY + glw_state.virtualHeight - 64;
+	}
+
+	glw_state.hWnd = CreateWindowEx (
+		 exstyle, 
+		 WINDOW_CLASS_NAME,
+		 "quake2xp",
+		 stylebits,
+		 x, y, w, h,
+		 NULL,
+		 NULL,
+		 glw_state.hInstance,
+		 NULL);
+
+	if (!glw_state.hWnd)
+		VID_Error (ERR_FATAL, "Couldn't create window");
+
+	UINT(WINAPI *GetDpiForWindow)(HWND hwnd) = NULL;
+	HINSTANCE u32DLL = LoadLibrary("user32.dll"); // Windows 10, version 1607 [desktop apps only]
+
+	if(u32DLL)
+		GetDpiForWindow = (UINT(WINAPI *)(HWND hwnd)) GetProcAddress(u32DLL, "GetDpiForWindow");
+
+	if (GetDpiForWindow) {
+		glw_state.dpi = GetDpiForWindow(glw_state.hWnd);
+		Com_Printf("...desktop dpi is: "S_COLOR_GREEN"%i"S_COLOR_WHITE"dpi\n", glw_state.dpi);
+		if (glw_state.dpi > 96)
+			Com_Printf(S_COLOR_YELLOW"...force dpi awareness:"S_COLOR_GREEN" ok\n");
+	}
+	
+	if (glw_state.hWnd) {
+		ShowWindow(glw_state.hWnd, SW_SHOW);
+		UpdateWindow(glw_state.hWnd);
+	}
+
+	// init all the gl stuff for the window
+	if (!GLW_InitDriver())
+	{
+		Com_Printf(S_COLOR_RED"...destroying window\n");
+		Com_Printf(S_COLOR_RED "VID_CreateWindow() - GLimp_InitGL failed\n");
+		if (glw_state.hWnd) {
+			ShowWindow(glw_state.hWnd, SW_HIDE);
+			DestroyWindow(glw_state.hWnd);
+		}
+		glw_state.hWnd = NULL;
+
+		UnregisterClass(WINDOW_CLASS_NAME, glw_state.hInstance);
+		return false;
+	}
+	if (glw_state.hWnd) {
+		SetForegroundWindow(glw_state.hWnd);
+		SetFocus(glw_state.hWnd);
+	}
+	// let the sound and input subsystems know about the new window
+	VID_NewWindow (width, height);
+
+	return true;
+}
+
+#define MAX_SUPPORTED_MONITORS  16
+int monitorCounter;
+MONITORINFO monitorInfos[MAX_SUPPORTED_MONITORS];
+char        monitorNames[MAX_SUPPORTED_MONITORS][16];
+
+BOOL GetDisplayMonitorInfo(char *monitorName, char *monitorModel)
+{
+	DISPLAY_DEVICE  dd;
+	int             i = 0;
+	BOOL            bRet = FALSE;
+
+	monitorModel[0] = 0;
+	ZeroMemory(&dd, sizeof(dd));
+	dd.cb = sizeof(dd);
+
+	while (EnumDisplayDevices(glw_state.desktopName, i, &dd, EDD_GET_DEVICE_INTERFACE_NAME))
+	{
+		if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE)
+		{
+			char *p, *s;
+			char deviceID[128];
+			char regPath[128];
+			byte edid[512];
+			HKEY hKey;
+			int j = 0;
+			lstrcpy(deviceID, dd.DeviceID);
+			p = strstr(deviceID, "DISPLAY");
+			if (p)
+			{
+				s = p;
+				while (1)
+				{
+					if (*s == 0)
+					{
+						j = -1; // not found
+						break;
+					}
+					if (*s == '#')
+					{
+						j++;
+						if (j == 3)
+						{
+							*s = 0;
+							break;
+						}
+						else
+							*s = '\\';
+					}
+					s++;
+				}
+				if (j != -1)
+				{
+					LSTATUS err;
+					Com_sprintf(regPath, sizeof(regPath), "SYSTEM\\CurrentControlSet\\Enum\\%s\\Device Parameters\\", p);
+					err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, regPath, 0, KEY_READ, &hKey);
+					if (err == ERROR_SUCCESS)
+					{
+						DWORD buflen = sizeof(edid);
+						err = RegQueryValueEx(hKey, "EDID", NULL, NULL, edid, &buflen);
+						RegCloseKey(hKey);
+						if (err == ERROR_SUCCESS)
+						{
+							int k, m, n, descOffs[4] = { 54, 72, 90, 108 };
+							for (k = 0; k < 4; k++)
+							{
+								byte *desc = &edid[descOffs[k]];
+								if (desc[0] == 0 && desc[1] == 0 && desc[2] == 0 && desc[3] == 0xFC)
+								{
+									Q_strncpyz(monitorModel, &desc[5], 13);
+									n = strlen(monitorModel);
+									for (m = 0; m < n; m++)
+										if (monitorModel[m] == '\n')
+											monitorModel[m] = 0;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			lstrcpy(monitorName, dd.DeviceString);
+			bRet = TRUE;
+			break;
+		}
+		i++;
+	}
+
+	return bRet;
+}
+
+BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	monitorInfos[monitorCounter].cbSize = sizeof(monitorInfos[monitorCounter]);
+	if (GetMonitorInfo(hMonitor, &monitorInfos[monitorCounter]))
+	{
+		monitorCounter++;
+		if (monitorCounter == MAX_SUPPORTED_MONITORS)
+			return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL CALLBACK MonitorEnumProc2(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	monitorInfos[monitorCounter].cbSize = sizeof(monitorInfos[monitorCounter]);
+	if (GetMonitorInfo(hMonitor, &monitorInfos[monitorCounter]))
+	{
+		Com_Printf("   " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %i " S_COLOR_GREEN "x" S_COLOR_WHITE " %i", monitorCounter + 1,
+			abs(monitorInfos[monitorCounter].rcMonitor.left - monitorInfos[monitorCounter].rcMonitor.right),
+			abs(monitorInfos[monitorCounter].rcMonitor.top - monitorInfos[monitorCounter].rcMonitor.bottom));
+		if (monitorNames[monitorCounter][0])
+			Com_Printf(S_COLOR_YELLOW" %s", monitorNames[monitorCounter]);
+		else
+			Com_Printf(S_COLOR_YELLOW" Unknown model");
+		if (monitorInfos[monitorCounter].dwFlags & MONITORINFOF_PRIMARY)
+			Com_Printf(" (" S_COLOR_YELLOW "primary" S_COLOR_WHITE ")");
+		Com_Printf("\n");
+		monitorCounter++;
+		if (monitorCounter == MAX_SUPPORTED_MONITORS)
+			return FALSE;
+	}
+	return TRUE;
+}
+void GLimp_InitADL();
+void GLimp_InitNvApi();
+extern bool adlInit;
+
+/*
+** GLimp_SetMode
+*/
+
+rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, bool fullscreen)
+{
+	int /*width, height*/ i, idx, cvm, cdsRet, j, count = 0;
+	const char* win_fs[] = { "Window", "Full Screen" };
+	cvar_t* vid_monitor = Cvar_Get("vid_monitor", "0", CVAR_ARCHIVE);
+	char	monitorName[128], monitorModel[16];
+	HDC		hDC;
+	DEVMODE dm;
+
+	GLimp_InitNvApi();
+	GLimp_InitADL();
+
+	Com_Printf("\n==================================\n\n");
+
+	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n");
+
+	Com_Printf("\n==================================\n");
+
+	monitorCounter = 0;
+	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+
+	monitorName[0] = 0;
+	if (vid_monitor->integer <= 0 || vid_monitor->integer > MAX_SUPPORTED_MONITORS)
+		cvm = 0;    // лишь бы что-то было корректное...
+	else
+		cvm = vid_monitor->integer - 1;
+	idx = -1;
+	for (j = 0; j < MAX_SUPPORTED_MONITORS; j++)
+	{
+		monitorNames[j][0] = 0;
+		for (i = 1; i < 256; i++)   // много?
+		{
+			Com_sprintf(glw_state.desktopName, sizeof(glw_state.desktopName), "\\\\.\\Display%i", i);
+			memset(&dm, 0, sizeof(dm));
+			dm.dmSize = sizeof(dm);
+			if (EnumDisplaySettings(glw_state.desktopName, ENUM_CURRENT_SETTINGS, &dm))
+			{
+				char    tempMonitorName[128];
+				glw_state.desktopPosX = dm.dmPosition.x;
+				glw_state.desktopPosY = dm.dmPosition.y;
+				if (GetDisplayMonitorInfo(tempMonitorName, monitorModel))
+				{
+					hDC = CreateDC(glw_state.desktopName, tempMonitorName, NULL, NULL);
+					if (hDC)
+					{   /// monitor found, so compare positions in virtual desktop
+						glw_state.desktopWidth = GetDeviceCaps(hDC, HORZRES);
+						glw_state.desktopHeight = GetDeviceCaps(hDC, VERTRES);
+						if (monitorInfos[j].rcMonitor.left == glw_state.desktopPosX &&
+							monitorInfos[j].rcMonitor.top == glw_state.desktopPosY &&
+							abs(monitorInfos[j].rcMonitor.left - monitorInfos[j].rcMonitor.right) == glw_state.desktopWidth &&
+							abs(monitorInfos[j].rcMonitor.top - monitorInfos[j].rcMonitor.bottom) == glw_state.desktopHeight)
+						{
+							lstrcpy(monitorNames[j], monitorModel);
+							if (j == cvm)
+							{
+								lstrcpy(monitorName, tempMonitorName);
+								idx = i;
+								i = 256;    /// break
+							}
+						}
+					}
+					DeleteDC(hDC);
+				}
+			}
+		}
+	}
+	if (idx == -1 || vid_monitor->integer <= 0 || vid_monitor->integer > MAX_SUPPORTED_MONITORS)    /// not found :(
+	{
+		glw_state.desktopName[0] = 0;
+		Com_Printf("\n...using " S_COLOR_YELLOW "primary" S_COLOR_WHITE " monitor\n");
+		glw_state.desktopPosX = 0;
+		glw_state.desktopPosY = 0;
+		hDC = GetDC(GetDesktopWindow());
+		glw_state.desktopBitPixel = GetDeviceCaps(hDC, BITSPIXEL);
+		glw_state.desktopWidth = GetDeviceCaps(hDC, HORZRES);
+		glw_state.desktopHeight = GetDeviceCaps(hDC, VERTRES);
+		glw_state.desktopRefresh = GetDeviceCaps(hDC, VREFRESH);
+		ReleaseDC(GetDesktopWindow(), hDC);
+	}
+	else
+	{
+		Com_sprintf(glw_state.desktopName, sizeof(glw_state.desktopName), "\\\\.\\Display%i", idx);
+		Com_Printf("\n...calling " S_COLOR_YELLOW "CreateDC" S_COLOR_WHITE "('" S_COLOR_GREEN "%s" S_COLOR_WHITE "','" S_COLOR_GREEN "%s" S_COLOR_WHITE "')\n", glw_state.desktopName, monitorName);
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettings(glw_state.desktopName, ENUM_CURRENT_SETTINGS, &dm);
+		glw_state.desktopPosX = dm.dmPosition.x;
+		glw_state.desktopPosY = dm.dmPosition.y;
+		hDC = CreateDC(glw_state.desktopName, monitorName, NULL, NULL);
+		glw_state.desktopBitPixel = GetDeviceCaps(hDC, BITSPIXEL);
+		glw_state.desktopWidth = GetDeviceCaps(hDC, HORZRES);
+		glw_state.desktopHeight = GetDeviceCaps(hDC, VERTRES);
+		glw_state.desktopRefresh = GetDeviceCaps(hDC, VREFRESH);
+		DeleteDC(hDC);
+
+		if (monitorNames[cvm][0])
+			Com_Printf("...using monitor " S_COLOR_GREEN "%i " S_COLOR_WHITE "(" S_COLOR_GREEN "%s" S_COLOR_WHITE ")\n", vid_monitor->integer, monitorNames[cvm]);
+		else
+			Com_Printf("...using monitor " S_COLOR_GREEN "%i\n", vid_monitor->integer);
+
+	}
+	Com_Printf(S_COLOR_YELLOW"\n...Available monitors:\n\n");
+	monitorCounter = 0;
+	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc2, 0);
+
+
+	Com_Printf("\n==================================\n\n");
+
+	memset(&dm, 0, sizeof(dm));
+	dm.dmSize = sizeof(dm);
+	int w = 0;
+	int h = 0;
+	int hz = 0;
+
+	for (i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; i++) {
+
+		if (dm.dmPelsHeight < 768 || dm.dmDisplayFrequency < 60 || dm.dmBitsPerPel != 32)
+			continue;
+
+		if (dm.dmDisplayFlags & DM_INTERLACED)
+			continue;
+
+		if (count == 0) {
+			winScreenModes[count].w = glw_state.desktopWidth;;
+			winScreenModes[count].h = glw_state.desktopHeight;
+			winScreenModes[count].hz = glw_state.desktopRefresh;
+			winScreenModes[count].num = count;
+			winScreenModes[count].description = malloc(sizeof(char) * 9);
+			
+			if(winScreenModes[count].description)
+				sprintf(winScreenModes[count].description, "[Desktop]");
+		}
+		else {
+			if (w == dm.dmPelsWidth && h == dm.dmPelsHeight && hz == dm.dmDisplayFrequency)
+				continue;
+
+			winScreenModes[count].w = dm.dmPelsWidth;
+			winScreenModes[count].h = dm.dmPelsHeight;
+			winScreenModes[count].hz = dm.dmDisplayFrequency;
+			winScreenModes[count].num = count;
+			winScreenModes[count].description = malloc(sizeof(char) * 21);
+			
+			if(winScreenModes[count].description)
+				sprintf(winScreenModes[count].description, "[%i %i][%i hz]", winScreenModes[count].w, winScreenModes[count].h, winScreenModes[count].hz);
+			
+			w = dm.dmPelsWidth;
+			h = dm.dmPelsHeight;
+			hz = dm.dmDisplayFrequency;
+
+		}
+		Com_DPrintf("mode:%i %ix%i %ihz %s\n", winScreenModes[count].num, winScreenModes[count].w, winScreenModes[count].h, dm.dmDisplayFrequency, winScreenModes[count].description);
+		count++;
+	}
+	count += 1; //num modes + terminator for menu
+	memset(&vid_winModes, 0, sizeof(vid_winModes));
+	vid_winModes = malloc(count * sizeof(char*));
+	for (i = 0; i < count; i++) {
+	if (vid_winModes)
+		vid_winModes[i] = winScreenModes[i].description;
+	}
+
+	Com_Printf("\n");
+
+	Com_Printf ("...setting mode "S_COLOR_YELLOW"%i"S_COLOR_WHITE":"S_COLOR_YELLOW"[%i %i][%i hz]",	winScreenModes[r_mode->integer].num, 
+																								winScreenModes[r_mode->integer].w, 
+																								winScreenModes[r_mode->integer].h,
+																								winScreenModes[r_mode->integer].hz);
+	Com_Printf(" "S_COLOR_WHITE"%s\n", win_fs[fullscreen] );
+
+
+	// destroy the existing window
+	if (glw_state.hWnd)
+	{
+		GLimp_Shutdown ();
+	}
+
+	// do a CDS if needed
+	if ( fullscreen )
+	{
+		Com_Printf("...attempting fullscreen\n" );
+
+		memset( &dm, 0, sizeof( dm ) );
+		dm.dmSize = sizeof( dm );
+
+		dm.dmPelsWidth  = winScreenModes[r_mode->integer].w;
+		dm.dmPelsHeight = winScreenModes[r_mode->integer].h;
+		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
+
+		dm.dmDisplayFrequency = winScreenModes[r_mode->integer].hz;
+		dm.dmFields |= DM_DISPLAYFREQUENCY;
+			
+		Con_Printf( PRINT_ALL, "...calling CDS: " );
+		
+		if (glw_state.desktopName[0])
+			cdsRet = ChangeDisplaySettingsEx(glw_state.desktopName, &dm, NULL, CDS_FULLSCREEN, NULL);
+		else
+			cdsRet = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+		if (cdsRet == DISP_CHANGE_SUCCESSFUL )
+		{
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
+
+			gl_state.fullscreen = true;
+
+			Com_Printf(S_COLOR_GREEN"ok\n" );
+
+			if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, true) )
+				return rserr_invalid_mode;
+
+			return rserr_ok;
+		}
+		else
+		{
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
+
+			Com_Printf(S_COLOR_RED"failed\n" );
+
+			Com_Printf("...calling CDS assuming dual monitors:" );
+
+			dm.dmPelsWidth = winScreenModes[r_mode->integer].w * 2;
+			dm.dmPelsHeight = winScreenModes[r_mode->integer].h;
+			dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+		
+			/*
+			** our first CDS failed, so maybe we're running on some weird dual monitor
+			** system 
+			*/
+			if (glw_state.desktopName[0])
+				cdsRet = ChangeDisplaySettingsEx(glw_state.desktopName, &dm, NULL, CDS_FULLSCREEN, NULL);
+			else
+				cdsRet = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+			if (cdsRet != DISP_CHANGE_SUCCESSFUL )
+			{
+				Com_Printf(S_COLOR_RED" failed\n" );
+
+				Com_Printf(S_COLOR_YELLOW"...setting windowed mode\n" );
+
+				ChangeDisplaySettings( 0, 0 );
+				
+				*pwidth = winScreenModes[r_mode->integer].w;
+				*pheight = winScreenModes[r_mode->integer].h;
+				gl_state.fullscreen = false;
+
+				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, false) )
+					return rserr_invalid_mode;
+				return rserr_invalid_fullscreen;
+			}
+			else
+			{
+				Com_Printf(S_COLOR_GREEN" ok\n" );
+				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, true) )
+					return rserr_invalid_mode;
+				gl_state.fullscreen = true;
+				return rserr_ok;
+			}
+		}
+	}
+	else{
+		
+		ChangeDisplaySettings( 0, 0 );
+		gl_state.fullscreen = false;
+		if (r_customWindowWidth->integer >= 1024 && r_customWindowHeight->integer >= 768) {
+			Com_Printf("...setting custom windowed mode [%ix%i]\n", r_customWindowWidth->integer, r_customWindowHeight->integer);
+			*pwidth = r_customWindowWidth->integer;
+			*pheight = r_customWindowHeight->integer;
+			if (!VID_CreateWindow(r_customWindowWidth->integer, r_customWindowHeight->integer, false))
+				return rserr_invalid_mode;
+		}
+		else {
+			Com_Printf("...setting windowed mode [%ix%i]\n", winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h);
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
+			if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, false))
+				return rserr_invalid_mode;
+		}
+
+	}
+	return rserr_ok;
+}
+
+/*
+** GLimp_Shutdown
+**
+** This routine does all OS specific shutdown procedures for the OpenGL
+** subsystem.  Under OpenGL this means NULLing out the current DC and
+** HGLRC, deleting the rendering context, and releasing the DC acquired
+** for the window.  The state structure is also nulled out.
+**
+*/
+extern HINSTANCE nv_hDLL;
+
+
+void GLimp_Shutdown( void )
+{
+
+	if ( qwglMakeCurrent && !qwglMakeCurrent( NULL, NULL ) )
+		Com_Printf(S_COLOR_RED"ref_gl::R_Shutdown() - wglMakeCurrent failed\n");
+	if ( glw_state.hGLRC )
+	{
+		if (  qwglDeleteContext && !qwglDeleteContext( glw_state.hGLRC ) )
+			Com_Printf(S_COLOR_RED"ref_gl::R_Shutdown() - wglDeleteContext failed\n");
+		glw_state.hGLRC = NULL;
+	}
+	if (glw_state.hDC)
+	{
+		if ( !ReleaseDC( glw_state.hWnd, glw_state.hDC ) )
+			Com_Printf(S_COLOR_RED"ref_gl::R_Shutdown() - ReleaseDC failed\n" );
+		glw_state.hDC   = NULL;
+	}
+	if (glw_state.hWnd)
+	{
+		DestroyWindow (	glw_state.hWnd );
+		glw_state.hWnd = NULL;
+	}
+
+	UnregisterClass (WINDOW_CLASS_NAME, glw_state.hInstance);
+
+	if ( gl_state.fullscreen )
+	{
+		ChangeDisplaySettings( 0, 0 );
+		gl_state.fullscreen = false;
+	}
+	
+	if (nvApiInit) {
+		NvAPI_Unload();
+		FreeLibrary(nv_hDLL);
+	}
+	if(adlInit)
+		ADL_Shutdown();
+
+	if (nvMlInit)
+		nvmlShutdown();
+}
+
+
+typedef enum XP_PROCESS_DPI_AWARENESS { //with out win header, some rename....
+	XP_PROCESS_DPI_UNAWARE = 0,
+	XP_PROCESS_SYSTEM_DPI_AWARE = 1,
+	XP_PROCESS_PER_MONITOR_DPI_AWARE = 2
+} XP_PROCESS_DPI_AWARENESS;
+
+void VID_SetProcessDpiAwareness(void) {
+
+	HRESULT(WINAPI *SetProcessDpiAwareness)(XP_PROCESS_DPI_AWARENESS dpiAwareness) = NULL;
+	BOOL(WINAPI *SetProcessDPIAware)(void) = NULL;
+
+	HINSTANCE u32DLL	= LoadLibrary("user32.dll"); //win 7-8.0
+	HINSTANCE shDLL		= LoadLibrary("shcore.dll"); //win 8.1-10
+	
+	if (shDLL)
+		SetProcessDpiAwareness = (HRESULT(WINAPI *)(XP_PROCESS_DPI_AWARENESS))GetProcAddress(shDLL, "SetProcessDpiAwareness");
+	else 
+		if(u32DLL)
+		SetProcessDPIAware = (BOOL(WINAPI *)(void)) GetProcAddress(u32DLL, "SetProcessDPIAware");
+
+	if (SetProcessDpiAwareness) {
+		SetProcessDpiAwareness(XP_PROCESS_PER_MONITOR_DPI_AWARE); 
+	}
+	else 
+		if(SetProcessDPIAware)
+			SetProcessDPIAware(); 
+	
+	if (shDLL)
+		FreeLibrary(shDLL);
+	if (u32DLL)
+		FreeLibrary(u32DLL);
+}
+
+
+bool GLimp_Init( void *hinstance, void *wndproc )
+{
+	Con_Printf (PRINT_ALL, "\n");
+	Com_Printf ("========"S_COLOR_YELLOW"System Information"S_COLOR_WHITE"========\n");
+	Con_Printf (PRINT_ALL, "\n");
+	
+	Sys_CpuID();
+	Sys_GetMemorySize();
+	Sys_CheckWindowsVersion();
+
+	Sys_WindowsInfo();
+
+	VID_SetProcessDpiAwareness();
+
+//	Com_Printf("\n==================================\n");
+
+	glw_state.hInstance = ( HINSTANCE ) hinstance;
+	glw_state.wndproc = wndproc;
+	
+	return true;
+	
+
+}
+
+/*
+==================
+GLW_InitExtensions
+
+==================
+*/
+void GLW_InitExtensions() {
+
+	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)qwglGetProcAddress("wglGetExtensionsStringARB");
+
+	if (!qwglGetExtensionsStringARB)
+	{
+		Com_Printf(S_COLOR_RED  "WGL extension string not found!");
+		VID_Error(ERR_FATAL, "WGL extension string not found!");
+	}
+
+	glw_state.wglExtsString = qwglGetExtensionsStringARB(glw_state.hDCFake);
+
+	if (glw_state.wglExtsString == NULL)
+		Com_Printf(S_COLOR_RED "WGL_EXTENSION not found!\n");
+
+	Com_Printf("\n");
+	Com_Printf("=============================\n");
+	Com_Printf(S_COLOR_GREEN"Checking Basic WGL Extensions\n");
+	Com_Printf("=============================\n\n");
+
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_pixel_format"))
+	{
+		Com_Printf("...using WGL_ARB_pixel_format\n");
+		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)	qwglGetProcAddress	("wglGetPixelFormatAttribivARB");
+		qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)	qwglGetProcAddress	("wglGetPixelFormatAttribfvARB");
+		qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)		qwglGetProcAddress	("wglChoosePixelFormatARB");
+
+	}
+	else {
+		Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_pixel_format not found\nOpenGL subsystem not initiation\n");
+		VID_Error(ERR_FATAL, "WGL_ARB_pixel_format not found!");
+	}
+
+	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
+		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)qwglGetProcAddress("wglSwapIntervalEXT");
+		Com_Printf("...using WGL_EXT_swap_control\n");
+	}
+	else
+		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
+
+	gl_state.wgl_swap_control_tear = false;
+	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control_tear")) {
+		Com_Printf("...using WGL_EXT_swap_control_tear\n");
+		gl_state.wgl_swap_control_tear = true;
+	}
+	else {
+		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
+	}
+
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_multisample"))
+		if (r_multiSamples->integer < 2)
+			Com_Printf("" S_COLOR_YELLOW "...ignoring WGL_ARB_multisample\n");
+		else
+			Com_Printf("...using WGL_ARB_multisample\n");
+
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
+		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
+
+		if (qwglCreateContextAttribsARB)
+			Com_Printf("...using WGL_ARB_create_context\n");
+			else{
+				Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_create_context not found\nOpenGL subsystem not initiation\n");
+				VID_Error(ERR_FATAL, "WGL_ARB_create_context not found!");
+			}
+		}
+
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
+			Com_Printf("...using WGL_ARB_create_context_profile\n");
+//==========================================================
+		
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_no_error")) {
+			if(r_contextNoError->integer)
+				Com_Printf("...using WGL_ARB_create_context_no_error\n");
+			else
+				Com_Printf(S_COLOR_YELLOW"...ignoring WGL_ARB_create_context_no_error\n");
+		}
+		else {
+			Com_Printf(S_COLOR_MAGENTA"...WGL_ARB_create_context_no_error not found\n");
+			Cvar_SetInteger("r_contextNoError", 0);
+		}
+}
+
+/*
+==================
+GLW_ShutdownFakeOpenGL
+
+==================
+*/
+
+static void GLW_ShutdownFakeOpenGL(void) {
+
+	if (glw_state.hGLRCFake) {
+		if (qwglMakeCurrent)
+			qwglMakeCurrent(NULL, NULL);
+		if (qwglDeleteContext)
+			qwglDeleteContext(glw_state.hGLRCFake);
+
+		glw_state.hGLRCFake = NULL;
+	}
+
+	if (glw_state.hDCFake) {
+		ReleaseDC(glw_state.hWndFake, glw_state.hDCFake);
+		glw_state.hDCFake = NULL;
+	}
+
+	if (glw_state.hWndFake) {
+		DestroyWindow(glw_state.hWndFake);
+		glw_state.hWndFake = NULL;
+
+		UnregisterClass(WINDOW_CLASS_FAKE, glw_state.hInstance);
+	}
+}
+
+/*
+==================
+GLW_InitFakeOpenGL
+
+==================
+*/
+static bool GLW_InitFakeOpenGL(void) {
+	WNDCLASSEX				wndClass;
+	PIXELFORMATDESCRIPTOR	PFD;
+	int						pixelFormat;
+
+	// register the frame class
+	wndClass.cbSize = sizeof(WNDCLASSEX);
+	wndClass.style = 0;
+	wndClass.lpfnWndProc = FakeWndProc;
+	wndClass.cbClsExtra = 0;
+	wndClass.cbWndExtra = 0;
+	wndClass.hInstance = glw_state.hInstance;
+	wndClass.hIcon = 0;
+	wndClass.hIconSm = 0;
+	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndClass.hbrBackground = (HBRUSH)COLOR_GRAYTEXT;
+	wndClass.lpszMenuName = 0;
+	wndClass.lpszClassName = WINDOW_CLASS_FAKE;
+
+	if (!RegisterClassEx(&wndClass))
+		return false;
+
+	// create the fake window
+	glw_state.hWndFake = CreateWindowEx(0, WINDOW_CLASS_FAKE, WINDOW_NAME, WINDOWBORDERLESS_STYLE, 0, 0, 320, 240, NULL, NULL, glw_state.hInstance, NULL);
+	if (!glw_state.hWndFake) {
+		GLW_ShutdownFakeOpenGL();
+		return false;
+	}
+
+	glw_state.hDCFake = GetDC(glw_state.hWndFake);
+	if (!glw_state.hDCFake) {
+		GLW_ShutdownFakeOpenGL();
+		return false;
+	}
+
+	// choose a pixel format
+	memset(&PFD, 0, sizeof(PIXELFORMATDESCRIPTOR));
+
+	PFD.cColorBits = 32;
+	PFD.cDepthBits = 24;
+	PFD.cStencilBits = 8;
+	PFD.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	PFD.iLayerType = PFD_MAIN_PLANE;
+	PFD.iPixelType = PFD_TYPE_RGBA;
+	PFD.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	PFD.nVersion = 1;
+
+	pixelFormat = ChoosePixelFormat(glw_state.hDCFake, &PFD);
+
+	if (!pixelFormat) {
+		GLW_ShutdownFakeOpenGL();
+		return false;
+	}
+
+	// set the pixel format
+	DescribePixelFormat(glw_state.hDCFake, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &PFD);
+
+	if (!SetPixelFormat(glw_state.hDCFake, pixelFormat, &PFD)) {
+		GLW_ShutdownFakeOpenGL();
+		return false;
+	}
+
+	// create the fake GL context and make it current
+	glw_state.hGLRCFake = qwglCreateContext(glw_state.hDCFake);
+
+	if (!glw_state.hGLRCFake) {
+		GLW_ShutdownFakeOpenGL();
+		return false;
+	}
+
+	if (!qwglMakeCurrent(glw_state.hDCFake, glw_state.hGLRCFake)) {
+		GLW_ShutdownFakeOpenGL();
+		return false;
+	}
+
+	return true;
+}
+
+static bool GLW_ChoosePixelFormat() {
+	PIXELFORMATDESCRIPTOR	PFD;
+	int pixelFormat, samples;
+	uint numFormats;
+
+	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);
+
+	if (r_multiSamples->integer > gl_config.maxSamples)
+		Cvar_SetInteger(r_multiSamples, gl_config.maxSamples);
+
+	if (r_multiSamples->integer <= 1)
+		samples = 0;
+	else
+		samples = r_multiSamples->integer;
+
+	const int pAttribs[] = {
+		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+		WGL_DOUBLE_BUFFER_ARB,	GL_TRUE,
+		WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_ARB,
+		WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
+		WGL_COLOR_BITS_ARB,		32,
+		WGL_ALPHA_BITS_ARB,		8,
+		WGL_DEPTH_BITS_ARB,		24,
+		WGL_STENCIL_BITS_ARB,	8,
+		WGL_SAMPLE_BUFFERS_ARB, samples ? GL_TRUE: GL_FALSE,
+		WGL_SAMPLES_ARB,		samples,
+		0
+	};
+
+	// NV_FORMAT_A16B16G16R16F
+	int rgb10 = 0;
+	const int pAttribsHDR[] = {
+		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+		WGL_DOUBLE_BUFFER_ARB,	GL_TRUE,
+		WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_FLOAT_ARB,
+		WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
+//		WGL_RED_BITS_ARB,		rgb10 ? 10 : 16,
+//		WGL_GREEN_BITS_ARB,		rgb10 ? 10 : 16,
+//		WGL_BLUE_BITS_ARB,		rgb10 ? 10 : 16,
+//		WGL_ALPHA_BITS_ARB,		rgb10 ? 2 :  16,
+		WGL_DEPTH_BITS_ARB,		24,
+		WGL_STENCIL_BITS_ARB,	8,
+//		WGL_SAMPLE_BUFFERS_ARB, 0,
+//		WGL_SAMPLES_ARB,		0,
+		0
+	};
+
+	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
+	gl_config.useHdrDisplay = gl_config.hdrDisplay && r_useHdrDisplay->integer;
+
+	if (!qwglChoosePixelFormatARB(glw_state.hDC, gl_config.useHdrDisplay ? pAttribsHDR : pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
+		Com_Printf(S_COLOR_RED "...qwglChoosePixelFormatARB() failed.");
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		return false;
+	}
+
+	int numPixelFormats = WGL_NUMBER_PIXEL_FORMATS_ARB;
+	qwglGetPixelFormatAttribivARB(glw_state.hDC, 0, 0, 1, &numPixelFormats, &numPixelFormats);
+
+	Com_Printf("..." S_COLOR_GREEN "%i " S_COLOR_WHITE "pixel formats found\n", numPixelFormats);
+	Com_Printf("...Selected " S_COLOR_GREEN "%i " S_COLOR_WHITE "PIXELFORMAT\n", pixelFormat);
+	
+	Com_Printf("...setting pixel format: ");
+	DescribePixelFormat(glw_state.hDC, pixelFormat, sizeof(PFD), &PFD);
+	SetPixelFormat(glw_state.hDC, pixelFormat, &PFD);
+
+	Com_Printf(S_COLOR_GREEN "ok\n");
+	return true;
+}
+
+void GLW_CreateContext() {
+
+	const char	*profileName[] = { "core", "compatibility" };
+	const char *debug[] = { "debug", "" };
+
+	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+
+	int	attribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB,	r_glMajorVersion->integer,
+		WGL_CONTEXT_MINOR_VERSION_ARB,	r_glMinorVersion->integer,
+		WGL_CONTEXT_FLAGS_ARB,			contextFlag,
+		WGL_CONTEXT_PROFILE_MASK_ARB,	contextMask,
+		WGL_CONTEXT_OPENGL_NO_ERROR_ARB, r_contextNoError->integer ? GL_TRUE : GL_FALSE,
+		0
+	};
+
+	// create the GL context
+	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW " %s %s" S_COLOR_WHITE " profile context: ", r_glMajorVersion->integer, r_glMinorVersion->integer, debug[contextFlag == WGL_CONTEXT_DEBUG_BIT_ARB ? 0 : 1], profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+	
+	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs);
+
+	if (!glw_state.hGLRC) {
+
+		Com_Printf(S_COLOR_RED "failed\n");
+
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		int	err = GetLastError();
+		switch (err)
+		{
+		case ERROR_INVALID_VERSION_ARB:
+			Com_Printf("ERROR_INVALID_VERSION_ARB\n");
+			break;
+		case ERROR_INVALID_PROFILE_ARB:
+			Com_Printf("ERROR_INVALID_PROFILE_ARB\n");
+			break;
+		default:
+			Com_Printf("unknown error: 0x%x\n", err);
+			break;
+		}
+		VID_Error(ERR_FATAL, "Current video card/driver combination does not support OpenGL %i.%i", r_glMajorVersion->integer, r_glMinorVersion->integer);
+	}
+
+	Com_Printf(S_COLOR_GREEN "ok\n");
+	GLW_ShutdownFakeOpenGL();
+}
+
+bool GLW_InitDriver(void) {
+
+	if (!GLW_InitFakeOpenGL()) {
+		Com_Printf(S_COLOR_RED "...failed to initialize fake OpenGL context\n");
+		return false;
+	}
+	// get a DC for the current window
+	Com_Printf("...getting DC: ");
+
+	glw_state.hDC = GetDC(glw_state.hWnd);
+	if (!glw_state.hDC) {
+		Com_Printf(S_COLOR_RED "failed\n");
+		VID_Error(ERR_FATAL, "...getting DC: failed.");
+		return false;
+	}
+
+	Com_Printf(S_COLOR_GREEN"ok\n");
+
+	GLW_InitExtensions();
+	GLW_ChoosePixelFormat();
+	GLW_CreateContext();
+
+	// make it current
+	Com_Printf("...making context current: ");
+
+	if (!qwglMakeCurrent(glw_state.hDC, glw_state.hGLRC)) {
+		Com_Printf(S_COLOR_RED "...wglMakeCurrent() failed.");
+		VID_Error(ERR_FATAL, "...wglMakeCurrent() failed.");
+		return false;
+	}
+
+	Com_Printf(S_COLOR_GREEN "ok\n");
+
+	gl_config.glMajorVersion = r_glMajorVersion->integer;
+	gl_config.glMinorVersion = r_glMinorVersion->integer;
+
+	return true;
+}
+
+
+/*
+** GLimp_EndFrame
+** 
+** Responsible for doing a swapbuffers and possibly for other stuff
+** as yet to be determined.  Probably better not to make this a GLimp
+** function and instead do a call to GLimp_SwapBuffers.
+*/
+
+
+void GLimp_EndFrame (void)
+{
+	if ( !qwglSwapBuffers( glw_state.hDC ) )
+			VID_Error( ERR_FATAL, "GLimp_EndFrame() - SwapBuffers() failed!\n" );
+
+	r_newrefdef.time=Sys_Milliseconds() * 0.001f;
+	ref_realtime=Sys_Milliseconds()		* 0.0005f;
+}
+
+
+void GL_UpdateSwapInterval()
+{
+
+	if(r_vsync->modified)
+	r_vsync->modified = false;
+
+	if(gl_state.wgl_swap_control_tear){
+	
+	if (wglSwapIntervalEXT){
+		if(r_vsync->integer >=2)
+			wglSwapIntervalEXT(-1);
+	else if(r_vsync->integer >=1)
+			wglSwapIntervalEXT(1);	
+	else
+			wglSwapIntervalEXT(0);
+		}
+	}
+	else
+		if (wglSwapIntervalEXT)
+			wglSwapIntervalEXT(r_vsync->integer);
+	
+}
+
+/*
+** GLimp_AppActivate
+*/
+void GLimp_AppActivate( bool active )
+{
+	if ( active )
+	{
+		SetForegroundWindow( glw_state.hWnd );
+		ShowWindow( glw_state.hWnd, SW_RESTORE );
+	}
+	else
+	{
+		if ( r_fullScreen->integer )
+			ShowWindow( glw_state.hWnd, SW_MINIMIZE );
+	}
+}
