@@ -617,7 +617,6 @@ void R_DrawLightScene (void)
 			R_DrawLightBrushModel();
 		}
 	
-		R_DrawLightFlare();				// light flare
 		R_DrawLightBounds();			// debug stuff
 	}
 	}
@@ -695,6 +694,7 @@ void R_DrawPlayerWeapon(void)
 
 
 	R_DrawPlayerWeaponAmbient();
+	R_linearDepth();
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
@@ -1090,6 +1090,7 @@ void R_RenderFrame(refdef_t * fd) {
 		R_RadialBlur();
 		R_ThermalVision();
 		R_DofBlur();
+		R_LensFlares();
 		R_Bloom();
 		R_FilmFx();
 		R_ScreenBlend();
@@ -1315,12 +1316,13 @@ void R_RegisterCvars(void)
 	r_hdrEVcomp =						Cvar_Get("r_hdrEVcomp", "0.0", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
 	r_hdrBloom =						Cvar_Get("r_hdrBloom", "1", CVAR_ARCHIVE);
-	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
-	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
-	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.5", CVAR_ARCHIVE);
-	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "1", CVAR_ARCHIVE);
+//	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
+//	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
+	r_hdrLensFlaresIntens =				Cvar_Get("r_hdrLensFlaresIntens", "0.2", CVAR_ARCHIVE);
+	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "0", CVAR_ARCHIVE);
 	r_hdrColorSpace->help =				" 0 = sRGB/D65 \n| 1 = DCI-P3/D65b \n| 2 = Rec.2020/D65 \n| 3 = ACES AP0/D60 \n| 4 = ACES AP1/D60";
-	r_hdrUiNits =						Cvar_Get("r_hdrUiNits", "100.0", CVAR_ARCHIVE);
+	r_hdrUiNits =						Cvar_Get("r_hdrUiNits", "300.0", CVAR_ARCHIVE);
+	r_hdrMaxIso =						Cvar_Get("r_hdrMaxIso", "300.0", CVAR_ARCHIVE);
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
@@ -1339,22 +1341,23 @@ void R_RegisterCvars(void)
 	r_imageAutoBumpScale =				Cvar_Get("r_imageAutoBumpScale", "6.0", CVAR_ARCHIVE);
 	r_imageAutoSpecularScale =			Cvar_Get("r_imageAutoSpecularScale", "1", CVAR_ARCHIVE);
 	r_textureQuality =					Cvar_Get("r_textureQuality", "0", CVAR_ARCHIVE);
-	r_textureQuality->help = "textures quality: 0 - max quality\n";
+	r_textureQuality->help =			"textures quality: 0 - max quality\n";
 
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
+	r_screenShot->help =				"jpg, tga, png, bmp, hdr";
 
 	r_multiSamples =					Cvar_Get("r_multiSamples", "0", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "1", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
 	
-	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
+	r_hdrLensFlares =					Cvar_Get("r_hdrLensFlares", "1", CVAR_ARCHIVE);
 	r_scaleAutoLightColor =				Cvar_Get("r_scaleAutoLightColor", "3", CVAR_ARCHIVE);
 
 	r_customWindowWidth =				Cvar_Get("r_customWindowWidth", "0", CVAR_ARCHIVE);
-	r_customWindowWidth->help = "Minimal value is 1024\n Minimal custom resolution 1024x768";
+	r_customWindowWidth->help =			"Minimal value is 1024\n Minimal custom resolution 1024x768";
 	r_customWindowHeight =				Cvar_Get("r_customWindowHeight", "0", CVAR_ARCHIVE);
-	r_customWindowHeight->help = "Minimal value is 768\n Minimal custom resolution 1024x768";
+	r_customWindowHeight->help =		"Minimal value is 768\n Minimal custom resolution 1024x768";
 
 	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
 	r_parallaxScale =					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
@@ -1835,6 +1838,8 @@ int R_Init(void *hinstance, void *hWnd)
 	qglNamedBufferData		= (PFNGLNAMEDBUFFERDATAPROC)	qwglGetProcAddress("glNamedBufferData");
 	qglNamedBufferSubData	= (PFNGLNAMEDBUFFERSUBDATAPROC)	qwglGetProcAddress("glNamedBufferSubData");
 
+	qglGetTextureSubImage	= (PFNGLGETTEXTURESUBIMAGEPROC)	qwglGetProcAddress("glGetTextureSubImage");
+
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,	&gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS,		&gl_state.binaryFormats);
 
@@ -2049,11 +2054,12 @@ void R_BeginFrame()
 	/* 
 	 ** change modes if necessary
 	 */
-	r_lightmapScale->value		= ClampCvar(0.0, 1.0, r_lightmapScale->value);
-	r_parallaxMapping->integer	= ClampCvarInteger(0, 3, r_parallaxMapping->integer);
-	r_parallaxScale->integer	= ClampCvarInteger(0, 6, r_parallaxScale->integer);
-	r_colorTempK->integer		= ClampCvarInteger(1000, 40000, r_colorTempK->integer);
-	r_hdrUiNits->value			= ClampCvar(100.0, 1000.0, r_hdrUiNits->value);
+	r_lightmapScale->value			= ClampCvar(0.0, 1.0,			r_lightmapScale->value);
+	r_parallaxMapping->integer		= ClampCvarInteger(0, 3,		r_parallaxMapping->integer);
+	r_parallaxScale->integer		= ClampCvarInteger(0, 6,		r_parallaxScale->integer);
+	r_colorTempK->integer			= ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_hdrUiNits->value				= ClampCvar(100.0, 1000.0,		r_hdrUiNits->value);
+	r_hdrLensFlaresIntens->value	= ClampCvar(0.1, 1.0,			r_hdrLensFlaresIntens->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;

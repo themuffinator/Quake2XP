@@ -67,6 +67,10 @@ float lerp(float a, float b, float weight)
 	// Ключевой момент: сумма коэффициентов `weight` и `1 - weight` равна 1.
 	return a * weight + b * (1 - weight);
 }
+float lerp2(float a, float b, float f)
+{
+	return a * (1.0 - f) + (b * f);
+}
 
 /*
 =================

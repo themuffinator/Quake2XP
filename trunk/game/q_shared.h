@@ -50,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
 #define id386	1
@@ -280,8 +281,8 @@ extern int Q_ftol(float f);
 #endif 
 
 
-void Com_DefaultPath (char *path, int maxSize, const char *newPath);
-void Com_DefaultExtension (char *path, int maxSize, const char *newExtension);
+void Com_DefaultPath (char *path, size_t maxSize, const char *newPath);
+void Com_DefaultExtension (char *path, size_t maxSize, const char *newExtension);
 
 void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
 
@@ -351,9 +352,7 @@ char *Com_ParseExt (char **data_p, bool allowNewLines);
 char *COM_Parse (char **data_p);
 // data is an in/out parm, returns a parsed out token
 
-void Com_sprintf (char *dest, int size, char *fmt, ...);
-
-void Com_PageInMemory (byte *buffer, int size);
+void Com_sprintf (char *dest, size_t size, char *fmt, ...);
 
 //=============================================
 
@@ -368,8 +367,8 @@ int Q_strncasecmp (const char *s1, const char *s2, int n);
 #define Q_strncasecmp strncasecmp
 #endif
 
-void Q_strncpyz (char *dst, const char *src, int dstSize);
-void Q_strcat (char *dst, const char *src, int dstSize);
+void Q_strncpyz (char *dst, const char *src, size_t dstSize);
+void Q_strcat (char *dst, const char *src, size_t dstSize);
 int Q_strnicmp (const char *string1, const char *string2, int n);
 
 //=============================================
@@ -1480,5 +1479,5 @@ void Parser_SkipRestOfLine (parser_t *parser);
 char *Com_Parse (char **data_p);
 #define COM_Parse(p)	Com_Parse(p)
 
-void Q_strncatz (char *dst, int dstSize, const char *src);
+void Q_strncatz (char *dst, size_t dstSize, const char *src);
 

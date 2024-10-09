@@ -215,31 +215,31 @@
     <ClCompile Include="renderer\r_light.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_glimp.c">
+    <ClCompile Include="win64\win_glimp.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_input.c">
+    <ClCompile Include="win64\win_input.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_network.c">
+    <ClCompile Include="win64\win_network.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_system.c">
+    <ClCompile Include="win64\win_system.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_paths.c">
+    <ClCompile Include="win64\win_paths.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_conproc.c">
+    <ClCompile Include="win64\win_conproc.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_wndproc.c">
+    <ClCompile Include="win64\win_wndproc.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_xbox360.c">
+    <ClCompile Include="win64\win_xbox360.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_adl7.c">
+    <ClCompile Include="win64\win_adl7.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
     <ClCompile Include="client\cg_cin.c">
@@ -287,19 +287,19 @@
     <ClCompile Include="client\vid_menu.c">
       <Filter>Source Files\Menu</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_nvapi.c">
+    <ClCompile Include="win64\win_nvidia.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
     <ClCompile Include="client\snd_music.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_cd.c">
+    <ClCompile Include="win64\win_cd.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_openal.c">
+    <ClCompile Include="win64\win_openal.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_sysinfo.c">
+    <ClCompile Include="win64\win_sysinfo.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
     <ClCompile Include="renderer\r_imageLoad.c">
@@ -320,7 +320,7 @@
     <ClCompile Include="client\cl_preload.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="win32\win_syscons.c">
+    <ClCompile Include="win64\win_syscons.c">
       <Filter>Source Files\Win64</Filter>
     </ClCompile>
     <ClCompile Include="renderer\r_surfacesRA.c">
@@ -403,7 +403,7 @@
     <ClInclude Include="client\screen.h">
       <Filter>Source Files\Client\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\winquake.h">
+    <ClInclude Include="win64\winquake.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\m_frames.h">
@@ -418,43 +418,43 @@
     <ClInclude Include="client\vid.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\afxres.h">
+    <ClInclude Include="win64\afxres.h">
       <Filter>Resource Files\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\resource.h">
+    <ClInclude Include="win64\resource.h">
       <Filter>Resource Files\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\conproc.h">
+    <ClInclude Include="win64\conproc.h">
       <Filter>Source Files\Client\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi.h">
+    <ClInclude Include="win64\nvapi\nvapi.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_common.h">
+    <ClInclude Include="win64\nvapi\nvapi_lite_common.h">
       <Filter>Source Files\Win64\Headers\NvApi</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
+    <ClInclude Include="win64\nvapi\nvapi_lite_salend.h">
       <Filter>Source Files\Win64\Headers\NvApi</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h">
+    <ClInclude Include="win64\nvapi\nvapi_lite_salstart.h">
       <Filter>Source Files\Win64\Headers\NvApi</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_surround.h">
+    <ClInclude Include="win64\nvapi\nvapi_lite_surround.h">
       <Filter>Source Files\Win64\Headers\NvApi</Filter>
     </ClInclude>
-    <ClInclude Include="win32\adl\adl_defines.h">
+    <ClInclude Include="win64\adl\adl_defines.h">
       <Filter>Source Files\Win64\Headers\Adl</Filter>
     </ClInclude>
-    <ClInclude Include="win32\adl\adl_sdk.h">
+    <ClInclude Include="win64\adl\adl_sdk.h">
       <Filter>Source Files\Win64\Headers\Adl</Filter>
     </ClInclude>
-    <ClInclude Include="win32\adl\adl_structures.h">
+    <ClInclude Include="win64\adl\adl_structures.h">
       <Filter>Source Files\Win64\Headers\Adl</Filter>
     </ClInclude>
     <ClInclude Include="renderer\r_md3.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\win_languages.h">
+    <ClInclude Include="win64\win_languages.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\AL\al.h">
@@ -469,13 +469,13 @@
     <ClInclude Include="client\AL\efx.h">
       <Filter>Source Files\Sound\Headers\openAL</Filter>
     </ClInclude>
-    <ClInclude Include="win32\xinput3.h">
+    <ClInclude Include="win64\xinput3.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\xinput.h">
+    <ClInclude Include="win64\xinput.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\win_usbVendors.h">
+    <ClInclude Include="win64\win_usbVendors.h">
       <Filter>Source Files\Win64\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\AL\efx-creative.h">
@@ -523,15 +523,15 @@
     <ClInclude Include="renderer\khrplatform.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_d3dext.h">
+    <ClInclude Include="win64\nvapi\nvapi_lite_d3dext.h">
       <Filter>Source Files\Win64\Headers\NvApi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="win32\icon1.ico">
+    <None Include="win64\icon1.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="win32\q2.ico">
+    <None Include="win64\q2.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\baseq2\glsl\include\depth.inc">
@@ -828,14 +828,32 @@
     <None Include="..\baseq2\glsl\avrLum.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\baseq2\glsl\lensFlare.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\lensFlare.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\bright2.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\bright2.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\lensFlareFinal.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\lensFlareFinal.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="win32\q2.rc">
+    <ResourceCompile Include="win64\q2.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="win32\console.bmp">
+    <Image Include="win64\console.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="favicon.ico">
@@ -844,7 +862,7 @@
     <Image Include="..\win32\icon5.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="win32\favicon.ico">
+    <Image Include="win64\favicon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

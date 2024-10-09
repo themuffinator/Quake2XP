@@ -49,8 +49,6 @@ int registration_sequence;
 extern char map_entitystring[MAX_MAP_ENTSTRING];
 extern bool relightMap, cleanAmbientMap;
 
-byte Normal2Index(const vec3_t vec);
-
 int numentitychars;
 byte *mod_base;
 int *mod_xplmOffsets;		// face light offsets from .xplm file, freed after level is loaded
@@ -356,7 +354,7 @@ void *Mod_Hunk_Begin(size_t maxsize, char *name){
 	mod_hunkCurSize = 0;
 	mod_hunkMaxSize = maxsize;
 	
-	int l = strlen(name);
+	size_t l = strlen(name);
 	if (l >= MAX_OSPATH)
 		l = MAX_OSPATH - 1;
 	memcpy(mod_hunkName, name, l);
@@ -366,8 +364,9 @@ void *Mod_Hunk_Begin(size_t maxsize, char *name){
 
 	if (!mod_hunkMemBase)
 		Sys_Error("Mod_Hunk_Begin: malloc of size %i failed, %i hunk already allocated for %s", maxsize, mod_hunkCount, mod_hunkName);
-
-	memset(mod_hunkMemBase, 0, maxsize);
+	
+	if(mod_hunkMemBase)
+		memset(mod_hunkMemBase, 0, maxsize);
 
 	return (void *)mod_hunkMemBase;
 }
@@ -442,9 +441,9 @@ size_t Mod_CalcMd2Memory(void *buffer) {
 	size_t  model, tbn, tri_n;
 
 	md2Hdr = (md2Header *)buffer;
-	model	= (LittleLong(md2Hdr->ofs_end) + 31) & ~31;
+	model	= (LittleLong((size_t)md2Hdr->ofs_end) + 31) & ~31;
 	tbn		= ((md2Hdr->num_xyz * md2Hdr->num_frames * sizeof(vec3_t)) * 3 + 31) & ~31;
-	tri_n	= ((md2Hdr->num_tris * sizeof(neighbors_t) * 2) + 31) & ~31; // fix it!!!!
+	tri_n	= ((md2Hdr->num_tris * sizeof(neighbors_t) * 2) + 31) & ~31;
 
 	return model + tbn + tri_n;
 }
@@ -2341,7 +2340,7 @@ void Mod_BuildMD2Tangents(model_t * mod, md2Header *md2Hdr, md2StVerts_t *outSt)
 	md2Frame_t		*frame;
 	md2Vertex_t		*verts, *v;
 	md2Triangle_t	*tris = (md2Triangle_t *)((byte *)md2Hdr + md2Hdr->ofs_tris);
-	int				sz = md2Hdr->num_xyz * md2Hdr->num_frames * sizeof(vec3_t);
+	size_t			sz = md2Hdr->num_xyz * md2Hdr->num_frames * sizeof(vec3_t);
 	static vec3_t	tmpT[MAX_VERTS], tmpB[MAX_VERTS], tmpN[MAX_VERTS];
 	vec3_t			*tangents = NULL, *binormals = NULL, *normals = NULL;
 //	md2Verts_t		*vertex = (md2Verts_t *)Z_Malloc(md2Hdr->num_st * sizeof(md2Verts_t));

@@ -2001,7 +2001,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="win32\cd_win.c"
+					RelativePath="win64\cd_win.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2301,7 +2301,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="win32\vid_menu.c"
+					RelativePath="win64\vid_menu.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2929,7 +2929,7 @@
 				Name="Win32"
 				>
 				<File
-					RelativePath="win32\conproc.c"
+					RelativePath="win64\conproc.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2985,7 +2985,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="win32\in_win.c"
+					RelativePath="win64\in_win.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -3041,7 +3041,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="win32\net_wins.c"
+					RelativePath="win64\net_wins.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -3101,7 +3101,7 @@
 					>
 				</File>
 				<File
-					RelativePath="win32\sys_win.c"
+					RelativePath="win64\sys_win.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -3157,7 +3157,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="win32\vid_dll.c"
+					RelativePath="win64\vid_dll.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -3883,7 +3883,7 @@
 				>
 			</File>
 			<File
-				RelativePath="win32\conproc.h"
+				RelativePath="win64\conproc.h"
 				>
 			</File>
 			<File
@@ -3923,7 +3923,7 @@
 				>
 			</File>
 			<File
-				RelativePath="win32\resource.h"
+				RelativePath="win64\resource.h"
 				>
 			</File>
 			<File
@@ -3935,28 +3935,16 @@
 				>
 			</File>
 			<File
-				RelativePath=".\qcommon\unzip.h"
-				>
-			</File>
-			<File
 				RelativePath="client\vid.h"
 				>
 			</File>
 			<File
-				RelativePath="qcommon\wildcard.h"
-				>
-			</File>
-			<File
-				RelativePath="win32\winquake.h"
+				RelativePath="win64\winquake.h"
 				>
 			</File>
 			<Filter
 				Name="Renderer"
 				>
-				<File
-					RelativePath=".\renderer\anormtab.h"
-					>
-				</File>
 				<File
 					RelativePath=".\renderer\glext.h"
 					>
@@ -3981,51 +3969,11 @@
 					RelativePath=".\renderer\r_particle.h"
 					>
 				</File>
-				<File
-					RelativePath=".\renderer\r_q2pal.h"
-					>
-				</File>
-				<File
-					RelativePath=".\renderer\r_warpsin.h"
-					>
-				</File>
+				
 				<File
 					RelativePath=".\renderer\wglext.h"
 					>
 				</File>
-				<Filter
-					Name="ImageLib"
-					>
-					<File
-						RelativePath=".\renderer\ImageLib\config.h"
-						>
-					</File>
-					<File
-						RelativePath=".\renderer\ImageLib\il.h"
-						>
-					</File>
-					<File
-						RelativePath=".\renderer\ImageLib\ilu.h"
-						>
-					</File>
-					<File
-						RelativePath=".\renderer\ImageLib\ilut.h"
-						>
-					</File>
-					<File
-						RelativePath=".\renderer\ImageLib\jconfig.h"
-						>
-					</File>
-					<File
-						RelativePath=".\renderer\ImageLib\jmorecfg.h"
-						>
-					</File>
-					<File
-						RelativePath=".\renderer\ImageLib\jpeglib.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
 			<Filter
 				Name="Audio"
 				>
@@ -4044,15 +3992,15 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="win32\icon1.ico"
+				RelativePath="win64\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="win32\q2.ico"
+				RelativePath="win64\q2.ico"
 				>
 			</File>
 			<File
-				RelativePath="win32\q2.rc"
+				RelativePath="win64\q2.rc"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

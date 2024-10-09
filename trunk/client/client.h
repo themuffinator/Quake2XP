@@ -1068,4 +1068,4 @@ image_t	*i_banner_multiplayer[2],	*i_banner_game[2],
 		*i_banner_options[2],		*i_banner_video[2],
 		*i_banner_player_setup[2];
 
-void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...);
+void Q_snprintfz (char *dst, size_t dstSize, const char *fmt, ...);

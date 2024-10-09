@@ -39,6 +39,7 @@ static int sound_idle;
 static int sound_punch;
 static int sound_sight;
 static int sound_search;
+static int sound_xfire;
 static int sound_step1, sound_step2, sound_step3, sound_step4;
 
 void berserk_step(edict_t *self) {
@@ -230,9 +231,17 @@ mmove_t berserk_move_attack_club = { FRAME_att_c9, FRAME_att_c20, berserk_frames
 
 void berserk_strike (edict_t *self) {
 	//FIXME play impact sound
+	vec3_t aim;
+
+	if (!self)
+		return;
+
+	VectorSet(aim, MELEE_DISTANCE, 0, -6);
+	fire_hit(self, aim, (10 + (rand() % 6)), 400);       /* Slower attack */
+	gi.sound(self, CHAN_VOICE, sound_xfire, 1, ATTN_NORM, 0);
 }
 
-
+/*
 mframe_t berserk_frames_attack_strike[] =
 {
 	ai_move, 0, NULL,
@@ -250,15 +259,81 @@ mframe_t berserk_frames_attack_strike[] =
 	ai_move, 9.7, NULL,
 	ai_move, 13.6, NULL
 };
-
+*/
+// remaster restore attack frames
+mframe_t berserk_frames_attack_strike[] = {
+	{ai_move, 0, NULL},
+	{ai_move, 0, NULL},
+	{ai_move, 0, berserk_step},
+	{ai_move, 0, berserk_swing},
+	{ai_move, 0, NULL},
+	{ai_move, 0, NULL},
+	{ai_move, 0, NULL},
+	{ai_move, 0, berserk_strike},
+	{ai_move, 0, berserk_step},
+	{ai_move, 0, NULL},
+	{ai_move, 0, NULL},
+	{ai_move, 0, NULL},
+	{ai_move, 9.7, NULL},
+	{ai_move, 13.6, berserk_step}
+};
 mmove_t berserk_move_attack_strike = { FRAME_att_c21, FRAME_att_c34, berserk_frames_attack_strike, berserk_run };
 
+void berserk_attack_running_club(edict_t *self)
+{
+	/* Same as regular club attack */
+	vec3_t aim;
+
+	if (!self)
+		return;
+
+	VectorSet(aim, MELEE_DISTANCE, self->mins[0], -4);
+	fire_hit(self, aim, (5 + (rand() % 6)), 400);       /* Slower attack */
+}
+
+mframe_t berserk_frames_attack_running_club[] = {
+	{ai_charge, 21, NULL},
+	{ai_charge, 11, NULL},
+	{ai_charge, 21, NULL},
+	{ai_charge, 25, NULL},
+	{ai_charge, 18, NULL},
+	{ai_charge, 19, NULL},
+	{ai_charge, 21, NULL},
+	{ai_charge, 11, NULL},
+	{ai_charge, 21, NULL},
+	{ai_charge, 25, NULL},
+	{ai_charge, 18, NULL},
+	{ai_charge, 19, NULL},
+	{ai_charge, 21, NULL},
+	{ai_charge, 11, NULL},
+	{ai_charge, 21, NULL},
+	{ai_charge, 25, berserk_swing},
+	{ai_charge, 18, berserk_attack_running_club},
+	{ai_charge, 19, NULL}
+};
+
+mmove_t berserk_move_attack_running_club = { FRAME_r_att1, FRAME_r_att18, berserk_frames_attack_running_club, berserk_run };
 
 void berserk_melee (edict_t *self) {
-	if ((rand () % 2) == 0)
+
+	int r = rand() % 4;
+
+	if (r == 0)
+	{
 		self->monsterinfo.currentmove = &berserk_move_attack_spike;
-	else
+	}
+	else if (r == 1)
+	{
+		self->monsterinfo.currentmove = &berserk_move_attack_strike;
+	}
+	else if (r == 2)
+	{
 		self->monsterinfo.currentmove = &berserk_move_attack_club;
+	}
+	else
+	{
+		self->monsterinfo.currentmove = &berserk_move_attack_running_club;
+	}
 }
 
 
@@ -443,6 +518,8 @@ void SP_monster_berserk (edict_t *self) {
 	sound_step2 = gi.soundindex("berserk/step2.wav");
 	sound_step3 = gi.soundindex("berserk/step3.wav");
 	sound_step4 = gi.soundindex("berserk/step4.wav");
+	
+	sound_xfire = gi.soundindex("berserk/xfire.wav");
 
 	self->collision_model = TR_Model_Get("berserk", &self->collision_model_index);
 	self->s.modelindex = gi.modelindex ("models/monsters/berserk/tris.md2");

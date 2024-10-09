@@ -97,7 +97,6 @@ functionList_t functionList[] = {
 { "Info_RemoveKey", (byte *)Info_RemoveKey },
 { "Info_ValueForKey", (byte *)Info_ValueForKey },
 { "Com_sprintf", (byte *)Com_sprintf },
-{ "Com_PageInMemory", (byte *)Com_PageInMemory },
 { "Com_Parse", (byte *)Com_Parse },
 { "va", (byte *)va },
 { "Swap_Init", (byte *)Swap_Init },
@@ -659,6 +658,7 @@ functionList_t functionList[] = {
 { "berserk_attack_club", (byte *)berserk_attack_club },
 { "berserk_swing", (byte *)berserk_swing },
 { "berserk_attack_spike", (byte *)berserk_attack_spike },
+{ "berserk_attack_running_club", (byte*)berserk_attack_running_club },
 { "berserk_run", (byte *)berserk_run },
 { "berserk_walk", (byte *)berserk_walk },
 { "berserk_fidget", (byte *)berserk_fidget },
@@ -666,6 +666,7 @@ functionList_t functionList[] = {
 { "berserk_search", (byte *)berserk_search },
 { "berserk_sight", (byte *)berserk_sight },
 { "berserk_step", (byte *)berserk_step },
+
 { "SP_target_actor", (byte *)SP_target_actor },
 { "target_actor_touch", (byte *)target_actor_touch },
 { "SP_misc_actor", (byte *)SP_misc_actor },
@@ -1439,6 +1440,8 @@ mmoveList_t mmoveList[] = {
 { "berserk_move_walk", &berserk_move_walk },
 { "berserk_move_stand_fidget", &berserk_move_stand_fidget },
 { "berserk_move_stand", &berserk_move_stand },
+{ "berserk_frames_attack_running_club", &berserk_frames_attack_running_club },
+
 { "actor_move_attack", &actor_move_attack },
 { "actor_move_death2", &actor_move_death2 },
 { "actor_move_death1", &actor_move_death1 },

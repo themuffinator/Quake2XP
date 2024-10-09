@@ -228,10 +228,10 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	{
 		memcpy(outMesh->name, inMesh->name, MD3_MAX_PATH);
 
-		if (strncmp((const char *)inMesh->id, "IDP3", 4))
+		if (inMesh->id != IDMD3HEADER)
 		{
 			VID_Error(ERR_DROP, "mesh %s in model %s has wrong id (%i should be %i)",
-				outMesh->name, mod->name, LittleLong((intptr_t)inMesh->id), IDMD3HEADER);
+				outMesh->name, mod->name, LittleLong(inMesh->id), IDMD3HEADER);
 		}
 
 		outMesh->num_tris = LittleLong(inMesh->num_tris);
@@ -336,7 +336,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			memmove(pname, pname + 7, strlen(pname));
 			pname[strlen(pname) - 4] = 0;
 		}
-		outMesh->ibo = R_Alloc_VBO(va("" S_COLOR_WHITE " mesh " S_COLOR_GREEN "%s " S_COLOR_WHITE "from model " S_COLOR_GREEN "%s\n", outMesh->name, pname), GL_ELEMENT_ARRAY_BUFFER, outMesh->num_tris * 3 * sizeof(uint16_t), outMesh->indexes, GL_STATIC_DRAW);
+		outMesh->ibo = R_Alloc_VBO(va("" S_COLOR_WHITE " mesh " S_COLOR_GREEN "%s " S_COLOR_WHITE "from model " S_COLOR_GREEN "%s\n", 
+									outMesh->name, pname), GL_ELEMENT_ARRAY_BUFFER, outMesh->num_tris * 3 * sizeof(uint16_t), outMesh->indexes, GL_STATIC_DRAW);
 
 		//
 		// load the texture coordinates
@@ -629,7 +630,7 @@ void R_DrawMD3Mesh(bool weapon) {
 		if(gl_config.hdrDisplay)
 			VectorSet(shadelight, 0.1, 0.1, 0.1);
 		else
-			VectorSet(shadelight, 0.5, 0.5, 0.5);
+			VectorSet(shadelight, 0.75, 0.75, 0.75);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
@@ -1133,7 +1134,7 @@ void R_DrawMD3MeshLight(bool weapon) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	GL_PolygonOffset(-1.0, -1.0);
+	GL_PolygonOffset(-0.1, -1.0);
 
 	// setup program
 	GL_BindProgram(aliasBumpProgram);
@@ -1154,9 +1155,13 @@ void R_DrawMD3MeshLight(bool weapon) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
+	if (currententity->flags & RF_WEAPONMODEL)
+		qglUniform1i(U_PARAM_INT_4, 1);
+
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		qglUniform1i(U_PARAM_INT_4, 0);
-
+	
+	
 
 	if (frame == oldFrame)
 		noLerp = true;

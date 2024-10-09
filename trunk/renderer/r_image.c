@@ -1276,6 +1276,7 @@ void GL_FreeUnusedImages(void)
 	gi.skinBump->registration_sequence = registration_sequence;
 	gi.laserNormal->registration_sequence = registration_sequence;
 	gi.lensDirt->registration_sequence = registration_sequence;
+	gi.lensBurst->registration_sequence = registration_sequence;
 
 	for (i = 0, image = gi.r_textures; i < gi.r_numTextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)

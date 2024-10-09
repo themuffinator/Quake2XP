@@ -142,6 +142,8 @@ void TR_Model_Free(){
 	}
 }
 
+static int model_index_max = sizeof(models) / sizeof(model_to_TRmesh_t);
+
 modelTR_t* TR_Model_Get(const char* name, int *index){
 
 	for (int i = 0; i < sizeof(models) / sizeof(model_to_TRmesh_t); ++i)
@@ -159,8 +161,9 @@ modelTR_t* TR_Model_Get(const char* name, int *index){
 
 modelTR_t *TR_Model_Get_by_Index(int index)
 {
-	if (!index)
+	if (!index || index > model_index_max)
 		return NULL;
+
 	return models[index - 1].model;
 }
 

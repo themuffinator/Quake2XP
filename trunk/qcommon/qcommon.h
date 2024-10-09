@@ -602,11 +602,17 @@ typedef enum {
 	NS_CLIENT, NS_SERVER
 } netsrc_t;
 
+typedef union {
+	uint8_t u8[16];
+	uint16_t u16[8];
+	uint32_t u32[4];
+	uint64_t u64[2];
+} netadrip_t;
+
 typedef struct {
 	netadrtype_t type;
-
-	byte ip[4];
-	byte ipx[10];
+	netadrip_t ip;
+//	byte ip[4];
 
 	unsigned short port;
 } netadr_t;

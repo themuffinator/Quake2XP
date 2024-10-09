@@ -226,7 +226,7 @@ bool R_FillAmbientBatch (msurface_t *surf, bool newBatch, unsigned *indeces, boo
 	qglUniform3fv(U_PARAM_VEC3_0, 1, glowScale);
 
 	// create indexes
-	if (numIndices == 0xffffffff)
+	if (numIndices == sizeof(size_t))
 		numIndices = 0;
 
 	for (i = 0; i < nv - 2; i++) {
@@ -329,13 +329,13 @@ static void GL_DrawLightmappedPoly(bool bmodel)
 	msurface_t	*s;
 	int			i;
 	bool	newBatch;
-	unsigned	oldTex		= 0xffffffff;
-	unsigned	oldFlag		= 0xffffffff;
-	unsigned	numIndices  = 0xffffffff;
-	unsigned	oldStyle0 = 0xffffffff;
-	unsigned	oldStyle1 = 0xffffffff;
-	unsigned	oldStyle2 = 0xffffffff;
-	unsigned	oldStyle3 = 0xffffffff;
+	uint	oldTex		= 0;
+	uint	oldFlag		= 0;
+	uint	numIndices  = 0;
+	uint	oldStyle0	= 0;
+	uint	oldStyle1	= 0;
+	uint	oldStyle2	= 0;
+	uint	oldStyle3	= 0;
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 
@@ -349,13 +349,13 @@ static void GL_DrawLightmappedPoly(bool bmodel)
 		// flush batch (new texture)
 		if (s->texInfo->albedo->texnum != oldTex || s->styles[0] != oldStyle0 || s->styles[1] != oldStyle1 || s->styles[2] != oldStyle2 || s->styles[3] != oldStyle3){
 
-			if (numIndices != 0xFFFFFFFF){
+			if (numIndices != 0){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
 
 				R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 				R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
-				numIndices = 0xFFFFFFFF;
+				numIndices = 0;
 			}
 
 			oldTex = s->texInfo->albedo->texnum;
@@ -371,25 +371,25 @@ static void GL_DrawLightmappedPoly(bool bmodel)
 	// fill new batch
 		if (!R_FillAmbientBatch(s, newBatch, &numIndices, bmodel))
 		{
-			if (numIndices != 0xFFFFFFFF){
+			if (numIndices != 0){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
 
 				R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 				R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
-				numIndices = 0xFFFFFFFF;
+				numIndices = 0;
 				}
 		}
 	}
 	
 	// draw the rest
-	if (numIndices != 0xFFFFFFFF) {
+	if (numIndices != 0) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 
 		R_ShowTrisBSP(bmodel, numIndices, 0.0, 1.0, 0.0, ambientWorldProgram);
 		R_ShowBspTBN(bmodel, numIndices, ambientWorldProgram);
 		c_brushTris += numIndices / 3;
-		numIndices = 0xffffffff;
+		numIndices = 0;
 	}
 }
 
@@ -478,7 +478,7 @@ bool R_FillLightBatch(msurface_t *surf, bool newBatch, unsigned *indeces, bool b
 		GL_SetBindlessTexture(U_TMU4, rghMap->handle);
 	}
 	// create indexes
-	if (numIndices == 0xffffffff)
+	if (numIndices == sizeof(size_t))
 		numIndices = 0;
 
 	for (i = 0; i < nv - 2; i++)
@@ -567,10 +567,10 @@ static void GL_DrawDynamicLightPass(bool bmodel, bool caustics)
 	int			i;
 	glpoly_t	*poly;
 	bool	newBatch;
-	uint		oldCaust	= 0xffffffff;
-	uint		oldTex		= 0xffffffff;
-	uint		oldFlag		= 0xffffffff;
-	uint		numIndices	= 0xffffffff;
+	uint		oldCaust	= 0;
+	uint		oldTex		= 0;
+	uint		oldFlag		= 0;
+	uint		numIndices	= 0;
 
 	R_UpdateLightUniforms(bmodel);
 
@@ -586,10 +586,10 @@ static void GL_DrawDynamicLightPass(bool bmodel, bool caustics)
 		// flush batch (new texture or flag)
 		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust)
 		{
-			if (numIndices != 0xffffffff){
+			if (numIndices != 0){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
-				numIndices = 0xffffffff;
+				numIndices = 0;
 			}
 			oldTex = s->texInfo->albedo->texnum;
 			oldFlag = s->flags;
@@ -602,15 +602,15 @@ static void GL_DrawDynamicLightPass(bool bmodel, bool caustics)
 	// fill new batch
 		if (!R_FillLightBatch(s, newBatch, &numIndices, bmodel, caustics))
 		{
-			if (numIndices != 0xffffffff){
+			if (numIndices != 0){
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_lightBrushTris += numIndices / 3;
-				numIndices = 0xffffffff;
+				numIndices = 0;
 			}
 		}
 	}
 	// draw the rest
-	if (numIndices != 0xffffffff) {
+	if (numIndices != 0) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_lightBrushTris += numIndices / 3;
 	}
@@ -621,9 +621,9 @@ static void GL_DrawStaticLightPass()
 	msurface_t	*s;
 	int			i;
 	bool	newBatch;
-	unsigned	oldTex = 0xffffffff;
-	unsigned	oldFlag = 0xffffffff;
-	unsigned	numIndices = 0xffffffff;
+	uint	oldTex = 0;
+	uint	oldFlag = 0;
+	uint	numIndices = 0;
 
 	R_UpdateLightUniforms(false);
 
@@ -637,10 +637,10 @@ static void GL_DrawStaticLightPass()
 		// flush batch (new texture or flag)
 		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag)
 		{
-			if (numIndices != 0xffffffff) {
+			if (numIndices != 0) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_lightBrushTris += numIndices / 3;
-				numIndices = 0xffffffff;
+				numIndices = 0;
 			}
 
 			oldTex = s->texInfo->albedo->texnum;
@@ -653,15 +653,15 @@ static void GL_DrawStaticLightPass()
 		// fill new batch
 		if (!R_FillLightBatch(s, newBatch, &numIndices, false, false))
 		{
-			if (numIndices != 0xffffffff) {
+			if (numIndices != 0) {
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_lightBrushTris += numIndices / 3;
-				numIndices = 0xffffffff;
+				numIndices = 0;
 			}
 		}
 	}
 	// draw the rest
-	if (numIndices != 0xffffffff) {
+	if (numIndices != 0) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_lightBrushTris += numIndices / 3;
 	}
@@ -928,7 +928,7 @@ void R_DrawLightWorld(void)
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	GL_PolygonOffset(-2.0, -2.0);
+	GL_PolygonOffset(-0.1, -1.0);
 
 	GL_BindProgram(lightWorldProgram);
 

@@ -813,6 +813,27 @@ void R_InitPrograms (void) {
 		Com_Printf (S_COLOR_RED"Failed!\n");
 		missing++;
 	}
+	Com_Printf("Load "S_COLOR_YELLOW"bright2 program"S_COLOR_WHITE" ");
+	bright2Program = R_FindProgram("bright2", 0);
+	if (bright2Program->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"lens flare program"S_COLOR_WHITE" ");
+	lensFlareProgram = R_FindProgram("lensFlare", 0);
+	lensFlareFinalProgram = R_FindProgram("lensFlareFinal", 0);
+
+	if (lensFlareProgram->valid && lensFlareFinalProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"radial blur program"S_COLOR_WHITE" ");
 	radialProgram = R_FindProgram ("radialBlur", 0);

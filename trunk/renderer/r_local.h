@@ -1,4 +1,8 @@
 /*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+/*
 Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
@@ -40,12 +44,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "qgl.h"
 
 #ifdef _WIN32
-	#include "../win32/adl/adl_sdk.h"
-	#include "../win32/nvapi/nvapi.h"
+	#include "../win64/adl/adl_sdk.h"
+	#include "../win64/nvapi/nvapi.h"
 #endif
 
 #ifdef _WIN64
-#include "../win32/nvapi/nvml.h"
+#include "../win64/nvapi/nvml.h"
 #endif
 
 // up / down
@@ -212,6 +216,7 @@ typedef struct {
 	fbo_t	*bloomCompute;
 	fbo_t	*hdrLum;
 	fbo_t	*prevHdrLum;
+	fbo_t	*lensFlare;
 }fb_t;
 fb_t fb;
 
@@ -295,12 +300,21 @@ typedef struct globalImage_s {
 	image_t *prevHdrLuminance;
 	image_t *cinematic;
 	image_t *glareImage;
+
 	image_t *thermalImage;
 	image_t *lensDirt;
+	image_t *lensBurst;
+	image_t *lensFlare;
 	image_t *levelSkyBox;
+
 	image_t *bloomIn;
 	image_t *bloomInterim;
 	image_t *bloomOut;
+
+	image_t *lensFlareIn;
+	image_t *lensFlareInterim;
+	image_t *lensFlareOut;
+
 }globalImage_t;
 
 globalImage_t gi;
@@ -361,12 +375,14 @@ cvar_t	*r_gamma;
 
 cvar_t	*r_hdrEVcomp;
 cvar_t	*r_hdrLightScale;
-cvar_t	*r_hdrGlarePasses;
-cvar_t	*r_hdrGlareIntens;
+//cvar_t	*r_hdrGlarePasses;
+//cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
-cvar_t	*r_hdrBloomIntens;
+cvar_t	*r_hdrLensFlares;
+cvar_t	*r_hdrLensFlaresIntens;
 cvar_t	*r_hdrColorSpace;
 cvar_t	*r_hdrUiNits;
+cvar_t	*r_hdrMaxIso;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -391,7 +407,6 @@ cvar_t	*r_multiSamples;
 cvar_t	*r_fxaa;
 extern cvar_t	*deathmatch;
 
-cvar_t	*r_drawFlares;
 cvar_t	*r_scaleAutoLightColor;
 
 cvar_t	*r_customWindowWidth;
@@ -510,7 +525,9 @@ void VID_MenuInit (void);
 void AnglesToMat3 (const vec3_t angles, mat3_t m);
 void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out);
 float lerp(float a, float b, float weight);
+float lerp2(float a, float b, float f);
 void R_ShutdownPrograms (void);
+void R_LensFlares(void);
 void R_Bloom (void);
 void R_ThermalVision (void);
 void R_RadialBlur (void);
@@ -573,7 +590,6 @@ void R_SetFrustum (bool zpass);
 void SetFarClip(void);
 void R_SetViewLightScreenBounds ();
 bool BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
-void R_DrawLightFlare ();
 void R_DrawLightBounds(void);
 
 void R_ShutDownVertexBuffers();
@@ -747,6 +763,7 @@ typedef struct {
 	int			maxSamples;
 	bool		hdrDisplay;
 	bool		useHdrDisplay;
+	int			hdrMaxLuminance;
 } glconfig_t;
 
 
@@ -971,7 +988,7 @@ bool BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_
 
 #define clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
 
-void Q_strncatz (char *dst, int dstSize, const char *src);
+void Q_strncatz (char *dst, size_t dstSize, const char *src);
 
 #define	MAX_LIGHTMAPS		4
 #define	LIGHTMAP_SIZE		4096
@@ -1068,6 +1085,9 @@ glslProgram_t		*picProgram;
 glslProgram_t		*blur_xComputeProgram;
 glslProgram_t		*blur_yComputeProgram;
 glslProgram_t		*avrLuminance;
+glslProgram_t		*lensFlareProgram;
+glslProgram_t		*lensFlareFinalProgram;
+glslProgram_t		*bright2Program;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();

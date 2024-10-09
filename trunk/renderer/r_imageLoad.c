@@ -435,6 +435,10 @@ void R_InitEngineTextures (void) {
 	if (!gi.lensDirt)
 		gi.lensDirt = gi.missingTexture;
 
+	gi.lensBurst = R_LoadDDS("gfx/lens_burst.dds", it_part);
+	if (!gi.lensBurst)
+		gi.lensBurst = gi.missingTexture;
+
 }
 
 
@@ -448,10 +452,26 @@ void R_InitEngineTextures (void) {
 #define NUM_CHANNELS 3
 #define screenSizeByte (vid.width * vid.height* 3 * sizeof(byte))
 #define screenSizeFloat (vid.width * vid.height* 3 * sizeof(float))
+#define DATESIZE 16 //dd.mm.yyyy align to 16
+
+void Get_SysDate(bool us, char *out) {
+	time_t	clock;
+	struct	tm *tm;
+
+	time(&clock);
+	tm = localtime(&clock);
+	
+	// tm->tm_mon starts from 0
+	// tm->tm_year starts from 1900
+	if (!us)
+		Com_sprintf(out, DATESIZE, "%02i.%02i.%04i", tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1900); // rus date format
+	else
+		Com_sprintf(out, DATESIZE, "%02i.%02i.%04i", tm->tm_mon + 1, tm->tm_mday,  tm->tm_year + 1900); // us date format
+}
 
 void GL_ScreenShot_f (void) {
 	FILE	*file;
-	char	picname[80] = {0}, checkname[MAX_OSPATH];
+	char	picname[MAX_OSPATH] = {0}, checkname[MAX_OSPATH], ext[MAX_OSPATH], date[DATESIZE];
 	int		i, w, h;
 	int		startTime, endTime;
 	float	sec;
@@ -469,14 +489,17 @@ void GL_ScreenShot_f (void) {
 	h = vid.height;
 
 	// Create the scrnshots directory if it doesn't exist
-	Com_sprintf (checkname, sizeof(checkname), "%s/screenshots", FS_Gamedir ());
+	Com_sprintf (checkname, sizeof(checkname), "%s/scrnshots", FS_Gamedir ());
 	Sys_Mkdir (checkname);
 
+	Com_sprintf(ext, sizeof(ext), "%s/scrnshots/%s", FS_Gamedir(), r_screenShot->string);
+	Sys_Mkdir(ext);
+
+	Get_SysDate(false, date);
+
 	for (i = 0; i <= 999; i++) {
-		Com_sprintf (picname, sizeof(picname), "q2xp%04i.%s", i,
-			r_screenShot->string);
-		Com_sprintf (checkname, sizeof(checkname), "%s/screenshots/%s",
-			FS_Gamedir (), picname);
+		Com_sprintf (picname, sizeof(picname), "q2xp%04i_%s.%s", i, date, r_screenShot->string);
+		Com_sprintf (checkname, sizeof(checkname), "%s/scrnshots/%s/%s", FS_Gamedir (), r_screenShot->string, picname);
 
 		file = fopen (checkname, "rb");
 		if (!file)

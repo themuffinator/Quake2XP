@@ -852,6 +852,8 @@ extern PFNGLNAMEDBUFFERSTORAGEPROC				qglNamedBufferStorage;
 extern PFNGLNAMEDBUFFERDATAPROC					qglNamedBufferData;
 extern PFNGLNAMEDBUFFERSUBDATAPROC				qglNamedBufferSubData;
 
+extern PFNGLGETTEXTURESUBIMAGEPROC				qglGetTextureSubImage;
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;

@@ -135,7 +135,7 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 		if (gl_config.hdrDisplay)
 			VectorSet(shadelight, 0.1, 0.1, 0.1);
 		else
-			VectorSet(shadelight, 0.5, 0.5, 0.5);
+			VectorSet(shadelight, 0.75, 0.75, 0.75);
 	}
 
 
@@ -646,7 +646,8 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 	
 	qglUniform1i(U_PARAM_INT_1, 0);
 	qglUniform1i(U_PARAM_INT_2, 0);
-	qglUniform1i(U_PARAM_INT_4, 0);
+	if (currententity->flags & RF_WEAPONMODEL)
+		qglUniform1i(U_PARAM_INT_4, 1);
 
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
@@ -945,7 +946,7 @@ visible:
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 	
-	GL_PolygonOffset(-1.0, -1.0);
+	GL_PolygonOffset(-0.1, -1.0);
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
 

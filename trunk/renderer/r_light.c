@@ -38,7 +38,6 @@ int c_numVisLights;
 vec3_t player_org, v_forward, v_right, v_up;
 bool R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes (bool precalc, worldShadowLight_t *light);
-void R_LightFlareOutLine ();
 void R_AddLightInteraction(worldShadowLight_t *light);
 
 bool R_AddLightToFrame (worldShadowLight_t *light, bool weapon) {
@@ -269,6 +268,11 @@ void R_AddNoWorldModelLight () {
 	VectorSet (light->color, 1.0, 0.9, 0.9);
 	VectorSet (light->angles, 0, 0, 0);
 	VectorSet (light->radius, 512, 512, 512);
+
+	if (gl_config.hdrDisplay) {
+		VectorScale(light->startColor, r_hdrUiNits->value / 80.0, light->startColor);
+		VectorScale(light->color, r_hdrUiNits->value / 80.0, light->startColor);
+	}
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - 512.0;
@@ -1457,8 +1461,6 @@ void UpdateLightEditor(void) {
 
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
-
-	R_LightFlareOutLine();
 }
 
 void CreateNormal (vec3_t dst, vec3_t xyz0, vec3_t xyz1, vec3_t xyz2) {
@@ -2503,99 +2505,6 @@ void R_SetViewLightScreenBounds () {
 }
 
 
-void R_DrawLightFlare () {
-
-	float	dist, dist2, scale;
-	vec3_t	v, color;
-	int		i;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-
-	if (!currentShadowLight->flare)
-		return;
-
-	if (currentShadowLight->isNoWorldModel)
-		return;
-
-	if (currentShadowLight->isAmbient)
-		return;
-	
-	if (currentShadowLight->area < 0)
-		return;
-
-	if (!r_drawFlares->integer)
-		return;
-
-	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
-		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
-	
-	if (r_lightScissors->integer)
-		GL_Disable (GL_SCISSOR_TEST);
-
-	GL_BindProgram(flareProgram);
-
-	// Color Fade
-	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);
-	dist2 = VectorLength(v);
-	dist = dist2 * (currentShadowLight->flareSize * 0.01);
-	scale = ((1024.0 - dist2) / 1024.0) * 0.5;
-	if (scale < 0.0)
-		scale = 0.0;
-	VectorScale (currentShadowLight->color, scale, color);
-	
-	for(i = 0; i<3; i++)
-		color[i] *= r_newrefdef.lightstyles[currentShadowLight->style].rgb[i];
-
-	GL_SetBindlessTexture(U_TMU0, gi.particleTexture[PT_FLARE]->handle);
-	GL_SetBindlessTexture(U_TMU1, gi.linearDepth->handle);
-
-	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
-	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float*)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, false, (const float*)r_newrefdef.modelViewMatrix);
-
-	VA_SetElem3(tess3d.v[0].pos,	currentShadowLight->flareOrigin[0] - vright[0] * dist - vup[0] * dist,
-									currentShadowLight->flareOrigin[1] - vright[1] * dist - vup[1] * dist,
-									currentShadowLight->flareOrigin[2] - vright[2] * dist - vup[2] * dist);
-
-	VA_SetElem3(tess3d.v[1].pos,	currentShadowLight->flareOrigin[0] - vright[0] * dist + vup[0] * dist,
-									currentShadowLight->flareOrigin[1] - vright[1] * dist + vup[1] * dist,
-									currentShadowLight->flareOrigin[2] - vright[2] * dist + vup[2] * dist);
-
-	VA_SetElem3(tess3d.v[2].pos,	currentShadowLight->flareOrigin[0] + vright[0] * dist + vup[0] * dist,
-									currentShadowLight->flareOrigin[1] + vright[1] * dist + vup[1] * dist,
-									currentShadowLight->flareOrigin[2] + vright[2] * dist + vup[2] * dist);
-
-	VA_SetElem3(tess3d.v[3].pos,	currentShadowLight->flareOrigin[0] + vright[0] * dist - vup[0] * dist,
-									currentShadowLight->flareOrigin[1] + vright[1] * dist - vup[1] * dist,
-									currentShadowLight->flareOrigin[2] + vright[2] * dist - vup[2] * dist);
-
-	VA_SetElem2(tess3d.v[0].tc, 0, 1);
-	VA_SetElem2(tess3d.v[1].tc, 0, 0);
-	VA_SetElem2(tess3d.v[2].tc, 1, 0);
-	VA_SetElem2(tess3d.v[3].tc, 1, 1);
-
-	for (i = 0; i < 4; i++)
-		VA_SetElem4(tess3d.v[i].color, color[0], color[1], color[2], 1.0);
-
-	GL_BindVAO(vao.stream3d);
-	GL_BindVBO(vbo.stream3d);
-	GL_BindVBO(vbo.quadIbo);
-
-	qglInvalidateBufferData(GL_ARRAY_BUFFER);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, QUAD_INDICES * sizeof(vertex3d_t), &tess3d);
-
-	GL_DrawElements(GL_TRIANGLES, QUAD_INDICES, GL_UNSIGNED_BYTE, NULL);
-
-	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
-		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
-	
-	if (r_lightScissors->integer)
-		GL_Enable(GL_SCISSOR_TEST);
-}
 
 void R_LightFlareOutLine() { //flare editing highlights
 

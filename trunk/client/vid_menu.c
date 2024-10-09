@@ -58,8 +58,8 @@ static menuslider_s		s_fixfov_slider;
 //static menulist_s		s_lut_list;
 static menuslider_s		s_hdrNits_slider;
 
-static menuslider_s		s_bloomIntens_slider;
-static menuslider_s		s_bloomIntens2_slider;
+static menuslider_s		s_flareIntens_slider;
+
 
 static menulist_s  		s_fs_box;
 
@@ -126,7 +126,7 @@ static void reliefShadowCallback(void *s) {
 static void FlareCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_drawFlares", box->curInteger * 1);
+	Cvar_SetValue ("r_hdrLensFlares", box->curInteger * 1);
 }
 
 static void AnisoCallback (void *s) {
@@ -221,14 +221,9 @@ static void mbCallback (void *s) {
 	Cvar_SetValue ("r_motionBlur", box->curInteger * 1);
 }
 
-static void bloomLevelCallback(void *s) {
-	float intens = s_bloomIntens_slider.curValue / 10;
-	Cvar_SetValue("r_hdrGlareIntens", intens);
-}
-
-static void bloomLevelCallback2(void* s) {
-	float intens = s_bloomIntens2_slider.curValue / 10;
-	Cvar_SetValue("r_hdrBloomIntens", intens);
+static void flareLevelCallback(void *s) {
+	float intens = s_flareIntens_slider.curValue / 10;
+	Cvar_SetValue("r_hdrLensFlaresIntens", intens);
 }
 
 static void ResetDefaults (void *unused) {
@@ -316,7 +311,7 @@ static void ApplyChanges (void *unused) {
 	if (r_displayRefresh->modified)
 		vid_ref->modified = true;
 
-	if (r_drawFlares->modified)
+	if (r_hdrLensFlares->modified)
 		vid_ref->modified = true;
 
 	if (r_parallaxMapping->modified)
@@ -343,7 +338,7 @@ static void ApplyChanges (void *unused) {
 	if (r_motionBlur->modified)
 		vid_ref->modified = true;
 
-	if (r_hdrGlareIntens->modified)
+	if (r_hdrLensFlaresIntens->modified)
 		vid_ref->modified = true;
 
 	if (r_hdrUiNits->modified)
@@ -404,25 +399,22 @@ void M_ColorInit() {
 	if (!r_saturation)
 		r_saturation = Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
 
-	if (!r_hdrGlareIntens)
-		r_hdrGlareIntens = Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
-
-	if (!r_hdrBloomIntens)
-		r_hdrBloomIntens = Cvar_Get("r_hdrBloomIntens", "1.0", CVAR_ARCHIVE);
+	if (!r_hdrLensFlaresIntens)
+		r_hdrLensFlaresIntens = Cvar_Get("r_hdrLensFlaresIntens", "0.2", CVAR_ARCHIVE);
 
 	if (!r_fixFovStrength)
 		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
 	if(!r_hdrUiNits)
 		r_hdrUiNits = Cvar_Get("r_hdr_uiNits", "100.0", CVAR_ARCHIVE);
 
-	r_hdrUiNits->value = ClampCvar(100.0, 1000.0, r_hdrUiNits->value);
+	r_hdrUiNits->value = ClampCvar(100.0, gl_config.hdrMaxLuminance, r_hdrUiNits->value);
 	r_gamma->value = ClampCvar(1.5, 2.2, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
 	r_colorVibrance->value = ClampCvar(-1.0, 1.0, r_colorVibrance->value);
 
-	r_hdrGlareIntens->value = ClampCvar(1.2, 2.0, r_hdrGlareIntens->value);
+	r_hdrLensFlaresIntens->value = ClampCvar(0.1, 1.0, r_hdrLensFlaresIntens->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
 	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
@@ -499,34 +491,23 @@ void M_ColorInit() {
 	s_hdrNits_slider.generic.name = "HDR UI Brightness";
 	s_hdrNits_slider.generic.callback = hdrNitsCallback;
 	s_hdrNits_slider.minValue = 100;
-	s_hdrNits_slider.maxValue = 1000;
+	s_hdrNits_slider.maxValue = gl_config.hdrMaxLuminance;
 	s_hdrNits_slider.curValue = r_hdrUiNits->value * 1;
 	s_hdrNits_slider.divRange = 1;
 	s_hdrNits_slider.name = "Nits";
 	s_hdrNits_slider.generic.statusbar = "UI Brightness in HDR Mode";
 
 
-	s_bloomIntens_slider.generic.type = MTYPE_SLIDER;
-	s_bloomIntens_slider.generic.x = 0;
-	s_bloomIntens_slider.generic.y = 90 * ui_fontScale->value;
-	s_bloomIntens_slider.generic.name = "Glare Intensity";
-	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
-	s_bloomIntens_slider.minValue = 12;
-	s_bloomIntens_slider.maxValue = 20;
-	s_bloomIntens_slider.curValue = r_hdrGlareIntens->value * 10;
-	s_bloomIntens_slider.divRange = 10;
-	s_bloomIntens_slider.generic.statusbar = "Lens Glare Intensity";
-
-	s_bloomIntens2_slider.generic.type = MTYPE_SLIDER;
-	s_bloomIntens2_slider.generic.x = 0;
-	s_bloomIntens2_slider.generic.y = 100 * ui_fontScale->value;
-	s_bloomIntens2_slider.generic.name = "Bloom Intensity";
-	s_bloomIntens2_slider.generic.callback = bloomLevelCallback2;
-	s_bloomIntens2_slider.minValue = 1;
-	s_bloomIntens2_slider.maxValue = 10;
-	s_bloomIntens2_slider.curValue = r_hdrBloomIntens->value * 10;
-	s_bloomIntens2_slider.divRange = 10;
-	s_bloomIntens2_slider.generic.statusbar = "Bloom Intensity";
+	s_flareIntens_slider.generic.type = MTYPE_SLIDER;
+	s_flareIntens_slider.generic.x = 0;
+	s_flareIntens_slider.generic.y = 90 * ui_fontScale->value;
+	s_flareIntens_slider.generic.name = "Lens Flares Intensity";
+	s_flareIntens_slider.generic.callback = flareLevelCallback;
+	s_flareIntens_slider.minValue = 1;
+	s_flareIntens_slider.maxValue = 10;
+	s_flareIntens_slider.curValue = r_hdrLensFlaresIntens->value * 10;
+	s_flareIntens_slider.divRange = 10;
+	s_flareIntens_slider.generic.statusbar = "Adjust Lens Flares Intensity In LDR or HDR Modes";
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
@@ -569,8 +550,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_hdrNits_slider);
 
-	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
-	Menu_AddItem(&s_opengl2_menu, (void*)&s_bloomIntens2_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_flareIntens_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
 //	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
@@ -675,8 +655,8 @@ void VID_MenuInit (void) {
 	if (!r_textureAnisotropy)
 		r_textureAnisotropy = Cvar_Get ("r_textureAnisotropy", "1", CVAR_ARCHIVE);
 
-	if (!r_drawFlares)
-		r_drawFlares = Cvar_Get ("r_drawFlares", "0", CVAR_ARCHIVE);
+	if (!r_hdrLensFlares)
+		r_hdrLensFlares = Cvar_Get ("r_hdrLensFlares", "0", CVAR_ARCHIVE);
 
 
 	if (!r_hdrBloom)
@@ -840,11 +820,11 @@ void VID_MenuInit (void) {
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
 	s_flare_box.generic.y = 110 * ui_fontScale->value;
-	s_flare_box.generic.name = "Light Flares";
+	s_flare_box.generic.name = "Lens Flares";
 	s_flare_box.itemnames = yesno_names;
-	s_flare_box.curInteger = r_drawFlares->integer;
+	s_flare_box.curInteger = r_hdrLensFlares->integer;
 	s_flare_box.generic.callback = FlareCallback;
-	s_flare_box.generic.statusbar = "Draw Lights Corona Effect";
+	s_flare_box.generic.statusbar = "Pseudo Lens Flares";
 
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;

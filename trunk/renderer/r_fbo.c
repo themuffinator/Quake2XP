@@ -305,6 +305,13 @@ void R_InitFboBuffers() {
 	gi.glareImage = R_CreateTexture("***glareImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
+	gi.lensFlareIn = R_CreateTexture("***lensFlareIn***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGB, 0,
+		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	gi.lensFlareInterim = R_CreateTexture("***lensFlareInterim***", GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	gi.lensFlareOut = R_CreateTexture("***lensFlareOut***", GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
 	gi.thermalImage = R_CreateTexture("***thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
@@ -362,6 +369,13 @@ void R_InitFboBuffers() {
 	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");
 	fb.glare = R_Create_FBO("***glare_fbo***");
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.glareImage, 0);
+	R_FB_Check();
+
+	Com_Printf("Load "S_COLOR_YELLOW "LENSFLARE FBO ");
+	fb.lensFlare = R_Create_FBO("***lensflare_fbo***");
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.lensFlareIn, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.lensFlareInterim, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.lensFlareOut, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");

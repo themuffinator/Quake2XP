@@ -373,7 +373,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <OpenMPSupport>false</OpenMPSupport>
+      <OpenMPSupport>true</OpenMPSupport>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -566,14 +566,14 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_syscons.c" />
-    <ClCompile Include="win32\win_openal.c">
+    <ClCompile Include="win64\win_syscons.c" />
+    <ClCompile Include="win64\win_openal.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_cd.c">
+    <ClCompile Include="win64\win_cd.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -660,35 +660,35 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_adl7.c" />
-    <ClCompile Include="win32\win_conproc.c">
+    <ClCompile Include="win64\win_adl7.c" />
+    <ClCompile Include="win64\win_conproc.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_input.c">
+    <ClCompile Include="win64\win_input.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_network.c">
+    <ClCompile Include="win64\win_network.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_paths.c" />
-    <ClCompile Include="win32\win_nvapi.c" />
-    <ClCompile Include="win32\win_sysinfo.c" />
-    <ClCompile Include="win32\win_system.c">
+    <ClCompile Include="win64\win_paths.c" />
+    <ClCompile Include="win64\win_nvidia.c" />
+    <ClCompile Include="win64\win_sysinfo.c" />
+    <ClCompile Include="win64\win_system.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_wndproc.c">
+    <ClCompile Include="win64\win_wndproc.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -698,7 +698,7 @@
     <ClCompile Include="renderer\r_decals.c" />
     <ClCompile Include="renderer\r_draw2d.c" />
     <ClCompile Include="renderer\r_image.c" />
-    <ClCompile Include="win32\win_glimp.c" />
+    <ClCompile Include="win64\win_glimp.c" />
     <ClCompile Include="renderer\r_vertexLight.c" />
     <ClCompile Include="renderer\r_model.c" />
     <ClCompile Include="renderer\r_particles.c" />
@@ -761,7 +761,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\win_xbox360.c" />
+    <ClCompile Include="win64\win_xbox360.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AL\al.h" />
@@ -789,11 +789,11 @@
     <ClInclude Include="renderer\r_md3.h" />
     <ClInclude Include="renderer\stb\stb_image.h" />
     <ClInclude Include="renderer\stb\stb_image_write.h" />
-    <ClInclude Include="win32\adl\adl_defines.h" />
-    <ClInclude Include="win32\adl\adl_sdk.h" />
-    <ClInclude Include="win32\adl\adl_structures.h" />
-    <ClInclude Include="win32\afxres.h" />
-    <ClInclude Include="win32\conproc.h" />
+    <ClInclude Include="win64\adl\adl_defines.h" />
+    <ClInclude Include="win64\adl\adl_sdk.h" />
+    <ClInclude Include="win64\adl\adl_structures.h" />
+    <ClInclude Include="win64\afxres.h" />
+    <ClInclude Include="win64\conproc.h" />
     <ClInclude Include="game\game.h" />
     <ClInclude Include="client\input.h" />
     <ClInclude Include="client\keys.h" />
@@ -803,13 +803,13 @@
     <ClInclude Include="qcommon\qfiles.h" />
     <ClInclude Include="client\qmenu.h" />
     <ClInclude Include="client\ref.h" />
-    <ClInclude Include="win32\nvapi\nvapi.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_common.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_d3dext.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_salend.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_surround.h" />
-    <ClInclude Include="win32\resource.h" />
+    <ClInclude Include="win64\nvapi\nvapi.h" />
+    <ClInclude Include="win64\nvapi\nvapi_lite_common.h" />
+    <ClInclude Include="win64\nvapi\nvapi_lite_d3dext.h" />
+    <ClInclude Include="win64\nvapi\nvapi_lite_salend.h" />
+    <ClInclude Include="win64\nvapi\nvapi_lite_salstart.h" />
+    <ClInclude Include="win64\nvapi\nvapi_lite_surround.h" />
+    <ClInclude Include="win64\resource.h" />
     <ClInclude Include="client\screen.h" />
     <ClInclude Include="server\server.h" />
     <ClInclude Include="client\vid.h" />
@@ -819,11 +819,11 @@
     <ClInclude Include="renderer\wglext.h" />
     <ClInclude Include="client\snd_loc.h" />
     <ClInclude Include="client\sound.h" />
-    <ClInclude Include="win32\winquake.h" />
-    <ClInclude Include="win32\win_languages.h" />
-    <ClInclude Include="win32\win_usbVendors.h" />
-    <ClInclude Include="win32\xinput.h" />
-    <ClInclude Include="win32\xinput3.h" />
+    <ClInclude Include="win64\winquake.h" />
+    <ClInclude Include="win64\win_languages.h" />
+    <ClInclude Include="win64\win_usbVendors.h" />
+    <ClInclude Include="win64\xinput.h" />
+    <ClInclude Include="win64\xinput3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\baseq2\glsl\ambientMd3.frag" />
@@ -832,6 +832,8 @@
     <None Include="..\baseq2\glsl\avrLum.vert" />
     <None Include="..\baseq2\glsl\bloomBlur.frag" />
     <None Include="..\baseq2\glsl\bloomBlur.vert" />
+    <None Include="..\baseq2\glsl\bright2.frag" />
+    <None Include="..\baseq2\glsl\bright2.vert" />
     <None Include="..\baseq2\glsl\color.frag" />
     <None Include="..\baseq2\glsl\color.vert" />
     <None Include="..\baseq2\glsl\drawPics.frag" />
@@ -860,6 +862,10 @@
     <None Include="..\baseq2\glsl\include\blur.inc" />
     <None Include="..\baseq2\glsl\include\global.inc" />
     <None Include="..\baseq2\glsl\include\pbCamera.inc" />
+    <None Include="..\baseq2\glsl\lensFlare.frag" />
+    <None Include="..\baseq2\glsl\lensFlare.vert" />
+    <None Include="..\baseq2\glsl\lensFlareFinal.frag" />
+    <None Include="..\baseq2\glsl\lensFlareFinal.vert" />
     <None Include="..\baseq2\glsl\lightAlias.frag" />
     <None Include="..\baseq2\glsl\lightAlias.vert" />
     <None Include="..\baseq2\glsl\ambientMd2.frag" />
@@ -924,11 +930,11 @@
     <None Include="..\baseq2\glsl\water.vert" />
     <None Include="..\baseq2\glsl\whitebalance.frag" />
     <None Include="..\baseq2\glsl\whitebalance.vert" />
-    <None Include="win32\icon1.ico" />
-    <None Include="win32\q2.ico" />
+    <None Include="win64\icon1.ico" />
+    <None Include="win64\q2.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="win32\q2.rc">
+    <ResourceCompile Include="win64\q2.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">win32</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">win32</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">win32</AdditionalIncludeDirectories>
@@ -938,8 +944,8 @@
   <ItemGroup>
     <Image Include="..\win32\icon5.ico" />
     <Image Include="favicon.ico" />
-    <Image Include="win32\console.bmp" />
-    <Image Include="win32\favicon.ico" />
+    <Image Include="win64\console.bmp" />
+    <Image Include="win64\favicon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

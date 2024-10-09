@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef _WIN32
 // For HINSTANCE type in <windows.h>
-#include "../win32/winquake.h"
+#include "../win64/winquake.h"
 #endif
 
 #define MIN(a,b) ((a)>(b) ? (b) : (a))

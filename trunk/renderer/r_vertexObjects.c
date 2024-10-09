@@ -189,7 +189,7 @@ void R_DeleteVBO(vertexBuffer_t *in) {
 //		gl_state.vboId[i] = in->id;
 //	}
 
-	Com_Printf("delete vbo %s\n", in->name);
+//	Com_Printf("delete vbo %s\n", in->name);
 			
 	qglDeleteBuffers(1, &in->id);
 	memset(in, 0, sizeof(*in));

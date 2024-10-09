@@ -471,7 +471,7 @@ void soldier_fire (edict_t *self, int flash_number) {
 	vec3_t	aim;
 	vec3_t	dir;
 	vec3_t	end;
-	float	r, u;
+	float	r = 0.0, u = 0.0;
 	int		flash_index;
 
 	if (self->s.skinnum < 2)
@@ -494,8 +494,19 @@ void soldier_fire (edict_t *self, int flash_number) {
 		vectoangles (aim, dir);
 		AngleVectors (dir, forward, right, up);
 
-		r = crandom() * 1000;
-		u = crandom() * 500;
+		if (skill->value == 0) {
+			r = crandom() * 1000;
+			u = crandom() * 500;
+		} 
+		if (skill->value == 1) {
+			r = crandom() * 500;
+			u = crandom() * 250;
+		}
+		if (skill->value >= 2) {
+			r = crandom() * 250 / skill->value + 1;
+			u = crandom() * 125 / skill->value + 1;
+		}
+
 
 		VectorMA (start, 8192, forward, end);
 		VectorMA (end, r, right, end);
@@ -506,7 +517,7 @@ void soldier_fire (edict_t *self, int flash_number) {
 	}
 
 	if (self->s.skinnum <= 1) {
-		monster_fire_blaster (self, start, aim, 5, 600, flash_index, EF_BLASTER);  // hack for client blaster bolt was 600
+		monster_fire_blaster (self, start, aim, 5, 600, flash_index, EF_BLASTER);
 	}
 	else if (self->s.skinnum <= 3) {
 		monster_fire_shotgun (self, start, aim, 2, 1, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SHOTGUN_COUNT, flash_index);

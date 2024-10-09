@@ -63,7 +63,7 @@ typedef struct
 
 typedef struct
 {
-	char			id[4];
+	uint32_t			id;
 
 	char			name[MD3_MAX_PATH];
 

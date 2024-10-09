@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __REF_H
 
 #include "../qcommon/qcommon.h"
-#include <stdint.h>
 #include <limits.h>
 
 // Uncle Mike
@@ -351,7 +350,8 @@ typedef struct image_s {
 	uint		intFormat;
 	uint		texType;
 	uint		dataType;
-	uint		flags;
+//	uint		flags;
+	imageFlags_t flags;
 
 	bool	floatTex;
 	bool	compressed;

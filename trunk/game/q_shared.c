@@ -1116,7 +1116,11 @@ void Swap_Init (void) {
 
 }
 
-
+__inline int Q_vsnprintf(char *Dest, size_t Count, const char *Format, va_list Args) {
+	int ret = _vsnprintf(Dest, Count, Format, Args);
+	Dest[Count - 1] = 0;	// null terminate
+	return ret;
+}
 
 /*
 ============
@@ -1131,7 +1135,7 @@ char	*va (char *format, ...) {
 	static char		string[1024];
 
 	va_start (argptr, format);
-	vsnprintf (string, sizeof(string), format, argptr);
+	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
 	return string;
@@ -1316,23 +1320,6 @@ skipWhite:
 
 
 /*
-===============
-Com_PageInMemory
-
-===============
-*/
-int	paged_total;
-
-void Com_PageInMemory (byte *buffer, int size) {
-	int		i;
-
-	for (i = size - 1; i > 0; i -= 4096)
-		paged_total += buffer[i];
-}
-
-
-
-/*
 ============================================================================
 
 LIBRARY REPLACEMENT FUNCTIONS
@@ -1377,17 +1364,22 @@ int Q_strcasecmp (const char *s1, const char *s2) {
 
 #endif
 
-void Com_sprintf (char *dest, int size, char *fmt, ...) {
-	int		len;
-	va_list		argptr;
-	static char	bigbuffer[0x10000];
+void Com_sprintf (char *dest, size_t size, char *fmt, ...) {
+	va_list  argPtr;
 
-	va_start (argptr, fmt);
-	len = vsnprintf (bigbuffer, sizeof(bigbuffer), fmt, argptr);
-	va_end (argptr);
-	if (len >= size)
-		Com_Printf ("Com_sprintf: overflow of %i in %i\n", len, size);
-	strncpy (dest, bigbuffer, size - 1);
+	if (!dest) {
+		Com_Printf("Com_sprintf: NULL dst\n");
+		return;
+	}
+	if (size < 1) {
+		Com_Printf("Com_sprintf: size < 1\n");
+		return;
+	}
+	va_start(argPtr, fmt);
+	_vsnprintf(dest, size, fmt, argPtr);
+	va_end(argPtr);
+
+	dest[size - 1] = 0;
 }
 
 /*
@@ -1602,7 +1594,7 @@ int Q_strnicmp (const char *string1, const char *string2, int n) {
 	return 0;// Strings are equal 
 }
 
-void Q_strcat (char *dst, const char *src, int dstSize) {
+void Q_strcat (char *dst, const char *src, size_t dstSize) {
 
 	int len;
 
@@ -1723,7 +1715,7 @@ char *Com_SkipWhiteSpace (char *data_p, bool *hasNewLines) {
 	return data_p;
 }
 
-void Q_strncpyz (char *dst, const char *src, int dstSize) {
+void Q_strncpyz (char *dst, const char *src, size_t dstSize) {
 	if (!dst)
 		Sys_Error (ERR_FATAL, "Q_strncpyz: NULL dst");
 
@@ -1919,7 +1911,7 @@ void Q_memcpy (void *dest, const void *src, const size_t count) {
  Safe strncat that ensures a trailing zero
  =================
  */
-void Q_strncatz (char *dst, int dstSize, const char *src) {
+void Q_strncatz (char *dst, size_t dstSize, const char *src) {
 	if (!dst) {
 		Com_Printf ("Q_strncatz:­ NULL dst\n");
 		return;
@@ -1951,7 +1943,7 @@ void Q_strncatz (char *dst, int dstSize, const char *src) {
  Safe snprintf that ensures a trailing zero
  =================
  */
-void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...) {
+void Q_snprintfz (char *dst, size_t dstSize, const char *fmt, ...) {
 
 	va_list	argPtr;
 
@@ -1977,7 +1969,7 @@ void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...) {
  include the /)
  =================
  */
-void Com_DefaultPath (char *path, int maxSize, const char *newPath) {
+void Com_DefaultPath (char *path, size_t maxSize, const char *newPath) {
 
 	char	*s, oldPath[MAX_OSPATH];
 
@@ -2001,7 +1993,7 @@ void Com_DefaultPath (char *path, int maxSize, const char *newPath) {
  include the .)
  =================
  */
-void Com_DefaultExtension (char *path, int maxSize, const char *newExtension) {
+void Com_DefaultExtension (char *path, size_t maxSize, const char *newExtension) {
 
 	char	*s;
 

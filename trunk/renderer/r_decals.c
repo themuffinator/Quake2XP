@@ -95,7 +95,7 @@ void R_RenderDecals(bool twoside)
 	qglUniform1i(U_PARAM_INT_0, 1); // textured pass
 
 	GL_Enable(GL_POLYGON_OFFSET_FILL);
-    GL_PolygonOffset(-3, -3);
+    GL_PolygonOffset(-0.2, -1.5);
     GL_Enable(GL_BLEND);
 
 	active = &active_decals;

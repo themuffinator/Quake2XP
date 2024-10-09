@@ -63,6 +63,7 @@ void R_Flush2D() {
 
 	GL_BindProgram(picProgram);
 	qglUniform1i(U_PARAM_INT_0, PF_COLOREDFONT);
+	qglUniform1i(U_PARAM_INT_1, gl_config.useHdrDisplay);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 	qglUniform1f(U_PARAM_FLOAT_2, r_hdrUiNits->value);
 
@@ -307,6 +308,7 @@ void Draw_ScaledPic(int x, int y, float scaleX, float scaleY, int flags, image_t
 	GL_BindProgram(picProgram);
 
 	qglUniform1i(U_PARAM_INT_0, flags);
+	qglUniform1i(U_PARAM_INT_1, gl_config.useHdrDisplay);
 	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
 	qglUniform1f(U_PARAM_FLOAT_2, r_hdrUiNits->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
@@ -373,6 +375,8 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, b
 
 	GL_BindProgram(picProgram);
 	qglUniform1i(U_PARAM_INT_0, PF_VERTEXCOLOR);
+	qglUniform1i(U_PARAM_INT_1, gl_config.useHdrDisplay);
+	qglUniform1f(U_PARAM_FLOAT_2, r_hdrUiNits->value);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 
@@ -446,6 +450,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	// setup program
 	GL_BindProgram(picProgram);
 	qglUniform1i(U_PARAM_INT_0, PF_TECHCOLOR | PF_MEDIANFILTER | PF_SCANLINE);
+	qglUniform1i(U_PARAM_INT_1, gl_config.useHdrDisplay);
 	qglUniform1f(U_PARAM_FLOAT_2, r_hdrUiNits->value);
 	GL_SetBindlessTexture(U_TMU0, gi.cinematic->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
