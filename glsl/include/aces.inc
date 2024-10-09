@@ -898,9 +898,9 @@ float3x3 GamutMappingIdentityMatrix =
 float3x3 OuputGamutMappingMatrix( int OutputGamut )
 {
 	// Gamut mapping matrices used later
-	float3x3 AP1_2_sRGB    = mul( XYZ_2_sRGB_MAT, mul( D60_2_D65_CAT, AP1_2_XYZ_MAT ) );
-	float3x3 AP1_2_DCI_D65 = mul( XYZ_2_P3D65_MAT, mul( D60_2_D65_CAT, AP1_2_XYZ_MAT ) );
-	float3x3 AP1_2_Rec2020 = mul( XYZ_2_Rec2020_MAT, mul( D60_2_D65_CAT, AP1_2_XYZ_MAT ) );
+	float3x3 AP1_2_sRGB    = mul( XYZ_2_sRGB_MAT,		mul(D60_2_D65_CAT,	AP1_2_XYZ_MAT) );
+	float3x3 AP1_2_DCI_D65 = mul( XYZ_2_P3D65_MAT,		mul(D60_2_D65_CAT,	AP1_2_XYZ_MAT) );
+	float3x3 AP1_2_Rec2020 = mul( XYZ_2_Rec2020_MAT,	mul(D60_2_D65_CAT,	AP1_2_XYZ_MAT) );
 
 	// Set gamut mapping matrix 
 	// 0 = sRGB - D65
@@ -919,4 +919,23 @@ float3x3 OuputGamutMappingMatrix( int OutputGamut )
 		return GamutMappingIdentityMatrix;
 	else
 		return AP1_2_sRGB;
+}
+
+float3 LinearToST2084(float3 lin)
+{
+	const float m1 = 0.1593017578125; // = 2610. / 4096. * .25;
+	const float m2 = 78.84375; // = 2523. / 4096. *  128;
+	const float c1 = 0.8359375; // = 2392. / 4096. * 32 - 2413./4096.*32 + 1;
+	const float c2 = 18.8515625; // = 2413. / 4096. * 32;
+	const float c3 = 18.6875; // = 2392. / 4096. * 32;
+	const float C = 10000.;
+
+	float3 L = lin/C;
+	float3 Lm = pow(L, vec3(m1));
+	float3 N1 = ( c1 + c2 * Lm );
+	float3 N2 = ( 1.0 + c3 * Lm );
+	float3 N = N1 * rcp(N2);
+	float3 P = pow( N, vec3(m2) );
+	
+	return P;
 }

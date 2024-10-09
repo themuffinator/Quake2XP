@@ -128,7 +128,8 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 			break;	// found it
 	}
 	vec3 reflectColor  = vec3(0.0);
-	reflectColor += boxBlur(g_colorBufferMap, tc, 16.0);
+//	reflectColor += boxBlur(g_colorBufferMap, tc, 16.0);
+	reflectColor += texture(g_colorBufferMap, tc).rgb;
 
 	reflectColor *= metalness;
 

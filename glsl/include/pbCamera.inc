@@ -4,7 +4,8 @@ from https://placeholderart.wordpress.com/2014/12/15/implementing-a-physically-b
 =======================================*/
 
 #define MIN_ISO         100.0
-#define MAX_ISO         300.0
+#define MAX_HDR_ISO     300.0
+#define MAX_ISO         6000.0
 #define MIN_APERTURE    1.8
 #define MAX_APERTURE    22.0
 #define MIN_SHUTTER     1.0 / 4000.0
@@ -40,7 +41,7 @@ float getStandardOutputBasedExposure(float aperture, float shutterSpeed, float i
     return middleGrey / l_avg;
 }
 
-float ComputeExposure(float lum, float EVcomp){
+float ComputeExposure(float lum, float EVcomp, float maxISO){
     
     float targetEV      = ComputeTargetEV(lum);
     float aperture      = 4.0;
@@ -50,7 +51,7 @@ float ComputeExposure(float lum, float EVcomp){
     targetEV            = targetEV + EVcomp;
 
     // Compute the resulting ISO if we left both shutter and aperture here
-    float iso = clamp(ComputeISO(aperture, shutterSpeed, targetEV), MIN_ISO, MAX_ISO);
+    float iso = clamp(ComputeISO(aperture, shutterSpeed, targetEV), MIN_ISO, maxISO);
     // Apply half the difference in EV to the aperture
     float evDiff = targetEV - ComputeEV(aperture, shutterSpeed, iso);
     aperture = clamp(aperture * pow(sqrt(2.0), evDiff * 0.5), MIN_APERTURE, MIN_APERTURE);
