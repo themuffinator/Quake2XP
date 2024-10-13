@@ -215,7 +215,6 @@ typedef struct {
 	fbo_t	*linearDepth;
 	fbo_t	*bloomCompute;
 	fbo_t	*hdrLum;
-	fbo_t	*prevHdrLum;
 	fbo_t	*lensFlare;
 }fb_t;
 fb_t fb;
@@ -297,11 +296,11 @@ typedef struct globalImage_s {
 	image_t *ldrBase;
 	image_t *linearDepth;
 	image_t *hdrLuminance;
-	image_t *prevHdrLuminance;
 	image_t *cinematic;
-	image_t *glareImage;
 
-	image_t *thermalImage;
+	image_t *thermalIn;
+	image_t *thermalInterim;
+	image_t *thermalOut;
 	image_t *lensDirt;
 	image_t *lensBurst;
 	image_t *lensFlare;
@@ -1044,11 +1043,10 @@ glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*md3AmbientProgram;
 glslProgram_t		*aliasBumpProgram;
-glslProgram_t		*glareProgram;
+//glslProgram_t		*glareProgram;
 glslProgram_t		*glareFinalProgram;
 glslProgram_t		*brightProgram;
 glslProgram_t		*bloomFinalProgram;
-glslProgram_t		*bloomBlurProgram;
 glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
 glslProgram_t		*depthDownsampleProgram;
@@ -1057,7 +1055,7 @@ glslProgram_t		*ssaoBlurProgram;
 glslProgram_t		*glassProgram;
 glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
-glslProgram_t		*thermalfpProgram;
+glslProgram_t		*thermalFinalProgram;
 glslProgram_t		*waterProgram;
 glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
@@ -1072,7 +1070,6 @@ glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
 glslProgram_t		*skyProgram;
 glslProgram_t		*colorProgram;
-glslProgram_t		*flareProgram;
 glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
@@ -1094,6 +1091,7 @@ void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
 void R_ShowTrisBSP(bool bmodel, uint numIndices, float r, float g, float b, glslProgram_t *program);
+void Q_snprintfz(char *dst, size_t dstSize, const char *fmt, ...);
 
 typedef enum {
 	ATT_POSITION,

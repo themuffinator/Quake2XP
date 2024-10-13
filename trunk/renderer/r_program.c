@@ -365,7 +365,8 @@ bool R_LoadBinaryShader(char *shaderName, int shaderId) {
 		binLength = (GLint)ftell(binFile);
 		bin = (GLvoid*)malloc(binLength);
 		fseek(binFile, 0, SEEK_SET);
-		fread(bin, binLength, 1, binFile);
+		if(bin)
+			fread(bin, binLength, 1, binFile);
 		fclose(binFile);
 
 		glProgramBinary(shaderId, gl_state.binaryFormats, bin, binLength);
@@ -628,7 +629,10 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			Com_sprintf(binName, sizeof(binName), "%s/shadercache/%s.bin", FS_Gamedir(), program->name);
 			FS_CreatePath(binName);
 			binFile = fopen(binName, "wb");
-			fwrite(bin, binLength, 1, binFile);
+			
+			if(bin)
+				fwrite(bin, binLength, 1, binFile);
+
 			fclose(binFile);
 			free(bin);
 		}
@@ -645,7 +649,6 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 	return program;
 }
 
-void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...);
 /*
 ==============
 R_FindProgram
@@ -803,17 +806,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"glare program"S_COLOR_WHITE" ");
-	glareProgram = R_FindProgram ("glare", 0);
-	glareFinalProgram = R_FindProgram("glareFinal", 0);
-	if (glareProgram->valid && glareFinalProgram->valid){
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-	Com_Printf("Load "S_COLOR_YELLOW"bright2 program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"bright program"S_COLOR_WHITE" ");
 	bright2Program = R_FindProgram("bright2", 0);
 	if (bright2Program->valid) {
 		Com_Printf("succeeded\n");
@@ -915,18 +908,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
-	bloomBlurProgram = R_FindProgram("bloomBlur", 0);
-
-	if (bloomBlurProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
-
 	Com_Printf ("Load "S_COLOR_YELLOW"glass program"S_COLOR_WHITE" ");
 	glassProgram = R_FindProgram ("glass", 0);
 
@@ -963,9 +944,9 @@ void R_InitPrograms (void) {
 	Com_Printf ("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
 	thermalProgram = R_FindProgram ("thermal", 0);
 
-	thermalfpProgram = R_FindProgram ("thermalfp", 0);
+	thermalFinalProgram = R_FindProgram ("thermalfp", 0);
 
-	if (thermalProgram->valid && thermalfpProgram->valid){
+	if (thermalProgram->valid && thermalFinalProgram->valid){
 		Com_Printf("succeeded\n");
 	}
 	else {
@@ -1016,17 +997,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-
-/*	Com_Printf("Load "S_COLOR_YELLOW"lookup color table program"S_COLOR_WHITE" ");
-	lutProgram = R_FindProgram("lut", 0);
-	if (lutProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-*/	
 	Com_Printf("Load "S_COLOR_YELLOW"white balance program"S_COLOR_WHITE" ");
 	whiteBalanceProgram = R_FindProgram("whitebalance", 0);
 	if (whiteBalanceProgram->valid) {
@@ -1079,16 +1049,6 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"color program"S_COLOR_WHITE" ");
 	colorProgram = R_FindProgram("color", 0);
 	if (colorProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
-	Com_Printf("Load "S_COLOR_YELLOW"flare program"S_COLOR_WHITE" ");
-	flareProgram = R_FindProgram("flare", 0);
-	if (flareProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

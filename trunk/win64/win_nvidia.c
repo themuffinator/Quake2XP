@@ -286,7 +286,7 @@ NvAPI_QueryInterface_t		NvAPI_GPU_QueryInterface	= NULL;
 NvAPI_GPU_GetRamType_t		NvAPI_GPU_GetRamType		= NULL;
 NvAPI_GPU_GetRamMaker_t		NvAPI_GPU_GetMemMarker		= NULL;
 NvAPI_GPU_GetRamBusWidth_t	NvAPI_GPU_GetRamBusWidth_	= NULL;
-
+/*
 bool GLimp_InitNvML() {
 	nvmlReturn_t result;
 
@@ -320,7 +320,7 @@ bool GLimp_InitNvML() {
 	Com_Printf("\n==================================\n\n");
 	return true;
 }
-
+*/
 void GLimp_InitNvApi() {
 
 	NvAPI_Status ret = NVAPI_OK;
@@ -377,8 +377,8 @@ void GLimp_InitNvApi() {
 	Com_Printf("\n==================================\n\n");
 
 	nvMlInit = false;
-	if (GLimp_InitNvML())
-		nvMlInit = true;
+//	if (GLimp_InitNvML())
+	//	nvMlInit = true;
 }
 
 #define NV_UTIL_DOMAIN_GPU  0
@@ -659,7 +659,7 @@ void R_GpuInfo_f(void) {
 			}		
 		}
 
-		if (nvMlInit) {
+/*		if (nvMlInit) {
 			nvmlDevice_t device;
 			nvmlDeviceGetHandleByIndex(i, &device);
 			
@@ -672,7 +672,7 @@ void R_GpuInfo_f(void) {
 				nvmlDeviceGetFanSpeed_v2(device, f, &speedPercent);
 				Com_Printf(">Fan" S_COLOR_GREEN "%i" S_COLOR_WHITE ": " S_COLOR_GREEN "%i" S_COLOR_WHITE "%%\n", f, speedPercent);
 			}
-		}
+		}*/
 		Com_Printf("\n==========================================================\n");
 	}
 

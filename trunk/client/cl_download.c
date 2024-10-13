@@ -536,12 +536,12 @@ void CL_DownloadFileName(char* dest, int destlen, char* fn)
 {
 	if (strncmp(fn, "players", 7) == 0)
 	{
-		Com_sprintf(dest, destlen, "%s/%s", BASEDIRNAME, fn);
+		Com_sprintf(dest, (size_t)destlen, "%s/%s", BASEDIRNAME, fn);
 	}
 
 	else
 	{
-		Com_sprintf(dest, destlen, "%s/%s", FS_Gamedir(), fn);
+		Com_sprintf(dest, (size_t)destlen, "%s/%s", FS_Gamedir(), fn);
 	}
 }
 
@@ -766,7 +766,7 @@ CL_ParseDownload(void)
 		}
 	}
 
-	fwrite(net_message.data + net_message.readcount, 1, size, cls.download);
+	fwrite(net_message.data + net_message.readcount, 1, (size_t)size, cls.download);
 	net_message.readcount += size;
 
 	if (percent != 100)

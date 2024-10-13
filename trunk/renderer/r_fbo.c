@@ -299,12 +299,6 @@ void R_InitFboBuffers() {
 	gi.hdrLuminance = R_CreateTexture("***hdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
 		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 	
-	gi.prevHdrLuminance = R_CreateTexture("***prevHdrLuminance***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-		IF_MIPMAP, 128, 128, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	gi.glareImage = R_CreateTexture("***glareImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
-		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
 	gi.lensFlareIn = R_CreateTexture("***lensFlareIn***", GL_TEXTURE_2D, GL_RGBA16F, GL_RGB, 0,
 		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 	gi.lensFlareInterim = R_CreateTexture("***lensFlareInterim***", GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, 0,
@@ -312,7 +306,13 @@ void R_InitFboBuffers() {
 	gi.lensFlareOut = R_CreateTexture("***lensFlareOut***", GL_TEXTURE_2D, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	gi.thermalImage = R_CreateTexture("***thermalImage***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+	gi.thermalIn = R_CreateTexture("***thermalIn***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGB, 0,
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	gi.thermalInterim = R_CreateTexture("***thermalInterim***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
+		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	gi.thermalOut = R_CreateTexture("***thermalOut***", GL_TEXTURE_RECTANGLE, GL_R11F_G11F_B10F, GL_RGB, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
@@ -360,16 +360,7 @@ void R_InitFboBuffers() {
 	fb.hdrLum = R_Create_FBO("***hdrLum_fbo***");
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrLuminance, 0);
 	R_FB_Check();
-	
-	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE 2 FBO ");
-	fb.prevHdrLum = R_Create_FBO("***prevHdrLum_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.prevHdrLuminance, 0);
-	R_FB_Check();
 
-	Com_Printf("Load "S_COLOR_YELLOW "GLARE FBO ");
-	fb.glare = R_Create_FBO("***glare_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.glareImage, 0);
-	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "LENSFLARE FBO ");
 	fb.lensFlare = R_Create_FBO("***lensflare_fbo***");
@@ -380,7 +371,9 @@ void R_InitFboBuffers() {
 
 	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
 	fb.thermal = R_Create_FBO("***thermal_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.thermalImage, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.thermalIn, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.thermalInterim, 0);
+	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.thermalOut, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");

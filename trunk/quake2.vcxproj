@@ -415,7 +415,7 @@
     <Link>
       <AdditionalOptions>
       </AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;libogg.lib;libvorbisfile.lib;nvapi64.lib;nvml.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;libogg.lib;libvorbisfile.lib;nvapi64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
       <Version>
       </Version>
@@ -830,8 +830,6 @@
     <None Include="..\baseq2\glsl\ambientMd3.vert" />
     <None Include="..\baseq2\glsl\avrLum.frag" />
     <None Include="..\baseq2\glsl\avrLum.vert" />
-    <None Include="..\baseq2\glsl\bloomBlur.frag" />
-    <None Include="..\baseq2\glsl\bloomBlur.vert" />
     <None Include="..\baseq2\glsl\bright2.frag" />
     <None Include="..\baseq2\glsl\bright2.vert" />
     <None Include="..\baseq2\glsl\color.frag" />
@@ -846,8 +844,6 @@
     <None Include="..\baseq2\glsl\finalPass.vert" />
     <None Include="..\baseq2\glsl\fixfov.frag" />
     <None Include="..\baseq2\glsl\fixfov.vert" />
-    <None Include="..\baseq2\glsl\flare.frag" />
-    <None Include="..\baseq2\glsl\flare.vert" />
     <None Include="..\baseq2\glsl\glare.frag" />
     <None Include="..\baseq2\glsl\glare.vert" />
     <None Include="..\baseq2\glsl\glareFinal.frag" />

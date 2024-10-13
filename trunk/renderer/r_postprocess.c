@@ -176,7 +176,6 @@ void R_Bloom (void) {
 
 
 void R_ThermalVision (void) {
-	int i;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -184,37 +183,46 @@ void R_ThermalVision (void) {
 	if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
 		return;
 	
+	int w = vid.width	* 0.5;
+	int h = vid.height	* 0.5;
+
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.thermal->id);
 
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.5, vid.height * 0.5, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
 
-	R_SetViewPortAndScissor(0, 0, vid.width * 0.5, vid.height * 0.5);
+	R_SetViewPortAndScissor(0, 0, w, h);
 
 	// process colors
 	GL_BindProgram (thermalProgram);
-	GL_SetBindlessTexture(U_TMU0, gi.thermalImage->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.thermalIn->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(gi.thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
+	glCopyTextureSubImage2D(gi.thermalIn->texnum, 0, 0, 0, 0, 0, w, h);
 
-	//blur
-	GL_BindProgram(bloomBlurProgram);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
-	GL_SetBindlessTexture(U_TMU0, gi.thermalImage->handle);
+	qglMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	int const group_size = 64;
 
-	for (i = 0; i < 2; i++) {
-		qglUniform1i(U_PARAM_INT_0, i);
-		R_DrawFullScreenQuad();
-		glCopyTextureSubImage2D(gi.thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
-	}
+	GL_BindProgram(blur_xComputeProgram);
+	qglBindImageTexture(0, gi.thermalIn->texnum, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
+	qglBindImageTexture(1, gi.thermalInterim->texnum, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R11F_G11F_B10F);
+	qglDispatchCompute((w + group_size - 1) / group_size, h, 1);
+
+	qglMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	GL_BindProgram(blur_yComputeProgram);
+	qglBindImageTexture(0, gi.thermalInterim->texnum, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R11F_G11F_B10F);
+	qglBindImageTexture(1, gi.thermalOut->texnum, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R11F_G11F_B10F);
+	qglDispatchCompute(w, (h + group_size - 1) / group_size, 1);
+
+	qglMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
 
 	R_RestoreViewPortAndScissor();
 
 	//final pass
-	GL_BindProgram (thermalfpProgram);
-	GL_SetBindlessTexture(U_TMU0, gi.thermalImage->handle);
+	GL_BindProgram (thermalFinalProgram);
+	GL_SetBindlessTexture(U_TMU0, gi.thermalOut->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(gi.hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -348,48 +356,9 @@ void R_FilmFx(void) {
 	if (!r_filmicFx->integer)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
-/*
-	// hdr glares
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.glare->id);
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.25, vid.height * 0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
 
-	R_SetViewPortAndScissor(0, 0, vid.width * 0.25, vid.height * 0.25);
-
-	GL_BindProgram(brightProgram);
-	qglUniform1i(U_PARAM_INT_0, 1);
-	GL_SetBindlessTexture(U_TMU0, gi.glareImage->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(gi.glareImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
-
-	//glare
-	GL_BindProgram(glareProgram);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
-	GL_SetBindlessTexture(U_TMU0, gi.glareImage->handle);
-	qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
-
-	for (int i = 0; i < r_hdrGlarePasses->integer; i++) {
-		R_DrawFullScreenQuad();
-		glCopyTextureSubImage2D(gi.glareImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
-	}
-
-	R_RestoreViewPortAndScissor();
-
-	//mix glare with screen pass
-	GL_BindProgram(glareFinalProgram);
-	qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
-
-	GL_SetBindlessTexture(U_TMU0, gi.hdrBaseInterim->handle);
-	GL_SetBindlessTexture(U_TMU1, gi.glareImage->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawFullScreenQuad();
-	glCopyTextureSubImage2D(gi.hdrBaseInterim->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-*/
-	//-----------------
 	// setup program
 	GL_BindProgram (filmicFxProgram);
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
