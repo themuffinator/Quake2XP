@@ -111,7 +111,7 @@ vec4 TechniColor(in vec4 color){
 
 void main(void){
 
-	if(bool(u_flags & PF_VERTEXCOLOR)){
+	if((u_flags & PF_VERTEXCOLOR) == PF_VERTEXCOLOR){
 		
 		if(u_hdrOutput == 1)
 			fragData.rgb *= (u_hdr_nits / 80.0);	
@@ -122,10 +122,10 @@ void main(void){
 
 	vec4 image;
 
-	if(bool(u_flags & PF_LOADSCREEN)){
+	if((u_flags & PF_LOADSCREEN) == PF_LOADSCREEN){
 		image = textureLod(u_map, v_texCoord.xy, u_lod);
 	}
-	else if(bool(u_flags & PF_MEDIANFILTER))
+	else if((u_flags & PF_MEDIANFILTER) == PF_MEDIANFILTER)
 			image = vec4(MedianFilter(u_map), 1.0);
 		else
 			image = textureLod(u_map, v_texCoord.xy, 0.0);
