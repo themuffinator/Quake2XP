@@ -6,9 +6,9 @@ layout (bindless_sampler, location  = U_TMU2) uniform samplerCube	u_CubeFilterMa
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_RghMap;
 layout (bindless_sampler, location  = U_TMU5) uniform sampler2DRect	u_SSAOMap;
+layout (bindless_sampler, location  = U_TMU6) uniform samplerCube	u_shadowMap;
+layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	u_DepthBuffer;
 
-//layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
-//layout(location = U_RGH_SCALE)			uniform float	u_roughnessScale;
 layout(location = U_COLOR)				uniform vec4 	u_LightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
 layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
@@ -23,19 +23,49 @@ layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump 
 layout(location = U_PARAM_INT_0)		uniform int		u_sss;
 layout(location = U_PARAM_INT_1)		uniform int		u_selfShadow; // self shadow parallax
 layout(location = U_PARAM_INT_2)		uniform int		u_blinnPhong; // use old lighting model
+layout(location = U_PARAM_INT_3)		uniform int		u_useShadowMap;
 layout(location = U_USE_SSAO)			uniform int		u_ssao;
+layout(location = U_PARAM_VEC2_0)		uniform vec2	u_shadowBiasScale;
+layout(location = U_PARAM_VEC2_1)		uniform vec2	u_jitterOffset;
+layout(location = U_TEXTURE0_MATRIX)	uniform mat4	u_UnprojectMatrix;
 
-in vec3			v_positionVS;
-in vec3			v_viewVecTS;
-in vec3			v_lightVec;
-in vec2			v_texCoord;
-in vec4			v_CubeCoord;
-in vec4			v_lightCoord;
-in vec3			v_lightAtten;
-in vec3			v_lightSpot;
+in vec3		v_positionVS;
+in vec3		v_viewVecTS;
+in vec3		v_lightVec;
+in vec2		v_texCoord;
+in vec4		v_CubeCoord;
+in vec4		v_lightCoord;
+in vec3		v_lightAtten;
+in vec3		v_lightSpot;
+in vec3		v_ViewOrg;
+in vec3		v_LightOrg;
 
 #include lighting.inc   //!#include "include/lighting.inc"
 #include parallax.inc   //!#include "include/parallax.inc"
+
+
+void MakeNormalVectors(const vec3 forward, inout vec3 right, inout vec3 up){
+	// this rotate and negate guarantees a vector not colinear with the original
+	right = vec3(forward.z, -forward.x, forward.y);
+	right -= forward * dot(right, forward);
+	up = cross(normalize(right), forward);
+}
+
+float shadowCube(const vec3 I, in float vertexDistance, const float l){
+	vec3 forward, right, up;
+	forward = normalize(I);
+	MakeNormalVectors(forward, right, up);
+
+	vertexDistance -= u_shadowBiasScale.x + l * (1.0 / 512.0);	// bias
+	mat2 rmat = randomRotation(pow(gl_FragCoord.xy, u_jitterOffset)) * u_shadowBiasScale.y;
+	float shadow = 0.0;
+	for(int i = 0; i < NUM_OF_TAPS; i++){
+			vec2 offset = rmat * poissonDisk[i];
+			vec3 jitter = forward + right * offset.x + up * offset.y;
+			shadow += clamp(texture(u_shadowMap, jitter).r - vertexDistance, 0.0, 1.0);
+	}
+	return shadow * ONE_OVER_NUM_OF_TAPS;
+}
 
 void main (void) {
 
@@ -52,10 +82,30 @@ void main (void) {
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
 
+	float shadowMap = 1.0;
+	if(u_useShadowMap == 1){
+		// reconstruct vertex position in world space
+		float depth = texture(u_DepthBuffer, gl_FragCoord.xy).r;
+
+		vec4 P = u_UnprojectMatrix * vec4(gl_FragCoord.xy, depth, 1.0);
+		P.xyz /= P.w;
+		// compute incident ray
+		vec3 I = v_LightOrg - P.xyz;
+		float dist = length(I);
+
+		// compute view direction in world space
+		vec3 Vv = v_ViewOrg - P.xyz;
+		float l = length(Vv);
+		shadowMap = shadowCube(-I, dist, l);
+		if (shadowMap < 0.004){
+			discard;
+			return;
+		}
+	}
 	vec4 diffuseMap;
 	vec4 normalMap;
 	vec2 texCoord;
-
+	
 	if(u_autoBump == 0){
 
 		switch (u_parallaxType) {
@@ -127,7 +177,7 @@ void main (void) {
 			float fogCoord = abs(gl_FragCoord.z / gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 
-			fragData = mix(u_LightColor, vec4(brdfColor, 1.0), fogFactor) * attenMap;  // u_LightColor == fogColor
+			fragData = mix(u_LightColor, vec4(brdfColor, 1.0), fogFactor) * attenMap * shadowMap;  // u_LightColor == fogColor
 			return;
 		}
      
@@ -137,7 +187,7 @@ void main (void) {
 		if(u_selfShadow == 1)
 			shadow = selfShadow(u_Diffuse, L, texCoord);
         
-		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb; 
+		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb * shadowMap; 
 		if(u_ssao == 1)
 			fragData.rgb *= texture(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
 

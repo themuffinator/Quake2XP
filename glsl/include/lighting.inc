@@ -445,3 +445,35 @@ void calcTBN(in vec3 viewOrg, in vec3 lightOrg, in vec2 texCoord, in vec3 vertex
 	L.y = dot(LV, binormal);
 	L.z = dot(LV, normal); 
 }
+
+#define NUM_OF_TAPS		12
+#define ONE_OVER_NUM_OF_TAPS	(1.0 / 12.0)
+
+vec2 poissonDisk[NUM_OF_TAPS] = vec2[]
+(
+	vec2( 0.6111618,  0.1050905),
+	vec2( 0.1088336,  0.1127091),
+	vec2( 0.3030421, -0.6292974),
+	vec2( 0.4090526,  0.6716492),
+	vec2(-0.1608387, -0.3867823),
+	vec2( 0.7685862, -0.6118501),
+	vec2(-0.1935026, -0.856501),
+	vec2(-0.4028573,  0.07754025),
+	vec2(-0.6411021, -0.4748057),
+	vec2(-0.1314865,  0.8404058),
+	vec2(-0.7005203,  0.4596822),
+	vec2(-0.9713828, -0.06329931)
+);
+
+mat2 randomRotation(const in vec2 p)
+{
+	// We need irrationals for pseudo randomness.
+	// Most (all?) known transcendental numbers will (generally) work.
+	const vec2 v = vec2(
+		23.1406926327792690,	// e^pi (Gelfond's constant)
+		2.6651441426902251);	// 2^sqrt(2) (Gelfond-Schneider constant)
+	float r = mod(123456789., 1e-7 + 256. * dot(p, v));
+	float sinr = sin(r);
+	float cosr = cos(r);
+	return mat2(cosr, sinr, -sinr, cosr);
+}

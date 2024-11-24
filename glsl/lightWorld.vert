@@ -5,22 +5,25 @@ layout(location = 2) in vec3 att_tangent;
 layout(location = 3) in vec3 att_binormal;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
-layout(location = U_ATTEN_MATRIX)	uniform mat4	u_attenMatrix;
-layout(location = U_SPOT_MATRIX)	uniform mat4	u_spotMatrix;
-layout(location = U_CUBE_MATRIX)	uniform mat4	u_cubeMatrix;
-layout(location = U_MVP_MATRIX)		uniform mat4	u_modelViewProjectionMatrix;
-layout(location = U_SCROLL)			uniform float	u_scroll;
-layout(location = U_VIEW_POS)		uniform vec3	u_viewOriginES;
-layout(location = U_LIGHT_POS)		uniform vec3 	u_LightOrg;
+layout(location = U_ATTEN_MATRIX)		uniform mat4	u_attenMatrix;
+layout(location = U_SPOT_MATRIX)		uniform mat4	u_spotMatrix;
+layout(location = U_CUBE_MATRIX)		uniform mat4	u_cubeMatrix;
+layout(location = U_MVP_MATRIX)			uniform mat4	u_modelViewProjectionMatrix;
+layout(location = U_SCROLL)				uniform float	u_scroll;
+layout(location = U_VIEW_POS)			uniform vec3	u_viewOriginES;
+layout(location = U_LIGHT_POS)			uniform vec3 	u_LightOrg;
 
-out vec3		v_viewVecTS;
-out vec3 		v_lightVec;
-out vec2		v_texCoord; 
-out vec4		v_CubeCoord;
-out vec4		v_AttenCoord;
-out vec3		v_positionVS;
-out vec3		v_lightAtten;
-out vec3		v_lightSpot;
+out vec3	v_viewVecTS;
+out vec3 	v_lightVec;
+out vec2	v_texCoord; 
+out vec4	v_CubeCoord;
+out vec4	v_shadowCoord;
+out vec4	v_AttenCoord;
+out vec3	v_positionVS;
+out vec3	v_lightAtten;
+out vec3	v_lightSpot;
+out vec3	v_ViewOrg;
+out vec3	v_LightOrg;
 
 void main (void) {
 	// setup tex coords
@@ -42,4 +45,6 @@ void main (void) {
 	v_lightVec.z = dot(LV, att_normal); 
 
 	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
+	v_LightOrg	= u_LightOrg;
+	v_ViewOrg	= u_viewOriginES;
 }

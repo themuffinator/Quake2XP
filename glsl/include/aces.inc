@@ -1,3 +1,4 @@
+//!#include "global.inc"
 
 #define float3x3	mat3
 #define float4		vec4 
@@ -138,10 +139,10 @@ float glow_fwd( float ycIn, float glowGainIn, float glowMid)
 {
    float glowGainOut;
 
-   if (ycIn <= 2./3. * glowMid) {
+   if (ycIn <= 2.0/3.0 * glowMid) {
 	 glowGainOut = glowGainIn;
-   } else if ( ycIn >= 2 * glowMid) {
-	 glowGainOut = 0;
+   } else if ( ycIn >= 2.0 * glowMid) {
+	 glowGainOut = 0.0;
    } else {
 	 glowGainOut = glowGainIn * (glowMid / ycIn - 0.5);
    }
@@ -153,12 +154,12 @@ float glow_inv( float ycOut, float glowGainIn, float glowMid)
 {
 	float glowGainOut;
 
-	if (ycOut <= ((1 + glowGainIn) * 2./3. * glowMid)) {
-		glowGainOut = -glowGainIn / (1 + glowGainIn);
-	} else if ( ycOut >= (2. * glowMid)) {
-		glowGainOut = 0.;
+	if (ycOut <= ((1.0 + glowGainIn) * 2.0/3.0 * glowMid)) {
+		glowGainOut = -glowGainIn / (1.0 + glowGainIn);
+	} else if ( ycOut >= (2.0 * glowMid)) {
+		glowGainOut = 0.0;
 	} else {
-		glowGainOut = glowGainIn * (glowMid / ycOut - 1./2.) / (glowGainIn / 2. - 1.);
+		glowGainOut = glowGainIn * (glowMid / ycOut - 1.0/2.0) / (glowGainIn / 2.0 - 1.0);
 	}
 
 	return glowGainOut;
@@ -169,8 +170,8 @@ float sigmoid_shaper( float x)
 {
 	// Sigmoid function in the range 0 to 1 spanning -2 to +2.
 
-	float t = max( 1 - abs( 0.5 * x ), 0 );
-	float y = 1 + sign(x) * (1 - t*t);
+	float t = max( 1.0 - abs( 0.5 * x ), 0.0 );
+	float y = 1.0 + sign(x) * (1.0 - t*t);
 	return 0.5 * y;
 }
 
@@ -186,20 +187,20 @@ float cubic_basis_shaper
 
 	float M[4][4] =
 	{
-		{ -1./6,  3./6, -3./6,  1./6 },
-		{  3./6, -6./6,  3./6,  0./6 },
-		{ -3./6,  0./6,  3./6,  0./6 },
-		{  1./6,  4./6,  1./6,  0./6 }
+		{ -1.0/6.0,  3.0/6.0, -3.0/6.0,  1.0/6.0 },
+		{  3.0/6.0, -6.0/6.0,  3.0/6.0,  0.0/6.0 },
+		{ -3.0/6.0,  0.0/6.0,  3.0/6.0,  0.0/6.0 },
+		{  1.0/6.0,  4.0/6.0,  1.0/6.0,  0.0/6.0 }
 	};
   
-	float knots[5] = { -0.5 * w, -0.25 * w, 0, 0.25 * w, 0.5 * w };
+	float knots[5] = { -0.5 * w, -0.25 * w, 0.0, 0.25 * w, 0.5 * w };
   
-	float y = 0;
+	float y = 0.0;
 	if ((x > knots[0]) && (x < knots[4]))
 	{  
 		float knot_coord = (x - knots[0]) * 4.0 / w;
 		int j = int(knot_coord);
-		float t = knot_coord - j;
+		float t = knot_coord - float(j);
 	  
 		float monomials[4] = { t*t*t, t*t, t, 1.0 };
 
@@ -276,7 +277,7 @@ float segmented_spline_c5_fwd( float x )
 		{ -0.7185482425, 2.0810307172, 3.6681241237, 4.0000000000, 4.0000000000, 4.0000000000 },
 		{ 0.18*exp2(-15.0), 0.0001},    // minPoint
 		{ 0.18,              4.8},    // midPoint
-		{ 0.18*exp2(18.0),  10000.},    // maxPoint
+		{ 0.18*exp2(18.0),  10000.0},    // maxPoint
 		0.0,  // slopeLow
 		0.0   // slopeHigh
 	};
@@ -286,7 +287,7 @@ float segmented_spline_c5_fwd( float x )
 
 	// Check for negatives or zero before taking the log. If negative or zero,
 	// set to ACESMIN.1
-	float xCheck = x <= 0 ? exp2(-14.0) : x;
+	float xCheck = x <= 0.0 ? exp2(-14.0) : x;
 
 	float logx = log10( xCheck);
 	float logy;
@@ -336,7 +337,7 @@ float segmented_spline_c5_rev( float y )
 		{ -0.7185482425, 2.0810307172, 3.6681241237, 4.0000000000, 4.0000000000, 4.0000000000 },
 		{ 0.18*exp2(-15.0), 0.0001},    // minPoint
 		{ 0.18,              4.8},    // midPoint
-		{ 0.18*exp2(18.0),  10000.},    // maxPoint
+		{ 0.18*exp2(18.0),  10000.0},    // maxPoint
 		0.0,  // slopeLow
 		0.0   // slopeHigh
 	};
@@ -344,8 +345,8 @@ float segmented_spline_c5_rev( float y )
 	const int N_KNOTS_LOW = 4;
 	const int N_KNOTS_HIGH = 4;
 
-	float KNOT_INC_LOW = (log10(C.midPoint.x) - log10(C.minPoint.x)) / (N_KNOTS_LOW - 1.);
-	float KNOT_INC_HIGH = (log10(C.maxPoint.x) - log10(C.midPoint.x)) / (N_KNOTS_HIGH - 1.);
+	float KNOT_INC_LOW = (log10(C.midPoint.x) - log10(C.minPoint.x)) / (N_KNOTS_LOW - 1.0);
+	float KNOT_INC_HIGH = (log10(C.maxPoint.x) - log10(C.midPoint.x)) / (N_KNOTS_HIGH - 1.0);
 
 	int i;
   
@@ -353,13 +354,13 @@ float segmented_spline_c5_rev( float y )
 	float KNOT_Y_LOW[N_KNOTS_LOW];
 	for (i = 0; i < N_KNOTS_LOW; i = i+1)
 	{
-		KNOT_Y_LOW[i] = (C.coefsLow[i] + C.coefsLow[i+1]) / 2.;
+		KNOT_Y_LOW[i] = (C.coefsLow[i] + C.coefsLow[i+1]) / 2.0;
 	};
 
 	float KNOT_Y_HIGH[N_KNOTS_HIGH];
 	for (i = 0; i < N_KNOTS_HIGH; i = i+1) 
 	{
-		KNOT_Y_HIGH[i] = ( C.coefsHigh[i] + C.coefsHigh[i+1]) / 2.;
+		KNOT_Y_HIGH[i] = ( C.coefsHigh[i] + C.coefsHigh[i+1]) / 2.0;
 	};
 
 	float logy = log10(max(y,1e-10));
@@ -388,9 +389,9 @@ float segmented_spline_c5_rev( float y )
 		float c = tmp[ 2];
 		c = c - logy;
 
-		float d = sqrt( b * b - 4. * a * c);
+		float d = sqrt( b * b - 4.0 * a * c);
 
-		float t = ( 2. * c) / ( -d - b);
+		float t = ( 2.0 * c) / ( -d - b);
 
 		logx = log10(C.minPoint.x) + ( t + j) * KNOT_INC_LOW;
 	} 
@@ -456,7 +457,7 @@ float segmented_spline_c9_fwd( float x, SegmentedSplineParams_c9 C )
 	}
 	else if ((logx >= log10(C.midPoint.x)) && (logx < log10(C.maxPoint.x)))
 	{
-		float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10(C.midPoint.x)) / (log10(C.maxPoint.x) - log10(C.midPoint.x));
+		float knot_coord = (N_KNOTS_HIGH - 1.0) * (logx - log10(C.midPoint.x)) / (log10(C.maxPoint.x) - log10(C.midPoint.x));
 		int j = int(knot_coord);
 		float t = knot_coord - j;
 
@@ -478,20 +479,20 @@ float segmented_spline_c9_rev( float y, SegmentedSplineParams_c9 C )
 	const int N_KNOTS_LOW = 8;
 	const int N_KNOTS_HIGH = 8;
 
-	float KNOT_INC_LOW = (log10(C.midPoint.x) - log10(C.minPoint.x)) / (N_KNOTS_LOW - 1.);
-	float KNOT_INC_HIGH = (log10(C.maxPoint.x) - log10(C.midPoint.x)) / (N_KNOTS_HIGH - 1.);
+	float KNOT_INC_LOW = (log10(C.midPoint.x) - log10(C.minPoint.x)) / (N_KNOTS_LOW - 1.0);
+	float KNOT_INC_HIGH = (log10(C.maxPoint.x) - log10(C.midPoint.x)) / (N_KNOTS_HIGH - 1.0);
   
 	int i;
 
 	// KNOT_Y is luminance of the spline at each knot
 	float KNOT_Y_LOW[ N_KNOTS_LOW];
 	for (i = 0; i < N_KNOTS_LOW; i = i+1) {
-		KNOT_Y_LOW[ i] = ( C.coefsLow[i] + C.coefsLow[i+1]) / 2.;
+		KNOT_Y_LOW[ i] = ( C.coefsLow[i] + C.coefsLow[i+1]) / 2.0;
 	};
 
 	float KNOT_Y_HIGH[ N_KNOTS_HIGH];
 	for (i = 0; i < N_KNOTS_HIGH; i = i+1) {
-		KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i+1]) / 2.;
+		KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i+1]) / 2.0;
 	};
 
 	float logy = log10( max( y, 1e-10));
@@ -525,9 +526,9 @@ float segmented_spline_c9_rev( float y, SegmentedSplineParams_c9 C )
 		float c = tmp[ 2];
 		c = c - logy;
 
-		float d = sqrt( b * b - 4. * a * c);
+		float d = sqrt( b * b - 4.0 * a * c);
 
-		float t = ( 2. * c) / ( -d - b);
+		float t = ( 2.0 * c) / ( -d - b);
 
 		logx = log10(C.minPoint.x) + ( t + j) * KNOT_INC_LOW;
 	} else if ( (logy > log10(C.midPoint.y)) && (logy < log10(C.maxPoint.y)) ) {
@@ -556,9 +557,9 @@ float segmented_spline_c9_rev( float y, SegmentedSplineParams_c9 C )
 		float c = tmp[ 2];
 		c = c - logy;
 
-		float d = sqrt( b * b - 4. * a * c);
+		float d = sqrt( b * b - 4.0 * a * c);
 
-		float t = ( 2. * c) / ( -d - b);
+		float t = ( 2.0 * c) / ( -d - b);
 
 		logx = log10(C.midPoint.x) + ( t + j) * KNOT_INC_HIGH;
 	} 
@@ -576,23 +577,23 @@ float rgb_2_hue( float3 rgb )
 	// Returns a geometric hue angle in degrees (0-360) based on RGB values.
 	// For neutral colors, hue is undefined and the function will return a quiet NaN value.
 	float hue;
-	if (rgb[0] == rgb[1] && rgb[1] == rgb[2])
+	if ((rgb[0] == rgb[1]) && (rgb[1] == rgb[2]))
 	{
 		//hue = FLT_NAN; // RGB triplets where RGB are equal have an undefined hue
-		hue = 0;
+		hue = 0.0;
 	}
 	else
 	{
-		hue = (180. / Pi) * atan2(sqrt(3.0)*(rgb[1] - rgb[2]), 2 * rgb[0] - rgb[1] - rgb[2]);
+		hue = (180.0 / Pi) * atan2(sqrt(3.0)*(rgb[1] - rgb[2]), 2.0 * rgb[0] - rgb[1] - rgb[2]);
 	}
 
-	if (hue < 0.)
-		hue = hue + 360;
+	if (hue < 0.0)
+		hue = hue + 360.0;
 
-	return clamp( hue, 0, 360 );
+	return clamp( hue, 0.0, 360.0 );
 }
 
-float rgb_2_yc( float3 rgb, float ycRadiusWeight = 1.75)
+float rgb_2_yc( float3 rgb)
 {
 	// Converts RGB to a luminance proxy, here called YC
 	// YC is ~ Y + K * Chroma
@@ -612,8 +613,8 @@ float rgb_2_yc( float3 rgb, float ycRadiusWeight = 1.75)
 	float b = rgb[2];
   
 	float chroma = sqrt(b*(b-g)+g*(g-r)+r*(r-b));
-
-	return ( b + g + r + ycRadiusWeight * chroma) / 3.;
+	float ycRadiusWeight = 1.75;
+	return ( b + g + r + ycRadiusWeight * chroma) / 3.0;
 }
 
 // 
@@ -631,26 +632,26 @@ float3 RRT( float3 aces )
 	float saturation = rgb_2_saturation( aces );
 	float ycIn = rgb_2_yc( aces );
 	float s = sigmoid_shaper( (saturation - 0.4) / 0.2);
-	float addedGlow = 1 + glow_fwd( ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+	float addedGlow = 1.0 + glow_fwd( ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
 	aces *= addedGlow;
   
 	// --- Red modifier --- //
 	float RRT_RED_SCALE = 0.82;
 	float RRT_RED_PIVOT = 0.03;
-	float RRT_RED_HUE = 0;
-	float RRT_RED_WIDTH = 135;
+	float RRT_RED_HUE = 0.0;
+	float RRT_RED_WIDTH = 135.0;
 	float hue = rgb_2_hue( aces );
 	float centeredHue = center_hue( hue, RRT_RED_HUE );
 	float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH );
 		
-	aces.r += hueWeight * saturation * (RRT_RED_PIVOT - aces.r) * (1. - RRT_RED_SCALE);
+	aces.r += hueWeight * saturation * (RRT_RED_PIVOT - aces.r) * (1.0 - RRT_RED_SCALE);
 
 	// --- ACES to RGB rendering space --- //
-	aces = clamp( aces, 0, 65535 );  // avoids saturated negative colors from becoming positive in the matrix
+	aces = clamp( aces, vec3(0.0), vec3(65535.0));  // avoids saturated negative colors from becoming positive in the matrix
 
 	float3 rgbPre = mul( AP0_2_AP1_MAT, aces );
 
-	rgbPre = clamp( rgbPre, 0, 65535 );
+	rgbPre = clamp( rgbPre, vec3(0.0), vec3(65535.0));
 
 	// --- Global desaturation --- //
 	float RRT_SAT_FACTOR = 0.96;
@@ -693,18 +694,18 @@ float3 Inverse_RRT( float3 oces )
 	float RRT_SAT_FACTOR = 0.96;
 	rgbPost = lerp( vec3(dot( rgbPost, AP1_RGB2Y )), rgbPost, vec3(rcp(RRT_SAT_FACTOR)) );
 
-	rgbPost = clamp( rgbPost, 0., HALF_MAX);
+	rgbPost = clamp( rgbPost, 0.0, HALF_MAX);
 
 	// --- RGB rendering space to ACES --- //
 	float3 aces = mul( AP1_2_AP0_MAT, rgbPost);
 
-	aces = clamp( aces, 0., HALF_MAX);
+	aces = clamp( aces, 0.0, HALF_MAX);
 
 	// --- Red modifier --- //
 	float RRT_RED_SCALE = 0.82;
 	float RRT_RED_PIVOT = 0.03;
-	float RRT_RED_HUE = 0;
-	float RRT_RED_WIDTH = 135;
+	float RRT_RED_HUE = 0.0;
+	float RRT_RED_WIDTH = 135.0;
 	float hue = rgb_2_hue( aces);
 	float centeredHue = center_hue( hue, RRT_RED_HUE);
 	float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
@@ -717,17 +718,17 @@ float3 Inverse_RRT( float3 oces )
 		minChan = aces[2];
 	}
 
-	float a = hueWeight * (1. - RRT_RED_SCALE) - 1.;
-	float b = aces[0] - hueWeight * (RRT_RED_PIVOT + minChan) * (1. - RRT_RED_SCALE);
-	float c = hueWeight * RRT_RED_PIVOT * minChan * (1. - RRT_RED_SCALE);
+	float a = hueWeight * (1.0 - RRT_RED_SCALE) - 1.0;
+	float b = aces[0] - hueWeight * (RRT_RED_PIVOT + minChan) * (1.0 - RRT_RED_SCALE);
+	float c = hueWeight * RRT_RED_PIVOT * minChan * (1.0 - RRT_RED_SCALE);
 
-	aces[0] = ( -b - sqrt( b * b - 4. * a * c)) / ( 2. * a);
+	aces[0] = ( -b - sqrt( b * b - 4.0 * a * c)) / ( 2.0 * a);
 
 	// --- Glow module --- //
 	float saturation = rgb_2_saturation( aces);
 	float ycOut = rgb_2_yc( aces);
 	float s = sigmoid_shaper( (saturation - 0.4) / 0.2);
-	float reducedGlow = 1. + glow_inv( ycOut, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+	float reducedGlow = 1.0 + glow_inv( ycOut, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
 
 	aces = reducedGlow * aces;
 
@@ -928,7 +929,7 @@ float3 LinearToST2084(float3 lin)
 	const float c1 = 0.8359375; // = 2392. / 4096. * 32 - 2413./4096.*32 + 1;
 	const float c2 = 18.8515625; // = 2413. / 4096. * 32;
 	const float c3 = 18.6875; // = 2392. / 4096. * 32;
-	const float C = 10000.;
+	const float C = 10000.0;
 
 	float3 L = lin/C;
 	float3 Lm = pow(L, vec3(m1));
