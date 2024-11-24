@@ -1033,6 +1033,8 @@ static bool GLW_ChoosePixelFormat() {
 	return true;
 }
 
+void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
+
 void GLW_CreateContext() {
 
 	const char	*profileName[] = { "core", "compatibility" };

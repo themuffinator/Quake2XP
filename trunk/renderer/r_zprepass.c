@@ -5,8 +5,8 @@
 #include "r_local.h"
 
 extern msurface_t	*sceneSurfaces[MAX_MAP_FACES];
-static int			numDepthSurfaces;
-static vec3_t		modelorg;			// relative to viewpoint
+int					numDepthSurfaces;
+//static vec3_t		modelorg;			// relative to viewpoint
 
 bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
 	unsigned	numVertices, numIndices;
@@ -17,10 +17,6 @@ bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) 
 
 	if ((nv - 2) * 3 >= MAX_INDICES)
 		return false;
-
-	// create indexes
-	if (numIndices == 0xffffffff)
-		numIndices = 0;
 
 	for (i = 0; i < nv - 2; i++)
 	{
@@ -35,21 +31,21 @@ bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) 
 	return true;
 }
 
-static void GL_DrawDepthBspTris () {
+void GL_DrawDepthBspTris () {
 	msurface_t	*s;
 	int			i;
-	unsigned	numIndices = 0xffffffff;
+	unsigned	numIndices = 0;
 	unsigned	numVertices = 0;
 
 	for (i = 0; i < numDepthSurfaces; i++) {
 		s = sceneSurfaces[i];
 
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
-			if (numIndices != 0xFFFFFFFF) {
+			if (numIndices != 0) {
 				GL_DrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brushTris += numIndices / 3;
 				numVertices = 0;
-				numIndices = 0xFFFFFFFF;
+				numIndices = 0;
 			}
 		}
 	}
@@ -61,7 +57,7 @@ static void GL_DrawDepthBspTris () {
 	}
 }
 
-static void R_RecursiveDepthWorldNode(mnode_t* node) {
+void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 	int c, side, sidebit;
 	cplane_t* plane;
 	msurface_t* surf, ** mark;
@@ -86,30 +82,32 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
 				return;			// not visible
 		}
+		
+		if (!gl_state.shadowMapPass) {
+			// add to z buffer bounds
+			vec3_t mins, maxs;;
+			VectorCopy(node->minmaxs, mins);
+			VectorCopy(node->minmaxs + 3, maxs);
 
-		// add to z buffer bounds
-		vec3_t mins, maxs;;
-		VectorCopy(node->minmaxs, mins);
-		VectorCopy(node->minmaxs + 3, maxs);
+			if (mins[0] < r_newrefdef.visBounds[0][0]) {
+				r_newrefdef.visBounds[0][0] = mins[0];
+			}
+			if (mins[1] < r_newrefdef.visBounds[0][1]) {
+				r_newrefdef.visBounds[0][1] = mins[1];
+			}
+			if (mins[2] < r_newrefdef.visBounds[0][2]) {
+				r_newrefdef.visBounds[0][2] = mins[2];
+			}
 
-		if (mins[0] < r_newrefdef.visBounds[0][0]) {
-			r_newrefdef.visBounds[0][0] = mins[0];
-		}
-		if (mins[1] < r_newrefdef.visBounds[0][1]) {
-			r_newrefdef.visBounds[0][1] = mins[1];
-		}
-		if (mins[2] < r_newrefdef.visBounds[0][2]) {
-			r_newrefdef.visBounds[0][2] = mins[2];
-		}
-
-		if (maxs[0] > r_newrefdef.visBounds[1][0]) {
-			r_newrefdef.visBounds[1][0] = maxs[0];
-		}
-		if (maxs[1] > r_newrefdef.visBounds[1][1]) {
-			r_newrefdef.visBounds[1][1] = maxs[1];
-		}
-		if (maxs[2] > r_newrefdef.visBounds[1][2]) {
-			r_newrefdef.visBounds[1][2] = maxs[2];
+			if (maxs[0] > r_newrefdef.visBounds[1][0]) {
+				r_newrefdef.visBounds[1][0] = maxs[0];
+			}
+			if (maxs[1] > r_newrefdef.visBounds[1][1]) {
+				r_newrefdef.visBounds[1][1] = maxs[1];
+			}
+			if (maxs[2] > r_newrefdef.visBounds[1][2]) {
+				r_newrefdef.visBounds[1][2] = maxs[2];
+			}
 		}
 
 		mark = pleaf->firstmarksurface;
@@ -117,9 +115,9 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 
 		if (c) {
 			do {
-				if (SurfInFrustum(*mark))
-					(*mark)->visframe = r_framecount;
-				(*mark)->ent = NULL;
+			if (SurfInFrustum(*mark))
+				(*mark)->visframe = r_framecount;
+			(*mark)->ent = NULL;
 				mark++;
 			} while (--c);
 		}
@@ -132,16 +130,16 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 
 	switch (plane->type) {
 	case PLANE_X:
-		dot = modelorg[0] - plane->dist;
+		dot = viewOrg[0] - plane->dist;
 		break;
 	case PLANE_Y:
-		dot = modelorg[1] - plane->dist;
+		dot = viewOrg[1] - plane->dist;
 		break;
 	case PLANE_Z:
-		dot = modelorg[2] - plane->dist;
+		dot = viewOrg[2] - plane->dist;
 		break;
 	default:
-		dot = DotProduct(modelorg, plane->normal) - plane->dist;
+		dot = DotProduct(viewOrg, plane->normal) - plane->dist;
 		break;
 	}
 
@@ -155,16 +153,17 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 	}
 
 	// recurse down the children, front side first
-	R_RecursiveDepthWorldNode(node->children[side]);
+	R_RecursiveDepthWorldNode(node->children[side], viewOrg);
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
 
 		if (surf->visframe != r_framecount)
 			continue;
-
-		if ((surf->flags & MSURF_PLANEBACK) != sidebit)
-			continue;			// wrong side
+		if (!gl_state.shadowMapPass) {
+			if ((surf->flags & MSURF_PLANEBACK) != sidebit)
+				continue;			// wrong side
+		}
 
 		if (surf->texInfo->flags & SURF_SKY)
 			continue;
@@ -179,11 +178,11 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 	}
 
 	// recurse down the back side
-	R_RecursiveDepthWorldNode(node->children[!side]);
+	R_RecursiveDepthWorldNode(node->children[!side], viewOrg);
 }
 
 
-static void R_AddBModelDepthTris (void) {
+void R_AddBModelDepthTris (vec3_t viewOrg) {
 	int i;
 	cplane_t *pplane;
 	float dot;
@@ -195,26 +194,35 @@ static void R_AddBModelDepthTris (void) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
 		if (pplane->type < 3)
-			dot = modelorg[pplane->type] - pplane->dist;
+			dot = viewOrg[pplane->type] - pplane->dist;
 		else
-			dot = DotProduct (modelorg, pplane->normal) - pplane->dist;
+			dot = DotProduct (viewOrg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
-		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
-			|| (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+		if (!gl_state.shadowMapPass) {
+			if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 
+				if (psurf->visframe == r_framecount)	// reckless fix
+					continue;
+				if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) 
+					continue;
+				sceneSurfaces[numDepthSurfaces++] = psurf;
+			}
+		}
+		else {
 			if (psurf->visframe == r_framecount)	// reckless fix
 				continue;
-
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 				continue;
-			}
+			
 			sceneSurfaces[numDepthSurfaces++] = psurf;
 		}
+
+
 	}
 }
-void R_DrawDepthBrushModel (void) {
-	vec3_t		mins, maxs;
+void R_DrawDepthBrushModel () {
+	vec3_t		mins, maxs, viewOrg;
 	int			i;
 	bool	rotated;
 	mat4_t		mvp;
@@ -240,27 +248,31 @@ void R_DrawDepthBrushModel (void) {
 
 	if (R_CullBox (mins, maxs))
 		return;
-
-	VectorSubtract (r_newrefdef.vieworg, currententity->origin, modelorg);
+	if (gl_state.shadowMapPass) 
+		VectorSubtract(currentShadowLight->origin, currententity->origin, viewOrg);
+	else
+		VectorSubtract (r_newrefdef.vieworg, currententity->origin, viewOrg);
 
 	if (rotated) {
 		vec3_t temp;
 		vec3_t forward, right, up;
 
-		VectorCopy (modelorg, temp);
+		VectorCopy (viewOrg, temp);
 		AngleVectors (currententity->angles, forward, right, up);
-		modelorg[0] = DotProduct (temp, forward);
-		modelorg[1] = -DotProduct (temp, right);
-		modelorg[2] = DotProduct (temp, up);
+		viewOrg[0] = DotProduct		(temp, forward);
+		viewOrg[1] = -DotProduct	(temp, right);
+		viewOrg[2] = DotProduct		(temp, up);
 	}
 
 	R_SetupEntityMatrix (currententity);
-
-	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
+	if(gl_state.shadowMapPass)
+		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.shadowMVP, mvp);
+	else
+		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)mvp);
 
 	numDepthSurfaces = 0;
-	R_AddBModelDepthTris ();
+	R_AddBModelDepthTris (viewOrg);
 	GL_DrawDepthBspTris();
 }
 
@@ -269,14 +281,19 @@ void R_CalcAliasFrameLerp (md2Header *paliashdr, float shellScale);
 void GL_DrawAliasFrameLerpDepth(md2Header *paliashdr) {
 	int					index_xyz;
 	int					i, j, k = 0;
-	md2Triangle_t			*tris;
+	md2Triangle_t *tris;
 
-	if (currententity->flags & (RF_VIEWERMODEL))
-		return;
+	if (!gl_state.shadowMapPass) {
+		if (currententity->flags & (RF_VIEWERMODEL))
+			return;
+	}
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
-	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
+	if (gl_state.shadowMapPass)
+		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.shadowMVP, currententity->orMatrix);
+	else
+		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	c_aliasTris += paliashdr->num_tris;
@@ -298,7 +315,7 @@ void GL_DrawAliasFrameLerpDepth(md2Header *paliashdr) {
 
 void R_DrawDepthAliasModel(void){
 
-	md2Header		*paliashdr;
+	md2Header	*paliashdr;
 	vec3_t		bbox[8];
 	
 	if (!r_drawEntities->integer)
@@ -361,9 +378,9 @@ void R_DrawDepthMD3Model(void) {
 
 	VectorSubtract(currententity->oldOrigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
-	move[0] = DotProduct(delta, vectors[0]);	// forward
-	move[1] = -DotProduct(delta, vectors[1]);	// left
-	move[2] = DotProduct(delta, vectors[2]);	// up
+	move[0] =	DotProduct	(delta, vectors[0]);	// forward
+	move[1] =	-DotProduct	(delta, vectors[1]);	// left
+	move[2] =	DotProduct	(delta, vectors[2]);	// up
 
 	VectorAdd(move, oldframe->translate, move);
 
@@ -376,8 +393,12 @@ void R_DrawDepthMD3Model(void) {
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
+	
+	if (gl_state.shadowMapPass)
+		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.shadowMVP, currententity->orMatrix);
+	else
+		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 
-	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++){
@@ -414,6 +435,7 @@ void R_DrawDepthMD3Model(void) {
 void R_DrawDepthScene (void) {
 
 	int i;
+	vec3_t modelorg;
 
 	if (!r_drawWorld->integer)
 		return;
@@ -434,7 +456,7 @@ void R_DrawDepthScene (void) {
 		GL_BindVAO(vao.depthBsp);
 
 		numDepthSurfaces = 0;
-		R_RecursiveDepthWorldNode(r_worldmodel->nodes);
+		R_RecursiveDepthWorldNode(r_worldmodel->nodes, modelorg);
 		GL_DrawDepthBspTris();
 
 		for (i = 0; i < r_newrefdef.num_entities; i++) {

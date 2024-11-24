@@ -133,9 +133,9 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
 		if (gl_config.hdrDisplay)
-			VectorSet(shadelight, 0.1, 0.1, 0.1);
+			VectorSet(lightColor, 0.1, 0.1, 0.1);
 		else
-			VectorSet(shadelight, 0.75, 0.75, 0.75);
+			VectorSet(lightColor, 0.75, 0.75, 0.75);
 	}
 
 
@@ -941,11 +941,13 @@ visible:
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
 
-	GL_StencilFunc(GL_EQUAL, 128, 255);
-	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	GL_StencilMask(0);
-	GL_DepthFunc(GL_LEQUAL);
-	
+	if (r_shadows->integer == 1) {
+		GL_StencilFunc(GL_EQUAL, 128, 255);
+		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		GL_StencilMask(0);
+		GL_DepthFunc(GL_LEQUAL);
+	}
+
 	GL_PolygonOffset(-0.1, -1.0);
 
 	GL_DrawAliasFrameLerpLight(paliashdr);

@@ -85,7 +85,7 @@ void GL_UpdateLightColor(vec3_t color) {
 */
 void GL_Viewport(GLint x, GLint y, GLint w, GLint h) {
 
-	if (gl_state.viewportX != x && gl_state.viewportY != y && gl_state.viewportWidth != w && gl_state.viewportHeight != h) {
+	if (gl_state.viewportX != x || gl_state.viewportY != y || gl_state.viewportWidth != w || gl_state.viewportHeight != h) {
 
 		qglViewport(x, y, w, h);
 		gl_state.viewportX = x;

@@ -160,7 +160,7 @@ void SVCmd_AddIP_f (void) {
 	}
 
 	for (i = 0; i < numipfilters; i++)
-	if (ipfilters[i].compare == 0xffffffff)
+	if (ipfilters[i].compare == /*0xffffffff*/ sizeof(size_t))
 		break;		// free spot
 	if (i == numipfilters) {
 		if (numipfilters == MAX_IPFILTERS) {
@@ -171,7 +171,7 @@ void SVCmd_AddIP_f (void) {
 	}
 
 	if (!StringToFilter (gi.argv (2), &ipfilters[i]))
-		ipfilters[i].compare = 0xffffffff;
+		ipfilters[i].compare = /*0xffffffff*/ sizeof(size_t);
 }
 
 /*

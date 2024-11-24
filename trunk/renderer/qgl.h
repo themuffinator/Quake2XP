@@ -739,10 +739,10 @@ extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;
 extern PFNGLISVERTEXARRAYPROC								glIsVertexArray;
 
-extern PFNGLDEBUGMESSAGECONTROLARBPROC						glDebugMessageControlARB;
-extern PFNGLDEBUGMESSAGEINSERTARBPROC						glDebugMessageInsertARB;
-extern PFNGLDEBUGMESSAGECALLBACKARBPROC						glDebugMessageCallbackARB;
-extern PFNGLGETDEBUGMESSAGELOGARBPROC						glGetDebugMessageLogARB;
+extern PFNGLDEBUGMESSAGECONTROLPROC						glDebugMessageControl;
+extern PFNGLDEBUGMESSAGEINSERTPROC						glDebugMessageInsert;
+extern PFNGLDEBUGMESSAGECALLBACKPROC					glDebugMessageCallback;
+extern PFNGLGETDEBUGMESSAGELOGPROC						glGetDebugMessageLog;
 
 
 extern PFNGLGETTEXTUREHANDLEARBPROC							glGetTextureHandleARB;

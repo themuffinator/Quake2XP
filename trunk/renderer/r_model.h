@@ -39,7 +39,8 @@ int			numInteractionSurfs;
 
 int	r_lightTimestamp, r_lightTimestampRA;
 
-#define LIGHT_ZNEAR			1.f
+#define LIGHT_ZNEAR		0.1
+#define SHADOWMAP_SIZE	1024
 
 typedef struct frustum_s {
 	cplane_t	planes[6];		// right, left, top, bottom, near, far

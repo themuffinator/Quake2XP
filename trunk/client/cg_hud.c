@@ -308,7 +308,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	VectorSet (refdef.vieworg, -rad[0] * 1.5, 0, rad[0]*0.8);
 
 	entity.model = model;
-	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;
+	entity.flags = RF_NOSHADOW | RF_DEPTHHACK | RF_HUDMODEL;
 	entity.frame = 0;
 	entity.oldFrame = 0;
 	entity.backLerp = 0.0;

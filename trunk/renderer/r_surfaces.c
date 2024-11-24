@@ -556,7 +556,37 @@ void R_UpdateLightUniforms(bool bModel)
 		 qglUniform1i(U_USE_SSAO, 0);
 
 	 GL_SetBindlessTexture(U_TMU5, gi.ssaoColor[i_ssaoColorIndex]->handle);
-		 
+	
+	 vec2_t	jitterOffset, biasScale;
+
+	 float penumbra = 4.0;
+	 if (penumbra < 2.0)	
+		 penumbra = 2.0;
+	 else if (penumbra > 16.0)	
+		 penumbra = 16.0;
+	 biasScale[0] = penumbra;
+	 biasScale[1] = penumbra / SHADOWMAP_SIZE;
+
+ n0:	jitterOffset[0] = (rand() & 255) / 255.0;
+	 if (jitterOffset[0] <= 0.004)
+		 goto n0;
+
+ n1:	jitterOffset[1] = (rand() & 255) / 255.0;
+	 if (jitterOffset[1] <= 0.004)
+		 goto n1;
+
+	 qglUniform2fv(U_PARAM_VEC2_0, 1, biasScale);
+	 qglUniform2fv(U_PARAM_VEC2_1, 1, jitterOffset);
+
+	 qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)r_newrefdef.unprojMatrix);
+	 
+	 GL_SetBindlessTexture(U_TMU6, gi.shadowCube->handle);
+	 GL_SetBindlessTexture(U_TMU7, gi.depthStencil->handle);
+	 
+	 if(r_shadows->integer == 2)
+		qglUniform1i(U_PARAM_INT_3, 1);
+	 else
+		qglUniform1i(U_PARAM_INT_3, 0);
  }
 
 int lightSurfSort(const msurface_t** a, const msurface_t** b);
@@ -923,10 +953,12 @@ void R_DrawLightWorld(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_StencilFunc(GL_EQUAL, 128, 255);
-	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	GL_StencilMask(0);
-	GL_DepthFunc(GL_LEQUAL);
+	if (r_shadows->integer == 1) {
+		GL_StencilFunc(GL_EQUAL, 128, 255);
+		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		GL_StencilMask(0);
+		GL_DepthFunc(GL_LEQUAL);
+	}
 
 	GL_PolygonOffset(-0.1, -1.0);
 
@@ -1262,11 +1294,12 @@ void R_DrawLightBrushModel (void) {
 			}
 		}
 	}
-	
-	GL_StencilFunc(GL_EQUAL, 128, 255);
-	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	GL_StencilMask(0);
-	GL_DepthFunc(GL_LEQUAL);
+	if (r_shadows->integer == 1) {
+		GL_StencilFunc(GL_EQUAL, 128, 255);
+		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		GL_StencilMask(0);
+		GL_DepthFunc(GL_LEQUAL);
+	}
 
 	GL_PolygonOffset(-2.0, -2.0);
 

@@ -77,51 +77,54 @@ void R_SetupEntityMatrix(entity_t* e);
 
 /*=================
 GL_ARB_Debug_output
-From https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
 =================*/
+//					
+void glDebugOutput(GLenum source, GLenum   type, GLuint   id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
+	char	debSource[64],
+		debType[64],
+		debSev[64];
 
-void DebugOutput(unsigned source, unsigned type, unsigned id, unsigned severity, const char* message)
-{
-	char debSource[64], debType[64], debSev[64];
+	if (!gl_state.glDebugOutput)
+		return;
 
 	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
 		return;
 
-	if (source == GL_DEBUG_SOURCE_API_ARB)
+	if (source == GL_DEBUG_SOURCE_API)
 		strcpy(debSource, "OpenGL");
-	else if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+	else if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM)
 		strcpy(debSource, "Windows");
-	else if (source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+	else if (source == GL_DEBUG_SOURCE_SHADER_COMPILER)
 		strcpy(debSource, "Shader Compiler");
-	else if (source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
+	else if (source == GL_DEBUG_SOURCE_THIRD_PARTY)
 		strcpy(debSource, "Third Party");
-	else if (source == GL_DEBUG_SOURCE_APPLICATION_ARB)
+	else if (source == GL_DEBUG_SOURCE_APPLICATION)
 		strcpy(debSource, "Application");
 	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)
 		strcpy(debSource, "Other");
 	else
 		strcpy(debSource, va("Source 0x%X", source));
 
-	if (type == GL_DEBUG_TYPE_ERROR_ARB)
+	if (type == GL_DEBUG_TYPE_ERROR)
 		strcpy(debType, "Error");
-	else if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
+	else if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
 		strcpy(debType, "Deprecated behavior");
-	else if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
+	else if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
 		strcpy(debType, "Undefined behavior");
-	else if (type == GL_DEBUG_TYPE_PORTABILITY_ARB)
+	else if (type == GL_DEBUG_TYPE_PORTABILITY)
 		strcpy(debType, "Portability");
-	else if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB)
+	else if (type == GL_DEBUG_TYPE_PERFORMANCE)
 		strcpy(debType, "Performance");
-	else if (type == GL_DEBUG_TYPE_OTHER_ARB)
+	else if (type == GL_DEBUG_TYPE_OTHER)
 		strcpy(debType, "Other");
 	else
 		strcpy(debType, va("Type 0x%X", type));
 
-	if (severity == GL_DEBUG_SEVERITY_HIGH_ARB)
+	if (severity == GL_DEBUG_SEVERITY_HIGH)
 		strcpy(debSev, "High");
-	else if (severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
+	else if (severity == GL_DEBUG_SEVERITY_MEDIUM)
 		strcpy(debSev, "Medium");
-	else if (severity == GL_DEBUG_SEVERITY_LOW_ARB)
+	else if (severity == GL_DEBUG_SEVERITY_LOW)
 		strcpy(debSev, "Low");
 	else
 		strcpy(debSev, va("0x%X", severity));
@@ -129,74 +132,34 @@ void DebugOutput(unsigned source, unsigned type, unsigned id, unsigned severity,
 	Com_Printf("GL_DEBUG: %s %s\nSeverity '%s': '%s'\nID: '%d'\n", debSource, debType, debSev, message, id);
 }
 
-void GL_CheckError(const char *fileName, int line, const char *subr)
-{
-	int         err;
-	char        s[128];
+void GetDebugMessages() {
 
-#ifdef _WIN32
-	if (!r_glDebugOutput->integer)
+	if (!gl_state.glDebugOutput)
 		return;
 
-	err = qglGetError();
-	if (err == GL_NO_ERROR)
-		return;
+	GLint maxMsgLen = 0;
+	qglGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
 
-		#define			MAX_GL_DEBUG_MESSAGES   16
-		unsigned        sources[MAX_GL_DEBUG_MESSAGES];
-		unsigned        types[MAX_GL_DEBUG_MESSAGES];
-		unsigned        ids[MAX_GL_DEBUG_MESSAGES];
-		unsigned        severities[MAX_GL_DEBUG_MESSAGES];
-		int             lengths[MAX_GL_DEBUG_MESSAGES];
-		char            messageLog[2048];
-		unsigned        count = MAX_GL_DEBUG_MESSAGES;
-		int             bufsize = 2048;
+#define			MAX_GL_DEBUG_MESSAGES   16
+	unsigned        sources[MAX_GL_DEBUG_MESSAGES];
+	unsigned        types[MAX_GL_DEBUG_MESSAGES];
+	unsigned        ids[MAX_GL_DEBUG_MESSAGES];
+	unsigned        severities[MAX_GL_DEBUG_MESSAGES];
+	int             lengths[MAX_GL_DEBUG_MESSAGES];
+	char            messageLog[2048];
+	unsigned        count = MAX_GL_DEBUG_MESSAGES;
+	int             bufsize = 2048;
 
-		unsigned retVal = glGetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
-		if (retVal > 0)
-		{
-			unsigned pos = 0;
-			for (unsigned i = 0; i < retVal; i++)
-			{
-				DebugOutput(sources[i], types[i], ids[i], severities[i], &messageLog[pos]);
-				pos += lengths[i];
-			}
-		}
-
-
-	switch (err)
+	unsigned retVal = glGetDebugMessageLog(count, bufsize, sources, types, ids, severities, lengths, messageLog);
+	if (retVal > 0)
 	{
-	case GL_INVALID_ENUM:
-		strcpy(s, "GL_INVALID_ENUM");
-		break;
-	case GL_INVALID_VALUE:
-		strcpy(s, "GL_INVALID_VALUE");
-		break;
-	case GL_INVALID_OPERATION:
-		strcpy(s, "GL_INVALID_OPERATION");
-		break;
-	case GL_STACK_OVERFLOW:
-		strcpy(s, "GL_STACK_OVERFLOW");
-		break;
-	case GL_STACK_UNDERFLOW:
-		strcpy(s, "GL_STACK_UNDERFLOW");
-		break;
-	case GL_OUT_OF_MEMORY:
-		strcpy(s, "GL_OUT_OF_MEMORY");
-		break;
-	case GL_INVALID_FRAMEBUFFER_OPERATION:
-		strcpy(s, "GL_INVALID_FRAMEBUFFER_OPERATION_EXT");
-		break;
-	default:
-		Com_sprintf(s, sizeof(s), "0x%X", err);
-		break;
+		unsigned pos = 0;
+		for (unsigned i = 0; i < retVal; i++)
+		{
+			glDebugOutput(sources[i], types[i], ids[i], severities[i], sizeof(size_t), &messageLog[pos], NULL);
+		}
 	}
-
-	Com_Printf("GL_CheckErrors: %s in file '%s' subroutine '%s' line %i\n", s, fileName, subr, line);
-#endif
 }
-
-
 
 /*
 =============================================================
@@ -344,7 +307,7 @@ R_SetupViewMatrices
 
 // convert from Q2 coordinate system (screen depth is X)
 // to OpenGL's coordinate system (screen depth is -Z)
-static mat4_t r_flipMatrix = {
+mat4_t r_flipMatrix = {
 	{  0.f, 0.f, -1.f, 0.f },	// world +X -> screen -Z
 	{ -1.f, 0.f,  0.f, 0.f },	// world +Y -> screen -X
 	{  0.f, 1.f,  0.f, 0.f },	// world +Z -> screen +Y (Y=0 being the bottom of the screen)
@@ -387,6 +350,11 @@ static void R_SetupViewMatrices (void) {
 	// scissors transform
 	Mat4_Multiply	(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
 	Mat4_Transpose	(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
+
+	// setup unprojection matrix
+	Mat4_Invert(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.unprojMatrix);
+	Mat4_Translate(r_newrefdef.unprojMatrix, -(float)vid.width / (float)r_newrefdef.viewport[2], -(float)vid.height / (float)r_newrefdef.viewport[3], -1.0);
+	Mat4_Scale(r_newrefdef.unprojMatrix, 2.0 / (float)r_newrefdef.viewport[2], 2.0 / (float)r_newrefdef.viewport[3], 2.0);
 
 	// set sky matrix
 	Mat4_Identity(tmpMatrix);
@@ -482,12 +450,13 @@ void R_DrawPlayerWeaponLightPass(void)
 
 	if (!r_drawEntities->integer)
 		return;
-
-	GL_DepthFunc(GL_LEQUAL);
-	GL_StencilFunc(GL_EQUAL, 128, 255);
-	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	GL_StencilMask(0);
-
+	
+	if (r_shadows->integer == 1) {
+		GL_DepthFunc(GL_LEQUAL);
+		GL_StencilFunc(GL_EQUAL, 128, 255);
+		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		GL_StencilMask(0);
+	}
 		for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 		{
 			currententity = &r_newrefdef.entities[i];
@@ -508,6 +477,7 @@ void R_DrawPlayerWeaponLightPass(void)
 		}
 
 }
+void R_DrawShadowMaps();
 
 void R_DrawLightScene (void)
 {
@@ -524,7 +494,7 @@ void R_DrawLightScene (void)
 		if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 			GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-		if (r_shadows->integer)
+		if (r_shadows->integer == 1)
 			GL_Enable(GL_STENCIL_TEST);
 
 		GL_Enable(GL_POLYGON_OFFSET_FILL);
@@ -553,15 +523,18 @@ void R_DrawLightScene (void)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		qglClearStencil(128);
-		GL_StencilMask(255);
-		qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
+		if (r_shadows->integer == 1) {
+			qglClearStencil(128);
+			GL_StencilMask(255);
+			qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
+		}
 		c_numVisLights++;
 	}
 
 	if (!currentShadowLight->isAmbient && currentShadowLight->isShadow)
 			c_staticShadowTris += currentShadowLight->numStaticShadowTris;
 	
+	R_DrawShadowMaps();
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(true);	// player shadow and self shadowing models
 
@@ -705,7 +678,7 @@ void R_DrawPlayerWeapon(void)
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-	if (r_shadows->integer)
+	if (r_shadows->integer == 1)
 		GL_Enable(GL_STENCIL_TEST);
 
 	R_PrepareShadowLightFrame(true);
@@ -727,11 +700,13 @@ void R_DrawPlayerWeapon(void)
 
 			if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-
-			qglClearStencil(128);
-			GL_StencilMask(255);
-			qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
 			
+			if (r_shadows->integer == 1) {
+				qglClearStencil(128);
+				GL_StencilMask(255);
+				qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
+			}
+
 			R_CastBspShadowVolumes();
 			R_DrawPlayerWeaponLightPass();
 		}
@@ -1593,6 +1568,20 @@ int R_Init(void *hinstance, void *hWnd)
 		QGL_Shutdown();
 		return -1;
 	}
+
+	int flags;
+	qglGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	gl_state.glDebugOutput = false;
+
+	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+
+		qglEnable(GL_DEBUG_OUTPUT);
+		qglEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(glDebugOutput, NULL);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+		gl_state.glDebugOutput = true;
+	}
+
 	// set our "safe" modes
 	gl_state.prev_mode = 0;
 
@@ -1616,10 +1605,10 @@ int R_Init(void *hinstance, void *hWnd)
 	qglStencilMaskSeparate	= (PFNGLSTENCILMASKSEPARATEPROC)	qwglGetProcAddress("glStencilMaskSeparate");
 
 	// debug context
-	glDebugMessageControlARB	= (PFNGLDEBUGMESSAGECONTROLARBPROC)		qwglGetProcAddress("glDebugMessageControlARB");
-	glDebugMessageInsertARB		= (PFNGLDEBUGMESSAGEINSERTARBPROC)		qwglGetProcAddress("glDebugMessageInsertARB");
-	glDebugMessageCallbackARB	= (PFNGLDEBUGMESSAGECALLBACKARBPROC)	qwglGetProcAddress("glDebugMessageCallbackARB");
-	glGetDebugMessageLogARB		= (PFNGLGETDEBUGMESSAGELOGARBPROC)		qwglGetProcAddress("glGetDebugMessageLogARB");
+	glDebugMessageControl	= (PFNGLDEBUGMESSAGECONTROLPROC)	qwglGetProcAddress("glDebugMessageControl");
+	glDebugMessageInsert	= (PFNGLDEBUGMESSAGEINSERTPROC)		qwglGetProcAddress("glDebugMessageInsert");
+	glDebugMessageCallback	= (PFNGLDEBUGMESSAGECALLBACKPROC)	qwglGetProcAddress("glDebugMessageCallback");
+	glGetDebugMessageLog	= (PFNGLGETDEBUGMESSAGELOGPROC)		qwglGetProcAddress("glGetDebugMessageLog");
 	
 	// vao stuff
 	glGenVertexArrays		= (PFNGLGENVERTEXARRAYSPROC)	qwglGetProcAddress("glGenVertexArrays");

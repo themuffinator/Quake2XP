@@ -223,7 +223,19 @@ void R_FB_AttachImage(const GLenum attachment, const image_t *image, const int i
 	default:
 		VID_Error(ERR_DROP, "R_FB_AttachImage: invalid attachment point 0x%x\n", attachment);
 	}
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, attachment, image->texType, image->texnum, 0);
+
+	switch (image->texType) {
+	case GL_TEXTURE_2D:
+	case GL_TEXTURE_RECTANGLE:
+		qglFramebufferTexture2D(GL_FRAMEBUFFER, attachment, image->texType, image->texnum, 0);
+		break;
+	case GL_TEXTURE_CUBE_MAP:
+		qglFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, image->texnum, 0);
+		break;
+	case GL_TEXTURE_3D:
+		qglFramebufferTexture3D(GL_FRAMEBUFFER, attachment, image->texType, image->texnum, 0, index);
+		break;
+	}
 }
 
 fbo_t *R_Create_FBO(const char *name) {
@@ -271,6 +283,7 @@ void R_InitPboBuffers() {
 
 void R_InitFboBuffers() {
 
+	int i;
 	Com_Printf("Initializing Frame Buffers...\n\n");
 // init fbo textures
 	gi.hdrBase = R_CreateTexture("***hdrBase***", GL_TEXTURE_RECTANGLE, GL_RGBA16F, GL_RGBA,
@@ -332,7 +345,10 @@ void R_InitFboBuffers() {
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
-	for (int i = 0; i < 2; i++)
+	gi.shadowCube = R_CreateTexture("***shadowCube***", GL_TEXTURE_CUBE_MAP, GL_R32F, GL_RED, 0, SHADOWMAP_SIZE, SHADOWMAP_SIZE,
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,	GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+
+	for (i = 0; i < 2; i++)
 		gi.ssaoColor[i] = R_CreateTexture("***ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 0,
 			vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 
@@ -394,6 +410,14 @@ void R_InitFboBuffers() {
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.ssaoColor[0], 0);
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.ssaoColor[1], 0);
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.ssaoDepth, 0);
+	R_FB_Check();
+
+	rb.depth = R_Create_RBO("***rbo_depth_stencil***", GL_DEPTH_COMPONENT24, SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+	Com_Printf("Load "S_COLOR_YELLOW "SHADOWMAP FBO ");
+	fb.shadowMap = R_Create_FBO("***shadowmap_fbo***");
+	R_AttachRBO(rb.depth, GL_DEPTH_ATTACHMENT);
+	for(i = 0; i < 6; i++)
+		R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.shadowCube, i);
 	R_FB_Check();
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);

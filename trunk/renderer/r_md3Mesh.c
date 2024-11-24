@@ -1129,10 +1129,12 @@ void R_DrawMD3MeshLight(bool weapon) {
 	GL_BindVBO(vbo.stream3d);
 //	GL_BindVBO(vbo.dynamicIbo);
 
-	GL_StencilFunc(GL_EQUAL, 128, 255);
-	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	GL_StencilMask(0);
-	GL_DepthFunc(GL_LEQUAL);
+	if (r_shadows->integer == 1) {
+		GL_StencilFunc(GL_EQUAL, 128, 255);
+		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		GL_StencilMask(0);
+		GL_DepthFunc(GL_LEQUAL);
+	}
 
 	GL_PolygonOffset(-0.1, -1.0);
 

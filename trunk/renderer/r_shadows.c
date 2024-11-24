@@ -493,7 +493,7 @@ void R_DrawMD3ShadowVolume(){
 void R_CastAliasShadowVolumes(bool selfShadow) {
 	int	i;
 
-	if (!r_shadows->integer || !r_drawEntities->integer)
+	if ((r_shadows->integer != 1) || !r_drawEntities->integer)
 		return;
 
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
@@ -975,7 +975,7 @@ void R_DrawBspModelVolumes (bool precalc, worldShadowLight_t *light) {
 void R_CastBspShadowVolumes (void) {
 	int	i;
 
-	if (!r_shadows->integer)
+	if (r_shadows->integer !=1)
 		return;
 
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->area <0)
@@ -1020,4 +1020,202 @@ void R_CastBspShadowVolumes (void) {
 	}
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
+}
+
+// ===========
+// shadow maps
+// ===========
+
+int		SignbitsForPlane(cplane_t *out);
+void	R_RecursiveDepthWorldNode(mnode_t *node, vec3_t viewOrg);
+void	R_DrawDepthAliasModel();
+void	R_DrawDepthMD3Model();
+void	GL_DrawDepthBspTris();
+void	R_DrawDepthBrushModel();
+extern	mat4_t	r_flipMatrix;
+
+extern	int	numDepthSurfaces;
+extern	model_t *r_worldmodel;
+
+void R_SetLightFrustum(vec3_t angles, float fov_x, float fov_y) {
+	int i;
+	vec3_t forward, right, up;
+
+	AngleVectors(angles, forward, right, up);
+
+	RotatePointAroundVector(frustum[0].normal, up, forward,		-(90.0	- fov_x * 0.5));
+	RotatePointAroundVector(frustum[1].normal, up, forward,		90.0	- fov_x * 0.5);
+	RotatePointAroundVector(frustum[2].normal, right, forward,	90.0	- fov_y * 0.5);
+	RotatePointAroundVector(frustum[3].normal, right, forward,	-(90.0	- fov_y * 0.5));
+	
+	VectorCopy	(forward, frustum[4].normal);
+	VectorNegate(forward, frustum[5].normal);
+
+	for (i = 0; i < 6; i++) {
+		VectorNormalize(frustum[i].normal);
+
+		frustum[i].type = PLANE_ANYZ;
+		frustum[i].dist = DotProduct(currentShadowLight->origin, frustum[i].normal);
+		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
+	}
+
+	frustum[4].dist = LIGHT_ZNEAR;
+	frustum[5].dist -= currentShadowLight->maxRad;
+}
+
+void R_DrawShadowWorld(void) {
+
+	int i;
+	vec3_t	modelOrg;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	currentmodel = r_worldmodel;
+
+	VectorCopy(currentShadowLight->origin, modelOrg);
+
+	GL_BindVAO(vao.depthBsp);
+	
+	GL_CullFace(GL_FRONT);
+	GL_FrontFace(GL_CCW);
+
+	numDepthSurfaces = 0;
+	R_RecursiveDepthWorldNode(r_worldmodel->nodes, modelOrg);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.shadowMVP);
+	GL_DrawDepthBspTris();
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+
+		if (!currentmodel)
+			continue;
+		if (currentmodel->type == mod_brush)
+			R_DrawDepthBrushModel();
+	}
+
+
+	GL_BindVAO(vao.stream3d);
+	GL_BindVBO(vbo.stream3d);
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+
+		if (!currentmodel)
+			continue;
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
+		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+			continue;
+		if (currententity->flags & RF_DISTORT)
+			continue;
+
+		if (currentmodel->type == mod_alias)
+			R_DrawDepthAliasModel();
+
+		if (currentmodel->type == mod_alias_md3)
+			R_DrawDepthMD3Model();
+	}
+	
+	GL_CullFace(GL_BACK);
+	GL_FrontFace(GL_CW);
+}
+
+vec3_t r_cubeFaceDirs[6] = {
+	{	0.0,	0.0,	90.0	},	// GL_TEXTURE_CUBE_MAP_POSITIVE_X 
+	{	0.0,	180.0, -90.0	},	// GL_TEXTURE_CUBE_MAP_NEGATIVE_X 
+	{	0.0,	90.0,   0.0		},	// GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+	{	0.0,	270.0,	180.0	},	// GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 
+	{ -90.0,	180.0, -90.0	},	// GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+	{	90.0,   0.0,	90.0	},	// GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+};
+
+void R_DrawShadowMaps() {
+	vec3_t	angles;
+	int		i;
+	float	clearDepthBit = 1.0;
+	vec4_t	clearColorBit = { 0.0, 0.0, 0.0, 0.0 };
+	float	zFar = currentShadowLight->maxRad;
+	mat4_t	projMatrix, modelMatrix, m;
+	mat3_t	axis;
+	vec2_t	fov;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (r_shadows->integer != 2)
+		return;
+
+	fov[0] = 90.0;
+	fov[1] = 90.0;
+
+	GL_Disable(GL_BLEND);
+
+	GL_Viewport	(0, 0, SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+	GL_Scissor	(0, 0, SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+	GL_DepthBoundsTest(0.0, 1.0);
+	GL_DepthMask(1);
+	GL_DepthRange(0.0, 1.0);
+	GL_Disable(GL_POLYGON_OFFSET_FILL);
+
+	gl_state.shadowMapPass = true;
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fb.shadowMap->id);
+	qglClearBufferfv(GL_COLOR, 0, clearColorBit);
+
+	GL_BindProgram(shadowOmniProgram);
+
+	projMatrix[0][0] = 1.0 / tanf(DEG2RAD(fov[0] * 0.5f));
+	projMatrix[0][1] = 0.0;
+	projMatrix[0][2] = 0.0;
+	projMatrix[0][3] = 0.0;
+
+	projMatrix[1][0] = 0.0;
+	projMatrix[1][1] = 1.0 / tanf(DEG2RAD(fov[1] * 0.5f));
+	projMatrix[1][2] = 0.0;
+	projMatrix[1][3] = 0.0;
+
+	projMatrix[2][0] = 0.0;
+	projMatrix[2][1] = 0.0;
+	projMatrix[2][2] = zFar / (LIGHT_ZNEAR - zFar);
+	projMatrix[2][3] = -1.0;
+
+	projMatrix[3][0] = 0.0;
+	projMatrix[3][1] = 0.0;
+	projMatrix[3][2] = (LIGHT_ZNEAR * zFar) / (LIGHT_ZNEAR - zFar);
+	projMatrix[3][3] = 0.0;
+
+	for (i = 0; i < 6; i++) {
+
+		VectorSet(angles, r_cubeFaceDirs[i][0], r_cubeFaceDirs[i][1], r_cubeFaceDirs[i][2]);
+
+		AnglesToMat3(angles, axis);
+		Mat4_SetupTransform(modelMatrix, axis, currentShadowLight->origin);
+		Mat4_AffineInvert(modelMatrix, m);
+		Mat4_Multiply(m, r_flipMatrix, modelMatrix);
+
+		Mat4_Multiply(modelMatrix, projMatrix, r_newrefdef.shadowMVP);
+
+		R_SetLightFrustum(angles, fov[0], fov[1]);
+		qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, gi.shadowCube->texnum, 0);
+		qglClearBufferfv(GL_DEPTH, 0, &clearDepthBit);
+		R_DrawShadowWorld();
+	}
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+
+	GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
+	GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+
+	R_SetFrustum(false);
+	GL_DepthMask(0);
+	GL_Enable(GL_BLEND);
+//	GL_Enable(GL_POLYGON_OFFSET_FILL);
+	gl_state.shadowMapPass = false;
 }

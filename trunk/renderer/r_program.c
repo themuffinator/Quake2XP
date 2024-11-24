@@ -472,7 +472,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			if (!status) {
 				R_GetInfoLog(controlId, log, false);
 				qglDeleteShader(controlId);
-				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
+				Com_Printf("program '%s': error(s) in tess control shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
 			}
 		}
@@ -493,7 +493,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			if (!status) {
 				R_GetInfoLog(evalId, log, false);
 				qglDeleteShader(evalId);
-				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
+				Com_Printf("program '%s': error(s) in tess eval shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
 			}
 		}
@@ -514,7 +514,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			if (!status) {
 				R_GetInfoLog(geoId, log, false);
 				qglDeleteShader(geoId);
-				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
+				Com_Printf("program '%s': error(s) in geo shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
 			}
 		}
@@ -526,7 +526,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			strings[numStrings] = fragmentSource;
 			fragmentId = qglCreateShader(GL_FRAGMENT_SHADER);
 
-			//Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
+		//	Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
 
 			qglShaderSource(fragmentId, numStrings + 1, strings, NULL);
 			qglCompileShader(fragmentId);
@@ -1129,6 +1129,16 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"2d program"S_COLOR_WHITE" ");
 	picProgram = R_FindProgram("drawPics", 0);
 	if (picProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"shadow omni program"S_COLOR_WHITE" ");
+	shadowOmniProgram = R_FindProgram("shadowOmni", 0);
+	if (shadowOmniProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

@@ -253,6 +253,7 @@ void R_AddNoWorldModelLight () {
 
 	worldShadowLight_t *light;
 	mat4_t				tmpMatrix, mvMatrix;
+	vec3_t				tmp;
 	int					i;
 
 	light = &shadowLightsBlock[num_nwmLights++];
@@ -267,7 +268,7 @@ void R_AddNoWorldModelLight () {
 	VectorSet (light->startColor, 1.0, 0.9, 0.9);
 	VectorSet (light->color, 1.0, 0.9, 0.9);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 512, 512, 512);
+	VectorSet (light->radius, 512.0, 512.0, 512.0);
 
 	if (gl_config.hdrDisplay) {
 		VectorScale(light->startColor, r_hdrUiNits->value / 80.0, light->startColor);
@@ -293,6 +294,15 @@ void R_AddNoWorldModelLight () {
 	AnglesToMat3(light->angles, light->axis);
 	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
+
+	for (i = 0; i < 8; i++) {
+		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
+		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
+		tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
+
+		Mat3_TransposeMultiplyVector(light->axis, tmp, light->corners[i]);
+		VectorAdd(light->corners[i], light->origin, light->corners[i]);
+	}
 
 	// setup unit space conversion matrix
 	tmpMatrix[0][0] = 1.f / light->radius[0];
@@ -375,9 +385,11 @@ void R_PrepareShadowLightFrame (bool weapon) {
 		
 		VectorCopy (light->startColor, light->color);
 
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
+			light->castCaustics = false;
+			light->castCaustics2 = false;
 			continue;
-
+		}
 		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
 		light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
@@ -2616,6 +2628,9 @@ bool R_AliasInLightBound() {
 
 	vec3_t mins, maxs;
 	int i;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return true;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {

@@ -194,6 +194,7 @@ typedef struct {
 	rbo_t	r_rbo[MAX_RBOS];
 	int		r_numRbos;
 	rbo_t	*depthStencil;
+	rbo_t	*depth;
 }rb_t;
 
 rb_t rb;
@@ -216,6 +217,7 @@ typedef struct {
 	fbo_t	*bloomCompute;
 	fbo_t	*hdrLum;
 	fbo_t	*lensFlare;
+	fbo_t	*shadowMap;
 }fb_t;
 fb_t fb;
 
@@ -313,6 +315,9 @@ typedef struct globalImage_s {
 	image_t *lensFlareIn;
 	image_t *lensFlareInterim;
 	image_t *lensFlareOut;
+
+	image_t *shadowCube;
+	image_t *shadowProj;
 
 }globalImage_t;
 
@@ -681,7 +686,7 @@ int numHeatHazeSurfaces;
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);
-void GL_CheckError(const char *fileName, int line, const char *subr);
+void GL_CheckError();
 
 void R_RenderView (refdef_t * fd);
 void GL_ScreenShot_f (void);
@@ -770,7 +775,7 @@ typedef struct {
 	bool fullscreen;
 
 	int prev_mode;
-
+	bool		shadowMapPass;
 	uint64_t	bindlessCache[8192];
 	uint64_t	currentBindlessHandle;
 	int		currentBindlessLocation;
@@ -844,6 +849,7 @@ typedef struct {
 					viewportHeight;
 	vec4_t			fontColor;
 	int				numDrawBuffers;
+	bool			glDebugOutput;
 } glstate_t;
 
 typedef struct {
@@ -1085,6 +1091,7 @@ glslProgram_t		*avrLuminance;
 glslProgram_t		*lensFlareProgram;
 glslProgram_t		*lensFlareFinalProgram;
 glslProgram_t		*bright2Program;
+glslProgram_t		*shadowOmniProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureColorBuffer ();

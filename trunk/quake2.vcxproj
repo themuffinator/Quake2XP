@@ -903,6 +903,8 @@
     <None Include="..\baseq2\glsl\screenFlash.vert" />
     <None Include="..\baseq2\glsl\shadow.frag" />
     <None Include="..\baseq2\glsl\shadow.vert" />
+    <None Include="..\baseq2\glsl\shadowOmni.frag" />
+    <None Include="..\baseq2\glsl\shadowOmni.vert" />
     <None Include="..\baseq2\glsl\showTris.frag" />
     <None Include="..\baseq2\glsl\showTris.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />

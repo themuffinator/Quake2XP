@@ -38,6 +38,7 @@ usbVendorId_t usb_Vendors[] = {
 {0x0DB0, "Micro-Star International Co., Ltd"},
 {0x1C4F, "Beijing Sigmachip Co., Ltd."},
 {0x0458, "KYE Systems Corp."},
+{0x1A2C, "China Resource Semico Co., Ltd"}
 };
 
 #define NUM_VENDORS ( sizeof( usb_Vendors ) / sizeof( usb_Vendors[0] ) )
@@ -181,6 +182,7 @@ product_t product[] = {
 
 {0x0026,	"Beijing Keyboard"},
 {0x0186,	"Genius DX-120 Mouse"},
+{0x4094,	"Acer OKW300 Keyboard"}
 };
 
 #define NUM_INPUT_DEVICES ( sizeof( product ) / sizeof( product[0] ) )

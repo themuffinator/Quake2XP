@@ -88,10 +88,10 @@ int FS_filelength (FILE *f) {
 	int		pos;
 	int		end;
 
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
+	pos = _ftelli64 (f);
+	_fseeki64 (f, 0, SEEK_END);
+	end = _ftelli64(f);
+	_fseeki64(f, pos, SEEK_SET);
 
 	return end;
 }
@@ -252,7 +252,7 @@ int FS_FOpenFile (const char *filename, FILE **file) {
 						*file = fopen (pak->filename, "rb");
 						if (!*file)
 							Com_Error (ERR_FATAL, "Couldn't reopen %s", pak->filename);
-						fseek (*file, pak->files[i].filepos, SEEK_SET);
+						_fseeki64 (*file, pak->files[i].filepos, SEEK_SET);
 						return pak->files[i].filelen;
 					}
 				}
@@ -1086,8 +1086,8 @@ void FS_ScanForGameDLL (void) {
 
 			Com_sprintf(gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamename);
 			fp = fopen(gameDLLPath, "rb");
-			if(fp)
-				Cvar_ForceSetValue("net_compatibility", 0);
+		//	if(fp)
+			//	Cvar_ForceSetValue("net_compatibility", 0);
 		fclose(fp);
 		return;
 	}
