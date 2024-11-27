@@ -6,7 +6,8 @@
 
 extern msurface_t	*sceneSurfaces[MAX_MAP_FACES];
 int					numDepthSurfaces;
-//static vec3_t		modelorg;			// relative to viewpoint
+bool R_EntityCastShadow();
+
 
 bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
 	unsigned	numVertices, numIndices;
@@ -51,31 +52,55 @@ void GL_DrawDepthBspTris () {
 	}
 
 	// draw the rest
-	if (numIndices != 0xFFFFFFFF) {
+	if (numIndices != 0) {
 		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brushTris += numIndices / 3;
 	}
 }
 
 void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
-	int c, side, sidebit;
+	int c, side, sidebit, cluster;
 	cplane_t* plane;
 	msurface_t* surf, ** mark;
 	mleaf_t* pleaf;
 	float dot;
-
+	vec3_t mins, maxs;;
+	
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
+	
+	VectorCopy(node->minmaxs, mins);
+	VectorCopy(node->minmaxs + 3, maxs);
 
-	if (node->visframe != r_visframecount)
-		return;
+	if (!gl_state.shadowMapPass) {
+		
+		if (node->visframe != r_visframecount)
+			return;
 
-	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
-		return;
+		if (R_CullBox(mins, maxs))
+			return;
+	}
+	else
+	{
+		if (currentShadowLight->spherical) {
+			if (!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+				return;	
+		}
+		else {
+			if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+				return;
+		}
+	}
 
 	// if a leaf node, draw stuff
 	if (node->contents != -1) {
 		pleaf = (mleaf_t*)node;
+
+		if (gl_state.shadowMapPass) {
+			cluster = pleaf->cluster;
+			if (!(currentShadowLight->vis[cluster >> 3] & (1 << (cluster & 7))))
+				return;
+		}
 
 		// check for door connected areas
 		if (r_newrefdef.areabits) {
@@ -85,9 +110,6 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 		
 		if (!gl_state.shadowMapPass) {
 			// add to z buffer bounds
-			vec3_t mins, maxs;;
-			VectorCopy(node->minmaxs, mins);
-			VectorCopy(node->minmaxs + 3, maxs);
 
 			if (mins[0] < r_newrefdef.visBounds[0][0]) {
 				r_newrefdef.visBounds[0][0] = mins[0];
@@ -158,9 +180,10 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
 
-		if (surf->visframe != r_framecount)
-			continue;
 		if (!gl_state.shadowMapPass) {
+			if (surf->visframe != r_framecount)
+				continue;
+
 			if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 				continue;			// wrong side
 		}
@@ -199,28 +222,17 @@ void R_AddBModelDepthTris (vec3_t viewOrg) {
 			dot = DotProduct (viewOrg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
-		if (!gl_state.shadowMapPass) {
-			if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 
-				if (psurf->visframe == r_framecount)	// reckless fix
-					continue;
-				if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) 
-					continue;
-				sceneSurfaces[numDepthSurfaces++] = psurf;
-			}
-		}
-		else {
 			if (psurf->visframe == r_framecount)	// reckless fix
 				continue;
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) 
 				continue;
-			
 			sceneSurfaces[numDepthSurfaces++] = psurf;
-		}
-
-
+			}
 	}
 }
+
 void R_DrawDepthBrushModel () {
 	vec3_t		mins, maxs, viewOrg;
 	int			i;
@@ -245,9 +257,14 @@ void R_DrawDepthBrushModel () {
 		VectorAdd (currententity->origin, currentmodel->mins, mins);
 		VectorAdd (currententity->origin, currentmodel->maxs, maxs);
 	}
+	if (!gl_state.shadowMapPass) {
+		if (R_CullBox(mins, maxs))
+			return;
+	}else{
+		if (!R_EntityCastShadow())
+			return;
+	}
 
-	if (R_CullBox (mins, maxs))
-		return;
 	if (gl_state.shadowMapPass) 
 		VectorSubtract(currentShadowLight->origin, currententity->origin, viewOrg);
 	else
@@ -321,8 +338,14 @@ void R_DrawDepthAliasModel(void){
 	if (!r_drawEntities->integer)
 		return;
 	
-	if (R_CullAliasModel(bbox, currententity))
-		return;
+	if (!gl_state.shadowMapPass) {
+		if (R_CullAliasModel(bbox, currententity))
+			return;
+	}
+	else {
+		if (!R_EntityCastShadow())
+			return;
+	}
 
 	paliashdr = (md2Header *)currentmodel->extraData;
 
@@ -363,10 +386,15 @@ void R_DrawDepthMD3Model(void) {
 
 	if (!r_drawEntities->integer)
 		return;
-
-	if (R_CullMD3Model(bbox, currententity))
-		return;
-
+	
+	if (!gl_state.shadowMapPass) {
+		if (R_CullMD3Model(bbox, currententity))
+			return;
+	}
+	else {
+		if (!R_EntityCastShadow())
+			return;
+	}
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
 
 	CheckEntityFrameMD3(md3Hdr);

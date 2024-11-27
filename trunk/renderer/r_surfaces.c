@@ -559,11 +559,7 @@ void R_UpdateLightUniforms(bool bModel)
 	
 	 vec2_t	jitterOffset, biasScale;
 
-	 float penumbra = 4.0;
-	 if (penumbra < 2.0)	
-		 penumbra = 2.0;
-	 else if (penumbra > 16.0)	
-		 penumbra = 16.0;
+	 float penumbra = r_penumbraSize->value;
 	 biasScale[0] = penumbra;
 	 biasScale[1] = penumbra / SHADOWMAP_SIZE;
 
@@ -699,6 +695,10 @@ static void GL_DrawStaticLightPass()
 
 
 bool SurfInFrustum (msurface_t *s) {
+	
+	if (gl_state.shadowMapPass)
+		return true;
+
 	if (s->polys)
 		return !R_CullBox(s->mins, s->maxs);
 

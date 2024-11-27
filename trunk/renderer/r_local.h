@@ -406,6 +406,7 @@ cvar_t	*r_textureQuality;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
+cvar_t	*r_penumbraSize;
 
 cvar_t	*r_multiSamples;
 cvar_t	*r_fxaa;

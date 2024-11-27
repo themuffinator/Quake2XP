@@ -39,7 +39,7 @@ int			numInteractionSurfs;
 
 int	r_lightTimestamp, r_lightTimestampRA;
 
-#define LIGHT_ZNEAR		0.1
+#define LIGHT_ZNEAR		0.01f
 #define SHADOWMAP_SIZE	1024
 
 typedef struct frustum_s {

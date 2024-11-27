@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>+set  r_glDebugOutput 1 +set r_fullScreen 0 +set r_mode 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set  r_glDebugOutput 1 +set r_fullScreen 0 +set r_mode 1 +set r_debug 1 +set r_shadows 2 +map cube</LocalDebuggerCommandArguments>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
   </PropertyGroup>
   <PropertyGroup>

@@ -1342,6 +1342,7 @@ void R_RegisterCvars(void)
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_VIDEO_DEBUG);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
+	r_penumbraSize =					Cvar_Get("r_penumbraSize", "4.0", CVAR_ARCHIVE);
 
 	r_blinnPhongLighting =				Cvar_Get("r_blinnPhongLighting", "0", CVAR_ARCHIVE);
 	r_blinnPhongLighting->help =		"use old lighting model";
@@ -2049,6 +2050,7 @@ void R_BeginFrame()
 	r_colorTempK->integer			= ClampCvarInteger(1000, 40000, r_colorTempK->integer);
 	r_hdrUiNits->value				= ClampCvar(100.0, 1000.0,		r_hdrUiNits->value);
 	r_hdrLensFlaresIntens->value	= ClampCvar(0.1, 1.0,			r_hdrLensFlaresIntens->value);
+	r_penumbraSize->value			= ClampCvar(2.0, 16.0,			r_penumbraSize->value);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;
