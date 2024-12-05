@@ -105,7 +105,7 @@ product_t product[] = {
 {0XC083,	"G403 Prodigy Gaming Mouse."},
 {0XC084,	"G203 Gaming Mouse."},
 {0XC063,	"DELL Laser Mouse."},
-{0XC064,	"M110 Corded optical mouse."},
+{0XC064,	"M110 Corded optical Mouse."},
 {0XC066,	"G9x Laser Mouse."},
 {0XC068,	"G500 Laser Mouse."},
 {0xC069,	"M500 Corded Mouse."},
@@ -170,6 +170,7 @@ product_t product[] = {
 {0xfe00,	"Sabertooth"},
 //----------- razer xbox one
 {0x0a03,	"Wildcat." },
+{0x0098,	"DeathAdder Essential [RZ01-03850100-R3M1] Mouse." },
 
 // Valve Steam Controller
 {0x1101,	"Legacy Steam Controller (CHELL)"},

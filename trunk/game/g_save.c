@@ -1592,7 +1592,7 @@ is loaded.
 void InitGame (void) {
 	gi.dprintf ("==== InitGame ====\n");
 
-	TR_Model_Convert();
+//	TR_Model_Convert();
 
 	gun_x = gi.cvar ("gun_x", "0", 0);
 	gun_y = gi.cvar ("gun_y", "0", 0);

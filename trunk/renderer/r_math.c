@@ -165,8 +165,70 @@ bool Mat3_Compare(const mat3_t a, const mat3_t b) {
 	return true;
 }
 
+void Mat3_Fill(mat3_t m, const vec3_t in1, vec3_t in2, vec3_t in3) {
+	
+	Mat3_Identity(m);
+
+	m[0][0] = in1[0];
+	m[0][1] = in1[1];
+	m[0][2] = in1[2];
+
+	m[1][0] = in2[0];
+	m[1][1] = in2[1];
+	m[1][2] = in2[2];
+
+	m[2][0] = in3[0];
+	m[2][1] = in3[1];
+	m[2][2] = in3[2];
+
+}
 bool Mat3_IsIdentity(const mat3_t mat) {
 	return Mat3_Compare(mat, mat3_identity);
+}
+
+void Mat4_Identity(mat4_t mat) {
+	mat[0][0] = 1.0f;
+	mat[0][1] = 0.0f;
+	mat[0][2] = 0.0f;
+	mat[0][3] = 0.0f;
+	mat[1][0] = 0.0f;
+	mat[1][1] = 1.0f;
+	mat[1][2] = 0.0f;
+	mat[1][3] = 0.0f;
+	mat[2][0] = 0.0f;
+	mat[2][1] = 0.0f;
+	mat[2][2] = 1.0f;
+	mat[2][3] = 0.0f;
+	mat[3][0] = 0.0f;
+	mat[3][1] = 0.0f;
+	mat[3][2] = 0.0f;
+	mat[3][3] = 1.0f;
+}
+
+void Mat4_Fill(mat4_t m, const vec4_t in1, vec4_t in2, vec4_t in3, vec4_t in4) {
+
+	
+	Mat4_Identity(m);
+
+	m[0][0] = in1[0];
+	m[0][1] = in1[1];
+	m[0][2] = in1[2];
+	m[0][3] = in1[3];
+
+	m[1][0] = in2[0];
+	m[1][1] = in2[1];
+	m[1][2] = in2[2];
+	m[1][3] = in2[3];
+
+	m[2][0] = in3[0];
+	m[2][1] = in3[1];
+	m[2][2] = in3[2];
+	m[2][3] = in3[3];
+
+	m[3][0] = in4[0];
+	m[3][1] = in4[1];
+	m[3][2] = in4[2];
+	m[3][3] = in4[3];
 }
 
 bool Mat4_Compare(const mat4_t a, const mat4_t b) {
@@ -483,24 +545,6 @@ void Mat4_Translate (mat4_t m, float x, float y, float z) {
 	m[3][3] += m[0][3] * x + m[1][3] * y + m[2][3] * z;
 }
 
-void Mat4_Identity (mat4_t mat) {
-	mat[0][0] = 1.0f;
-	mat[0][1] = 0.0f;
-	mat[0][2] = 0.0f;
-	mat[0][3] = 0.0f;
-	mat[1][0] = 0.0f;
-	mat[1][1] = 1.0f;
-	mat[1][2] = 0.0f;
-	mat[1][3] = 0.0f;
-	mat[2][0] = 0.0f;
-	mat[2][1] = 0.0f;
-	mat[2][2] = 1.0f;
-	mat[2][3] = 0.0f;
-	mat[3][0] = 0.0f;
-	mat[3][1] = 0.0f;
-	mat[3][2] = 0.0f;
-	mat[3][3] = 1.0f;
-}
 
 /*
 =================

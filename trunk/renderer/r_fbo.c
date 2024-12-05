@@ -50,7 +50,7 @@ void R_FboListing_f(void) {
 
 	Com_Printf(S_COLOR_YELLOW"RBO List:\n");
 	for (i = 0, rbo = rb.r_rbo; i < rb.r_numRbos; i++, rbo++) {
-		Com_Printf(">" S_COLOR_GREEN "%s\n", rbo->name);
+		Com_Printf(">" S_COLOR_GREEN "%s %ix%i\n", rbo->name, rbo->width, rbo->height);
 	}
 	Com_Printf(S_COLOR_YELLOW"FBO List:\n");
 	for (i = 0, fbo = fb.r_fbo; i < fb.r_numFbos; i++, fbo++) {
@@ -296,10 +296,8 @@ void R_InitFboBuffers() {
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_FLOAT, NULL);
 
-	gi.depthStencil = R_CreateTexture("***depthStencil***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
-		0, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
-		GL_UNSIGNED_INT_24_8, NULL);
+	gi.rboDepth = R_CreateTexture("***rboDepth***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
+		0, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE, NULL);
 
 	gi.ldrBase = R_CreateTexture("***ldrBase***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
 		0, vid.width, vid.height,
@@ -344,9 +342,14 @@ void R_InitFboBuffers() {
 	gi.ssaoDepth = R_CreateTexture("***ssaoDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, 0,
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
-
-	gi.shadowCube = R_CreateTexture("***shadowCube***", GL_TEXTURE_CUBE_MAP, GL_R32F, GL_RED, 0, SHADOWMAP_SIZE, SHADOWMAP_SIZE,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,	GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+	
+	// 1024 512 256 128 64
+	int shadowMapSize = 1024;
+	for (i = 0; i < MAX_SHADOW_LODS; i++) {
+		gi.shadowCube[i] = R_CreateTexture(va("***shadowCube[%i]***", i), GL_TEXTURE_CUBE_MAP, GL_R32F, GL_RED, 0, shadowMapSize, shadowMapSize,
+			GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+		shadowMapSize >>= 1;
+	}
 
 	for (i = 0; i < 2; i++)
 		gi.ssaoColor[i] = R_CreateTexture("***ssaoColor***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 0,
@@ -354,12 +357,12 @@ void R_InitFboBuffers() {
 
 // init fbo buffers
 	Com_Printf("Load "S_COLOR_YELLOW "BASE FBO ");
-	rb.depthStencil = R_Create_RBO("***rbo_depth_stencil***", GL_DEPTH24_STENCIL8, vid.width, vid.height);
+	rb.rboDepth = R_Create_RBO("***rbo_depthBase***", GL_DEPTH_COMPONENT24, vid.width, vid.height);
 	fb.hdrBase = R_Create_FBO("***hdrBase_fbo***");
-	R_AttachRBO(rb.depthStencil, GL_DEPTH_STENCIL_ATTACHMENT);
+	R_AttachRBO(rb.rboDepth, GL_DEPTH_ATTACHMENT);
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrBase, 0);
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.hdrBaseInterim, 0);
-	R_FB_AttachImage(GL_DEPTH_STENCIL_ATTACHMENT, gi.depthStencil, 0);
+	R_FB_AttachImage(GL_DEPTH_ATTACHMENT, gi.rboDepth, 0);
 	R_FB_Check();
 
 	Com_Printf("Load "S_COLOR_YELLOW "FINAL FBO ");
@@ -412,12 +415,16 @@ void R_InitFboBuffers() {
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.ssaoDepth, 0);
 	R_FB_Check();
 
-	rb.depth = R_Create_RBO("***rbo_depth_stencil***", GL_DEPTH_COMPONENT24, SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+	int rboSize = 1024;
 	Com_Printf("Load "S_COLOR_YELLOW "SHADOWMAP FBO ");
-	fb.shadowMap = R_Create_FBO("***shadowmap_fbo***");
-	R_AttachRBO(rb.depth, GL_DEPTH_ATTACHMENT);
-	for(i = 0; i < 6; i++)
-		R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.shadowCube, i);
+	for (int l = 0; l < MAX_SHADOW_LODS; l++) {
+		rb.depth[l] = R_Create_RBO(va("***rbo_depthShadowMap[%i]***", l), GL_DEPTH_COMPONENT24, rboSize, rboSize);
+		rboSize >>= 1;
+		fb.shadowMap[l] = R_Create_FBO(va("***shadowmap_fbo[%i]***", l));
+		R_AttachRBO(rb.depth[l], GL_DEPTH_ATTACHMENT);
+		for (i = 0; i < 6; i++)
+			R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.shadowCube[l], i);
+	}
 	R_FB_Check();
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -41,6 +41,7 @@ int	r_lightTimestamp, r_lightTimestampRA;
 
 #define LIGHT_ZNEAR		0.01f
 #define SHADOWMAP_SIZE	1024
+#define	MAX_SHADOW_LODS	5
 
 typedef struct frustum_s {
 	cplane_t	planes[6];		// right, left, top, bottom, near, far
@@ -54,6 +55,7 @@ typedef struct worldShadowLight_s {
 	vec3_t		color, startColor;
 	vec3_t		mins, maxs;
 	vec3_t		corners[8];
+	vec3_t		lsOrg;
 
 	mat3_t		axis;
 	mat4_t		orMatrix;		// same as in entity_t
@@ -72,7 +74,7 @@ typedef struct worldShadowLight_s {
 
 	float		radius[3];
 
-	bool	projector;
+	bool		projector;
 	float		coneExp;
 	float		hotSpot;
 	float		distance;
@@ -102,6 +104,9 @@ typedef struct worldShadowLight_s {
 	msurface_t* interactionRA[MAX_MAP_FACES/4];
 	int			numInteractionSurfsRA;
 
+	msurface_t *shadowMapSurfaces[MAX_MAP_FACES];
+	int			numShadowMapSurfaces;
+
 	char		targetname[MAX_QPATH];
 
 	byte		vis[MAX_MAP_LEAFS / 8];
@@ -111,6 +116,7 @@ typedef struct worldShadowLight_s {
 	vertexObject_t	*vao;
 
 	int			iboNumIndices;
+	int			lod;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
@@ -118,7 +124,7 @@ typedef struct worldShadowLight_s {
 } worldShadowLight_t;
 
 #define		Q_INFINITY	1e30f
-#define		MAX_WORLD_SHADOW_LIHGTS	2048
+#define		MAX_WORLD_SHADOW_LIHGTS	1024
 #define		EQUAL_EPSILON		0.000001f
 int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;

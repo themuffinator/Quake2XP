@@ -139,11 +139,6 @@ typedef struct
 
 } md3Skin_t;
 
-typedef struct mtriangle_s
-{
-	int		neighbours[3];
-} neighbours_t;
-
 typedef struct
 {
 	int				num_verts;
@@ -153,7 +148,6 @@ typedef struct
 
 	int				num_tris;
 	uint16_t		*indexes;
-	neighbours_t	*triangles;
 	vertexBuffer_t	*ibo;
 
 	int				num_skins;

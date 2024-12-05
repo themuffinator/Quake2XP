@@ -450,13 +450,7 @@ void R_DrawPlayerWeaponLightPass(void)
 
 	if (!r_drawEntities->integer)
 		return;
-	
-	if (r_shadows->integer == 1) {
-		GL_DepthFunc(GL_LEQUAL);
-		GL_StencilFunc(GL_EQUAL, 128, 255);
-		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		GL_StencilMask(0);
-	}
+
 		for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 		{
 			currententity = &r_newrefdef.entities[i];
@@ -494,9 +488,6 @@ void R_DrawLightScene (void)
 		if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 			GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-		if (r_shadows->integer == 1)
-			GL_Enable(GL_STENCIL_TEST);
-
 		GL_Enable(GL_POLYGON_OFFSET_FILL);
 	}
 
@@ -522,22 +513,40 @@ void R_DrawLightScene (void)
 	if(gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
-	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		if (r_shadows->integer == 1) {
-			qglClearStencil(128);
-			GL_StencilMask(255);
-			qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
-		}
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) 
 		c_numVisLights++;
-	}
+	
+	
+	VectorCopy(currentShadowLight->origin, currentShadowLight->lsOrg);
 
 	if (!currentShadowLight->isAmbient && currentShadowLight->isShadow)
 			c_staticShadowTris += currentShadowLight->numStaticShadowTris;
 	
 	R_DrawShadowMaps();
-	R_CastBspShadowVolumes();			// bsp and bmodels shadows
-	R_CastAliasShadowVolumes(true);	// player shadow and self shadowing models
+	R_DrawLightWorld();	
 
+	//brush models light pass
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;
+
+		if (currententity->flags & RF_DISTORT)
+			continue;
+
+		currentmodel = currententity->model;
+
+		if (!currentmodel) {
+			R_DrawNullModel();
+			continue;
+		}
+		if (currentmodel->type == mod_brush)
+			R_DrawLightBrushModel();
+	}
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
 		currententity = &r_newrefdef.entities[i];
@@ -564,42 +573,14 @@ void R_DrawLightScene (void)
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawMD3MeshLight(false);
 	}
-	R_CastAliasShadowVolumes(false);   // alias shadows with out player model
-	R_DrawLightWorld();					// light world
-
-	//brush models light pass
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
-
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;			
-
-		if (currententity->flags & RF_DISTORT)
-				continue;
-
-		currentmodel = currententity->model;
-
-		if (!currentmodel) {
-			R_DrawNullModel();
-			continue;
-		}
-		if (currentmodel->type == mod_brush) 
-			R_DrawLightBrushModel();
-		}
-	
 		R_DrawLightBounds();			// debug stuff
 	}
 	}
-	
-	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
-	GL_Disable(GL_BLEND);
 
+	GL_Disable(GL_BLEND);
 	GL_Disable(GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset(0.0, 0.0);
 }
@@ -678,9 +659,6 @@ void R_DrawPlayerWeapon(void)
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-	if (r_shadows->integer == 1)
-		GL_Enable(GL_STENCIL_TEST);
-
 	R_PrepareShadowLightFrame(true);
 
 	if (shadowLight_frame) {
@@ -701,18 +679,10 @@ void R_DrawPlayerWeapon(void)
 			if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 			
-			if (r_shadows->integer == 1) {
-				qglClearStencil(128);
-				GL_StencilMask(255);
-				qglClearBufferiv(GL_STENCIL, 0, &clearStencil);
-			}
-
-			R_CastBspShadowVolumes();
+			R_DrawShadowMaps();
 			R_DrawPlayerWeaponLightPass();
 		}
 	}
-
-	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
@@ -896,7 +866,7 @@ void R_linearDepth(void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, fb.linearDepth->id);
 
 	GL_BindProgram(linearDepthProgram);
-	GL_SetBindlessTexture(U_TMU0, gi.depthStencil->handle);
+	GL_SetBindlessTexture(U_TMU0, gi.rboDepth->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
@@ -1340,7 +1310,7 @@ void R_RegisterCvars(void)
 	r_selfShadowOffset =				Cvar_Get("r_selfShadowOffset", "3.0", CVAR_ARCHIVE);
 	r_selfShadowBlur =					Cvar_Get("r_selfShadowBlur", "0.7", CVAR_ARCHIVE);
 
-	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_VIDEO_DEBUG);
+	r_shadows =							Cvar_Get("r_shadows", "1", /*CVAR_VIDEO_DEBUG*/CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_penumbraSize =					Cvar_Get("r_penumbraSize", "4.0", CVAR_ARCHIVE);
 

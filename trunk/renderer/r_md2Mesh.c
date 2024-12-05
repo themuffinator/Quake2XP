@@ -485,9 +485,6 @@ void GL_DrawAliasFrameLerpLight (md2Header *paliashdr) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (currentmodel->noSelfShadow && r_shadows->integer)
-		GL_Disable(GL_STENCIL_TEST);
-
 	tris			= (md2Triangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 	oldFrame		= (md2Frame_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldFrame * paliashdr->framesize);
 	oldVerts		= oldFrame->verts;
@@ -940,13 +937,6 @@ visible:
 
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
-
-	if (r_shadows->integer == 1) {
-		GL_StencilFunc(GL_EQUAL, 128, 255);
-		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		GL_StencilMask(0);
-		GL_DepthFunc(GL_LEQUAL);
-	}
 
 	GL_PolygonOffset(-0.1, -1.0);
 

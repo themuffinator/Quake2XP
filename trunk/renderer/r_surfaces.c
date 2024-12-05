@@ -558,6 +558,7 @@ void R_UpdateLightUniforms(bool bModel)
 	 GL_SetBindlessTexture(U_TMU5, gi.ssaoColor[i_ssaoColorIndex]->handle);
 	
 	 vec2_t	jitterOffset, biasScale;
+	 mat3_t	params;
 
 	 float penumbra = r_penumbraSize->value;
 	 biasScale[0] = penumbra;
@@ -570,16 +571,19 @@ void R_UpdateLightUniforms(bool bModel)
  n1:	jitterOffset[1] = (rand() & 255) / 255.0;
 	 if (jitterOffset[1] <= 0.004)
 		 goto n1;
+	 
+	 Mat3_Fill(params, currentShadowLight->lsOrg, r_newrefdef.vieworg, vec3_origin);
 
 	 qglUniform2fv(U_PARAM_VEC2_0, 1, biasScale);
 	 qglUniform2fv(U_PARAM_VEC2_1, 1, jitterOffset);
 
 	 qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, false, (const float *)r_newrefdef.unprojMatrix);
+	 qglUniformMatrix3fv(U_TEXTURE1_MATRIX, 1, false, (const float *)params);
+
+	 GL_SetBindlessTexture(U_TMU6, gi.shadowCube[currentShadowLight->lod]->handle);
+	 GL_SetBindlessTexture(U_TMU7, gi.rboDepth->handle);
 	 
-	 GL_SetBindlessTexture(U_TMU6, gi.shadowCube->handle);
-	 GL_SetBindlessTexture(U_TMU7, gi.depthStencil->handle);
-	 
-	 if(r_shadows->integer == 2)
+	 if(r_shadows->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		qglUniform1i(U_PARAM_INT_3, 1);
 	 else
 		qglUniform1i(U_PARAM_INT_3, 0);
@@ -953,13 +957,6 @@ void R_DrawLightWorld(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	if (r_shadows->integer == 1) {
-		GL_StencilFunc(GL_EQUAL, 128, 255);
-		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		GL_StencilMask(0);
-		GL_DepthFunc(GL_LEQUAL);
-	}
-
 	GL_PolygonOffset(-0.1, -1.0);
 
 	GL_BindProgram(lightWorldProgram);
@@ -1293,12 +1290,6 @@ void R_DrawLightBrushModel (void) {
 					caustics = true;
 			}
 		}
-	}
-	if (r_shadows->integer == 1) {
-		GL_StencilFunc(GL_EQUAL, 128, 255);
-		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		GL_StencilMask(0);
-		GL_DepthFunc(GL_LEQUAL);
 	}
 
 	GL_PolygonOffset(-2.0, -2.0);

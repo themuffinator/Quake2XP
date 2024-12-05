@@ -60,60 +60,6 @@ void CalcTangent4MD3(uint16_t *index, md3Vertex_t *vertices, md3ST_t *texcos, ve
 	VectorNormalize(Binormal);
 }
 
-
-int R_FindTriangleWithEdge(uint16_t *indexes, int numtris, uint16_t start, uint16_t end, int ignore)
-{
-	int i;
-	int match, count;
-
-	count = 0;
-	match = -1;
-
-	for (i = 0; i < numtris; i++, indexes += 3)
-	{
-		if ((indexes[0] == start && indexes[1] == end)
-			|| (indexes[1] == start && indexes[2] == end)
-			|| (indexes[2] == start && indexes[0] == end))
-		{
-			if (i != ignore)
-				match = i;
-			count++;
-		}
-		else if ((indexes[1] == start && indexes[0] == end)
-			|| (indexes[2] == start && indexes[1] == end)
-			|| (indexes[0] == start && indexes[2] == end))
-		{
-			count++;
-		}
-	}
-
-	// detect edges shared by three triangles and make them seams
-	if (count > 2)
-		match = -1;
-
-	return match;
-}
-
-
-/*
-===============
-R_BuildTriangleNeighbors
-===============
-*/
-void R_BuildTriangleNeighbors(neighbours_t *neighbors, uint16_t *indexes, int numtris)
-{
-	int				i;
-	neighbours_t	*n;
-	uint16_t			*index;
-
-	for (i = 0, index = indexes, n = neighbors; i < numtris; i++, index += 3, n++)
-	{
-		n->neighbours[0] = R_FindTriangleWithEdge(indexes, numtris, index[1], index[0], i);
-		n->neighbours[1] = R_FindTriangleWithEdge(indexes, numtris, index[2], index[1], i);
-		n->neighbours[2] = R_FindTriangleWithEdge(indexes, numtris, index[0], index[2], i);
-	}
-}
-
 void *Mod_Hunk_Alloc(size_t size);
 /*
 =================
@@ -450,8 +396,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// build triangle neighbours
 		//
 		inMesh = (dmd3mesh_t *)((byte *)inMesh + LittleLong(inMesh->meshsize));
-		outMesh->triangles = (neighbours_t*)Mod_Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
-		R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
+		//outMesh->triangles = (neighbours_t*)Mod_Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
+		//R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
 
 		if (!Q_strcasecmp(outMesh->name, "MF"))
 			outMesh->muzzle = true;
@@ -1128,13 +1074,6 @@ void R_DrawMD3MeshLight(bool weapon) {
 	GL_BindVAO(vao.stream3d);
 	GL_BindVBO(vbo.stream3d);
 //	GL_BindVBO(vbo.dynamicIbo);
-
-	if (r_shadows->integer == 1) {
-		GL_StencilFunc(GL_EQUAL, 128, 255);
-		GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		GL_StencilMask(0);
-		GL_DepthFunc(GL_LEQUAL);
-	}
 
 	GL_PolygonOffset(-0.1, -1.0);
 

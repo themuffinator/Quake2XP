@@ -64,7 +64,7 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 	msurface_t* surf, ** mark;
 	mleaf_t* pleaf;
 	float dot;
-	vec3_t mins, maxs;;
+	vec3_t mins, maxs;
 	
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -100,6 +100,10 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 			cluster = pleaf->cluster;
 			if (!(currentShadowLight->vis[cluster >> 3] & (1 << (cluster & 7))))
 				return;
+			
+			if (!(r_newrefdef.areabits[currentShadowLight->area >> 3] & (1 << (currentShadowLight->area & 7)))) {
+				return;
+			}
 		}
 
 		// check for door connected areas
@@ -197,7 +201,7 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 		if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 			continue;
 
-			sceneSurfaces[numDepthSurfaces++] = surf;
+		sceneSurfaces[numDepthSurfaces++] = surf;
 	}
 
 	// recurse down the back side
@@ -224,11 +228,14 @@ void R_AddBModelDepthTris (vec3_t viewOrg) {
 		// draw the polygon
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 
-			if (psurf->visframe == r_framecount)	// reckless fix
-				continue;
+			if (!gl_state.shadowMapPass) {
+				if (psurf->visframe == r_framecount)	// reckless fix
+					continue;
+			}
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) 
 				continue;
-			sceneSurfaces[numDepthSurfaces++] = psurf;
+
+				sceneSurfaces[numDepthSurfaces++] = psurf;
 			}
 	}
 }
@@ -286,6 +293,7 @@ void R_DrawDepthBrushModel () {
 		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.shadowMVP, mvp);
 	else
 		Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
+
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)mvp);
 
 	numDepthSurfaces = 0;
@@ -303,6 +311,12 @@ void GL_DrawAliasFrameLerpDepth(md2Header *paliashdr) {
 	if (!gl_state.shadowMapPass) {
 		if (currententity->flags & (RF_VIEWERMODEL))
 			return;
+	}
+	else {
+		if (!r_playerShadow->integer) {
+			if (currententity->flags & (RF_VIEWERMODEL))
+				return;
+		}
 	}
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...

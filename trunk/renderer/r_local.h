@@ -193,8 +193,8 @@ typedef struct {
 typedef struct {
 	rbo_t	r_rbo[MAX_RBOS];
 	int		r_numRbos;
-	rbo_t	*depthStencil;
-	rbo_t	*depth;
+	rbo_t	*rboDepth;
+	rbo_t	*depth[5];
 }rb_t;
 
 rb_t rb;
@@ -217,7 +217,7 @@ typedef struct {
 	fbo_t	*bloomCompute;
 	fbo_t	*hdrLum;
 	fbo_t	*lensFlare;
-	fbo_t	*shadowMap;
+	fbo_t	*shadowMap[5];
 }fb_t;
 fb_t fb;
 
@@ -293,7 +293,7 @@ typedef struct globalImage_s {
 	image_t *ssaoColor[2];
 	image_t *hdrBase;
 	image_t *hdrBaseInterim;
-	image_t *depthStencil;
+	image_t *rboDepth;
 	image_t *hdrInterim2D;
 	image_t *ldrBase;
 	image_t *linearDepth;
@@ -316,7 +316,7 @@ typedef struct globalImage_s {
 	image_t *lensFlareInterim;
 	image_t *lensFlareOut;
 
-	image_t *shadowCube;
+	image_t *shadowCube[5];
 	image_t *shadowProj;
 
 }globalImage_t;
@@ -546,8 +546,6 @@ void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);
 bool R_CullSphere (const vec3_t centre, const float radius);
-void R_CastBspShadowVolumes (void);
-void R_CastAliasShadowVolumes (bool player);
 void R_DrawAliasModelLightPass (bool weapon_model);
 void R_SetupEntityMatrix (entity_t * e);
 void R_SSAO(void);
@@ -605,7 +603,9 @@ extern const mat4_t	mat4_identity;
 void Mat3_Identity (mat3_t m);
 void Mat3_Copy (const mat3_t in, mat3_t out);
 bool Mat3_Compare(const mat3_t a, const mat3_t b);
+void Mat3_Fill(mat3_t m, const vec3_t in1, vec3_t in2, vec3_t in3);
 
+void Mat4_Fill(mat4_t m, const vec4_t in1, vec4_t in2, vec4_t in3, vec4_t in4);
 bool Mat4_Compare(const mat4_t a, const mat4_t b);
 void Mat4_Multiply (const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_Copy (const mat4_t in, mat4_t out);
@@ -687,7 +687,6 @@ int numHeatHazeSurfaces;
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);
-void GL_CheckError();
 
 void R_RenderView (refdef_t * fd);
 void GL_ScreenShot_f (void);
