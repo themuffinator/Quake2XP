@@ -31,17 +31,25 @@ WORLD LIGHTS
 
 ==============================================================================
 */
-msurface_t* interactionRA[MAX_MAP_FACES];
+msurface_t* interactionRA[MAX_MAP_FACES / 4];
 int			numInteractionSurfsRA;
 
-msurface_t* interaction[MAX_MAP_FACES];
+msurface_t* interaction[MAX_MAP_FACES / 4];
 int			numInteractionSurfs;
 
-int	r_lightTimestamp, r_lightTimestampRA;
+msurface_t *shadowMapSurfaces[MAX_MAP_FACES / 4];
+int			numShadowMapSurfaces;
 
+int		r_lightTimeStamp, r_lightTimeStampRA, r_shadowTimeStamp;
+int		r_numWorlsShadowLights;
+
+#define INFITITY_VIEW
 #define LIGHT_ZNEAR		0.01f
 #define SHADOWMAP_SIZE	1024
 #define	MAX_SHADOW_LODS	5
+#define	Q_INFINITY	1e30f
+#define	MAX_WORLD_SHADOW_LIGHTS	2048
+#define	EQUAL_EPSILON		0.000001f
 
 typedef struct frustum_s {
 	cplane_t	planes[6];		// right, left, top, bottom, near, far
@@ -98,14 +106,11 @@ typedef struct worldShadowLight_s {
 	bool	castCaustics, castCaustics2;
 
 	cplane_t	frust[6];
-	msurface_t	*interaction[MAX_MAP_FACES];
+	msurface_t	*interaction[MAX_MAP_FACES / 4];
 	int			numInteractionSurfs;
 
-	msurface_t* interactionRA[MAX_MAP_FACES/4];
+	msurface_t	*interactionRA[MAX_MAP_FACES / 4];
 	int			numInteractionSurfsRA;
-
-	msurface_t *shadowMapSurfaces[MAX_MAP_FACES];
-	int			numShadowMapSurfaces;
 
 	char		targetname[MAX_QPATH];
 
@@ -123,12 +128,9 @@ typedef struct worldShadowLight_s {
 	
 } worldShadowLight_t;
 
-#define		Q_INFINITY	1e30f
-#define		MAX_WORLD_SHADOW_LIHGTS	1024
-#define		EQUAL_EPSILON		0.000001f
-int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;
 extern int	numPreCachedLights;
+
 
 typedef struct {
 	vec3_t origin;
@@ -148,7 +150,7 @@ typedef struct {
 
 int r_numAutoLights;
 int r_numIgnoreAutoLights;
-autoLight_t r_lightSpawnSurf[MAX_WORLD_SHADOW_LIHGTS];
+autoLight_t r_lightSpawnSurf[MAX_WORLD_SHADOW_LIGHTS];
 
 #define MAX_FLARE_VERTS 6
 

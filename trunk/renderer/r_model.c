@@ -92,7 +92,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 
 	intens = surf->texInfo->value;
 
-	if (r_numAutoLights >= MAX_WORLD_SHADOW_LIHGTS)
+	if (r_numAutoLights >= MAX_WORLD_SHADOW_LIGHTS)
 		return;
 
 	if (intens <= 1000)
@@ -1035,32 +1035,6 @@ void GL_BuildTBN(int count);
 
 /*
 ================
-SetupSurfaceNeighbors
-
-Setup the neighour pointers of this surface's polygon.
-================
-*/
-void BuildSurfaceNeighbours(msurface_t *surf) {
-	int				i, j, lindex;
-	temp_connect_t	*tempEdge;
-
-	if (surf->numEdges > MAX_POLY_VERT)
-		Com_DPrintf("BuildSurfaceNeighbors: too many edges %i\n", surf->numEdges);
-
-	for (i = 0; i < surf->numEdges; i++) {
-		lindex = currentmodel->surfEdges[surf->firstedge + i];
-		tempEdge = tempEdges + abs(lindex);
-
-		surf->polys->neighbours[i] = NULL;
-		for (j = 0; j < tempEdge->used; j++)
-			if (tempEdge->poly[j] != surf->polys)
-				surf->polys->neighbours[i] = tempEdge->poly[j];
-	}
-}
-
-
-/*
-================
 GL_BuildPolygonFromSurface
 ================
 */
@@ -1071,7 +1045,6 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 	float		*vec, s, t;
 	glpoly_t	*poly;
 	vec3_t		total;
-	temp_connect_t *tempEdge;
 
 	fa->numVertices = fa->numEdges;
 	fa->numIndices = (fa->numVertices - 2) * 3;
@@ -1089,11 +1062,6 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 	poly->flags = fa->flags;
 	fa->polys = poly;
 	poly->numVerts = numVerts;
-
-	// reserve space for neighbour pointers
-	// FIXME: pointers don't need to be 4 bytes
-//	poly->neighbours = (glpoly_t **)Mod_Hunk_Alloc(numVerts * 4);
-	poly->neighbours = (glpoly_t **)Mod_Hunk_Alloc(numVerts * sizeof(void *)); //linux
 
 	for (i = 0; i < numVerts; i++) {
 		index = currentmodel->surfEdges[fa->firstedge + i];
@@ -1175,16 +1143,6 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 			poly->verts[i][14] = binormal[1];
 			poly->verts[i][15] = binormal[2];
 		}
-
-		// Store edge data for shadow volumes
-		tempEdge = tempEdges + abs(index);
-		if (tempEdge->used < 2) {
-			tempEdge->poly[tempEdge->used] = poly;
-			tempEdge->used++;
-		}
-		else
-			Com_DPrintf("GL_BuildPolygonFromSurface: Edge used by more than 2 surfaces\n");
-
 	}
 
 	poly->numVerts = numVerts;
@@ -1365,8 +1323,6 @@ void Mod_LoadFaces(lump_t * l) {
 	currentmodel = loadmodel;
 	surf = currentmodel->surfaces;
 
-	tempEdges = (temp_connect_t *)Z_Malloc(currentmodel->numEdges * sizeof(temp_connect_t));
-
 	GL_BeginBuildingLightmaps(loadmodel);
 
 	for (surfnum = 0; surfnum < count; surfnum++, in++, out++) {
@@ -1450,15 +1406,6 @@ void Mod_LoadFaces(lump_t * l) {
 	}
 
 	GL_EndBuildingLightmaps();
-
-	// calc neighbours for shadow volumes
-	for (surfnum = 0; surfnum < count; surfnum++, surf++) {
-		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
-			continue;
-		BuildSurfaceNeighbours(surf);
-	}
-
-	Z_Free(tempEdges);
 }
 
 #define bspSmoothAngle cosf(DEG2RAD(45.0))

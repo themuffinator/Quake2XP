@@ -610,7 +610,7 @@ static void GL_DrawDynamicLightPass(bool bmodel, bool caustics)
 		s = interaction[i];
 		poly = s->polys;
 
-		if ((poly->lightTimestamp != r_lightTimestamp) || (s->visframe != r_framecount))
+		if ((poly->lightTimeStamp != r_lightTimeStamp) || (s->visframe != r_framecount))
 			continue;
 
 		// flush batch (new texture or flag)
@@ -836,7 +836,7 @@ hack:
 	plane = surf->plane;
 	poly = surf->polys;
 	
-	if (poly->lightTimestamp == r_lightTimestamp)
+	if (poly->lightTimeStamp == r_lightTimeStamp)
 		return false;
 
 	switch (plane->type)
@@ -893,7 +893,7 @@ next:
 			return false;
 	}
 
-	poly->lightTimestamp = r_lightTimestamp;
+	poly->lightTimeStamp = r_lightTimeStamp;
 
 	return true;
 }
@@ -964,7 +964,7 @@ void R_DrawLightWorld(void)
 	GL_BindVAO(vao.bsp);
 
 	if (!currentShadowLight->isStatic) {
-		r_lightTimestamp++;
+		r_lightTimeStamp++;
 		numInteractionSurfs = 0;
 		R_MarkLightCasting(r_worldmodel->nodes, false, currentShadowLight);
 		if (numInteractionSurfs > 0)
@@ -1298,7 +1298,7 @@ void R_DrawLightBrushModel (void) {
 
 	GL_BindVAO(vao.bsp);
 
-	r_lightTimestamp++;
+	r_lightTimeStamp++;
 	numInteractionSurfs = 0;
 	
 	R_MarkLightBrushModelSurfaces();

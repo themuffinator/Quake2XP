@@ -317,29 +317,46 @@ mat4_t r_flipMatrix = {
 static void R_SetupViewMatrices (void) {
 	mat4_t	tmpMatrix;
 	int		i;
+
 	// setup perspective projection matrix
-	r_newrefdef.projectionMatrix[0][0] = 1.f / tan(DEG2RAD(r_newrefdef.fov_x) * 0.5f);
-	r_newrefdef.projectionMatrix[0][1] = 0.f;
-	r_newrefdef.projectionMatrix[0][2] = 0.f;
-	r_newrefdef.projectionMatrix[0][3] = 0.f;
+	float scale = 1.f / (r_zFar->value - r_zNear->value);
 
-	r_newrefdef.projectionMatrix[1][0] = 0.f;
-	r_newrefdef.projectionMatrix[1][1] = 1.f / tan(DEG2RAD(r_newrefdef.fov_y) * 0.5f);
-	r_newrefdef.projectionMatrix[1][2] = 0.f;
-	r_newrefdef.projectionMatrix[1][3] = 0.f;
+	r_newrefdef.projectionMatrix[0][0] = 1.0 / tan(DEG2RAD(r_newrefdef.fov_x) * 0.5);
+	r_newrefdef.projectionMatrix[0][1] = 0.0;
+	r_newrefdef.projectionMatrix[0][2] = 0.0;
+	r_newrefdef.projectionMatrix[0][3] = 0.0;
 
-	r_newrefdef.projectionMatrix[2][0] = 0.f;
-	r_newrefdef.projectionMatrix[2][1] = 0.f;
-	r_newrefdef.projectionMatrix[2][2] = -0.999f; // infinite
-	r_newrefdef.projectionMatrix[2][3] = -1.f;
+	r_newrefdef.projectionMatrix[1][0] = 0.0;
+	r_newrefdef.projectionMatrix[1][1] = 1.0 / tan(DEG2RAD(r_newrefdef.fov_y) * 0.5);
+	r_newrefdef.projectionMatrix[1][2] = 0.0;
+	r_newrefdef.projectionMatrix[1][3] = 0.0;
 
-	r_newrefdef.projectionMatrix[3][0] = 0.f;
-	r_newrefdef.projectionMatrix[3][1] = 0.f;
-	r_newrefdef.projectionMatrix[3][2] = -2.f * r_zNear->value; // infinite
-	r_newrefdef.projectionMatrix[3][3] = 0.f;
+	r_newrefdef.projectionMatrix[2][0] = 0.0;
+	r_newrefdef.projectionMatrix[2][1] = 0.0;
+#ifdef INFITITY_VIEW
+	r_newrefdef.projectionMatrix[2][2] = -0.999; // infinite
+#else
+	r_newrefdef.projectionMatrix[2][2] = -(r_zFar->value + r_zNear->value) * scale;
+#endif
+	r_newrefdef.projectionMatrix[2][3] = -1.0;
 
+	r_newrefdef.projectionMatrix[3][0] = 0.0;
+	r_newrefdef.projectionMatrix[3][1] = 0.0;
+#ifdef INFITITY_VIEW
+	r_newrefdef.projectionMatrix[3][2] = -2.0 * r_zNear->value; // infinite
+#else
+	r_newrefdef.projectionMatrix[3][2] = -2.0 * r_zFar->value * r_zNear->value * scale;
+#endif
+	r_newrefdef.projectionMatrix[3][3] = 0.0;
+
+#ifdef INFITITY_VIEW
 	r_newrefdef.depthParms[0] = r_zNear->value;
-	r_newrefdef.depthParms[1] = 0.9995f;
+	r_newrefdef.depthParms[1] = 0.9995;
+#else
+	scale = 1.0 / (1.0 - r_zNear->value / r_zFar->value);
+	r_newrefdef.depthParms[0] = r_zNear->value * scale;
+	r_newrefdef.depthParms[1] = scale;
+#endif
 
 	// setup view matrix
 	AnglesToMat3(r_newrefdef.viewangles, r_newrefdef.axis);
@@ -363,16 +380,12 @@ static void R_SetupViewMatrices (void) {
 	Mat4_Translate(tmpMatrix, -r_origin[0], -r_origin[1], -r_origin[2]);
 	Mat4_Copy(tmpMatrix, r_newrefdef.skyMatrix);
 
-	float tx, ty;
-	mat3_t axis;
 	// compute the world-space rays to the far plane corners
-	tx = tan(DEG2RAD(r_newrefdef.fov_x * 0.5f));
-	ty = tan(DEG2RAD(r_newrefdef.fov_y * 0.5f));
-
+	mat3_t axis;
 	for (i = 0; i < 3; i++) {
 		axis[0][i] = r_newrefdef.axis[0][i];
-		axis[1][i] = r_newrefdef.axis[1][i] * tx;
-		axis[2][i] = r_newrefdef.axis[2][i] * ty;
+		axis[1][i] = r_newrefdef.axis[1][i] * tan(DEG2RAD(r_newrefdef.fov_x * 0.5f));
+		axis[2][i] = r_newrefdef.axis[2][i] * tan(DEG2RAD(r_newrefdef.fov_y * 0.5f));
 
 		// counter-clockwise order
 		r_newrefdef.cornerRays[0][i] = axis[0][i] + axis[1][i] + axis[2][i];	// top left

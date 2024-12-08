@@ -319,7 +319,7 @@ bool R_MarkLightSurfRA(msurface_t* surf, bool world, worldShadowLight_t* light) 
 	plane = surf->plane;
 	poly = surf->polys;
 
-	if (poly->lightTimestampRA == r_lightTimestampRA)
+	if (poly->lightTimeStampRA == r_lightTimeStampRA)
 		return false;
 
 	switch (plane->type)
@@ -367,7 +367,7 @@ bool R_MarkLightSurfRA(msurface_t* surf, bool world, worldShadowLight_t* light) 
 			return false;
 	}
 
-	poly->lightTimestampRA = r_lightTimestampRA;
+	poly->lightTimeStampRA = r_lightTimeStampRA;
 
 	return true;
 }
@@ -584,7 +584,7 @@ void R_DrawLightAlphaSurfacesDynamic(bool bmodel, bool caustics) {
 		if (s->texInfo->flags & SURF_WARP)
 			continue;
 
-		if ((poly->lightTimestampRA != r_lightTimestampRA) || (s->visframe != r_framecount))
+		if ((poly->lightTimeStampRA != r_lightTimeStampRA) || (s->visframe != r_framecount))
 			continue;
 
 		if (s->texInfo->albedo->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust) {
@@ -621,7 +621,7 @@ void R_DrawLightRA(void){
 	if (currentShadowLight->isStatic)
 		R_DrawLightAlphaSurfaces();
 	else {
-		r_lightTimestampRA++;
+		r_lightTimeStampRA++;
 		numInteractionSurfsRA = 0;
 		R_MarkLightCastingRA(r_worldmodel->nodes, false, currentShadowLight);
 		if (numInteractionSurfsRA > 0)
@@ -720,7 +720,7 @@ void R_DrawLightBrushModelRA(void) {
 		}
 	}
 
-	r_lightTimestampRA++;
+	r_lightTimeStampRA++;
 	numInteractionSurfsRA = 0;
 
 	R_MarkLightBrushModelSurfacesRA();

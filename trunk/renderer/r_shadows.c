@@ -27,10 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-//bsp
-int			numShadowSurf, shadowTimeStamp;
-msurface_t*	shadow_surfaces[MAX_VERTICES];
-
 //differs from the test for mesh in light bound
 bool R_EntityCastShadow() {
 
@@ -82,11 +78,8 @@ bool R_EntityCastShadow() {
 	if (VectorCompare(currententity->origin, currentShadowLight->origin)) // skip shadows from shell lights
 		return false;
 
-	//	if (r_shadows->integer == 1) {
-			//	// cull shadow volume out of view frustum
 	if (Frustum_CullLocalBoundsProjection(currententity->model->mins, currententity->model->maxs, currententity->origin, currententity->axis, currentShadowLight->origin, 63))
 		return false;
-	//	}
 
 	if (!InLightVISEntity())
 		return false;
@@ -94,10 +87,10 @@ bool R_EntityCastShadow() {
 	return true;
 }
 
-bool R_MarkShadowSurf (msurface_t *surf) {
+bool R_MarkShadowSurf (msurface_t *surf, worldShadowLight_t *light) {
 	cplane_t	*plane;
 	glpoly_t	*poly;
-	float		dist, lbbox[6], pbbox[6];
+	float		dist, lBbox[6], sBbox[6];
 
 	if (surf->texInfo->flags & (SURF_NODRAW)) // rogue hack
 		return false;
@@ -115,21 +108,21 @@ hack:
 	plane = surf->plane;
 	poly = surf->polys;
 
-	if (poly->shadowTimestamp == shadowTimeStamp)
+	if (poly->shadowTimeStamp == r_shadowTimeStamp)
 		return false;
 
 	switch (plane->type) {
 		case PLANE_X:
-			dist = currentShadowLight->origin[0] - plane->dist;
+			dist = light->origin[0] - plane->dist;
 			break;
 		case PLANE_Y:
-			dist = currentShadowLight->origin[1] - plane->dist;
+			dist = light->origin[1] - plane->dist;
 			break;
 		case PLANE_Z:
-			dist = currentShadowLight->origin[2] - plane->dist;
+			dist = light->origin[2] - plane->dist;
 			break;
 		default:
-			dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
+			dist = DotProduct (light->origin, plane->normal) - plane->dist;
 			break;
 	}
 
@@ -139,51 +132,36 @@ hack:
 		return false;
 
 	//the normals are flipped when surf_planeback is 1
-	if (fabsf (dist) > currentShadowLight->maxRad)
+	if (fabsf (dist) > light->maxRad)
 		return false;
 
-	lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
-	lbbox[1] = currentShadowLight->origin[1] - currentShadowLight->radius[1];
-	lbbox[2] = currentShadowLight->origin[2] - currentShadowLight->radius[2];
-	lbbox[3] = currentShadowLight->origin[0] + currentShadowLight->radius[0];
-	lbbox[4] = currentShadowLight->origin[1] + currentShadowLight->radius[1];
-	lbbox[5] = currentShadowLight->origin[2] + currentShadowLight->radius[2];
+	lBbox[0] = light->origin[0] - light->radius[0];
+	lBbox[1] = light->origin[1] - light->radius[1];
+	lBbox[2] = light->origin[2] - light->radius[2];
+	lBbox[3] = light->origin[0] + light->radius[0];
+	lBbox[4] = light->origin[1] + light->radius[1];
+	lBbox[5] = light->origin[2] + light->radius[2];
 
 	// surface bounding box
-	pbbox[0] = surf->mins[0];
-	pbbox[1] = surf->mins[1];
-	pbbox[2] = surf->mins[2];
-	pbbox[3] = surf->maxs[0];
-	pbbox[4] = surf->maxs[1];
-	pbbox[5] = surf->maxs[2];
+	sBbox[0] = surf->mins[0];
+	sBbox[1] = surf->mins[1];
+	sBbox[2] = surf->mins[2];
+	sBbox[3] = surf->maxs[0];
+	sBbox[4] = surf->maxs[1];
+	sBbox[5] = surf->maxs[2];
 
-	if (currentShadowLight->projector && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+	if (light->projector && R_CullConeLight(&sBbox[0], &sBbox[3], light->frust))
 		return false;
 
-	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
+	if (!BoundsIntersect (&lBbox[0], &lBbox[3], &sBbox[0], &sBbox[3]))
 		return false;
 
-	poly->shadowTimestamp = shadowTimeStamp;
+	poly->shadowTimeStamp = r_shadowTimeStamp;
 
 	return true;
 }
 
-void R_MarkBrushModelShadowSurfaces () {
-	int			i;
-	msurface_t	*psurf;
-	model_t		*clmodel;
-
-	clmodel = currententity->model;
-	psurf = &clmodel->surfaces[clmodel->firstModelSurface];
-
-	for (i = 0; i < clmodel->numModelSurfaces; i++, psurf++) {
-
-		if (R_MarkShadowSurf (psurf))
-			shadow_surfaces[numShadowSurf++] = psurf;
-	}
-}
-
-void R_MarkShadowCasting (mnode_t *node) {
+void R_MarkShadowCasting (mnode_t *node, worldShadowLight_t *light) {
 	cplane_t	*plane;
 	int			c, cluster;
 	float		dist;
@@ -196,53 +174,88 @@ void R_MarkShadowCasting (mnode_t *node) {
 		leaf = (mleaf_t *)node;
 		cluster = leaf->cluster;
 
-		if (!(currentShadowLight->vis[cluster >> 3] & (1 << (cluster & 7))))
+		if (!(light->vis[cluster >> 3] & (1 << (cluster & 7))))
 			return;
 
 		surf = leaf->firstmarksurface;
 
 		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++) {
 
-			if (R_MarkShadowSurf ((*surf))) {
+			if (R_MarkShadowSurf (*surf, light) ) {
 
-				shadow_surfaces[numShadowSurf++] = (*surf);
+				shadowMapSurfaces[numShadowMapSurfaces++] = (*surf);
 			}
 		}
 		return;
 	}
 
 	plane = node->plane;
-	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
+	dist = DotProduct (light->origin, plane->normal) - plane->dist;
 
-	if (dist > currentShadowLight->maxRad) {
-		R_MarkShadowCasting (node->children[0]);
+	if (dist > light->maxRad) {
+		R_MarkShadowCasting (node->children[0], light);
 		return;
 	}
 
-	if (dist < -currentShadowLight->maxRad) {
-		R_MarkShadowCasting (node->children[1]);
+	if (dist < -light->maxRad) {
+		R_MarkShadowCasting (node->children[1], light);
 		return;
 	}
 
-	R_MarkShadowCasting (node->children[0]);
-	R_MarkShadowCasting (node->children[1]);
+	R_MarkShadowCasting(node->children[0], light);
+	R_MarkShadowCasting(node->children[1], light);
 }
 
+vec3_t	vertexBuffer[MAX_VERTICES];
+uint	indexBuffer[MAX_INDICES];
 
-// ===========
-// shadow maps
-// ===========
+void R_BuildShadowVBO(worldShadowLight_t *light, bool update) {
+	msurface_t	*s;
+	glpoly_t	*p;
+	float		*v;
+	int			i, j, k;
+	int			baseVert, numIndices, numVerts;
+	
+	baseVert = numIndices = numVerts = 0;
 
-int		SignbitsForPlane(cplane_t *out);
-void	R_RecursiveDepthWorldNode(mnode_t *node, vec3_t viewOrg);
-void	R_DrawDepthAliasModel();
-void	R_DrawDepthMD3Model();
-void	GL_DrawDepthBspTris();
-void	R_DrawDepthBrushModel();
-extern	mat4_t	r_flipMatrix;
+	for (i = 0; i < numShadowMapSurfaces; i++) {
+		s = shadowMapSurfaces[i];
+		int  nv = s->polys->numVerts;
 
-extern	int	numDepthSurfaces;
-extern	model_t *r_worldmodel;
+		p = s->polys;
+		v = p->verts[0];
+		for (j = 0; j < nv; j++, v += VERTEXSIZE, baseVert++) {
+			VectorCopy(v, vertexBuffer[baseVert]);
+		}
+
+		for (k = 0; k < nv - 2; k++) {
+			indexBuffer[numIndices++] = numVerts;
+			indexBuffer[numIndices++] = numVerts + k + 1;
+			indexBuffer[numIndices++] = numVerts + k + 2;
+		}
+		numVerts += nv;
+	}
+	light->iboNumIndices = numIndices;
+	light->numStaticShadowTris += numIndices / 3;
+
+	if (update) {
+		GL_BindVAO(light->vao);
+		GL_BindVBO(light->vbo);
+		GL_BindVBO(light->ibo);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec3_t), &vertexBuffer);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), &indexBuffer);
+	}
+	else {
+		light->vbo = R_Alloc_VBO("shadowMap_Vbo", GL_ARRAY_BUFFER, numVerts * sizeof(vec3_t), vertexBuffer, GL_STATIC_DRAW);
+		light->ibo = R_Alloc_VBO("shadowMap_Ibo", GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint), indexBuffer, GL_STATIC_DRAW);
+
+		light->vao = R_Alloc_VAO("lightVao", ATTF_POS);
+		GL_BindVBO(light->vbo);
+		GL_BindVBO(light->ibo);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, false, 0, 0);
+		GL_BindNullVAO();
+	}
+}
 
 void R_SetLightFrustum(vec3_t angles, float fov_x, float fov_y) {
 	int i;
@@ -279,12 +292,20 @@ void R_DrawShadowWorld(void) {
 
 	currentmodel = r_worldmodel;
 
-	GL_BindVAO(vao.depthBsp);
+	if (currentShadowLight->isStatic) {
+		GL_BindVAO(currentShadowLight->vao);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.shadowMVP);
+		GL_DrawElements(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
+	}
+	else {
+		GL_BindVAO(vao.depthBsp);
+		numDepthSurfaces = 0;
+		R_RecursiveDepthWorldNode(r_worldmodel->nodes, currentShadowLight->origin);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.shadowMVP);
+		GL_DrawDepthBspTris();
+	}
 
-	numDepthSurfaces = 0;
-	R_RecursiveDepthWorldNode(r_worldmodel->nodes, currentShadowLight->origin);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)r_newrefdef.shadowMVP);
-	GL_DrawDepthBspTris();
+	GL_BindVAO(vao.depthBsp);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -346,13 +367,13 @@ void R_DrawShadowMaps() {
 	mat3_t	axis;
 	vec2_t	fov;
 
+	if (!r_shadows->integer)
+		return;
+
 	if (!currentShadowLight->isShadow)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if (!r_shadows->integer)
 		return;
 
 	fov[0] = 90.0;
@@ -375,10 +396,6 @@ void R_DrawShadowMaps() {
 
 	GL_BindProgram(shadowOmniProgram);
 
-	float scale = 1.f / (zFar - LIGHT_ZNEAR);
-
-	qglUniform1f(U_PARAM_FLOAT_0, (zFar - LIGHT_ZNEAR) / 100.0);
-
 	projMatrix[0][0] = 1.0 / tanf(DEG2RAD(fov[0] * 0.5f));
 	projMatrix[0][1] = 0.0;
 	projMatrix[0][2] = 0.0;
@@ -391,12 +408,12 @@ void R_DrawShadowMaps() {
 
 	projMatrix[2][0] = 0.0;
 	projMatrix[2][1] = 0.0;
-	projMatrix[2][2] = /*-(zFar + LIGHT_ZNEAR) * scale;*/zFar / (LIGHT_ZNEAR - zFar);
+	projMatrix[2][2] = zFar / (LIGHT_ZNEAR - zFar);
 	projMatrix[2][3] = -1.0;
 
 	projMatrix[3][0] = 0.0;
 	projMatrix[3][1] = 0.0;
-	projMatrix[3][2] = /*-2.f * zFar * LIGHT_ZNEAR * scale;*/(LIGHT_ZNEAR * zFar) / (LIGHT_ZNEAR - zFar);
+	projMatrix[3][2] = (LIGHT_ZNEAR * zFar) / (LIGHT_ZNEAR - zFar);
 	projMatrix[3][3] = 0.0;
 
 	for (i = 0; i < 6; i++) {

@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 worldShadowLight_t *currentShadowLight;
 worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL, *selectedShadowLight = NULL;
-worldShadowLight_t	shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
+worldShadowLight_t	shadowLightsBlock[MAX_WORLD_SHADOW_LIGHTS];
 
 static int num_dlits;
 int num_nwmLights;
@@ -37,7 +37,7 @@ int c_numVisLights;
 
 vec3_t player_org, v_forward, v_right, v_up;
 bool R_MarkLightLeaves (worldShadowLight_t *light);
-void R_AddLightInteraction(worldShadowLight_t *light);
+void R_AddLightInteraction(worldShadowLight_t *light, bool update);
 
 void R_CalcLightLod(worldShadowLight_t *light) {
 
@@ -63,8 +63,8 @@ void R_CalcLightLod(worldShadowLight_t *light) {
 	if (dist >= 2048.0)
 		light->lod = 4;	
 
-//	if (light->maxRad > 200 && !BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 25.0)) // too agressive
-//		light->lod += 1;
+	if (BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 25.0)) // too agressive
+		light->lod =0;
 
 	if (light->lod > 4)
 		light->lod = 4;
@@ -320,7 +320,6 @@ void R_AddNoWorldModelLight () {
 	light->isStatic = 1;
 	light->isShadow = 0;
 	light->isNoWorldModel = 1;
-	light->flare = 0;
 	light->isAmbient = 0;
 	light->spherical = true;
 	light->projector = false;
@@ -384,7 +383,7 @@ void R_PrepareShadowLightFrame (bool weapon) {
 	// add tempory lights
 	for (i = 0; i<r_newrefdef.num_dlights; i++) {
 
-		if (num_dlits > MAX_WORLD_SHADOW_LIHGTS)
+		if (num_dlits > MAX_WORLD_SHADOW_LIGHTS)
 			break;
 
 		R_AddDynamicLight (&r_newrefdef.dlights[i]);		
@@ -483,9 +482,6 @@ void R_SaveLights_f (void) {
 		if (currentShadowLight->targetname[0])
 			fprintf (f, "\"targetname\" \"%s\"\n", currentShadowLight->targetname);
 		fprintf (f, "\"spawnflags\" \"%i\"\n", currentShadowLight->start_off);
-		fprintf (f, "\"flareSize\" \"%i\"\n", (int)currentShadowLight->flareSize);
-		fprintf (f, "\"flareOrigin\" \"%i %i %i\"\n", (int)currentShadowLight->flareOrigin[0], (int)currentShadowLight->flareOrigin[1], (int)currentShadowLight->flareOrigin[2]);
-		fprintf (f, "\"flare\" \"%i\"\n", currentShadowLight->flare);
 		if (currentShadowLight->isFog) {
 			fprintf (f, "\"fogLight\" \"%i\"\n", currentShadowLight->isFog);
 			fprintf (f, "\"fogDensity\" \"%.6f\"\n", currentShadowLight->fogDensity);
@@ -554,9 +550,9 @@ void R_Light_SpawnToCamera_f (void) {
 void R_Light_Clone_f (void) {
 	vec3_t	color, spawn, origin, angles,
 			speed, radius, flareOrg, end;
-	float	flareSize, fogDensity, fovX, fovY, dist;
+	float	flareSize = 0, fogDensity, fovX, fovY, dist;
 	int		style, filter, shadow, ambient,
-			flare, flag, fogLight, proj;
+			flag, fogLight, proj;
 	char	target[MAX_QPATH];
 	trace_t trace;
 
@@ -575,7 +571,6 @@ void R_Light_Clone_f (void) {
 	VectorCopy (selectedShadowLight->angles, angles);
 	VectorCopy (selectedShadowLight->speed, speed);
 	VectorCopy (selectedShadowLight->radius, radius);
-	VectorCopy (selectedShadowLight->flareOrigin, flareOrg);
 
 	memset (target, 0, sizeof(target));
 	if (selectedShadowLight->targetname[0])
@@ -591,8 +586,6 @@ void R_Light_Clone_f (void) {
 	fovY = selectedShadowLight->fov[1];
 	dist = selectedShadowLight->distance;
 
-	flare = selectedShadowLight->flare;
-	flareSize = selectedShadowLight->flareSize;
 	flag = selectedShadowLight->start_off;
 	fogLight = selectedShadowLight->isFog;
 	fogDensity = selectedShadowLight->fogDensity;
@@ -601,7 +594,7 @@ void R_Light_Clone_f (void) {
 	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, true, flare, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius, proj, fovX, fovY, dist);
+		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, true, 0, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius, proj, fovX, fovY, dist);
 	}
 }
 
@@ -659,8 +652,6 @@ void R_Copy_Light_Properties_f (void) {
 	lightClipBoard.isShadow = selectedShadowLight->isShadow;
 	lightClipBoard.isAmbient = selectedShadowLight->isAmbient;
 	lightClipBoard.proj = selectedShadowLight->projector;
-	lightClipBoard.flare = selectedShadowLight->flare;
-	lightClipBoard.flareSize = selectedShadowLight->flareSize;
 	lightClipBoard.start_off = selectedShadowLight->start_off;
 	lightClipBoard.isFog = selectedShadowLight->isFog;
 	lightClipBoard.fogDensity = selectedShadowLight->fogDensity;
@@ -701,15 +692,13 @@ void R_Paste_Light_Properties_f (void) {
 	selectedShadowLight->fov[1] = lightClipBoard.fov[1];
 	selectedShadowLight->distance = lightClipBoard.dist;
 
-	selectedShadowLight->flare = lightClipBoard.flare;
-	selectedShadowLight->flareSize = lightClipBoard.flareSize;
 	selectedShadowLight->start_off = lightClipBoard.start_off;
 	selectedShadowLight->isFog = lightClipBoard.isFog;
 	selectedShadowLight->fogDensity = lightClipBoard.fogDensity;
 
 	UpdateLightBounds (selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
-	R_AddLightInteraction(selectedShadowLight);
+	R_AddLightInteraction(selectedShadowLight, true);
 
 	Com_Printf ("Paste light properties from clipboard.\n");
 }
@@ -751,9 +740,9 @@ void kelvinToRGB(int kelvin, float intens, vec3_t outColor) {
 void R_EditSelectedLight_f (void) {
 
 	vec3_t	color, origin, angles,
-			speed, radius, fOrg;
-	float	fSize, fogDensity, fovX, fovY;
-	int		style, filter, shadow, ambient, flare, start_off, fogLight, proj, projDist;
+			speed, radius;
+	float	fogDensity, fovX, fovY;
+	int		style, filter, shadow, ambient, start_off, fogLight, proj, projDist;
 	char	target[MAX_QPATH];
 
 	if (!r_lightEditor->integer) {
@@ -770,7 +759,6 @@ void R_EditSelectedLight_f (void) {
 	VectorCopy (selectedShadowLight->color, color);
 	VectorCopy (selectedShadowLight->angles, angles);
 	VectorCopy (selectedShadowLight->radius, radius);
-	VectorCopy (selectedShadowLight->flareOrigin, fOrg);
 
 	if (selectedShadowLight->targetname[0]) {
 		memset (target, 0, sizeof(target));
@@ -782,8 +770,6 @@ void R_EditSelectedLight_f (void) {
 	shadow = selectedShadowLight->isShadow;
 	ambient = selectedShadowLight->isAmbient;
 
-	flare = selectedShadowLight->flare;
-	fSize = selectedShadowLight->flareSize;
 	start_off = selectedShadowLight->start_off;
 	fogLight = selectedShadowLight->isFog;
 	fogDensity = selectedShadowLight->fogDensity;
@@ -807,7 +793,7 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "color")) {
@@ -861,7 +847,7 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (radius, selectedShadowLight->radius);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "projector")) {
@@ -883,7 +869,7 @@ void R_EditSelectedLight_f (void) {
 
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 	else
 		if (!strcmp(Cmd_Argv(1), "dist")) {
@@ -896,7 +882,7 @@ void R_EditSelectedLight_f (void) {
 
 			UpdateLightBounds(selectedShadowLight);
 			R_MarkLightLeaves(selectedShadowLight);
-			R_AddLightInteraction(selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight, true);
 		}
 		else
 		if (!strcmp(Cmd_Argv(1), "fov")) {
@@ -908,7 +894,7 @@ void R_EditSelectedLight_f (void) {
 			selectedShadowLight->fov[1] = atof(Cmd_Argv(3));
 			UpdateLightBounds(selectedShadowLight);
 			R_MarkLightLeaves(selectedShadowLight);
-			R_AddLightInteraction(selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight, true);
 		}
 	else
 	if (!strcmp (Cmd_Argv (1), "style")) {
@@ -944,7 +930,7 @@ void R_EditSelectedLight_f (void) {
 		angles[2] = atof (Cmd_Argv (4));
 		VectorCopy (angles, selectedShadowLight->angles);
 		UpdateLightBounds(selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "shadow")) {
@@ -965,43 +951,7 @@ void R_EditSelectedLight_f (void) {
 		}
 		ambient = atoi (Cmd_Argv (2));
 		selectedShadowLight->isAmbient = ambient;
-	}
-	else
-	if (!strcmp (Cmd_Argv (1), "flare")) {
-		if (Cmd_Argc () != 3) {
-			Com_Printf ("usage: editLight %s value\nCurrent Flare Flag is %i\n", Cmd_Argv (0),
-				selectedShadowLight->flare);
-			return;
-		}
-		flare = atoi (Cmd_Argv (2));
-		selectedShadowLight->flare = flare;
-		VectorCopy (selectedShadowLight->origin, selectedShadowLight->flareOrigin);
-	}
-	else
-	if (!strcmp (Cmd_Argv (1), "flareSize")) {
-		if (Cmd_Argc () != 3) {
-			Com_Printf ("usage: editLight %s value\nCurrent Flare Size is %i\n", Cmd_Argv (0),
-				selectedShadowLight->flareSize);
-			return;
-		}
-		fSize = atoi (Cmd_Argv (2));
-		selectedShadowLight->flareSize = fSize;
-	}
-	else
-	if (!strcmp (Cmd_Argv (1), "flareOrigin")) {
-		if (Cmd_Argc () != 5) {
-			Com_Printf ("usage: editLight: %s X Y Z\nCurrent Flare Origin: %.4f %.4f %.4f\n", Cmd_Argv (0),
-				selectedShadowLight->flareOrigin[0],
-				selectedShadowLight->flareOrigin[1],
-				selectedShadowLight->flareOrigin[2]);
-			return;
-		}
-		fOrg[0] = atof (Cmd_Argv (2));
-		fOrg[1] = atof (Cmd_Argv (3));
-		fOrg[2] = atof (Cmd_Argv (4));
-		VectorCopy (fOrg, selectedShadowLight->flareOrigin);
-	}
-	else
+	}else
 	if (!strcmp (Cmd_Argv (1), "target")) {
 		if (Cmd_Argc () != 3) {
 			Com_Printf ("usage: editLight: %s value\nCurrent Light Target: %s\n", Cmd_Argv (0),
@@ -1074,9 +1024,6 @@ void R_ResetFlarePos_f (void) {
 		Com_Printf ("No selected light.\n");
 		return;
 	}
-
-	VectorCopy (selectedShadowLight->origin, selectedShadowLight->flareOrigin);
-
 }
 
 void R_MoveLightToRight_f (void) {
@@ -1109,15 +1056,7 @@ void R_MoveLightToRight_f (void) {
 		VectorCopy(lightOrg, selectedShadowLight->origin);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
-	}
-
-	// move flare
-	if (flareEdit) {
-		vec3_t flareOrg;
-		VectorCopy(selectedShadowLight->flareOrigin, flareOrg);
-		flareOrg[0] += offset;
-		VectorCopy(flareOrg, selectedShadowLight->flareOrigin);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 }
 
@@ -1151,15 +1090,7 @@ void R_MoveLightForward_f (void) {
 		VectorCopy(lightOrg, selectedShadowLight->origin);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
-	}
-
-	// move flare
-	if (flareEdit) {
-		vec3_t flareOrg;
-		VectorCopy(selectedShadowLight->flareOrigin, flareOrg);
-		flareOrg[1] += offset;
-		VectorCopy(flareOrg, selectedShadowLight->flareOrigin);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 }
 
@@ -1194,21 +1125,13 @@ void R_MoveLightUpDown_f (void) {
 		VectorCopy(lightOrg, selectedShadowLight->origin);
 		UpdateLightBounds(selectedShadowLight);
 		R_MarkLightLeaves(selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
-	}
-
-	// move flare
-	if (flareEdit) {
-		vec3_t flareOrg;
-		VectorCopy(selectedShadowLight->flareOrigin, flareOrg);
-		flareOrg[2] += offset;
-		VectorCopy(flareOrg, selectedShadowLight->flareOrigin);
+		R_AddLightInteraction(selectedShadowLight, true);
 	}
 }
 
 void R_ChangeLightRadius_f (void) {
 
-	float	offset, fRad;
+	float	offset;
 	vec3_t	rad;
 
 	if (!r_lightEditor->integer) {
@@ -1225,36 +1148,28 @@ void R_ChangeLightRadius_f (void) {
 		Com_Printf ("Usage: changeLightRadius: X Y Z\n");
 		return;
 	}
-	if (flareEdit) {
-		fRad = selectedShadowLight->flareSize;
-		offset = atof (Cmd_Argv (1));
-		fRad += offset;
-		selectedShadowLight->flareSize = fRad;
-	}
-	else {
+
 		
-		VectorCopy(selectedShadowLight->radius, rad);
+	VectorCopy(selectedShadowLight->radius, rad);
+	offset = atof (Cmd_Argv (1));
 
-		offset = atof (Cmd_Argv (1));
+	rad[0] += offset;
+	rad[1] += offset;
+	rad[2] += offset;
 
-		rad[0] += offset;
-		rad[1] += offset;
-		rad[2] += offset;
+	if (rad[0] < 10)
+		rad[0] = 10;
 
-		if (rad[0] < 10)
-			rad[0] = 10;
+	if (rad[1] < 10)
+		rad[1] = 10;
 
-		if (rad[1] < 10)
-			rad[1] = 10;
+	if (rad[2] < 10)
+		rad[2] = 10;
 
-		if (rad[2] < 10)
-			rad[2] = 10;
-
-		VectorCopy(rad, selectedShadowLight->radius);
-		UpdateLightBounds(selectedShadowLight);
-		R_MarkLightLeaves(selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);		
-	}
+	VectorCopy(rad, selectedShadowLight->radius);
+	UpdateLightBounds(selectedShadowLight);
+	R_MarkLightLeaves(selectedShadowLight);
+	R_AddLightInteraction(selectedShadowLight, true);
 }
 
 void R_ScaleLightColor_f(void) {
@@ -1461,9 +1376,7 @@ void UpdateLightEditor(void) {
 		sprintf(buff7, "Shadow: %i", selectedShadowLight->isShadow);
 		sprintf(buff8, "Ambient: %i", selectedShadowLight->isAmbient);
 		sprintf(buff9, "Fov: %.1f %.1f", selectedShadowLight->fov[0], selectedShadowLight->fov[1]);
-		sprintf(buff10, "Flare: %i; Flare Editing is %i",
-			selectedShadowLight->flare, (int)flareEdit);
-		sprintf(buff11, "Flare Size: %i", (int)selectedShadowLight->flareSize);
+
 		sprintf(buff12, "Target Name: %s", selectedShadowLight->targetname);
 		sprintf(buff13, "Start Off: %i", selectedShadowLight->start_off);
 		sprintf(buff14, "Fog Light: %i", selectedShadowLight->isFog);
@@ -1481,12 +1394,9 @@ void UpdateLightEditor(void) {
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		
-		if (!flareEdit || !selectedShadowLight->flare) { // skip filled box in flare or occ bbox editing mode
-
-			VectorCopy(selectedShadowLight->origin, tmpOrg);
-			qglUniform4f(U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
-			R_DrawCube(tmpOrg, 3);
-		}
+		VectorCopy(selectedShadowLight->origin, tmpOrg);
+		qglUniform4f(U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
+		R_DrawCube(tmpOrg, 3);
 	}
 
 	GL_Enable(GL_CULL_FACE);
@@ -1678,8 +1588,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	VectorClear (light->angles);
 	VectorClear (light->speed);
 	VectorClear (light->radius);
-	VectorClear (light->flareOrigin);
-
+	
 	memset (light->targetname, 0, sizeof(light->targetname));
 	light->start_off = 0;
 
@@ -1691,7 +1600,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	VectorCopy (angles, light->angles);
 	VectorCopy (speed, light->speed);
 	VectorCopy (radius, light->radius);
-	VectorCopy (flareOrg, light->flareOrigin);
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
 		light->spherical = true;
@@ -1712,8 +1620,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	light->next = NULL;
 	light->style = style;
 	light->filter = filter;
-	light->flareSize = flareSize;
-	light->flare = flare;
 	light->iboNumIndices = 0;
 	light->depthBounds[0] = 0.0;
 	light->depthBounds[1] = 1.0;
@@ -1745,7 +1651,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 
 	if (ingame) { // new light
 		R_MarkLightLeaves(light);
-		R_AddLightInteraction(light);
+		R_AddLightInteraction(light, false);
 	}
 
 #define START_OFF	1
@@ -2185,24 +2091,25 @@ int lightSurfSort(const msurface_t** a, const msurface_t** b)
 		(((*b)->texInfo->albedo->texnum) + ((*b)->flags));
 }
 
-void R_MarkLightCasting(mnode_t *node, bool precalc, worldShadowLight_t *light);
-void R_MarkLightCastingRA(mnode_t* node, bool precalc, worldShadowLight_t* light);
-
-void R_AddLightInteraction(worldShadowLight_t *light) {
+void R_AddLightInteraction(worldShadowLight_t *light, bool update) {
 
 	if (CL_PMpointcontents(light->origin) & CONTENTS_SOLID)
 		return;
 
-	r_lightTimestamp++;
+	r_lightTimeStamp++;
 	light->numInteractionSurfs = 0; // set to zero for ingame editor
-	
 	R_MarkLightCasting(r_worldmodel->nodes, true, light);
 	qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
 
-	r_lightTimestampRA++;
+	r_lightTimeStampRA++;
 	light->numInteractionSurfsRA = 0;
 	R_MarkLightCastingRA(r_worldmodel->nodes, true, light);
 	qsort(light->interactionRA, light->numInteractionSurfsRA, sizeof(msurface_t*), (int(*)(const void*, const void*))lightSurfSort);
+
+	r_shadowTimeStamp++;
+	numShadowMapSurfaces = 0;
+	R_MarkShadowCasting(r_worldmodel->nodes, light);
+	R_BuildShadowVBO(light, update);
 }
 
 void R_CalcStaticLightInteraction (void) {
@@ -2216,7 +2123,7 @@ void R_CalcStaticLightInteraction (void) {
 		if (!R_MarkLightLeaves (light)) // out of bsp or no area data
 			continue;
 
-		R_AddLightInteraction(light);
+		R_AddLightInteraction(light, false);
 	}
 	int stop = Sys_Milliseconds();
 	float msec = (float)stop - (float)start;
@@ -2224,13 +2131,13 @@ void R_CalcStaticLightInteraction (void) {
 }
 
 void DeleteShadowVertexBuffers (void) { //todo detete it!
-//	worldShadowLight_t *light;
+	worldShadowLight_t *light;
 
-//	for (light = shadowLight_static; light; light = light->s_next) {
-//		R_DeleteVAO(light->vao);
-//		R_DeleteVBO(light->vbo);
-//		R_DeleteVBO(light->ibo);
-//	}
+	for (light = shadowLight_static; light; light = light->s_next) {
+		R_DeleteVAO(light->vao);
+		R_DeleteVBO(light->vbo);
+		R_DeleteVBO(light->ibo);
+	}
 }
 
 void R_ClearWorldLights (void) {
@@ -2245,7 +2152,7 @@ void R_ClearWorldLights (void) {
 		shadowLight_static = NULL;
 	}
 
-	memset (shadowLightsBlock, 0, sizeof(worldShadowLight_t)* MAX_WORLD_SHADOW_LIHGTS);
+	memset (shadowLightsBlock, 0, sizeof(worldShadowLight_t)* MAX_WORLD_SHADOW_LIGHTS);
 
 	r_numWorlsShadowLights = 0;
 }

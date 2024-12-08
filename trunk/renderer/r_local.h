@@ -116,7 +116,7 @@ typedef struct vertexBuffer_s {
 	GLuint		target;
 } vertexBuffer_t;
 
-#define MAX_VERTEX_OBJECTS 2048
+#define MAX_VERTEX_OBJECTS 4096
 
 typedef struct {
 	vertexObject_t	r_vertexObject[MAX_VERTEX_OBJECTS];
@@ -584,7 +584,7 @@ void R_DrawLightBrushModel ();
 void UpdateLightEditor (void);
 void Load_LightFile ();
 bool BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p);
-extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
+extern int lightsQueries[MAX_WORLD_SHADOW_LIGHTS];
 extern int numLightQ;
 extern int numFlareOcc;
 extern bool FoundReLight;
@@ -647,6 +647,20 @@ bool R_CullMD3Model(vec3_t bbox[8], entity_t *e);
 
 bool R_AliasInLightBound();
 void R_UpdateLightAliasUniforms();
+
+int	 SignbitsForPlane(cplane_t *out);
+void R_RecursiveDepthWorldNode(mnode_t *node, vec3_t viewOrg);
+void R_DrawDepthAliasModel();
+void R_DrawDepthMD3Model();
+void GL_DrawDepthBspTris();
+void R_DrawDepthBrushModel();
+void R_MarkLightCasting(mnode_t *node, bool precalc, worldShadowLight_t *light);
+void R_MarkLightCastingRA(mnode_t *node, bool precalc, worldShadowLight_t *light);
+void R_MarkShadowCasting(mnode_t *node, worldShadowLight_t *light);
+void R_BuildShadowVBO(worldShadowLight_t *light, bool update);
+extern	mat4_t	r_flipMatrix;
+extern	int	numDepthSurfaces;
+extern	model_t *r_worldmodel;
 
 void R_InitVertexBuffers();
 
