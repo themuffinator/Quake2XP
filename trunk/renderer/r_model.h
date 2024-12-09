@@ -249,11 +249,6 @@ typedef struct {
 	vec3_t *tangents;
 } md2Verts_t;
 
-
-typedef struct {
-	int n[3];
-} neighbors_t;
-
 typedef struct model_s {
 
 	char		name[MAX_QPATH];
@@ -328,7 +323,6 @@ typedef struct model_s {
 	int			extraDataSize;
 	void		*extraData;
 	int			triangles[MAX_TRIANGLES];
-	neighbors_t *neighbours;
 
 	int		num_tris;
 	uint16_t *indexes;

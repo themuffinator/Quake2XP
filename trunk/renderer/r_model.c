@@ -428,7 +428,7 @@ size_t Mod_CalcMd3Memory(void *buffer){
 		indexSize	+= ((sizeof(uint16_t) * numTris * 3) + 31) & ~31;
 		coordSize	+= ((sizeof(md3ST_t) * numVerts) + 31) & ~31;
 		vertSize	+= ((numFrames * numVerts * sizeof(md3Vertex_t)) + 31) & ~31; // verts size + tbn
-		tri_n		+= ((sizeof(int) * numTris * 3) + 31) & ~31;
+	//	tri_n		+= ((sizeof(int) * numTris * 3) + 31) & ~31;
 
 		pinmesh = (dmd3mesh_t *)((byte *)pinmesh + LittleLong(pinmesh->meshsize));
 	}
@@ -438,14 +438,14 @@ size_t Mod_CalcMd3Memory(void *buffer){
 size_t Mod_CalcMd2Memory(void *buffer) {
 
 	md2Header *md2Hdr;
-	size_t  model, tbn, tri_n;
+	size_t  model, tbn, tris;
 
-	md2Hdr = (md2Header *)buffer;
+	md2Hdr	= (md2Header *)buffer;
 	model	= (LittleLong((size_t)md2Hdr->ofs_end) + 31) & ~31;
 	tbn		= ((md2Hdr->num_xyz * md2Hdr->num_frames * sizeof(vec3_t)) * 3 + 31) & ~31;
-	tri_n	= ((md2Hdr->num_tris * sizeof(neighbors_t) * 2) + 31) & ~31;
+	tris	= ((md2Hdr->num_tris * sizeof(vec3_t)) + 31) & ~31;
 
-	return model + tbn + tri_n;
+	return model + tbn + tris;
 }
 
 /*
@@ -2119,73 +2119,6 @@ ALIAS MODELS
 */
 
 /*
-========================
-Mod_FindTriangleWithEdge
-Shadow volumes stuff
-========================
-*/
-static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, md2Triangle_t * tris, int numtris, int triIndex, int edgeIndex) {
-
-
-	int i, j, found = -1, foundj = 0;
-	md2Triangle_t *current = &tris[triIndex];
-	bool dup = false;
-
-	for (i = 0; i < numtris; i++) {
-		if (i == triIndex)
-			continue;
-
-		for (j = 0; j < 3; j++) {
-			if (((current->index_xyz[edgeIndex] == tris[i].index_xyz[j]) && (current->index_xyz[(edgeIndex + 1) % 3] == tris[i].index_xyz[(j + 1) % 3]))
-				|| ((current->index_xyz[edgeIndex] == tris[i].index_xyz[(j + 1) % 3]) && (current->index_xyz[(edgeIndex + 1) % 3] == tris[i].index_xyz[j]))) {
-				// no edge for this model found yet?
-				if (found == -1) {
-					found = i;
-					foundj = j;
-				}
-				else
-					dup = true;	// the three edges story
-			}
-		}
-	}
-
-	// normal edge, setup neighbour pointers
-	if (!dup && found != -1) {
-		neighbors[found].n[foundj] = triIndex;
-		return found;
-	}
-	// naughty egde let no-one have the neighbour
-	return -1;
-}
-
-/*
-===============
-Mod_BuildTriangleNeighbors
-
-===============
-*/
-static void Mod_BuildTriangleNeighbors(neighbors_t * neighbors, md2Triangle_t * tris, int numtris) {
-	int i, j;
-
-	// set neighbours to -1
-	for (i = 0; i < numtris; i++) {
-		for (j = 0; j < 3; j++)
-			neighbors[i].n[j] = -1;
-	}
-
-	// generate edges information (for shadow volumes)
-	// NOTE: We do this with the original vertices not the reordered onces 
-	// since reordering them
-	// duplicates vertices and we only compare indices
-	for (i = 0; i < numtris; i++) {
-		for (j = 0; j < 3; j++) {
-			if (neighbors[i].n[j] == -1)
-				neighbors[i].n[j] = Mod_FindTriangleWithEdge(neighbors, tris, numtris, i, j);
-		}
-	}
-}
-
-/*
 ==================
 Mod_LoadAliasModel
 ==================
@@ -2537,20 +2470,12 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		}
 	}
 
-	// find neighbours
-	mod->neighbours = Mod_Hunk_Alloc(md2Hdr->num_tris * sizeof(neighbors_t));
-	Mod_BuildTriangleNeighbors(mod->neighbours, outTris, md2Hdr->num_tris);
-
 	//
 	// load the frames
 	//
 	for (i = 0; i < md2Hdr->num_frames; i++) {
-		inFrame = (md2Frame_t *)((byte *)inModel
-			+ md2Hdr->ofs_frames +
-			i * md2Hdr->framesize);
-		outFrame =
-			(md2Frame_t *)((byte *)md2Hdr + md2Hdr->ofs_frames +
-				i * md2Hdr->framesize);
+		inFrame =	(md2Frame_t *)((byte *)inModel + md2Hdr->ofs_frames + i * md2Hdr->framesize);
+		outFrame =	(md2Frame_t *)((byte *)md2Hdr + md2Hdr->ofs_frames + i * md2Hdr->framesize);
 
 		Q_memcpy(outFrame->name, inFrame->name, sizeof(outFrame->name));
 		for (j = 0; j < 3; j++) {
@@ -2558,8 +2483,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 			outFrame->translate[j] = LittleFloat(inFrame->translate[j]) * mod->modelScale;
 		}
 		// verts are all 8 bit, so no swapping needed
-		Q_memcpy(outFrame->verts, inFrame->verts,
-			md2Hdr->num_xyz * sizeof(md2Vertex_t));
+		Q_memcpy(outFrame->verts, inFrame->verts, md2Hdr->num_xyz * sizeof(md2Vertex_t));
 
 	}
 

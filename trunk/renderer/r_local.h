@@ -661,7 +661,7 @@ void R_BuildShadowVBO(worldShadowLight_t *light, bool update);
 extern	mat4_t	r_flipMatrix;
 extern	int	numDepthSurfaces;
 extern	model_t *r_worldmodel;
-
+void *Mod_Hunk_Alloc(size_t size);
 void R_InitVertexBuffers();
 
 void SetModelsLight();

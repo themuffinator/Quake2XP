@@ -60,7 +60,6 @@ void CalcTangent4MD3(uint16_t *index, md3Vertex_t *vertices, md3ST_t *texcos, ve
 	VectorNormalize(Binormal);
 }
 
-void *Mod_Hunk_Alloc(size_t size);
 /*
 =================
 Mod_LoadAliasMD3Model
