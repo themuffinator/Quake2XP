@@ -527,14 +527,16 @@ void R_DrawLightScene (void)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) 
-		c_numVisLights++;
-	
+		c_numVisLights++;	
 	
 	VectorCopy(currentShadowLight->origin, currentShadowLight->lsOrg);
 
 	if (!currentShadowLight->isAmbient && currentShadowLight->isShadow)
 			c_staticShadowTris += currentShadowLight->numStaticShadowTris;
 	
+	if (!r_shadows->integer)
+		c_staticShadowTris = 0;
+
 	R_DrawShadowMaps();
 	R_DrawLightWorld();	
 

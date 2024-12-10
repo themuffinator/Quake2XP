@@ -206,18 +206,29 @@ void R_MarkShadowCasting (mnode_t *node, worldShadowLight_t *light) {
 	R_MarkShadowCasting(node->children[1], light);
 }
 
-vec3_t	vertexBuffer[MAX_VERTICES];
-uint	indexBuffer[MAX_INDICES];
-
 void R_BuildShadowVBO(worldShadowLight_t *light, bool update) {
 	msurface_t	*s;
 	glpoly_t	*p;
 	float		*v;
 	int			i, j, k;
-	int			baseVert, numIndices, numVerts;
-	
-	baseVert = numIndices = numVerts = 0;
+	int			baseVert, numIndices, numVerts, vbo_size, ibo_size;
+	vec3_t		*vertexBuffer;
+	uint		*indexBuffer;
 
+	baseVert = numIndices = numVerts = vbo_size = ibo_size = 0;
+
+	// precalc size
+	for (i = 0; i < numShadowMapSurfaces; i++) {
+		s = shadowMapSurfaces[i];
+		int  nv = s->polys->numVerts;
+		vbo_size += nv;
+		ibo_size += (nv - 2) * 3;
+	}
+
+	vertexBuffer	= Z_Malloc(vbo_size * sizeof(vec3_t));
+	indexBuffer		= Z_Malloc(ibo_size * sizeof(uint));
+	
+	//fill buffers
 	for (i = 0; i < numShadowMapSurfaces; i++) {
 		s = shadowMapSurfaces[i];
 		int  nv = s->polys->numVerts;
@@ -236,18 +247,18 @@ void R_BuildShadowVBO(worldShadowLight_t *light, bool update) {
 		numVerts += nv;
 	}
 	light->iboNumIndices = numIndices;
-	light->numStaticShadowTris += numIndices / 3;
+	light->numStaticShadowTris = numIndices / 3;
 
 	if (update) {
 		GL_BindVAO(light->vao);
 		GL_BindVBO(light->vbo);
 		GL_BindVBO(light->ibo);
-		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec3_t), &vertexBuffer);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint), &indexBuffer);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0,			numVerts	* sizeof(vec3_t),	&vertexBuffer);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,	numIndices	* sizeof(uint),		&indexBuffer);
 	}
 	else {
-		light->vbo = R_Alloc_VBO("shadowMap_Vbo", GL_ARRAY_BUFFER, numVerts * sizeof(vec3_t), vertexBuffer, GL_STATIC_DRAW);
-		light->ibo = R_Alloc_VBO("shadowMap_Ibo", GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint), indexBuffer, GL_STATIC_DRAW);
+		light->vbo = R_Alloc_VBO("shadowMap_Vbo", GL_ARRAY_BUFFER,			numVerts	* sizeof(vec3_t),	vertexBuffer,	GL_STATIC_DRAW);
+		light->ibo = R_Alloc_VBO("shadowMap_Ibo", GL_ELEMENT_ARRAY_BUFFER,	numIndices	* sizeof(uint),		indexBuffer,	GL_STATIC_DRAW);
 
 		light->vao = R_Alloc_VAO("lightVao", ATTF_POS);
 		GL_BindVBO(light->vbo);
@@ -255,6 +266,8 @@ void R_BuildShadowVBO(worldShadowLight_t *light, bool update) {
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, false, 0, 0);
 		GL_BindNullVAO();
 	}
+	Z_Free(vertexBuffer);
+	Z_Free(indexBuffer);
 }
 
 void R_SetLightFrustum(vec3_t angles, float fov_x, float fov_y) {
@@ -383,7 +396,7 @@ void R_DrawShadowMaps() {
 
 	vps = 1024 >> currentShadowLight->lod;
 
-	GL_Viewport(0, 0, vps, vps);
+	GL_Viewport	(0, 0, vps, vps);
 	GL_Scissor	(0, 0, vps, vps);
 	GL_DepthBoundsTest(0.0, 1.0);
 	GL_DepthMask(1);

@@ -120,8 +120,8 @@ typedef struct worldShadowLight_s {
 	vertexBuffer_t	*ibo;
 	vertexObject_t	*vao;
 
-	int			iboNumIndices;
-	int			lod;
+	int	iboNumIndices;
+	int	lod;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
