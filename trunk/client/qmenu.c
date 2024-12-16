@@ -676,17 +676,19 @@ void SpinControl_Draw (menulist_s * s) {
 	char	buffer[100];
 	int	fontscale = ui_fontScale->integer;
 
+	if (!s)
+		return;
+
 	if (s->generic.name) {
 		Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
 			LCOLUMN_OFFSET,
 			s->generic.y + s->generic.parent->y,
 			s->generic.name);
 	}
+
 	if (!strchr (s->itemnames[s->curInteger], '\n')) {
 		CL_AddString (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
-			s->generic.y + s->generic.parent->y,
-			fontscale, 
-			s->itemnames[s->curInteger], gi.consFont);
+			s->generic.y + s->generic.parent->y, fontscale, s->itemnames[s->curInteger], gi.consFont);
 	}
 	else {
 		strcpy (buffer, s->itemnames[s->curInteger]);

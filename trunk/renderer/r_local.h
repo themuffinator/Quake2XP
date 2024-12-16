@@ -1080,7 +1080,6 @@ glslProgram_t		*waterProgram;
 glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
 glslProgram_t		*particlesProgram;
-glslProgram_t		*shadowProgram;
 glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmicFxProgram;
 glslProgram_t		*nullProgram;

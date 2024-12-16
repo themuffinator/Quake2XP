@@ -101,6 +101,8 @@ void CL_AddAltString(int x, int y, int scale, char *s) {
 
 void CL_AddString(int x, int y, int scale, char *s, image_t *inTex) {
 
+	if (!s)
+		return;
 	while (*s) {
 		R_AddCharsToList(x, y, scale, *s, inTex);
 		x += 8 * scale * FONT_INTERVAL;

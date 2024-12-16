@@ -657,12 +657,6 @@
     <None Include="..\baseq2\glsl\radialBlur.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\shadow.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\shadow.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\sky.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>

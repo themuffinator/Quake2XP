@@ -207,6 +207,7 @@ void S_Init (int hardreset) {
 		
 		s_useHRTF = Cvar_Get("s_useHRTF", "1", CVAR_ARCHIVE);
 		s_hrtfIndex = Cvar_Get("s_hrtfIndex", "0", CVAR_ARCHIVE);
+		
 
 		s_resamplerQuality = Cvar_Get("s_resamplerQuality", "1", CVAR_ARCHIVE);
 		s_resamplerQuality->help = "0- low quality, 4- high quality.";
@@ -253,6 +254,7 @@ void S_Init (int hardreset) {
 			AL_Shutdown ();
 		}
 	}
+	s_hrtfIndex->integer = ClampCvarInteger(0, alConfig.numHrtfs, s_hrtfIndex->integer);
 
 	Com_Printf ("-------------------------------------\n");
 }

@@ -1006,15 +1006,6 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
-	shadowProgram = R_FindProgram("shadow", 0);
-	if (shadowProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"perspective correction program"S_COLOR_WHITE" ");
 	fixFovProgram = R_FindProgram("fixfov", 0);

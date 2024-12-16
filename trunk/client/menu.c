@@ -1460,6 +1460,7 @@ void Options_MenuInit(void) {
 
 	unsigned i;
 	extern alConfig_t alConfig;
+	s_hrtfIndex->integer = ClampCvarInteger(0, alConfig.numHrtfs - 1, s_hrtfIndex->integer);
 
 
 	win_noalttab = Cvar_Get("win_noalttab", "0", CVAR_ARCHIVE);
@@ -1586,6 +1587,7 @@ void Options_MenuInit(void) {
 			break;
 		}
 #endif
+
 	if (alConfig.hrtfSupport && s_useHRTF->integer)
 		s_options_hrtf_list.itemnames = al_hrtfs;
 	else
@@ -1594,7 +1596,7 @@ void Options_MenuInit(void) {
 		else
 			s_options_hrtf_list.itemnames = not_found;
 
-	s_options_hrtf_list.curInteger = Cvar_VariableInteger("s_hrtfIndex");
+	s_options_hrtf_list.curInteger = s_hrtfIndex->integer;//Cvar_VariableInteger("s_hrtfIndex");
 	s_options_hrtf_list.generic.statusbar = "Select HRTF Preset For Headphones";
 
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;

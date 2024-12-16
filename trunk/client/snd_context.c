@@ -347,7 +347,7 @@ static bool AL_InitDriver (void) {
 
 			}
 			Com_Printf("HRTF Selected: " S_COLOR_GREEN "%s\n", selected);
-			
+
 			int count = alConfig.numHrtfs + 1;
 			memset(&al_hrtfs, 0, sizeof(al_hrtfs));
 			al_hrtfs = malloc(count * sizeof(char*));
