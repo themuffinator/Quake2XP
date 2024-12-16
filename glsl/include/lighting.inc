@@ -1,4 +1,4 @@
-
+//!#include "global.inc"
 
 float sqr (in float x) { return x * x; }
 vec2 sqr (in vec2 x) { return x * x; }
@@ -476,4 +476,11 @@ mat2 randomRotation(const in vec2 p)
 	float sinr = sin(r);
 	float cosr = cos(r);
 	return mat2(cosr, sinr, -sinr, cosr);
+}
+
+void MakeNormalVectors(const vec3 forward, inout vec3 right, inout vec3 up){
+	// this rotate and negate guarantees a vector not colinear with the original
+	right = vec3(forward.z, -forward.x, forward.y);
+	right -= forward * dot(right, forward);
+	up = cross(normalize(right), forward);
 }

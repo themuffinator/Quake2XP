@@ -28,6 +28,7 @@ layout(location = U_USE_SSAO)			uniform int		u_ssao;
 layout(location = U_PARAM_VEC2_0)		uniform vec2	u_shadowBiasScale;
 layout(location = U_PARAM_VEC2_1)		uniform vec2	u_jitterOffset;
 layout(location = U_TEXTURE0_MATRIX)	uniform mat4	u_UnprojectMatrix;
+layout(location = U_TEXTURE1_MATRIX)	uniform mat3	u_lightParams;
 
 in vec3		v_positionVS;
 in vec3		v_viewVecTS;
@@ -37,19 +38,10 @@ in vec4		v_CubeCoord;
 in vec4		v_lightCoord;
 in vec3		v_lightAtten;
 in vec3		v_lightSpot;
-in vec3		v_ViewOrg;
-in vec3		v_LightOrg;
 
-#include lighting.inc   //!#include "include/lighting.inc"
 #include parallax.inc   //!#include "include/parallax.inc"
+#include lighting.inc   //!#include "include/lighting.inc"
 
-
-void MakeNormalVectors(const vec3 forward, inout vec3 right, inout vec3 up){
-	// this rotate and negate guarantees a vector not colinear with the original
-	right = vec3(forward.z, -forward.x, forward.y);
-	right -= forward * dot(right, forward);
-	up = cross(normalize(right), forward);
-}
 
 float shadowCube(const vec3 I, in float vertexDistance, const float l){
 	vec3 forward, right, up;
@@ -84,17 +76,21 @@ void main (void) {
 
 	float shadowMap = 1.0;
 	if(u_useShadowMap == 1){
+		vec3 light, view; 
+		light	= u_lightParams[0];
+		view	= u_lightParams[1];
+
 		// reconstruct vertex position in world space
 		float depth = texture(u_DepthBuffer, gl_FragCoord.xy).r;
 
 		vec4 P = u_UnprojectMatrix * vec4(gl_FragCoord.xy, depth, 1.0);
 		P.xyz /= P.w;
 		// compute incident ray
-		vec3 I = v_LightOrg - P.xyz;
+		vec3 I = light - P.xyz;
 		float dist = length(I);
 
 		// compute view direction in world space
-		vec3 Vv = v_ViewOrg - P.xyz;
+		vec3 Vv = view - P.xyz;
 		float l = length(Vv);
 		shadowMap = shadowCube(-I, dist, l);
 		if (shadowMap < 0.004){

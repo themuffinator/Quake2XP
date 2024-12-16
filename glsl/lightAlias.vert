@@ -58,5 +58,5 @@ v_tangentToView[2] = m * att_normal;
 v_mvMatrix = u_modelViewMatrix;
 
 gl_Position = u_modelViewProjectionMatrix * vec4(att_position.xyz, 1.0);
-v_positionVS =gl_Position.xyz;
+v_positionVS = gl_Position.xyz;
 }

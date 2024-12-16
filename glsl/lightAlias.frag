@@ -1,13 +1,15 @@
 //!#include "include/global.inc"
-layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_bumpMap;
-layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_diffuseMap;
-layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_causticMap;
-layout (bindless_sampler, location  = U_TMU3) uniform samplerCube	u_CubeFilterMap;
-layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_rghMap;
-layout (bindless_sampler, location  = U_TMU5) uniform sampler2D		u_bumpBlend;
-layout (bindless_sampler, location  = U_TMU6) uniform sampler2DRect	g_colorBufferMap;
-layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	g_depthBufferMap;
-layout (bindless_sampler, location  = U_TMU8) uniform sampler2DRect	u_SSAOMap;
+layout (bindless_sampler, location  = U_TMU0)	uniform sampler2D		u_bumpMap;
+layout (bindless_sampler, location  = U_TMU1)	uniform sampler2D		u_diffuseMap;
+layout (bindless_sampler, location  = U_TMU2)	uniform sampler2D		u_causticMap;
+layout (bindless_sampler, location  = U_TMU3)	uniform samplerCube		u_CubeFilterMap;
+layout (bindless_sampler, location  = U_TMU4)	uniform sampler2D		u_rghMap;
+layout (bindless_sampler, location  = U_TMU5)	uniform sampler2D		u_bumpBlend;
+layout (bindless_sampler, location  = U_TMU6)	uniform sampler2DRect	g_colorBufferMap;
+layout (bindless_sampler, location  = U_TMU7)	uniform sampler2DRect	g_depthBufferMap;
+layout (bindless_sampler, location  = U_TMU8)	uniform sampler2DRect	u_SSAOMap;
+layout (bindless_sampler, location  = U_TMU9)	uniform samplerCube		u_shadowMap;
+layout (bindless_sampler, location  = U_TMU10)	uniform sampler2DRect	u_DepthBuffer;
 
 layout(location = U_COLOR)				uniform vec4	u_lightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
@@ -23,10 +25,19 @@ layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting
 layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
 layout(location = U_PARAM_INT_4)		uniform int		u_useSSLR;
+layout(location = U_PARAM_INT_5)		uniform int		u_useShadowMap;
+
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_USE_SSAO)			uniform int		u_ssao;
 
+layout(location = U_PARAM_VEC2_0)		uniform vec2	u_shadowBiasScale;
+layout(location = U_PARAM_VEC2_1)		uniform vec2	u_jitterOffset;
+layout(location = U_TEXTURE2_MATRIX)	uniform mat4	u_UnprojectMatrix;
+layout(location = U_TEXTURE3_MATRIX)	uniform mat3	u_lightParams;
+
+//layout(location = U_PARAM_VEC3_0)		uniform vec3	u_lsLightOrg;
+//layout(location = U_PARAM_VEC3_1)		uniform vec3	u_lsViewOrg;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -39,10 +50,13 @@ in vec3			v_tangent;
 in vec3			v_tst;
 in mat3			v_tangentToView;
 in mat4			v_mvMatrix;
+
+in vec3			v_ViewOrg;
+in vec3			v_LightOrg;
+
 in vec3	v_t, v_b, v_n;
 
 #include lighting.inc	//!#include "include/lighting.inc"
-#include blur.inc		//!#include "include/blur.inc"
 
 #define MAX_STEPS			120
 #define MAX_STEPS_BINARY	100
@@ -112,14 +126,12 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 	rayPos -= R * stepSize;
 	tc = VS2UV(rayPos).xy;
 
-//	sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 	sceneDepth = texture(g_depthBufferMap, tc).x;
 
 	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
 		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
 
 		tc = VS2UV(rayPos).xy;
-//		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 		sceneDepth = texture(g_depthBufferMap, tc).x;
 
 		float delta = -rayPos.z - sceneDepth;
@@ -128,12 +140,27 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 			break;	// found it
 	}
 	vec3 reflectColor  = vec3(0.0);
-//	reflectColor += boxBlur(g_colorBufferMap, tc, 16.0);
 	reflectColor += texture(g_colorBufferMap, tc).rgb;
 
 	reflectColor *= metalness;
 
 	return reflectColor;
+}
+
+float shadowCube(const vec3 I, in float vertexDistance, const float l){
+	vec3 forward, right, up;
+	forward = normalize(I);
+	MakeNormalVectors(forward, right, up);
+
+	vertexDistance -= u_shadowBiasScale.x + l * (1.0 / 512.0);	// bias
+	mat2 rmat = randomRotation(pow(gl_FragCoord.xy, u_jitterOffset)) * u_shadowBiasScale.y;
+	float shadow = 0.0;
+	for(int i = 0; i < NUM_OF_TAPS; i++){
+			vec2 offset = rmat * poissonDisk[i];
+			vec3 jitter = forward + right * offset.x + up * offset.y;
+			shadow += clamp(texture(u_shadowMap, jitter).r - vertexDistance, 0.0, 1.0);
+	}
+	return shadow * ONE_OVER_NUM_OF_TAPS;
 }
 
 void main (void) {
@@ -159,6 +186,33 @@ void main (void) {
 	vec3 L = normalize(v_lightVec);
 	vec3 V = normalize(v_viewVec);
 
+	float shadowMap = 1.0;
+
+	if(u_useShadowMap == 1){
+		
+		vec3 light, view; 
+		light	= u_lightParams[0];
+		view	= u_lightParams[1];
+
+		// reconstruct vertex position in world space
+		float depth = texture(u_DepthBuffer, gl_FragCoord.xy).r;
+
+		vec4 P = u_UnprojectMatrix * vec4(gl_FragCoord.xy, depth, 1.0);
+		P.xyz /= P.w;
+		// compute incident ray
+		vec3 I = light - P.xyz;
+		float dist = length(I);
+
+		// compute view direction in world space
+		vec3 Vv = view - P.xyz;
+		float l = length(Vv);
+		shadowMap = shadowCube(-I, dist, l);
+		if (shadowMap < 0.004){
+			discard;
+			return;
+		}
+	}
+	
 	vec4 normalMap = vec4(0.0);
 	vec3 specular = vec3(0.0);
 
@@ -180,7 +234,7 @@ void main (void) {
 	vec3 dt = texture(u_bumpBlend, v_texCoord * 3.0).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
 	vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
 	vec3 blendNormal =  r * 0.5 + 0.5;
-	vec4 skin_color = SkinLighting(V, L, blendNormal, u_lightColor.rgb, diffuseMap, attenMap, specular.r);
+	vec4 skin_color = SkinLighting(V, L, blendNormal, u_lightColor.rgb, diffuseMap, attenMap, specular.r) * shadowMap;
 
 
 	if (u_isCaustics == 1){
@@ -192,7 +246,7 @@ void main (void) {
 	if (u_isAmbient == 1) {
 		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS); 
 		vec3 ambient = Diffuse_Lambert(diffuseMap.rgb);
-		fragData = vec4(ambient, 1.0)/*diffuseMap * LambertLighting(curNormal, L)*/ * u_lightColor * attenMap;
+		fragData = vec4(ambient, 1.0)/*diffuseMap * LambertLighting(curNormal, L)*/ * u_lightColor * attenMap * shadowMap;
 		return;
 	}
 	
@@ -224,22 +278,22 @@ void main (void) {
 			vec3 tmp =  (Diffuse_Lambert(diffuseMap.rgb) * u_lightColor.rgb) * (normalMap.z * 0.5 + 0.5); //  multiplied by fake AO
 
 	//		vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
-			fragData = mix(u_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
+			fragData = mix(u_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap * shadowMap; // u_LightColor == fogColor
 			return;
 		}
 	
 			skin_color *= cubeFilter;
 			vec3 metall_color;
 			if(u_useSSS == 1)
-				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * u_lightColor.rgb * cubeFilter.rgb * attenMap;
+				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * u_lightColor.rgb * cubeFilter.rgb * attenMap * shadowMap;
 			else{
 			if(u_blinnPhong == 1)
-				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_lightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_lightColor.rgb * cubeFilter.rgb * attenMap * shadowMap; 
 			if(u_blinnPhong == 0)  {
 			if(u_useSSLR == 1)
-			    metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * u_lightColor.rgb * cubeFilter.rgb * attenMap;
+			    metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * u_lightColor.rgb * cubeFilter.rgb * attenMap * shadowMap;
 			if(u_useSSLR != 1) 
-				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * u_lightColor.rgb * cubeFilter.rgb * attenMap;
+				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * u_lightColor.rgb * cubeFilter.rgb * attenMap * shadowMap;
       } 
 			}		
 

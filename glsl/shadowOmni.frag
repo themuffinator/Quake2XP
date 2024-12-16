@@ -3,6 +3,6 @@ in vec3 pos;
 void main(void) 
 {
     fragData.rgb = vec3(length(pos));
-    fragData.a = 1.0;
+    fragData.a = 0.0;
      
 }

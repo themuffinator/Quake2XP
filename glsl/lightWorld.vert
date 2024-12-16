@@ -22,8 +22,6 @@ out vec4	v_AttenCoord;
 out vec3	v_positionVS;
 out vec3	v_lightAtten;
 out vec3	v_lightSpot;
-out vec3	v_ViewOrg;
-out vec3	v_LightOrg;
 
 void main (void) {
 	// setup tex coords
@@ -45,6 +43,4 @@ void main (void) {
 	v_lightVec.z = dot(LV, att_normal); 
 
 	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
-	v_LightOrg	= u_LightOrg;
-	v_ViewOrg	= u_viewOriginES;
 }
