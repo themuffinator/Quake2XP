@@ -9,11 +9,10 @@ int					numDepthSurfaces;
 bool R_EntityCastShadow();
 
 
-bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
-	unsigned	numVertices, numIndices;
+bool R_FillDepthBatch (msurface_t *surf, unsigned *indeces) {
+	unsigned	numIndices;
 	int			i, nv = surf->polys->numVerts;
 
-	numVertices = *vertices;
 	numIndices = *indeces;
 
 	if ((nv - 2) * 3 >= MAX_INDICES)
@@ -25,8 +24,6 @@ bool R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) 
 		indexArray[numIndices++] = surf->baseIndex + i + 1;
 		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
-	
-	*vertices = numVertices;
 	*indeces = numIndices;
 
 	return true;
@@ -36,16 +33,13 @@ void GL_DrawDepthBspTris () {
 	msurface_t	*s;
 	int			i;
 	unsigned	numIndices = 0;
-	unsigned	numVertices = 0;
 
 	for (i = 0; i < numDepthSurfaces; i++) {
 		s = sceneSurfaces[i];
 
-		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
+		if (!R_FillDepthBatch (s, &numIndices)) {
 			if (numIndices != 0) {
 				GL_DrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				c_brushTris += numIndices / 3;
-				numVertices = 0;
 				numIndices = 0;
 			}
 		}
@@ -90,6 +84,9 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 			if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 				return;
 		}
+		if (Frustum_CullBoundsProjection(mins, maxs, currentShadowLight->origin, 63))
+			return;
+
 	}
 
 	// if a leaf node, draw stuff
@@ -270,6 +267,8 @@ void R_DrawDepthBrushModel () {
 	}else{
 		if (!R_EntityCastShadow())
 			return;
+		if (Frustum_CullBoundsProjection(mins, maxs, currentShadowLight->origin, 63))
+			return;
 	}
 
 	if (gl_state.shadowMapPass) 
@@ -328,6 +327,10 @@ void GL_DrawAliasFrameLerpDepth(md2Header *paliashdr) {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	c_aliasTris += paliashdr->num_tris;
+	
+	if(gl_state.shadowMapPass)
+		c_numDynamicShadowsTris += paliashdr->num_tris;
+
 	tris = (md2Triangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 	k = 0;
 
@@ -452,6 +455,9 @@ void R_DrawDepthMD3Model(void) {
 
 		if (mesh->skinAlphatest)
 			continue;
+		
+		if (gl_state.shadowMapPass)
+			c_numDynamicShadowsTris += mesh->num_tris;
 
 		v	= mesh->vertexes + currententity->frame		* mesh->num_verts;
 		ov	= mesh->vertexes + currententity->oldFrame	* mesh->num_verts;

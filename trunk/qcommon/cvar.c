@@ -462,8 +462,7 @@ void Cvar_WriteVariables (char *path) {
 			var = cvar;
 
 		if (var->flags & CVAR_ARCHIVE) {
-			Com_sprintf (buffer, sizeof(buffer), "set %s \"%s\"\n",
-				var->name, var->string);
+			Com_sprintf (buffer, sizeof(buffer), "set %s \"%s\"\n", var->name, var->string);
 			fprintf (f, "%s", buffer);
 		}
 	}

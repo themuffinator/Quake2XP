@@ -253,8 +253,9 @@ void R_BuildShadowVBO(worldShadowLight_t *light, bool update) {
 		GL_BindVAO(light->vao);
 		GL_BindVBO(light->vbo);
 		GL_BindVBO(light->ibo);
-		qglBufferSubData(GL_ARRAY_BUFFER, 0,			numVerts	* sizeof(vec3_t),	&vertexBuffer);
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,	numIndices	* sizeof(uint),		&indexBuffer);
+		// full shadow data refresh
+		qglBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(vec3_t), vertexBuffer, GL_STATIC_DRAW);
+		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint), indexBuffer, GL_STATIC_DRAW);
 	}
 	else {
 		light->vbo = R_Alloc_VBO("shadowMap_Vbo", GL_ARRAY_BUFFER,			numVerts	* sizeof(vec3_t),	vertexBuffer,	GL_STATIC_DRAW);
@@ -271,29 +272,45 @@ void R_BuildShadowVBO(worldShadowLight_t *light, bool update) {
 }
 
 void R_SetLightFrustum(vec3_t angles, float fov_x, float fov_y) {
-	int i;
-	vec3_t forward, right, up;
+	int		i;
+	float	x, y, s, c;
+	mat3_t	axis;
 
-	AngleVectors(angles, forward, right, up);
+	AnglesToMat3(angles, axis);
 
-	RotatePointAroundVector(frustum[0].normal, up, forward,		-(90.0	- fov_x * 0.5));
-	RotatePointAroundVector(frustum[1].normal, up, forward,		90.0	- fov_x * 0.5);
-	RotatePointAroundVector(frustum[2].normal, right, forward,	90.0	- fov_y * 0.5);
-	RotatePointAroundVector(frustum[3].normal, right, forward,	-(90.0	- fov_y * 0.5));
+	x = DEG2RAD(fov_x * 0.5f);
+	y = DEG2RAD(fov_y * 0.5f);
+
+	Q_SinCos(x, &s, &c);
+
+	VectorScale(axis[0], s, shadowFrustum[FRUSTUM_RIGHT].normal);
+	VectorMA(shadowFrustum[FRUSTUM_RIGHT].normal, c, axis[1], shadowFrustum[FRUSTUM_RIGHT].normal);
+
+	VectorScale(axis[0], s, shadowFrustum[FRUSTUM_LEFT].normal);
+	VectorMA(shadowFrustum[FRUSTUM_LEFT].normal, -c, axis[1], shadowFrustum[FRUSTUM_LEFT].normal);
+
+	Q_SinCos(y, &s, &c);
+
+	VectorScale(axis[0], s, shadowFrustum[FRUSTUM_BOTTOM].normal);
+	VectorMA(shadowFrustum[FRUSTUM_BOTTOM].normal, c, axis[2], shadowFrustum[FRUSTUM_BOTTOM].normal);
+
+	VectorScale(axis[0], s, shadowFrustum[FRUSTUM_TOP].normal);
+	VectorMA(shadowFrustum[FRUSTUM_TOP].normal, -c, axis[2], shadowFrustum[FRUSTUM_TOP].normal);
 	
-	VectorCopy	(forward, frustum[4].normal);
-	VectorNegate(forward, frustum[5].normal);
+	VectorCopy	(axis[0], shadowFrustum[FRUSTUM_NEAR].normal);
+	VectorNegate(axis[0], shadowFrustum[FRUSTUM_FAR].normal);
 
 	for (i = 0; i < 6; i++) {
-		VectorNormalize(frustum[i].normal);
+		VectorNormalize(shadowFrustum[i].normal);
 
-		frustum[i].type = PLANE_ANYZ;
-		frustum[i].dist = DotProduct(currentShadowLight->origin, frustum[i].normal);
-		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
+		shadowFrustum[i].type = PLANE_ANYZ;
+		shadowFrustum[i].dist = DotProduct(currentShadowLight->origin, shadowFrustum[i].normal);
+		shadowFrustum[i].signbits = SignbitsForPlane(&shadowFrustum[i]);
 	}
 
-	frustum[4].dist = LIGHT_ZNEAR;
-	frustum[5].dist -= currentShadowLight->maxRad;
+	shadowFrustum[FRUSTUM_NEAR].dist += LIGHT_ZNEAR;
+	shadowFrustum[FRUSTUM_FAR].dist -= currentShadowLight->maxRad;
+
 }
 
 void R_DrawShadowWorld(void) {

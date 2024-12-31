@@ -1455,8 +1455,6 @@ bind v			"paste"
 	Cmd_AddCommand("cloneLight",				R_Light_Clone_f);
 	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
 	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
-	Cmd_AddCommand("editFlare",					R_FlareEdit_f);
-	Cmd_AddCommand("resetFlarePos",				R_ResetFlarePos_f);
 	Cmd_AddCommand("copy",						R_Copy_Light_Properties_f);
 	Cmd_AddCommand("paste",						R_Paste_Light_Properties_f);
 	Cmd_AddCommand("scaleLightColor",			R_ScaleLightColor_f);
@@ -1936,8 +1934,6 @@ int R_Init(void *hinstance, void *hWnd)
 
 
 	Com_Printf("=====================================\n");
-
-	flareEdit = (bool)false;
 	return 0;
 }
 
@@ -1968,8 +1964,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("cloneLight");
 	Cmd_RemoveCommand("clearWorldLights");
 	Cmd_RemoveCommand("unselectLight");
-	Cmd_RemoveCommand("editFlare");
-	Cmd_RemoveCommand("resetFlarePos");
 	Cmd_RemoveCommand("copy");
 	Cmd_RemoveCommand("paste");
 	Cmd_RemoveCommand("moveLight_right");

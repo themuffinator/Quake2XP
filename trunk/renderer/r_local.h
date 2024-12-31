@@ -332,7 +332,7 @@ extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
 extern int r_framecount;
-cplane_t frustum[6];
+cplane_t frustum[6], shadowFrustum[6];
 
 void SetPlaneType(cplane_t *plane);
 void SetPlaneSignBits(cplane_t *plane);
@@ -517,7 +517,7 @@ void R_InitLightgrid (void);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3], int style,
 	int filter, vec3_t angles, vec3_t speed, bool isStatic,
 	int isShadow, int isAmbient, bool ingame,
-	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
+	char target[MAX_QPATH],
 	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad,
 	bool proj, float fovX, float fovY, float distance);
 
@@ -565,12 +565,8 @@ void R_Light_SpawnToCamera_f (void);
 void R_ChangeLightRadius_f (void);
 void R_Light_Clone_f (void);
 void R_Light_UnSelect_f (void);
-void R_FlareEdit_f (void);
-void R_ResetFlarePos_f (void);
 void R_Copy_Light_Properties_f (void);
 void R_Paste_Light_Properties_f (void);
-
-extern bool flareEdit;
 
 void R_CalcCubeMapMatrix (bool model);
 void DeleteShadowVertexBuffers (void);
@@ -1063,7 +1059,6 @@ glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*md3AmbientProgram;
 glslProgram_t		*aliasBumpProgram;
-//glslProgram_t		*glareProgram;
 glslProgram_t		*glareFinalProgram;
 glslProgram_t		*brightProgram;
 glslProgram_t		*bloomFinalProgram;

@@ -1209,11 +1209,11 @@ static void AlResempler(void* unused) {
 }
 
 static void UpdateMusicSrcFunc(void *unused) {
-	Cvar_SetValue("s_musicSrc", s_options_musicsrc_list.curInteger);
+	Cvar_SetInteger("s_musicSrc", s_options_musicsrc_list.curInteger);
 }
 
 static void UpdateEFX(void *unused) {
-	Cvar_SetValue("s_useEfx", s_options_useEFX_list.curInteger);
+	Cvar_SetInteger("s_useEfx", s_options_useEFX_list.curInteger);
 	CL_Snd_Restart_f();
 }
 
@@ -1460,8 +1460,6 @@ void Options_MenuInit(void) {
 
 	unsigned i;
 	extern alConfig_t alConfig;
-	s_hrtfIndex->integer = ClampCvarInteger(0, alConfig.numHrtfs - 1, s_hrtfIndex->integer);
-
 
 	win_noalttab = Cvar_Get("win_noalttab", "0", CVAR_ARCHIVE);
 	
@@ -1492,7 +1490,7 @@ void Options_MenuInit(void) {
 	s_options_musicvolume_slider.generic.callback = UpdateMusicVolumeFunc;
 	s_options_musicvolume_slider.minValue = 0;
 	s_options_musicvolume_slider.maxValue = 10;
-	s_options_musicvolume_slider.curValue = Cvar_VariableValue("s_musicVolume") * 10;
+	s_options_musicvolume_slider.curValue = s_musicVolume->value * 10;
 	s_options_musicvolume_slider.divRange = 10;
 	s_options_musicvolume_slider.generic.statusbar = "Set Music Volume";
 
@@ -1502,7 +1500,7 @@ void Options_MenuInit(void) {
 	s_options_musicsrc_list.generic.name = "Music Source";
 	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
 	s_options_musicsrc_list.itemnames = s_musicsrc_items;
-	s_options_musicsrc_list.curInteger = Cvar_VariableInteger("s_musicSrc");
+	s_options_musicsrc_list.curInteger = s_musicSrc->integer;
 	s_options_musicsrc_list.generic.statusbar = "Select Music Source CD or Hdd Tracks";
 
 	s_options_aldev_box.generic.type = MTYPE_SPINCONTROL;
@@ -1570,7 +1568,7 @@ void Options_MenuInit(void) {
 	else
 		s_options_hrtf.itemnames = not_found;
 
-	s_options_hrtf.curInteger = Cvar_VariableInteger("s_useHRTF");
+	s_options_hrtf.curInteger = s_useHRTF->integer;
 	s_options_hrtf.generic.statusbar = "Enable HRTF function for headphones";
 
 	s_options_hrtf_list.generic.type = MTYPE_SPINCONTROL;
@@ -1579,14 +1577,14 @@ void Options_MenuInit(void) {
 	s_options_hrtf_list.generic.name = "HRTF Preset";
 	s_options_hrtf_list.generic.callback = UpdateHRTF;
 
-#ifdef _WIN32
+//#ifdef _WIN32
 	s_options_hrtf_list.curInteger = 0;
 	for (i = 1; i <= alConfig.numHrtfs; i++)
 		if (s_hrtfIndex->integer == i) {
 			s_options_hrtf_list.curInteger = i;
 			break;
 		}
-#endif
+//#endif
 
 	if (alConfig.hrtfSupport && s_useHRTF->integer)
 		s_options_hrtf_list.itemnames = al_hrtfs;
@@ -1596,7 +1594,7 @@ void Options_MenuInit(void) {
 		else
 			s_options_hrtf_list.itemnames = not_found;
 
-	s_options_hrtf_list.curInteger = s_hrtfIndex->integer;//Cvar_VariableInteger("s_hrtfIndex");
+	s_options_hrtf_list.curInteger = s_hrtfIndex->integer;
 	s_options_hrtf_list.generic.statusbar = "Select HRTF Preset For Headphones";
 
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
@@ -1605,7 +1603,7 @@ void Options_MenuInit(void) {
 	s_options_useEFX_list.generic.name = "Use EFX Reverbation";
 	s_options_useEFX_list.generic.callback = UpdateEFX;
 	s_options_useEFX_list.itemnames = yesno_names;
-	s_options_useEFX_list.curInteger = Cvar_VariableInteger("s_openal_efx");
+	s_options_useEFX_list.curInteger = s_useEfx->integer;
 	s_options_useEFX_list.generic.statusbar = "Enable Reverberation Effects";
 
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;

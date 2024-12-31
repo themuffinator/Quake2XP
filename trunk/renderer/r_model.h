@@ -56,6 +56,18 @@ typedef struct frustum_s {
 	vec3_t		corners[8];
 }frustum_t;
 
+typedef enum {
+	FRUSTUM_RIGHT,
+	FRUSTUM_LEFT,
+	FRUSTUM_BOTTOM,
+	FRUSTUM_TOP,
+	FRUSTUM_NEAR,
+	FRUSTUM_FAR,
+	FRUSTUM_PLANES
+} frustumBits_t;
+
+void Q_SinCos(float a, float *s, float *c);
+
 typedef struct worldShadowLight_s {
 	vec3_t		origin;
 	vec3_t		angles;
@@ -75,10 +87,6 @@ typedef struct worldShadowLight_s {
 
 	mat4_t		attenMatrix;
 	mat4_t		cubeMapMatrix;
-
-	vec3_t		flareOrigin;
-	float		flareSize;
-	int			flare;
 
 	float		radius[3];
 

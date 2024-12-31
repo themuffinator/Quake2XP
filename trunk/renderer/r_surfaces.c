@@ -700,8 +700,8 @@ static void GL_DrawStaticLightPass()
 
 bool SurfInFrustum (msurface_t *s) {
 	
-	if (gl_state.shadowMapPass)
-		return true;
+//	if (gl_state.shadowMapPass)
+//		return true;
 
 	if (s->polys)
 		return !R_CullBox(s->mins, s->maxs);
@@ -1326,6 +1326,9 @@ void R_MarkLeaves (void) {
 	int		i, c;
 	mleaf_t	*leaf;
 	int		cluster;
+
+	if (!r_worldmodel)
+		return;
 
 	if (r_oldviewcluster == r_viewcluster && r_oldviewcluster2 == r_viewcluster2 && r_viewcluster != -1)
 		return;

@@ -204,7 +204,7 @@ bool Frustum_CullHexProjection(const vec3_t points[8], const vec3_t projOrigin, 
 	for (i = 0; i < 8; i++)
 		VectorSubtract(points[i], projOrigin, projPoints[i]);
 
-	for (i = 0, plane = frustum; i < 6; i++, plane++) {
+	for (i = 0, plane = shadowFrustum; i < 6; i++, plane++) {
 		if (!(planeBits & BIT(i)))
 			continue;
 

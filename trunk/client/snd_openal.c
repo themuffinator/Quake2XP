@@ -199,7 +199,7 @@ void S_Init (int hardreset) {
 		s_effectsVolume = Cvar_Get ("s_effectsVolume", "1", CVAR_ARCHIVE);
 		s_show = Cvar_Get ("s_show", "0", 0);
 		s_musicVolume = Cvar_Get ("s_musicVolume", "0.8", CVAR_ARCHIVE);
-		s_musicSrc = Cvar_Get ("s_musicSrc", "1", CVAR_ARCHIVE);
+		s_musicSrc = Cvar_Get ("s_musicSrc", "0", CVAR_ARCHIVE);
 		s_device = Cvar_Get ("s_device", "", CVAR_ARCHIVE);
 		s_useEfx = Cvar_Get ("s_useEfx", "1", CVAR_ARCHIVE);
 		s_initSound = Cvar_Get ("s_initSound", "1", CVAR_NOSET);
@@ -254,9 +254,10 @@ void S_Init (int hardreset) {
 			AL_Shutdown ();
 		}
 	}
-	s_hrtfIndex->integer = ClampCvarInteger(0, alConfig.numHrtfs, s_hrtfIndex->integer);
+	if (s_hrtfIndex->integer > alConfig.numHrtfs - 1)
+		Cvar_SetInteger("s_hrtfIndex", alConfig.numHrtfs - 1);
 
-	Com_Printf ("-------------------------------------\n");
+		Com_Printf ("-------------------------------------\n");
 }
 
 

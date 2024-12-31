@@ -171,7 +171,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 	memset(target, 0, sizeof(target));
 
 	R_AddNewWorldLight(lightOffset, r_lightSpawnSurf[r_numAutoLights].color, radius, 0, 0, vec3_origin,
-		vec3_origin, true, 1, 0, false, 1, origin, 10.0, target, 0, 0, 0.0, lightOffset, radius, 0, 0.0, 0.0, 0.0);
+		vec3_origin, true, 1, 0, false, target, 0, 0, 0.0, lightOffset, radius, 0, 0.0, 0.0, 0.0);
 
 	r_numAutoLights++;
 //	free(buffer);
@@ -1417,7 +1417,7 @@ void GL_BuildTBN(int count) {
 	vec3_t		n1, n2;
 
 	for (i = 0; i < count; i++) {
-		s1 = &currentmodel->surfaces[i];
+		s1 = &loadmodel->surfaces[i];
 
 		if (s1->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 			continue;
@@ -1433,7 +1433,7 @@ void GL_BuildTBN(int count) {
 			VectorCopy(s1->plane->normal, n1);
 
 		for (j = 0; j < count; j++) {
-			s2 = &currentmodel->surfaces[j];
+			s2 = &loadmodel->surfaces[j];
 			
 			if (s2->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 				continue;
@@ -2674,7 +2674,6 @@ void R_BeginRegistration(char *model) {
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
-	flareEdit = (bool)false;
 }
 
 /*
