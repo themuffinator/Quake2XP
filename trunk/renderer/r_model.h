@@ -46,7 +46,7 @@ int		r_numWorlsShadowLights;
 #define INFITITY_VIEW
 #define LIGHT_ZNEAR		0.01f
 #define SHADOWMAP_SIZE	1024
-#define	MAX_SHADOW_LODS	5
+#define	MAX_SHADOW_LODS	6
 #define	Q_INFINITY	1e30f
 #define	MAX_WORLD_SHADOW_LIGHTS	2048
 #define	EQUAL_EPSILON		0.000001f

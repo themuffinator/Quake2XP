@@ -126,9 +126,6 @@ typedef struct {
 	vertexObject_t	*tess2dArray;
 	vertexObject_t	*tess2d;
 	vertexObject_t	*fsq;
-	vertexObject_t	*md3shadow;
-	vertexObject_t	*md2shadow;
-	vertexObject_t	*dynamic;
 	vertexObject_t	*bsp;
 	vertexObject_t	*depthBsp;
 }vao_t;
@@ -151,11 +148,6 @@ typedef struct {
 	vertexBuffer_t	*tess2dVbo;
 	vertexBuffer_t	*tess2dArrayVbo;
 	vertexBuffer_t	*fsqVbo;
-	vertexBuffer_t	*md3ShadowVbo;
-	vertexBuffer_t	*md2ShadowVbo;
-	vertexBuffer_t	*md2ShadowIbo;
-	vertexBuffer_t	*md3ShadowIbo;
-	vertexBuffer_t	*bspShadowVbo;
 	vertexBuffer_t	*dynamicIbo;
 	vertexBuffer_t	*cubeIbo;
 	vertexBuffer_t	*skyBoxVbo;
@@ -194,7 +186,7 @@ typedef struct {
 	rbo_t	r_rbo[MAX_RBOS];
 	int		r_numRbos;
 	rbo_t	*rboDepth;
-	rbo_t	*depth[5];
+	rbo_t	*depth[6];
 }rb_t;
 
 rb_t rb;
@@ -217,7 +209,7 @@ typedef struct {
 	fbo_t	*bloomCompute;
 	fbo_t	*hdrLum;
 	fbo_t	*lensFlare;
-	fbo_t	*shadowMap[5];
+	fbo_t	*shadowMap[6];
 }fb_t;
 fb_t fb;
 
@@ -316,7 +308,7 @@ typedef struct globalImage_s {
 	image_t *lensFlareInterim;
 	image_t *lensFlareOut;
 
-	image_t *shadowCube[5];
+	image_t *shadowCube[6];
 	image_t *shadowProj;
 
 }globalImage_t;

@@ -271,8 +271,6 @@ void R_InitEngineTextures (void) {
 	gi.particleTexture[PT_DEFAULT] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
 	gi.particleTexture[PT_BUBBLE] = R_LoadDDS("gfx/particles/bubble.dds", it_part);
 
-	gi.particleTexture[PT_FLY] = R_LoadDDS("gfx/flyTexture/fly0.dds", it_part);
-
 	gi.particleTexture[PT_BLOOD] = R_LoadDDS("gfx/particles/bloodTrail.dds", it_part);	// default
 	gi.particleTexture[PT_BLOOD2] = R_LoadDDS("gfx/particles/bloodTrail2.dds", it_part);	// xatrix
 	gi.particleTexture[PT_BLASTER] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
@@ -282,13 +280,6 @@ void R_InitEngineTextures (void) {
 
 	gi.particleTexture[PT_BEAM] = R_LoadDDS("gfx/particles/pt_beam.dds", it_part);
 	gi.particleTexture[PT_SPIRAL] = R_LoadDDS("gfx/particles/pt_blast.dds", it_part);
-
-	gi.particleTexture[PT_FLAME] = R_LoadDDS("gfx/flame/fire_00.dds", it_part);
-
-	gi.particleTexture[PT_BLOODSPRAY] = R_LoadDDS("gfx/particles/bloodhit0.dds", it_part);
-	gi.particleTexture[PT_xBLOODSPRAY] = R_LoadDDS("gfx/particles/xbloodhit0.dds", it_part);
-
-	gi.particleTexture[PT_EXPLODE]		= R_LoadDDS("gfx/explode/rlboom_0.dds", it_part);
 
 	gi.particleTexture[PT_WATERPULME]	= R_LoadDDS("gfx/particles/waterplume.dds", it_part);
 	gi.particleTexture[PT_WATERCIRCLE]	= R_LoadDDS("gfx/particles/waterripples.dds", it_part);
@@ -303,8 +294,6 @@ void R_InitEngineTextures (void) {
 	gi.particleTexture[PT_BFG_REFR]		= R_LoadDDS("gfx/bfg/bfgRefr.dds", it_part);
 	gi.particleTexture[PT_BFG_EXPL]		= R_LoadDDS("gfx/bfg/bfg_expl.dds", it_part);
 	gi.particleTexture[PT_BFG_EXPL2]		= R_LoadDDS("gfx/bfg/bfgballblast.dds", it_part);
-
-	gi.particleTexture[PT_FLARE]			= R_LoadDDS("gfx/flares/flare0.dds", it_part);
 
 	for (i = 0; i < MAX_BFG_EXPL; i++) {
 		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.dds", i);
@@ -364,15 +353,15 @@ void R_InitEngineTextures (void) {
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {
-		Com_sprintf (name, sizeof(name), "gfx/flyTexture/flyTexture%i.dds", i);
-		gi.flyTexture[i] = R_LoadDDS(name, it_wall);
+		Com_sprintf (name, sizeof(name), "gfx/fly/fly%i.dds", i);
+		gi.flyTexture[i] = R_LoadDDS(name, it_part);
 		if (!gi.flyTexture[i])
 			gi.flyTexture[i] = gi.missingTexture;
 	}
 
 	for (i = 0; i < MAX_FLAMEANIM; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/flame/fire_0%i.dds", i);
-		gi.flameAnimTex[i] = R_LoadDDS(name, it_wall);
+		gi.flameAnimTex[i] = R_LoadDDS(name, it_part);
 		if (!gi.flameAnimTex[i])
 			gi.flameAnimTex[i] = gi.missingTexture;
 	}
@@ -380,7 +369,7 @@ void R_InitEngineTextures (void) {
 
 	for (i = 0; i < MAX_BLOOD; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/particles/bloodhit%i.dds", i);
-		gi.bloodTexture[i] = R_LoadDDS(name, it_wall);
+		gi.bloodTexture[i] = R_LoadDDS(name, it_part);
 		if (!gi.bloodTexture[i])
 			gi.bloodTexture[i] = gi.missingTexture;
 
@@ -388,7 +377,7 @@ void R_InitEngineTextures (void) {
 
 	for (i = 0; i < MAX_xBLOOD; i++) {
 		Com_sprintf (name, sizeof(name), "gfx/particles/xbloodhit%i.dds", i);
-		gi.xBloodTexture[i] = R_LoadDDS(name, it_wall);
+		gi.xBloodTexture[i] = R_LoadDDS(name, it_part);
 		if (!gi.xBloodTexture[i])
 			gi.xBloodTexture[i] = gi.missingTexture;
 

@@ -411,7 +411,7 @@ void R_DrawShadowMaps() {
 
 	GL_Disable(GL_BLEND);
 
-	vps = 1024 >> currentShadowLight->lod;
+	vps = SHADOWMAP_SIZE >> currentShadowLight->lod;
 
 	GL_Viewport	(0, 0, vps, vps);
 	GL_Scissor	(0, 0, vps, vps);

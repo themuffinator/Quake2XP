@@ -52,22 +52,25 @@ void R_CalcLightLod(worldShadowLight_t *light) {
 	float dist;
 	VectorSubtract(r_newrefdef.vieworg, light->origin, tmp);
 	dist = VectorLength(tmp);
-	if (dist > 256.0)
+	dist -= light->maxRad;
+	if (dist > 128.0)
 		light->lod = 0;
-	if (dist >= 256.0 && dist < 512.0)
+	if (dist > 128 && dist < 256.0)
 		light->lod = 1;
-	if (dist >= 512.0 && dist < 1024.0)
+	if (dist >= 256.0 && dist < 512.0)
 		light->lod = 2;
-	if (dist >= 1024.0 && dist < 2048.0)
+	if (dist >= 512.0 && dist < 1024.0)
 		light->lod = 3;
-	if (dist >= 2048.0)
-		light->lod = 4;	
-
-	if (BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 25.0)) // too agressive
-		light->lod =0;
-
-	if (light->lod > 4)
+	if (dist >= 1024.0 && dist < 2048.0)
 		light->lod = 4;
+	if (dist >= 2048.0)
+		light->lod = 5;	
+
+//	if (BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 25.0)) // too agressive
+//		light->lod =0;
+
+	if (light->lod > 5)
+		light->lod = 5;
 	else
 		if (light->lod < 0)
 			light->lod = 0;

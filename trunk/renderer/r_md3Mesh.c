@@ -385,8 +385,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			}
 		}
 		/// normalize it
-		for (j = 0; j < outMesh->num_verts - 1; j++)
-		{
+		for (j = 0; j < outMesh->num_verts - 1; j++){
 			VectorNormalize(outVerts[j].tangent);
 			VectorNormalize(outVerts[j].binormal);
 		}
@@ -395,8 +394,6 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// build triangle neighbours
 		//
 		inMesh = (dmd3mesh_t *)((byte *)inMesh + LittleLong(inMesh->meshsize));
-		//outMesh->triangles = (neighbours_t*)Mod_Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
-		//R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
 
 		if (!Q_strcasecmp(outMesh->name, "MF"))
 			outMesh->muzzle = true;

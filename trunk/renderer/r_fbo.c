@@ -343,8 +343,8 @@ void R_InitFboBuffers() {
 		vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 	
-	// 1024 512 256 128 64
-	int shadowMapSize = 1024;
+	// 1024 512 256 128 64 32
+	int shadowMapSize = SHADOWMAP_SIZE;
 	for (i = 0; i < MAX_SHADOW_LODS; i++) {
 		gi.shadowCube[i] = R_CreateTexture(va("***shadowCube[%i]***", i), GL_TEXTURE_CUBE_MAP, GL_R32F, GL_RED, 0, shadowMapSize, shadowMapSize,
 			GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
@@ -415,14 +415,14 @@ void R_InitFboBuffers() {
 	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.ssaoDepth, 0);
 	R_FB_Check();
 
-	int rboSize = 1024;
+	int rboSize = SHADOWMAP_SIZE;
 	Com_Printf("Load "S_COLOR_YELLOW "SHADOWMAP FBO ");
 	for (int l = 0; l < MAX_SHADOW_LODS; l++) {
 		rb.depth[l] = R_Create_RBO(va("***rbo_depthShadowMap[%i]***", l), GL_DEPTH_COMPONENT24, rboSize, rboSize);
 		rboSize >>= 1;
 		fb.shadowMap[l] = R_Create_FBO(va("***shadowmap_fbo[%i]***", l));
 		R_AttachRBO(rb.depth[l], GL_DEPTH_ATTACHMENT);
-		for (i = 0; i < 6; i++)
+		for (i = 0; i < MAX_SHADOW_LODS; i++)
 			R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.shadowCube[l], i);
 	}
 	R_FB_Check();
