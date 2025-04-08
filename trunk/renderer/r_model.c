@@ -323,7 +323,7 @@ void Mod_Modellist_f(void) {
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++) {
 		if (!mod->name[0])
 			continue;
-		Com_Printf("%s : %s\n", q_pretifymem((float)mod->extraDataSize), mod->name);
+		Com_Printf("%s : %s num verts %i\n", q_pretifymem((float)mod->extraDataSize), mod->name, mod->numVertexes);
 		total += mod->extraDataSize;
 	}
 	Com_Printf("Total resident: %s\n", q_pretifymem((float)total));
@@ -1408,7 +1408,7 @@ void Mod_LoadFaces(lump_t * l) {
 	GL_EndBuildingLightmaps();
 }
 
-#define bspSmoothAngle cosf(DEG2RAD(45.0))
+#define bspSmoothAngle cosf(DEG2RAD(75.0))
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
@@ -2386,7 +2386,7 @@ static void Mod_CalcMd2Indicies(model_t *mod, md2Header *md2Hdr){
 		pname[strlen(pname) - 4] = 0;
 	}
 	mod->ibo = R_Alloc_VBO(va("%s", pname), GL_ELEMENT_ARRAY_BUFFER, index * sizeof(uint16_t), mod->indexArray, GL_STATIC_DRAW);
-	
+	mod->vbo = R_Alloc_VBO("md2_Vbo", GL_ARRAY_BUFFER, mod->numVertexes * sizeof(vertex3d_t), &tess3d, GL_STREAM_DRAW);
 }
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {

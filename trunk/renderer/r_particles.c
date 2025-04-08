@@ -214,8 +214,14 @@ void R_DrawParticles (void) {
 			if(numVertices){
 				qglInvalidateBufferData(GL_ARRAY_BUFFER);
 				qglInvalidateBufferData(GL_ELEMENT_ARRAY_BUFFER);
-				qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
 				qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint32_t), tess3d.indices);
+				qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
+
+			//	void *ptr = (void *)qglMapBufferRange(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+			//	if(ptr)
+			//		memcpy(ptr, &tess3d, numVertices * sizeof(vertex3d_t));
+				
+			//	qglUnmapBuffer(GL_ARRAY_BUFFER);
 
 				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
 				c_particlesTris += numIndices / 3;
@@ -582,9 +588,15 @@ void R_DrawParticles (void) {
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), &tess3d);
 		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numIndices * sizeof(uint32_t), tess3d.indices);
 
-		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
-		c_particlesTris += numIndices / 3;
-	}
+	//	void *ptr = (void *)qglMapBufferRange(GL_ARRAY_BUFFER, 0, numVertices * sizeof(vertex3d_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+	//	if (ptr)
+	//		memcpy(ptr, &tess3d, numVertices * sizeof(vertex3d_t));
 
+	//	qglUnmapBuffer(GL_ARRAY_BUFFER);
+		
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
+		c_particlesTris += numIndices / 3;		
+	}
+	
 	GL_Disable (GL_BLEND);
 }

@@ -84,8 +84,6 @@ void R_DeleteVAO(vertexObject_t *in) {
 
 	if (gl_state.vaoId = in->id)
 		gl_state.vaoId = 0;
-			
-//	Com_Printf("delete vao %s\n", in->name);
 
 	glDeleteVertexArrays(1, &in->id);
 	memset(in, 0, sizeof(*in));
@@ -101,7 +99,7 @@ void R_VaoListing_f(void) {
 	}
 }
 
-void R_ShotdownVAO(void) {
+void R_ShutdownVAO(void) {
 	int    i;
 	vertexObject_t *va;
 
@@ -155,18 +153,11 @@ void GL_BindVBO(vertexBuffer_t *vb) {
 		}
 	}
 	if (vb->target == GL_ELEMENT_ARRAY_BUFFER) {
-//		if (gl_state.iboId != vb->id) {
+		if (gl_state.iboId != vb->id) {
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vb->id);
-//			gl_state.iboId = vb->id;
-//		}
+			gl_state.iboId = vb->id;
+		}
 	}
-
-//	int i = vb->target == GL_ARRAY_BUFFER ? 0 : 1;
-
-//	if (gl_state.vboId[i] != vb->id) {
-//		qglBindBuffer(vb->target, vb->id);
-//		gl_state.vboId[i] = vb->id;
-//	}
 }
 
 
@@ -183,13 +174,6 @@ void R_DeleteVBO(vertexBuffer_t *in) {
 		if (gl_state.iboId == in->id)
 			gl_state.iboId = 0;
 	}
-//	int i = in->target == GL_ARRAY_BUFFER ? 0 : 1;
-
-//	if (gl_state.vboId[i] != in->id) {
-//		gl_state.vboId[i] = in->id;
-//	}
-
-//	Com_Printf("delete vbo %s\n", in->name);
 			
 	qglDeleteBuffers(1, &in->id);
 	memset(in, 0, sizeof(*in));
@@ -249,7 +233,7 @@ void R_VboListing_f(void) {
 	Com_Printf("\nTotal: " S_COLOR_GREEN "%s of VBO data\n", q_pretifymem((float)total));
 }
 
-void R_ShotdownVBO(void) {
+void R_ShutdownVBO(void) {
 	int    i;
 	vertexBuffer_t *vb;
 

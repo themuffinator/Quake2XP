@@ -60,10 +60,8 @@ void R_LensFlares(void) {
 	int w = vid.width	* 0.25;
 	int h = vid.height	* 0.25;
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.lensFlare->id);
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.lensFlare->id, 0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
 	R_SetViewPortAndScissor(0, 0, w, h);
 
 	GL_BindProgram(bright2Program);
@@ -132,10 +130,8 @@ void R_Bloom (void) {
 	int w = vid.width	* 0.5;
 	int h = vid.height	* 0.5;
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.bloomCompute->id);
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.bloomCompute->id, 0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
 	R_SetViewPortAndScissor(0, 0, w, h);
 
 	GL_BindProgram(brightProgram);
@@ -186,11 +182,7 @@ void R_ThermalVision (void) {
 	int w = vid.width	* 0.5;
 	int h = vid.height	* 0.5;
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.thermal->id);
-
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.thermal->id, 0, 0, vid.width, vid.height, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	R_SetViewPortAndScissor(0, 0, w, h);
 
@@ -361,12 +353,7 @@ void R_FilmFx(void) {
 
 	// setup program
 	GL_BindProgram (filmicFxProgram);
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase2D->id);
-
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.hdrBase2D->id, 0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	GL_SetBindlessTexture(U_TMU0,	gi.hdrInterim2D->handle);
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
@@ -386,13 +373,7 @@ void R_FXAA(void) {
 
 	// setup program
 	GL_BindProgram(fxaaProgram);
-
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase2D->id);
-
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.hdrBase2D->id, 0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	GL_SetBindlessTexture(U_TMU0, gi.hdrInterim2D->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
@@ -406,11 +387,8 @@ void R_ToneMaping(void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrLum->id);
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.hdrLum->id, 0, 0, vid.width, vid.height, 0, 0, 128, 128, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	glGenerateTextureMipmap(gi.hdrLuminance->texnum);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase->id);
 
 	//float	avgLuminance;
 	//static	float pixels[3];
@@ -426,7 +404,10 @@ void R_ToneMaping(void) {
 	qglUniform1f(U_PARAM_FLOAT_0,	r_gamma->value);
 	qglUniform1f(U_PARAM_FLOAT_1,	r_hdrEVcomp->value);
 	qglUniform1f(U_PARAM_FLOAT_2,	r_hdrMaxIso->value);
-
+	qglUniform1f(U_PARAM_FLOAT_3,	r_hdrWhitePoint->value);
+	qglUniform1f(U_PARAM_FLOAT_4,	r_hdrWhiteTint->value);
+	r_hdrBlueOffset->value = ClampCvar(1.0, 10.0, r_hdrBlueOffset->value);
+	qglUniform1f(U_PARAM_FLOAT_5,	r_hdrBlueOffset->value);
 
 	qglUniform1i(U_PARAM_INT_0,		r_hdrColorSpace->integer);
 	qglUniform1i(U_PARAM_INT_1,		gl_config.useHdrDisplay);
@@ -438,10 +419,8 @@ void R_ToneMaping(void) {
 
 //===========================================================
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.ldrBase->id);
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.ldrBase->id, 0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	GL_BindFBO(NULL);
 
  // blit to screen
 	GL_BindProgram(finalPassProgram);
@@ -450,10 +429,6 @@ void R_ToneMaping(void) {
 
 	qglUniform3f(U_COLOR_PARAMS, r_brightness->value, r_contrast->value, r_saturation->value);
 
-	qglUniform3f(U_COLOR_VIBRANCE,	r_colorBalanceRed->value * r_colorVibrance->value,
-									r_colorBalanceGreen->value * r_colorVibrance->value,
-									r_colorBalanceBlue->value * r_colorVibrance->value);
-
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
 	glCopyTextureSubImage2D(gi.ldrBase->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -461,7 +436,10 @@ void R_ToneMaping(void) {
 
 void R_ColorTemperatureCorrection(void) {
 
-	if (r_colorTempK->value < 1000.0)
+	if (gl_config.useHdrDisplay)
+		return;
+
+	if (r_hdrWhitePoint->value < 1000.0)
 		return;
 	 
 	if (!r_useColorCorrection->integer)
@@ -471,7 +449,7 @@ void R_ColorTemperatureCorrection(void) {
 		return;
 
 	GL_BindProgram(whiteBalanceProgram);
-	qglUniform1f(U_PARAM_FLOAT_0, r_colorTempK->value);
+	qglUniform1f(U_PARAM_FLOAT_0, r_hdrWhitePoint->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, false, (const float *)r_newrefdef.orthoMatrix);
 	GL_SetBindlessTexture(U_TMU0, gi.ldrBase->handle);
 	R_DrawFullScreenQuad();
@@ -564,7 +542,8 @@ void R_SSAO (void) {
 	
 	// downsample the depth buffer
 	GL_DepthRange(0.0, 1.0);
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.ssao->id);
+	
+	GL_BindFBO(fb.ssao);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	R_SetViewPortAndScissor(0, 0, vid.width * 0.5, vid.height * 0.5);
@@ -609,7 +588,7 @@ void R_SSAO (void) {
 	}
 	
 	// restore
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+	GL_BindFBO(fb.hdrBase);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	GL_Enable(GL_CULL_FACE);
@@ -638,12 +617,7 @@ void R_FixFov(void) {
 	// setup program
 	GL_BindProgram(fixFovProgram);
 
-	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fb.hdrBase->id);
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.hdrBase2D->id);
-
-	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+	qglBlitNamedFramebuffer(fb.hdrBase->id, fb.hdrBase2D->id, 0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	params[0] = r_fixFovStrength->value;
 	params[1] = tan(DEG2RAD(r_newrefdef.fov_x) / 2.0) / (vid.width / vid.height);

@@ -981,30 +981,19 @@ static bool GLW_ChoosePixelFormat() {
 		WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_ARB,
 		WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
 		WGL_COLOR_BITS_ARB,		24,
-		WGL_ALPHA_BITS_ARB,		8,
 		WGL_DEPTH_BITS_ARB,		24,
-		WGL_STENCIL_BITS_ARB,	0,
-		WGL_SAMPLE_BUFFERS_ARB, samples ? GL_TRUE: GL_FALSE,
-		WGL_SAMPLES_ARB,		samples,
 		0
 	};
 
 	// NV_FORMAT_A16B16G16R16F
-	int rgb10 = 0;
 	const int pAttribsHDR[] = {
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
 		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
 		WGL_DOUBLE_BUFFER_ARB,	GL_TRUE,
 		WGL_PIXEL_TYPE_ARB,		WGL_TYPE_RGBA_FLOAT_ARB,
 		WGL_ACCELERATION_ARB,	WGL_FULL_ACCELERATION_ARB,
-//		WGL_RED_BITS_ARB,		rgb10 ? 10 : 16,
-//		WGL_GREEN_BITS_ARB,		rgb10 ? 10 : 16,
-//		WGL_BLUE_BITS_ARB,		rgb10 ? 10 : 16,
-//		WGL_ALPHA_BITS_ARB,		rgb10 ? 2 :  16,
+		WGL_COLOR_BITS_ARB,		64,
 		WGL_DEPTH_BITS_ARB,		24,
-		WGL_STENCIL_BITS_ARB,	0,
-//		WGL_SAMPLE_BUFFERS_ARB, 0,
-//		WGL_SAMPLES_ARB,		0,
 		0
 	};
 
@@ -1032,8 +1021,6 @@ static bool GLW_ChoosePixelFormat() {
 	Com_Printf(S_COLOR_GREEN "ok\n");
 	return true;
 }
-
-void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
 
 void GLW_CreateContext() {
 
@@ -1153,13 +1140,23 @@ void GL_UpdateSwapInterval()
 	if(gl_state.wgl_swap_control_tear){
 	
 	if (wglSwapIntervalEXT){
-		if(r_vsync->integer >=2)
-			wglSwapIntervalEXT(-1);
-	else if(r_vsync->integer >=1)
-			wglSwapIntervalEXT(1);	
-	else
-			wglSwapIntervalEXT(0);
-		}
+
+	if (r_vsync->integer == 0)
+		wglSwapIntervalEXT(0);
+
+	if(r_vsync->integer == 1)
+		wglSwapIntervalEXT(1);
+	
+	if(r_vsync->integer == 2)
+		wglSwapIntervalEXT(-1);	
+
+	if (r_vsync->integer == 3)
+		wglSwapIntervalEXT(-2);
+
+	if (r_vsync->integer > 3)
+		wglSwapIntervalEXT(-2);
+	}
+
 	}
 	else
 		if (wglSwapIntervalEXT)

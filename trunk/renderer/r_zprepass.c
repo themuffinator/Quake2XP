@@ -184,10 +184,10 @@ void R_RecursiveDepthWorldNode(mnode_t* node, vec3_t viewOrg) {
 		if (!gl_state.shadowMapPass) {
 			if (surf->visframe != r_framecount)
 				continue;
-
+		}
 			if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 				continue;			// wrong side
-		}
+		
 
 		if (surf->texInfo->flags & SURF_SKY)
 			continue;
@@ -266,8 +266,6 @@ void R_DrawDepthBrushModel () {
 			return;
 	}else{
 		if (!R_EntityCastShadow())
-			return;
-		if (Frustum_CullBoundsProjection(mins, maxs, currentShadowLight->origin, 63))
 			return;
 	}
 

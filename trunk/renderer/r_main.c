@@ -878,7 +878,7 @@ void R_linearDepth(void)
 
 	R_SetupOrthoMatrix();
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.linearDepth->id);
+	GL_BindFBO(fb.linearDepth);
 
 	GL_BindProgram(linearDepthProgram);
 	GL_SetBindlessTexture(U_TMU0, gi.rboDepth->handle);
@@ -894,7 +894,7 @@ void R_linearDepth(void)
 	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+	GL_BindFBO(fb.hdrBase);
 }
 
 /*
@@ -948,9 +948,11 @@ void R_RenderView (refdef_t *fd) {
 	}
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
-		qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
-		qglClearBufferfv(GL_COLOR, 0, clearColor);
-		qglClearBufferfv(GL_DEPTH, 0, &clearDepth);
+		GL_BindFBO(fb.hdrBase);
+
+		qglClearNamedFramebufferfv(fb.hdrBase->id, GL_COLOR, 0, clearColor);
+		qglClearNamedFramebufferfv(fb.hdrBase->id, GL_DEPTH, 0, &clearDepth);
+
 	}
 
 	R_DrawDepthScene();
@@ -1276,22 +1278,19 @@ void R_RegisterCvars(void)
 	r_hdrEVcomp =						Cvar_Get("r_hdrEVcomp", "0.0", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
 	r_hdrBloom =						Cvar_Get("r_hdrBloom", "1", CVAR_ARCHIVE);
-//	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
-//	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
 	r_hdrLensFlaresIntens =				Cvar_Get("r_hdrLensFlaresIntens", "0.2", CVAR_ARCHIVE);
-	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "0", CVAR_ARCHIVE);
+	r_hdrColorSpace =					Cvar_Get("r_hdrColorSpace", "2", CVAR_ARCHIVE);
 	r_hdrColorSpace->help =				" 0 = sRGB/D65 \n| 1 = DCI-P3/D65b \n| 2 = Rec.2020/D65 \n| 3 = ACES AP0/D60 \n| 4 = ACES AP1/D60";
 	r_hdrUiNits =						Cvar_Get("r_hdrUiNits", "300.0", CVAR_ARCHIVE);
 	r_hdrMaxIso =						Cvar_Get("r_hdrMaxIso", "300.0", CVAR_ARCHIVE);
+	r_hdrWhiteTint =					Cvar_Get("r_hdrWhiteTint", "0.0", CVAR_ARCHIVE);
+	r_hdrWhiteTint->help =				"from -1.0 green tint to 1.0 red tint";
+	r_hdrBlueOffset =					Cvar_Get("r_hdrBlueOffset", "2.0", CVAR_ARCHIVE);
 
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast =						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
 	r_gamma =							Cvar_Get("r_gamma", "1.9", CVAR_ARCHIVE);
-	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
-	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
-	r_colorBalanceGreen =				Cvar_Get("r_colorBalanceGreen", "1.0", CVAR_ARCHIVE);
-	r_colorBalanceBlue =				Cvar_Get("r_colorBalanceBlue", "1.0", CVAR_ARCHIVE);
 
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
@@ -1398,9 +1397,9 @@ void R_RegisterCvars(void)
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", 0);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", CVAR_ARCHIVE);
 
-	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
-	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
-	r_colorTempK->integer =				ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_hdrWhitePoint =					Cvar_Get("r_hdrWhitePoint", "6500", CVAR_ARCHIVE);
+	r_hdrWhitePoint->help =				"Color Temperature in Kelvins (from 100K to 24000K)";
+	r_hdrWhitePoint->integer =			ClampCvarInteger(100, 24000, r_hdrWhitePoint->integer);
 
 	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);
 	r_nsightDebug =						Cvar_Get("r_nsightDebug", "0", 0);
@@ -1600,8 +1599,13 @@ int R_Init(void *hinstance, void *hWnd)
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress("glBindVertexArray");
 	glIsVertexArray			= (PFNGLISVERTEXARRAYPROC)		qwglGetProcAddress("glIsVertexArray");
 
-	glMultiDrawElements		= (PFNGLMULTIDRAWELEMENTSPROC)	qwglGetProcAddress("glMultiDrawElements");
-	glMultiDrawArrays		= (PFNGLMULTIDRAWARRAYSPROC)	qwglGetProcAddress("glMultiDrawArrays");
+	// vao dsa
+	qglCreateVertexArrays		= (PFNGLCREATEVERTEXARRAYSPROC)			qwglGetProcAddress("glCreateVertexArrays");
+	qglVertexArrayVertexBuffer	= (PFNGLVERTEXARRAYVERTEXBUFFERPROC)	qwglGetProcAddress("glVertexArrayVertexBuffer");
+	qglVertexArrayElementBuffer = (PFNGLVERTEXARRAYELEMENTBUFFERPROC)	qwglGetProcAddress("glVertexArrayElementBuffer");
+	qglEnableVertexArrayAttrib	= (PFNGLENABLEVERTEXARRAYATTRIBPROC)	qwglGetProcAddress("glEnableVertexArrayAttrib");
+	qglVertexArrayAttribFormat	= (PFNGLVERTEXARRAYATTRIBFORMATPROC)	qwglGetProcAddress("glVertexArrayAttribFormat");
+	qglVertexArrayAttribBinding = (PFNGLVERTEXARRAYATTRIBBINDINGPROC)	qwglGetProcAddress("glVertexArrayAttribBinding");
 
 	// vbo stuff
 	qglBindBuffer				= (PFNGLBINDBUFFERPROC)				qwglGetProcAddress("glBindBuffer");
@@ -1614,6 +1618,12 @@ int R_Init(void *hinstance, void *hWnd)
 	qglMapBufferRange			= (PFNGLMAPBUFFERRANGEPROC)			qwglGetProcAddress("glMapBufferRange");
 	qglInvalidateBufferData		= (PFNGLINVALIDATEBUFFERDATAPROC)	qwglGetProcAddress("glInvalidateBufferData");
 	qglInvalidateBufferSubData	= (PFNGLINVALIDATEBUFFERSUBDATAPROC)qwglGetProcAddress("glInvalidateBufferSubData");
+
+	// vbo dsa
+	qglCreateBuffers			= (PFNGLCREATEBUFFERSPROC)			qwglGetProcAddress("glCreateBuffers");
+	qglNamedBufferData			= (PFNGLNAMEDBUFFERDATAPROC)		qwglGetProcAddress("glNamedBufferData");
+	qglNamedBufferSubData		= (PFNGLNAMEDBUFFERSUBDATAPROC)		qwglGetProcAddress("glNamedBufferSubData");
+	qglNamedBufferStorage		= (PFNGLNAMEDBUFFERSTORAGEPROC)		qwglGetProcAddress("glNamedBufferStorage");
 
 	// fbo stuff
 	qglIsRenderbuffer						= (PFNGLISRENDERBUFFERPROC)						qwglGetProcAddress("glIsRenderbuffer");
@@ -1650,15 +1660,15 @@ int R_Init(void *hinstance, void *hWnd)
 		
 	qglCreateFramebuffers					= (PFNGLCREATEFRAMEBUFFERSPROC)					qwglGetProcAddress("glCreateFramebuffers");
 	qglNamedFramebufferTexture				= (PFNGLNAMEDFRAMEBUFFERTEXTUREPROC)			qwglGetProcAddress("glNamedFramebufferTexture");
+	qglNamedFramebufferTextureLayer			= (PFNGLNAMEDFRAMEBUFFERTEXTURELAYERPROC)		qwglGetProcAddress("glNamedFramebufferTextureLayer");
 	qglCheckNamedFramebufferStatus			= (PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC)		qwglGetProcAddress("glCheckNamedFramebufferStatus");
 	qglNamedFramebufferDrawBuffer			= (PFNGLNAMEDFRAMEBUFFERDRAWBUFFERPROC)			qwglGetProcAddress("glNamedFramebufferDrawBuffer");
 	qglNamedFramebufferDrawBuffers			= (PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC)		qwglGetProcAddress("glNamedFramebufferDrawBuffers");
 	qglBlitNamedFramebuffer					= (PFNGLBLITNAMEDFRAMEBUFFERPROC)				qwglGetProcAddress("glBlitNamedFramebuffer");
-	
+
 	qglClearNamedFramebufferiv				= (PFNGLCLEARNAMEDFRAMEBUFFERIVPROC)			qwglGetProcAddress("glClearNamedFramebufferiv");
 	qglClearNamedFramebufferfv				= (PFNGLCLEARNAMEDFRAMEBUFFERFVPROC)			qwglGetProcAddress("glClearNamedFramebufferfv");
 	qglClearNamedFramebufferfi				= (PFNGLCLEARNAMEDFRAMEBUFFERFIPROC)			qwglGetProcAddress("glClearNamedFramebufferfi");
-
 
 	// bindless textures stuff
 	glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
@@ -1755,8 +1765,10 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramUniformMatrix3x4fv =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
 	glProgramUniformMatrix4x3fv =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
 
-	qglTextureView	=	(PFNGLTEXTUREVIEWPROC)	qwglGetProcAddress("glTextureView");
-	qglTexImage3D	=	(PFNGLTEXIMAGE3DPROC)	qwglGetProcAddress("glTexImage3D");
+	qglTextureView		=	(PFNGLTEXTUREVIEWPROC)			qwglGetProcAddress("glTextureView");
+	qglTexImage3D		=	(PFNGLTEXIMAGE3DPROC)			qwglGetProcAddress("glTexImage3D");
+	glMultiDrawElements =	(PFNGLMULTIDRAWELEMENTSPROC)	qwglGetProcAddress("glMultiDrawElements");
+	glMultiDrawArrays	=	(PFNGLMULTIDRAWARRAYSPROC)		qwglGetProcAddress("glMultiDrawArrays");
 
 	// Textures DSA 
 	glBindTextures			=		(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
@@ -1772,16 +1784,17 @@ int R_Init(void *hinstance, void *hWnd)
 	glTextureSubImage3D		=		(PFNGLTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glTextureSubImage3D");
 	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
 
-	glCompressedTextureSubImage2D =	(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glCompressedTextureSubImage2D");
-	glCompressedTextureSubImage3D = (PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glCompressedTextureSubImage3D");
-	qglCompressedTexSubImage2D =	(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)		qwglGetProcAddress("glCompressedTexSubImage2D");
-	qglTexSubImage2D =				(PFNGLTEXSUBIMAGE2DPROC)				qwglGetProcAddress("glTexSubImage2D");
-	glGetTextureLevelParameteriv =	(PFNGLGETTEXTURELEVELPARAMETERIVPROC)	qwglGetProcAddress("glGetTextureLevelParameteriv");
+	glCompressedTextureSubImage2D	=	(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glCompressedTextureSubImage2D");
+	glCompressedTextureSubImage3D	=	(PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glCompressedTextureSubImage3D");
+	qglCompressedTexSubImage2D		=	(PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)		qwglGetProcAddress("glCompressedTexSubImage2D");
+
+	qglTexSubImage2D				=	(PFNGLTEXSUBIMAGE2DPROC)				qwglGetProcAddress("glTexSubImage2D");
+	glGetTextureLevelParameteriv	=	(PFNGLGETTEXTURELEVELPARAMETERIVPROC)	qwglGetProcAddress("glGetTextureLevelParameteriv");
 
 	// texture storage
-	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
-	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
-	qglTexSubImage3D	=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
+	glTexStorage2D		=	(PFNGLTEXSTORAGE2DPROC)		qwglGetProcAddress("glTexStorage2D");
+	glTexStorage3D		=	(PFNGLTEXSTORAGE3DPROC)		qwglGetProcAddress("glTexStorage3D");
+	qglTexSubImage3D	=	(PFNGLTEXSUBIMAGE3DPROC)	qwglGetProcAddress("glTexSubImage3D");
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
@@ -1990,7 +2003,7 @@ void R_Shutdown(void)
 	qglDeleteBuffers(1, &pbo._fullScreen);
 	qglDeleteBuffers(1, &pbo._fullScreenF);
 
-	R_ShotdownFBO();
+	R_ShutdownFBO();
 	R_ShutDownVertexBuffers();
 
 	Mod_FreeAll();
@@ -2026,7 +2039,7 @@ void R_BeginFrame()
 	r_lightmapScale->value			= ClampCvar(0.0, 1.0,			r_lightmapScale->value);
 	r_parallaxMapping->integer		= ClampCvarInteger(0, 3,		r_parallaxMapping->integer);
 	r_parallaxScale->integer		= ClampCvarInteger(0, 6,		r_parallaxScale->integer);
-	r_colorTempK->integer			= ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_hdrWhitePoint->integer		= ClampCvarInteger(100, 24000,	r_hdrWhitePoint->integer);
 	r_hdrUiNits->value				= ClampCvar(100.0, 1000.0,		r_hdrUiNits->value);
 	r_hdrLensFlaresIntens->value	= ClampCvar(0.1, 1.0,			r_hdrLensFlaresIntens->value);
 	r_penumbraSize->value			= ClampCvar(2.0, 16.0,			r_penumbraSize->value);

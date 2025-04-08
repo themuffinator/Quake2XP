@@ -728,6 +728,7 @@ extern PFNGLNAMEDRENDERBUFFERSTORAGEPROC					qglNamedRenderbufferStorage;
 extern PFNGLCREATERENDERBUFFERSPROC							qglCreateRenderbuffers;
 extern PFNGLCREATEFRAMEBUFFERSPROC							qglCreateFramebuffers;
 extern PFNGLNAMEDFRAMEBUFFERTEXTUREPROC						qglNamedFramebufferTexture;
+extern PFNGLNAMEDFRAMEBUFFERTEXTURELAYERPROC				qglNamedFramebufferTextureLayer;
 extern PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC					qglCheckNamedFramebufferStatus;
 extern PFNGLBLITNAMEDFRAMEBUFFERPROC						qglBlitNamedFramebuffer;
 extern PFNGLCLEARNAMEDFRAMEBUFFERIVPROC						qglClearNamedFramebufferiv;
@@ -738,6 +739,13 @@ extern PFNGLBINDVERTEXARRAYPROC								glBindVertexArray;
 extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;
 extern PFNGLISVERTEXARRAYPROC								glIsVertexArray;
+
+extern PFNGLCREATEVERTEXARRAYSPROC						qglCreateVertexArrays;
+extern PFNGLVERTEXARRAYVERTEXBUFFERPROC					qglVertexArrayVertexBuffer;
+extern PFNGLVERTEXARRAYELEMENTBUFFERPROC				qglVertexArrayElementBuffer;
+extern PFNGLENABLEVERTEXARRAYATTRIBPROC					qglEnableVertexArrayAttrib;
+extern PFNGLVERTEXARRAYATTRIBFORMATPROC					qglVertexArrayAttribFormat;
+extern PFNGLVERTEXARRAYATTRIBBINDINGPROC				qglVertexArrayAttribBinding;
 
 extern PFNGLDEBUGMESSAGECONTROLPROC						glDebugMessageControl;
 extern PFNGLDEBUGMESSAGEINSERTPROC						glDebugMessageInsert;
@@ -848,7 +856,6 @@ extern PFNGLDISPATCHCOMPUTEPROC					qglDispatchCompute;
 //vbo dsa
 extern PFNGLCREATEBUFFERSPROC					qglCreateBuffers;
 extern PFNGLNAMEDBUFFERSTORAGEPROC				qglNamedBufferStorage;
-
 extern PFNGLNAMEDBUFFERDATAPROC					qglNamedBufferData;
 extern PFNGLNAMEDBUFFERSUBDATAPROC				qglNamedBufferSubData;
 

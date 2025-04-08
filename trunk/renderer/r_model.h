@@ -352,7 +352,7 @@ typedef struct model_s {
 	uint16_t	*indexArray;
 	uint16_t	numIndices;
 
-	vertexBuffer_t	*ibo;
+	vertexBuffer_t	*ibo, *vbo;
 	mat3_t	axis;
 } model_t;
 

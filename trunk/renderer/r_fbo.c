@@ -7,37 +7,39 @@
 
 #include "r_local.h"
 
-static void R_FB_Check() {
+static void R_FB_Check(const fbo_t *fbo) {
 	const char* s;
 	GLenum		code;
 
-	code = qglCheckFramebufferStatus(GL_FRAMEBUFFER);
+	code = qglCheckNamedFramebufferStatus(fbo->id, GL_FRAMEBUFFER);
 
-	// an error occured
 	switch (code) {
 	case GL_FRAMEBUFFER_COMPLETE:
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
 		return;
+	case GL_FRAMEBUFFER_UNDEFINED:
+		s = "GL_FRAMEBUFFER_UNDEFINED ";
+		break;
 	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-		s = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+		s = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT ";
 		break;
 	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-		s = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+		s = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT ";
 		break;
 	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-		s = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+		s = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER ";
 		break;
 	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-		s = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
-		break;
-	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-		s = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+		s = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER ";
 		break;
 	case GL_FRAMEBUFFER_UNSUPPORTED:
-		s = "GL_FRAMEBUFFER_UNSUPPORTED";
+		s = "GL_FRAMEBUFFER_UNSUPPORTED ";
 		break;
-	case GL_FRAMEBUFFER_UNDEFINED:
-		s = "GL_FRAMEBUFFER_UNDEFINED";
+	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE ";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS ";
 		break;
 	}
 	Com_Printf(S_COLOR_RED"Failed!:" S_COLOR_MAGENTA " %s\n", s);
@@ -58,12 +60,13 @@ void R_FboListing_f(void) {
 	}
 }
 
-void R_ShotdownFBO(void) {
+void R_ShutdownFBO(void) {
 	rbo_t *rbo;
 	fbo_t *fbo;
 	int i;
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	gl_state.fboId = 0;
 
 	for (i = 0, rbo = rb.r_rbo; i < rb.r_numRbos; i++, rbo++) {
 		qglDeleteRenderbuffers(1, &rbo->id);
@@ -72,6 +75,22 @@ void R_ShotdownFBO(void) {
 	for (i = 0, fbo = fb.r_fbo; i < fb.r_numFbos; i++, fbo++) {
 		qglDeleteFramebuffers(1, &fbo->id);
 		memset(fbo, 0, sizeof(*fbo));
+	}
+}
+
+void GL_BindFBO(fbo_t *fb) {
+
+	if (!fb) {
+		if (gl_state.fboId) {
+			qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+			gl_state.fboId = 0;
+		}
+		return;
+	}
+
+	if (gl_state.fboId != fb->id) {
+		qglBindFramebuffer(GL_FRAMEBUFFER, fb->id);
+		gl_state.fboId = fb->id;
 	}
 }
 
@@ -128,6 +147,7 @@ rbo_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int heig
 
 	case GL_DEPTH_COMPONENT16:
 	case GL_DEPTH_COMPONENT24:
+	case GL_DEPTH_COMPONENT32:
 	case GL_DEPTH_COMPONENT32F:
 
 	case GL_DEPTH24_STENCIL8:
@@ -160,16 +180,16 @@ rbo_t *R_Create_RBO(const char *name, GLuint internalFormat, int width, int heig
 	rbo->width = width;
 	rbo->height = height;
 
-	qglGenRenderbuffers(1, &rbo->id);
-	qglBindRenderbuffer(GL_RENDERBUFFER, rbo->id);
-	qglRenderbufferStorage(GL_RENDERBUFFER, internalFormat, rbo->width, rbo->height);
+	qglCreateRenderbuffers(1, &rbo->id);
+	qglNamedRenderbufferStorage(rbo->id, internalFormat, rbo->width, rbo->height);
+
 	qglObjectLabel(GL_RENDERBUFFER, rbo->id, strlen(rbo->name), rbo->name);
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	return rbo;
 }
 
-static void R_AttachRBO(const rbo_t *rb, const GLenum attachment) {
+static void R_AttachRBO(const fbo_t *fb, const rbo_t *rb, const GLenum attachment) {
 	switch (attachment) {
 	case GL_DEPTH_ATTACHMENT:
 	case GL_STENCIL_ATTACHMENT:
@@ -194,10 +214,10 @@ static void R_AttachRBO(const rbo_t *rb, const GLenum attachment) {
 	default:
 		VID_Error(ERR_DROP, "R_AttachRBO: invalid attachment point 0x%x\n", attachment);
 	}
-	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rb->id);
+	qglNamedFramebufferRenderbuffer(fb->id, attachment, GL_RENDERBUFFER, rb->id);
 }
 
-void R_FB_AttachImage(const GLenum attachment, const image_t *image, const int index) {
+void R_FB_AttachImage(const fbo_t *fb, const GLenum attachment, const image_t *image, const int index) {
 
 	switch (attachment) {
 	case GL_DEPTH_ATTACHMENT:
@@ -225,15 +245,14 @@ void R_FB_AttachImage(const GLenum attachment, const image_t *image, const int i
 	}
 
 	switch (image->texType) {
-	case GL_TEXTURE_2D:
-	case GL_TEXTURE_RECTANGLE:
-		qglFramebufferTexture2D(GL_FRAMEBUFFER, attachment, image->texType, image->texnum, 0);
+		case GL_TEXTURE_2D:
+		case GL_TEXTURE_RECTANGLE:
+			qglNamedFramebufferTexture(fb->id, attachment, image->texnum, 0);
 		break;
-	case GL_TEXTURE_CUBE_MAP:
-		qglFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, image->texnum, 0);
-		break;
-	case GL_TEXTURE_3D:
-		qglFramebufferTexture3D(GL_FRAMEBUFFER, attachment, image->texType, image->texnum, 0, index);
+
+		case GL_TEXTURE_CUBE_MAP:
+		case GL_TEXTURE_3D:
+			qglNamedFramebufferTextureLayer(fb->id, attachment, image->texnum, 0, index);
 		break;
 	}
 }
@@ -258,8 +277,7 @@ fbo_t *R_Create_FBO(const char *name) {
 
 	strcpy(fbo->name, name);
 
-	qglGenFramebuffers	(1, &fbo->id);
-	qglBindFramebuffer	(GL_FRAMEBUFFER, fbo->id);
+	qglCreateFramebuffers(1, &fbo->id);
 	qglObjectLabel		(GL_FRAMEBUFFER, fbo->id, strlen(fbo->name), fbo->name);
 
 	return fbo;
@@ -346,8 +364,8 @@ void R_InitFboBuffers() {
 	// 1024 512 256 128 64 32
 	int shadowMapSize = SHADOWMAP_SIZE;
 	for (i = 0; i < MAX_SHADOW_LODS; i++) {
-		gi.shadowCube[i] = R_CreateTexture(va("***shadowCube[%i]***", i), GL_TEXTURE_CUBE_MAP, GL_R32F, GL_RED, 0, shadowMapSize, shadowMapSize,
-			GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
+		gi.shadowCube[i] = R_CreateTexture(va("***shadowCube[%i]***", i), GL_TEXTURE_CUBE_MAP, GL_R32F, GL_RED, 0, 
+			shadowMapSize, shadowMapSize, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, NULL);
 		shadowMapSize >>= 1;
 	}
 
@@ -359,75 +377,75 @@ void R_InitFboBuffers() {
 	Com_Printf("Load "S_COLOR_YELLOW "BASE FBO ");
 	rb.rboDepth = R_Create_RBO("***rbo_depthBase***", GL_DEPTH_COMPONENT24, vid.width, vid.height);
 	fb.hdrBase = R_Create_FBO("***hdrBase_fbo***");
-	R_AttachRBO(rb.rboDepth, GL_DEPTH_ATTACHMENT);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrBase, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.hdrBaseInterim, 0);
-	R_FB_AttachImage(GL_DEPTH_ATTACHMENT, gi.rboDepth, 0);
-	R_FB_Check();
+	R_AttachRBO(fb.hdrBase, rb.rboDepth, GL_DEPTH_ATTACHMENT);
+	R_FB_AttachImage(fb.hdrBase, GL_COLOR_ATTACHMENT0, gi.hdrBase, 0);
+	R_FB_AttachImage(fb.hdrBase, GL_COLOR_ATTACHMENT1, gi.hdrBaseInterim, 0);
+	R_FB_AttachImage(fb.hdrBase, GL_DEPTH_ATTACHMENT, gi.rboDepth, 0);
+	R_FB_Check(fb.hdrBase);
 
 	Com_Printf("Load "S_COLOR_YELLOW "FINAL FBO ");
 	fb.ldrBase = R_Create_FBO("***ldrBase_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.ldrBase, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.ldrBase, GL_COLOR_ATTACHMENT0, gi.ldrBase, 0);
+	R_FB_Check(fb.ldrBase);
 
 	Com_Printf("Load "S_COLOR_YELLOW "BASE 2D FBO ");
 	fb.hdrBase2D = R_Create_FBO("***hdrBase2D_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrInterim2D, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.hdrBase2D, GL_COLOR_ATTACHMENT0, gi.hdrInterim2D, 0);
+	R_FB_Check(fb.hdrBase2D);
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR LUMINANCE FBO ");
 	fb.hdrLum = R_Create_FBO("***hdrLum_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.hdrLuminance, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.hdrLum, GL_COLOR_ATTACHMENT0, gi.hdrLuminance, 0);
+	R_FB_Check(fb.hdrLum);
 
 
 	Com_Printf("Load "S_COLOR_YELLOW "LENSFLARE FBO ");
 	fb.lensFlare = R_Create_FBO("***lensflare_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.lensFlareIn, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.lensFlareInterim, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.lensFlareOut, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.lensFlare, GL_COLOR_ATTACHMENT0, gi.lensFlareIn, 0);
+	R_FB_AttachImage(fb.lensFlare, GL_COLOR_ATTACHMENT1, gi.lensFlareInterim, 0);
+	R_FB_AttachImage(fb.lensFlare, GL_COLOR_ATTACHMENT2, gi.lensFlareOut, 0);
+	R_FB_Check(fb.lensFlare);
 
 	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
 	fb.thermal = R_Create_FBO("***thermal_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.thermalIn, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.thermalInterim, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.thermalOut, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.thermal, GL_COLOR_ATTACHMENT0, gi.thermalIn, 0);
+	R_FB_AttachImage(fb.thermal, GL_COLOR_ATTACHMENT1, gi.thermalInterim, 0);
+	R_FB_AttachImage(fb.thermal, GL_COLOR_ATTACHMENT2, gi.thermalOut, 0);
+	R_FB_Check(fb.thermal);
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 	fb.bloomCompute = R_Create_FBO("***comp_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.bloomIn, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.bloomInterim, 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.bloomOut, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.bloomCompute, GL_COLOR_ATTACHMENT0, gi.bloomIn, 0);
+	R_FB_AttachImage(fb.bloomCompute, GL_COLOR_ATTACHMENT1, gi.bloomInterim, 0);
+	R_FB_AttachImage(fb.bloomCompute, GL_COLOR_ATTACHMENT2, gi.bloomOut, 0);
+	R_FB_Check(fb.bloomCompute);
 
 	Com_Printf("Load "S_COLOR_YELLOW "LINEAR DEPTH FBO ");
 	fb.linearDepth = R_Create_FBO("***linearDepth_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.linearDepth, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.linearDepth, GL_COLOR_ATTACHMENT0, gi.linearDepth, 0);
+	R_FB_Check(fb.linearDepth);
 
 	Com_Printf("Load "S_COLOR_YELLOW "SSAO FBO ");
 	i_ssaoColorIndex = 0;
 	fb.ssao = R_Create_FBO("***ssao_fbo***");
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.ssaoColor[0], 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT1, gi.ssaoColor[1], 0);
-	R_FB_AttachImage(GL_COLOR_ATTACHMENT2, gi.ssaoDepth, 0);
-	R_FB_Check();
+	R_FB_AttachImage(fb.ssao, GL_COLOR_ATTACHMENT0, gi.ssaoColor[0], 0);
+	R_FB_AttachImage(fb.ssao, GL_COLOR_ATTACHMENT1, gi.ssaoColor[1], 0);
+	R_FB_AttachImage(fb.ssao, GL_COLOR_ATTACHMENT2, gi.ssaoDepth, 0);
+	R_FB_Check(fb.ssao);
 
 	int rboSize = SHADOWMAP_SIZE;
 	Com_Printf("Load "S_COLOR_YELLOW "SHADOWMAP FBO ");
 	for (int l = 0; l < MAX_SHADOW_LODS; l++) {
-		rb.depth[l] = R_Create_RBO(va("***rbo_depthShadowMap[%i]***", l), GL_DEPTH_COMPONENT24, rboSize, rboSize);
+		rb.depth[l] = R_Create_RBO(va("***rbo_depthShadowMap[%i]***", l), GL_DEPTH_COMPONENT32F, rboSize, rboSize);
 		rboSize >>= 1;
 		fb.shadowMap[l] = R_Create_FBO(va("***shadowmap_fbo[%i]***", l));
-		R_AttachRBO(rb.depth[l], GL_DEPTH_ATTACHMENT);
+		R_AttachRBO(fb.shadowMap[l], rb.depth[l], GL_DEPTH_ATTACHMENT);
 		for (i = 0; i < MAX_SHADOW_LODS; i++)
-			R_FB_AttachImage(GL_COLOR_ATTACHMENT0, gi.shadowCube[l], i);
+			R_FB_AttachImage(fb.shadowMap[l], GL_COLOR_ATTACHMENT0, gi.shadowCube[l], i);
 	}
-	R_FB_Check();
+	R_FB_Check(fb.shadowMap[0]);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	GL_BindFBO(NULL);
 
 	Com_Printf("\n");
 	R_InitPboBuffers();

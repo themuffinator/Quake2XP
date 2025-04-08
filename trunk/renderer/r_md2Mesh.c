@@ -314,7 +314,7 @@ void GL_DrawAliasFrameLerp (md2Header *paliashdr, vec3_t lightColor) {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, false, (const float *)currententity->orMatrix);
 
 	GL_BindVAO(vao.stream3d);
-	GL_BindVBO(vbo.stream3d);	
+	GL_BindVBO(vbo.stream3d);
 	GL_BindVBO(currentmodel->ibo);
 
 	qglInvalidateBufferData(GL_ARRAY_BUFFER);

@@ -52,6 +52,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../win64/nvapi/nvml.h"
 #endif
 
+#include <stddef.h>
+
 // up / down
 #define	PITCH	0
 
@@ -152,7 +154,6 @@ typedef struct {
 	vertexBuffer_t	*cubeIbo;
 	vertexBuffer_t	*skyBoxVbo;
 	vertexBuffer_t	*bspVbo;
-	vertexBuffer_t	*twoPointLineIbo;
 }vbo_t;
 vbo_t vbo;
 
@@ -161,14 +162,14 @@ void GL_BindVAO(vertexObject_t *va);
 void GL_BindNullVAO(void);
 void R_DeleteVAO(vertexObject_t *vain);
 void R_VaoListing_f(void);
-void R_ShotdownVAO(void);
+void R_ShutdownVAO(void);
 int  GL_GetVaoBinding();
 
 vertexBuffer_t *R_Alloc_VBO(const char *name, GLuint target, GLuint size, const void *data, GLuint usage);
 void GL_BindVBO(vertexBuffer_t *vb);
 void R_VboListing_f(void);
 void R_DeleteVBO(vertexBuffer_t *vbin);
-void R_ShotdownVBO(void);
+void R_ShutdownVBO(void);
 char *q_pretifymem(float value);
 
 #define MAX_RBOS 64
@@ -213,8 +214,11 @@ typedef struct {
 }fb_t;
 fb_t fb;
 
-void R_ShotdownFBO(void);
+void R_ShutdownFBO(void);
 void R_FboListing_f(void);
+void GL_BindFBO(fbo_t *fb);
+void R_VA_LinkVertexBuffer(vertexObject_t *va, GLuint bindingIndex, vertexBuffer_t *vb, GLintptr offset, size_t stride);
+void R_VA_LinkElementBuffer(vertexObject_t *va, vertexBuffer_t *ib);
 
 float	clearColor[4];
 float	clearDepth;
@@ -371,19 +375,15 @@ cvar_t	*r_gamma;
 
 cvar_t	*r_hdrEVcomp;
 cvar_t	*r_hdrLightScale;
-//cvar_t	*r_hdrGlarePasses;
-//cvar_t	*r_hdrGlareIntens;
 cvar_t	*r_hdrBloom;
 cvar_t	*r_hdrLensFlares;
 cvar_t	*r_hdrLensFlaresIntens;
 cvar_t	*r_hdrColorSpace;
 cvar_t	*r_hdrUiNits;
 cvar_t	*r_hdrMaxIso;
+cvar_t	*r_hdrWhiteTint;
+cvar_t	*r_hdrBlueOffset;
 
-cvar_t	*r_colorVibrance;
-cvar_t	*r_colorBalanceRed;
-cvar_t	*r_colorBalanceGreen;
-cvar_t	*r_colorBalanceBlue;
 cvar_t	*r_useColorCorrection;
 
 cvar_t *vid_ref;
@@ -476,7 +476,7 @@ cvar_t	* r_screenBlendIntensity;
 cvar_t	*r_useShaderCache;
 cvar_t	*r_particlesOverdraw;
 
-cvar_t	*r_colorTempK;
+cvar_t	*r_hdrWhitePoint;
 cvar_t	*r_nsightDebug;
 
 
@@ -964,13 +964,6 @@ typedef struct {
 	uint64_t handle;
 }tess2dArray_t;
 tess2dArray_t tess2dArray;
-
-#define	TESS_OFFSET_POS			((byte *)(NULL)+0)  
-#define	TESS_OFFSET_TC			((byte *)(NULL)+sizeof(vec4_t))
-#define	TESS_OFFSET_COLOR		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t))
-#define	TESS_OFFSET_TANHENT		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec4_t)+sizeof(vec4_t))
-#define	TESS_OFFSET_BINORMAL	((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t))
-#define	TESS_OFFSET_NORMAL		((byte *)(NULL)+sizeof(vec4_t)+sizeof(vec2_t)+sizeof(vec4_t)+sizeof(vec3_t)+sizeof(vec3_t))
 
 void CL_AddString(int x, int y, int scale, char *s, image_t *inTex);
 void R_AddCharsToList(int x, int y, int scale, unsigned char num, image_t *inTex);

@@ -775,7 +775,7 @@ void SV_CalcPings (void) {
 	client_t *cl;
 	int total, count;
 
-	for (i = 0; i < maxclients->value; i++) {
+	for (i = 0; i < maxclients->integer; i++) {
 		cl = &svs.clients[i];
 		if (cl->state != cs_spawned)
 			continue;

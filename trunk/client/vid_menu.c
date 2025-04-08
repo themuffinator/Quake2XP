@@ -53,9 +53,7 @@ static menuslider_s		s_brightness_slider;
 static menuslider_s		s_contrast_slider;
 static menuslider_s		s_saturation_slider;
 static menuslider_s		s_gamma_slider;
-static menuslider_s		s_vibrance_slider;
 static menuslider_s		s_fixfov_slider;
-//static menulist_s		s_lut_list;
 static menuslider_s		s_hdrNits_slider;
 
 static menuslider_s		s_flareIntens_slider;
@@ -168,13 +166,6 @@ static void GammaCallback(void *s) {
 	gm = s_gamma_slider.curValue / 10;
 
 	Cvar_SetValue("r_gamma", gm);
-}
-
-static void VibranceCallback(void *s) {
-	float vb;
-	vb = s_vibrance_slider.curValue / 10;
-
-	Cvar_SetValue("r_colorVibrance", vb);
 }
 
 static void FixFovCallback(void *s) {
@@ -378,8 +369,8 @@ static void lutCallBack(void *s) {
 
 void ColorTempFunc(void *unused)
 {
-	Cvar_Set("r_colorTempK", s_menuColorTemp.buffer);
-	r_colorTempK->integer = ClampCvarInteger(999, 40000, r_colorTempK->integer);
+	Cvar_Set("r_hdrWhitePoint", s_menuColorTemp.buffer);
+	r_hdrWhitePoint->integer = ClampCvarInteger(100, 24000, r_hdrWhitePoint->integer);
 }
 
 void M_ColorInit() {
@@ -387,8 +378,8 @@ void M_ColorInit() {
 	if (!r_gamma)
 		r_gamma = Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
 	
-	if (!r_colorTempK)
-		r_colorTempK = Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
+	if (!r_hdrWhitePoint)
+		r_hdrWhitePoint = Cvar_Get("r_hdrWhitePoint", "6500", CVAR_ARCHIVE);
 
 	if (!r_brightness)
 		r_brightness = Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
@@ -408,16 +399,15 @@ void M_ColorInit() {
 		r_hdrUiNits = Cvar_Get("r_hdr_uiNits", "100.0", CVAR_ARCHIVE);
 
 	r_hdrUiNits->value = ClampCvar(100.0, gl_config.hdrMaxLuminance, r_hdrUiNits->value);
-	r_gamma->value = ClampCvar(1.5, 2.2, r_gamma->value);
+	r_gamma->value = ClampCvar(0.5, 2.2, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
-	r_colorVibrance->value = ClampCvar(-1.0, 1.0, r_colorVibrance->value);
 
 	r_hdrLensFlaresIntens->value = ClampCvar(0.1, 1.0, r_hdrLensFlaresIntens->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
-	r_colorTempK->integer = ClampCvarInteger(1000, 40000, r_colorTempK->integer);
+	r_hdrWhitePoint->integer = ClampCvarInteger(100, 24000, r_hdrWhitePoint->integer);
 
 /*	static char* lut_table[8] = {0};
 	
@@ -435,7 +425,7 @@ void M_ColorInit() {
 	s_gamma_slider.generic.y = 10 * ui_fontScale->value;
 	s_gamma_slider.generic.name = "Gamma";
 	s_gamma_slider.generic.callback = GammaCallback;
-	s_gamma_slider.minValue = 15;
+	s_gamma_slider.minValue = 5;
 	s_gamma_slider.maxValue = 22;
 	s_gamma_slider.curValue = r_gamma->value * 10;
 	s_gamma_slider.divRange = 10;
@@ -474,20 +464,9 @@ void M_ColorInit() {
 	s_saturation_slider.divRange = 10;
 	s_saturation_slider.generic.statusbar = "Screen Saturation";
 
-	s_vibrance_slider.generic.type = MTYPE_SLIDER;
-	s_vibrance_slider.generic.x = 0;
-	s_vibrance_slider.generic.y = 50 * ui_fontScale->value;
-	s_vibrance_slider.generic.name = "Vibrance";
-	s_vibrance_slider.generic.callback = VibranceCallback;
-	s_vibrance_slider.minValue = -10;
-	s_vibrance_slider.maxValue = 10;
-	s_vibrance_slider.curValue = r_colorVibrance->value * 10;
-	s_vibrance_slider.divRange = 10;
-	s_vibrance_slider.generic.statusbar = "Color Vibrance";
-
 	s_hdrNits_slider.generic.type = MTYPE_SLIDER;
 	s_hdrNits_slider.generic.x = 0;
-	s_hdrNits_slider.generic.y = 70 * ui_fontScale->value;
+	s_hdrNits_slider.generic.y = 60 * ui_fontScale->value;
 	s_hdrNits_slider.generic.name = "HDR UI Brightness";
 	s_hdrNits_slider.generic.callback = hdrNitsCallback;
 	s_hdrNits_slider.minValue = 100;
@@ -500,7 +479,7 @@ void M_ColorInit() {
 
 	s_flareIntens_slider.generic.type = MTYPE_SLIDER;
 	s_flareIntens_slider.generic.x = 0;
-	s_flareIntens_slider.generic.y = 90 * ui_fontScale->value;
+	s_flareIntens_slider.generic.y = 70 * ui_fontScale->value;
 	s_flareIntens_slider.generic.name = "Lens Flares Intensity";
 	s_flareIntens_slider.generic.callback = flareLevelCallback;
 	s_flareIntens_slider.minValue = 1;
@@ -511,7 +490,7 @@ void M_ColorInit() {
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
-	s_fixfov_slider.generic.y = 110 * ui_fontScale->value;
+	s_fixfov_slider.generic.y = 80 * ui_fontScale->value;
 	s_fixfov_slider.generic.name = "Hi-FOV Corection";
 	s_fixfov_slider.generic.callback = FixFovCallback;
 	s_fixfov_slider.minValue = 0;
@@ -520,25 +499,16 @@ void M_ColorInit() {
 	s_fixfov_slider.divRange = 10;
 	s_fixfov_slider.generic.statusbar = "Reducing Field Of View Distortion";
 
-/*	s_lut_list.generic.type = MTYPE_SPINCONTROL;
-	s_lut_list.generic.name = "Color Grading";
-	s_lut_list.generic.x = 0;
-	s_lut_list.generic.y = 130 * ui_fontScale->value;
-	s_lut_list.itemnames = lut_table;
-	s_lut_list.curValue = r_lutId->integer;
-	s_lut_list.generic.callback = lutCallBack;
-	s_lut_list.generic.statusbar = "Add Color Filters";
-	*/
 	s_menuColorTemp.generic.type = MTYPE_FIELD;
-	s_menuColorTemp.generic.name = "Color Temperature";
+	s_menuColorTemp.generic.name = "White Balance";
 	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
 	s_menuColorTemp.generic.x = 0;
-	s_menuColorTemp.generic.y = 130 * ui_fontScale->value;
-	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
+	s_menuColorTemp.generic.y = 100 * ui_fontScale->value;
+	s_menuColorTemp.generic.statusbar = "White Point in Kelvins 1000 - 40000";
 	s_menuColorTemp.length = 9;
 	s_menuColorTemp.visible_length = 9;
 	s_menuColorTemp.generic.callback = ColorTempFunc;
-	sprintf(s_menuColorTemp.buffer, "%d", r_colorTempK->integer);
+	sprintf(s_menuColorTemp.buffer, "%d", r_hdrWhitePoint->integer);
 	s_menuColorTemp.cursor = strlen(s_menuColorTemp.buffer);
 
 	menuSize = 130;
@@ -547,12 +517,10 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_brightness_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_contrast_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_saturation_slider);
-	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_hdrNits_slider);
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_flareIntens_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
-//	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
 
 
@@ -636,7 +604,7 @@ void VID_MenuInit (void) {
 #endif
 	static char* parallax_names[] = { "off", "Parallax Mapping", "Relief Mapping", 0 };
 	static char	*yesno_names[] = { "off", "yes", 0 };
-	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
+	static char	*adaptive_vc[] = { "off", "Standart", "Adaptive", "Adaptive Half Rate",0 };
 	static char* customScreenRes[] = { "Custom Window Resolution", 0 };
 	static char	*aniso_items[] =
 	{	"Off",	  // 1
@@ -665,11 +633,11 @@ void VID_MenuInit (void) {
 	if (!r_parallaxMapping)
 		r_parallaxMapping = Cvar_Get ("r_parallaxMapping", "0", CVAR_ARCHIVE);
 
-	if (r_parallaxMapping->integer > 3)
+	if (r_parallaxMapping->integer > 1)
 		r_parallaxMapping = Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
 
 	r_parallaxScale->value = ClampCvar(1.0, 10.0, r_parallaxScale->value);
-	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
+	r_parallaxMapping->integer = ClampCvarInteger(0, 1, r_parallaxMapping->integer);
 
 	if (!r_dof)
 		r_dof = Cvar_Get ("r_dof", "0", CVAR_ARCHIVE);
@@ -779,8 +747,8 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.x = 0;
 	s_parallax_box.generic.y = 60 * ui_fontScale->value;
 	s_parallax_box.generic.name = "Parallax Mapping";
-	s_parallax_box.itemnames = parallax_names;
-	s_parallax_box.curInteger = clamp(r_parallaxMapping->integer, 0, 2);
+	s_parallax_box.itemnames = yesno_names;
+	s_parallax_box.curInteger = r_parallaxMapping->integer;
 	s_parallax_box.generic.callback = ParallaxCallback;
 	s_parallax_box.generic.statusbar = "Virtual Displacement Mapping";
 
@@ -895,10 +863,10 @@ void VID_MenuInit (void) {
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curInteger = r_vsync->integer;
-if (r_vsync->integer >= 3)
-	Cvar_SetValue ("r_vsync", 2);
+if (r_vsync->integer >= 4)
+	Cvar_SetValue ("r_vsync", 3);
 	s_finish_box.itemnames = adaptive_vc;
-	s_finish_box.generic.statusbar = "Standart Or Adaptive";
+	s_finish_box.generic.statusbar = "Standart / Adaptive / Adaptive Half Rate";
 
 
 	s_menuAction_color.generic.type = MTYPE_ACTION;

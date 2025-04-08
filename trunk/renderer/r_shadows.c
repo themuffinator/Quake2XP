@@ -421,9 +421,8 @@ void R_DrawShadowMaps() {
 
 	gl_state.shadowMapPass = true;
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.shadowMap[currentShadowLight->lod]->id);
-	qglClearBufferfv(GL_COLOR, 0, clearColorBit);
-
+	GL_BindFBO(fb.shadowMap[currentShadowLight->lod]);
+	qglClearNamedFramebufferfv(fb.shadowMap[currentShadowLight->lod]->id, GL_COLOR, 0, clearColorBit);
 	GL_BindProgram(shadowOmniProgram);
 
 	projMatrix[0][0] = 1.0 / tanf(DEG2RAD(fov[0] * 0.5f));
@@ -458,12 +457,12 @@ void R_DrawShadowMaps() {
 		Mat4_Multiply(modelMatrix, projMatrix, r_newrefdef.shadowMVP);
 
 		R_SetLightFrustum(angles, fov[0], fov[1]);
-		qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, gi.shadowCube[currentShadowLight->lod]->texnum, 0);
-		qglClearBufferfv(GL_DEPTH, 0, &clearDepthBit);
+		qglNamedFramebufferTextureLayer(fb.shadowMap[currentShadowLight->lod]->id, GL_COLOR_ATTACHMENT0, gi.shadowCube[currentShadowLight->lod]->texnum, 0, i);
+		qglClearNamedFramebufferfv(fb.shadowMap[currentShadowLight->lod]->id, GL_DEPTH, 0, &clearDepthBit);
 		R_DrawShadowWorld();		
 	}
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, fb.hdrBase->id);
+	GL_BindFBO(fb.hdrBase);
 
 	GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 	GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
