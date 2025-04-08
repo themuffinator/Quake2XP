@@ -126,6 +126,51 @@ float3x3 D60_2_D65_CAT =
 	 {0.00307257, -0.00509595, 1.08168},
 };
 
+float3 xyY_2_XYZ( float3 xyY )
+{
+	float3 XYZ;
+	XYZ[0] = xyY[0] * xyY[2] / max( xyY[1], 1e-10);
+	XYZ[1] = xyY[2];  
+	XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / max( xyY[1], 1e-10);
+
+	return XYZ;
+}
+
+float3x3 ChromaticAdaptation( float2 src_xy, float2 dst_xy )
+{
+	// Von Kries chromatic adaptation 
+
+	// Bradford
+	const float3x3 ConeResponse =
+	{
+		{ 0.8951,  0.2664, -0.1614},
+		{-0.7502,  1.7135,  0.0367},
+		{0.0389, -0.0685,  1.0296},
+	};
+	const float3x3 InvConeResponse =
+	{
+		 {0.9869929, -0.1470543,  0.1599627},
+		 {0.4323053,  0.5183603,  0.0492912},
+		{-0.0085287,  0.0400428,  0.9684867},
+	};
+
+	float3 src_XYZ = xyY_2_XYZ( float3( src_xy, 1 ) );
+	float3 dst_XYZ = xyY_2_XYZ( float3( dst_xy, 1 ) );
+
+	float3 src_coneResp = mul( ConeResponse, src_XYZ );
+	float3 dst_coneResp = mul( ConeResponse, dst_XYZ );
+
+	float3x3 VonKriesMat =
+	{
+		{ dst_coneResp[0] / src_coneResp[0], 0.0, 0.0 },
+		{ 0.0, dst_coneResp[1] / src_coneResp[1], 0.0 },
+		{ 0.0, 0.0, dst_coneResp[2] / src_coneResp[2] }
+	};
+
+	return mul( InvConeResponse, mul( VonKriesMat, ConeResponse ) );
+}
+
+
 float HALF_MAX = 65504.0;
 
 float rgb_2_saturation( float3 rgb )
@@ -922,21 +967,122 @@ float3x3 OuputGamutMappingMatrix( int OutputGamut )
 		return AP1_2_sRGB;
 }
 
-float3 LinearToST2084(float3 lin)
+vec3 LinearToST2084(vec3 lin)
 {
 	const float m1 = 0.1593017578125; // = 2610. / 4096. * .25;
 	const float m2 = 78.84375; // = 2523. / 4096. *  128;
 	const float c1 = 0.8359375; // = 2392. / 4096. * 32 - 2413./4096.*32 + 1;
 	const float c2 = 18.8515625; // = 2413. / 4096. * 32;
 	const float c3 = 18.6875; // = 2392. / 4096. * 32;
-	const float C = 10000.0;
+	const float C = 10000.;
 
-	float3 L = lin/C;
-	float3 Lm = pow(L, vec3(m1));
-	float3 N1 = ( c1 + c2 * Lm );
-	float3 N2 = ( 1.0 + c3 * Lm );
-	float3 N = N1 * rcp(N2);
-	float3 P = pow( N, vec3(m2) );
+	vec3 L = lin/C;
+	vec3 Lm = pow(L, vec3(m1));
+	vec3 N1 = ( c1 + c2 * Lm );
+	vec3 N2 = ( 1.0 + c3 * Lm );
+	vec3 N = N1 * rcp(N2);
+	vec3 P = pow( N, vec3(m2) );
 	
 	return P;
+}
+
+float Square( float x )
+{
+	return x*x;
+}
+
+vec2 Square( vec2 x )
+{
+	return x*x;
+}
+
+vec3 Square( vec3 x )
+{
+	return x*x;
+}
+
+vec4 Square( vec4 x )
+{
+	return x*x;
+}
+
+// Accurate for 1000K < Temp < 15000K
+// [Krystek 1985, "An algorithm to calculate correlated colour temperature"]
+vec2 PlanckianLocusChromaticity( float Temp )
+{
+	float u = ( 0.860117757f + 1.54118254e-4f * Temp + 1.28641212e-7f * Temp*Temp ) / ( 1.0f + 8.42420235e-4f * Temp + 7.08145163e-7f * Temp*Temp );
+	float v = ( 0.317398726f + 4.22806245e-5f * Temp + 4.20481691e-8f * Temp*Temp ) / ( 1.0f - 2.89741816e-5f * Temp + 1.61456053e-7f * Temp*Temp );
+
+	float x = 3*u / ( 2*u - 8*v + 4 );
+	float y = 2*v / ( 2*u - 8*v + 4 );
+
+	return vec2(x,y);
+}
+
+// Accurate for 4000K < Temp < 25000K
+// in: correlated color temperature
+// out: CIE 1931 chromaticity
+vec2 D_IlluminantChromaticity( float Temp )
+{
+	// Correct for revision of Plank's law
+	// This makes 6500 == D65
+	Temp *= 1.4388 / 1.438;
+	float OneOverTemp = 1.0/Temp;
+	float x =	Temp <= 7000 ?
+				0.244063 + ( 0.09911e3 + ( 2.9678e6 - 4.6070e9 * OneOverTemp ) * OneOverTemp) * OneOverTemp:
+				0.237040 + ( 0.24748e3 + ( 1.9018e6 - 2.0064e9 * OneOverTemp ) * OneOverTemp ) * OneOverTemp;
+	
+	float y = -3 * x*x + 2.87 * x - 0.275;
+
+	return vec2(x,y);
+}
+
+vec2 PlanckianIsothermal( float Temp, float Tint )
+{
+	float u = ( 0.860117757f + 1.54118254e-4f * Temp + 1.28641212e-7f * Temp*Temp ) / ( 1.0f + 8.42420235e-4f * Temp + 7.08145163e-7f * Temp*Temp );
+	float v = ( 0.317398726f + 4.22806245e-5f * Temp + 4.20481691e-8f * Temp*Temp ) / ( 1.0f - 2.89741816e-5f * Temp + 1.61456053e-7f * Temp*Temp );
+
+	float ud = ( -1.13758118e9f - 1.91615621e6f * Temp - 1.53177f * Temp*Temp ) / Square( 1.41213984e6f + 1189.62f * Temp + Temp*Temp );
+	float vd = (  1.97471536e9f - 705674.0f * Temp - 308.607f * Temp*Temp ) / Square( 6.19363586e6f - 179.456f * Temp + Temp*Temp );
+
+	vec2 uvd = normalize( vec2( u, v ) );
+
+	// Correlated color temperature is meaningful within +/- 0.05
+	u += -uvd.y * Tint * 0.05;
+	v +=  uvd.x * Tint * 0.05;
+	
+	float x = 3*u / ( 2*u - 8*v + 4 );
+	float y = 2*v / ( 2*u - 8*v + 4 );
+
+	return vec2(x,y);
+}
+
+// Remap a value in the range [A,B] to [C,D].
+float RemapVal( float val, float A, float B, float C, float D){
+
+  if ( A == B )
+    return val >= B ? D : C;
+
+  return C + (D - C) * (val - A) / (B - A);
+}
+
+vec3 WhiteBalance( vec3 LinearColor ){
+	float WhiteTemp = RemapVal(u_WhiteTemp, 100.0, 25000.0, 25000.0, 100.0);
+	
+	vec2 SrcWhiteDaylight = D_IlluminantChromaticity( WhiteTemp );
+	vec2 SrcWhitePlankian = PlanckianLocusChromaticity( WhiteTemp );
+
+	vec2 SrcWhite = WhiteTemp < 4000 ? SrcWhitePlankian : SrcWhiteDaylight;
+	vec2 D65White = vec2( 0.31270,  0.32900 );
+
+	// Offset along isotherm
+	vec2 Isothermal = PlanckianIsothermal( WhiteTemp, u_WhiteTint ) - SrcWhitePlankian;
+	SrcWhite += Isothermal;
+
+	mat3 WhiteBalanceMat = ChromaticAdaptation( SrcWhite, D65White );
+
+	WhiteBalanceMat = sRGB_2_XYZ_MAT * WhiteBalanceMat;
+	WhiteBalanceMat = WhiteBalanceMat * XYZ_2_sRGB_MAT;
+
+	return LinearColor * WhiteBalanceMat;
 }

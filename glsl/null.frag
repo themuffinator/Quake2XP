@@ -2,5 +2,5 @@
 
 void main(void) 
 {
-    fragData = vec4(0.0, 0.0, 0.0, 1.0);
+ //   fragData = vec4(0.0, 0.0, 0.0, 1.0);
 }

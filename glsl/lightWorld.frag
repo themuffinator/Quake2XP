@@ -104,17 +104,18 @@ void main (void) {
 	
 	if(u_autoBump == 0){
 
-		switch (u_parallaxType) {
-			case 0:
-			texCoord = v_texCoord;
-			break;
-			case 1: 
-			texCoord = parallaxMapping(u_Diffuse, v_texCoord, V);
-			break;
-			case 2:
+	if(u_parallaxType > 0){
+		float lod = ComputeLOD(v_texCoord, u_parallaxParams.zw);
+		float bias = 3.5;
+
+		if(lod <= bias)
 			texCoord = ReliefMapping(u_Diffuse, v_texCoord, V);
-			break;
-		}
+		else if(lod > bias)
+			texCoord = v_texCoord;
+	}	
+	else 
+		texCoord = v_texCoord;
+
 		diffuseMap = texture(u_Diffuse,  texCoord);
 		normalMap.rgb =  normalize(texture(u_NormalMap, texCoord).rgb * 2.0 - 1.0);
 	}
@@ -180,8 +181,8 @@ void main (void) {
 		if(u_fog == 0) { 
 		  
 		float shadow = 1.0;
-		if(u_selfShadow == 1)
-			shadow = selfShadow(u_Diffuse, L, texCoord);
+		if(u_selfShadow == 1 && u_parallaxType >0)
+			shadow = selfShadow0(u_Diffuse, L, texCoord);
         
 		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb * shadowMap; 
 		if(u_ssao == 1)

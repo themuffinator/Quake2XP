@@ -5,6 +5,6 @@ in vec3	v_texCoord;
 
 void main(void){
 
-    fragData = textureLod(u_map, v_texCoord.xyz, 0);
+    fragData = pow(textureLod(u_map, v_texCoord.xyz, 0), vec4(2.2));
     fragData *= 1.2;
 }

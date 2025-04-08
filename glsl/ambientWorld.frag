@@ -37,18 +37,18 @@ void main (void) {
 	vec3 V = normalize(v_viewVecTS);
 	vec2 P;
 
-	switch (u_parallaxType) {
-		case 0: 
-		P = v_wTexCoord;
-		break;
-		case 1: 
-		P = parallaxMapping(u_Diffuse, v_wTexCoord, V);
-		break;
-		case 2: 
-		P = ReliefMapping(u_Diffuse, v_wTexCoord, V);
-		break;
+	if(u_parallaxType > 0){
+		float lod = ComputeLOD(v_wTexCoord, u_parallaxParams.zw);
+		float bias = 3.5;
+
+		if(lod <= bias)
+			P = ReliefMapping(u_Diffuse, v_wTexCoord, V);
+		else if(lod > bias)
+			P = v_wTexCoord;
 	}
-	
+	else 
+		P = v_wTexCoord;
+
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
 //	diffuseMap.rgb = pow(diffuseMap.rgb, vec3(2.2));
 

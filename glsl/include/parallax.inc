@@ -122,13 +122,18 @@ vec2 parallaxMapping(in sampler2D hiMap, in vec2 texCoord, vec3 V){
 
 
 #define MAX_SHADOW_STEPS	16.0
-float selfShadow(in sampler2D hiMap, in vec3 L, in vec2 texCoord)
-{
-	float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
-	if (lod > MAX_SHADOW_STEPS)
+float selfShadow(in sampler2D hiMap, in vec3 L, in vec2 texCoord){
+
+	if(u_parallaxType == 0)
 		return 1.0;
+
+	float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
+
 	if (lod < 0.0)
 		lod = 0.0;
+
+	if(lod > 3.5)
+		return 1.0;
 
 	vec2 offs = L.xy * u_parallaxParams.xy * u_shadowOffset;
 
@@ -153,7 +158,13 @@ float selfShadow0(in sampler2D hiMap, in vec3 L, in vec2 texCoord){
     
 	float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
     
-	if(lod > 8.0)
+	if (lod > MAX_SHADOW_STEPS)
+		return 1.0;
+
+	if (lod < 0.0)
+		lod = 0.0;
+
+	if(lod > 3.5)
 		return 1.0;
 
     vec2 offs = L.xy * u_parallaxParams.xy * u_shadowOffset;
