@@ -730,10 +730,11 @@ void NET_GetAdapterInfo() {
 		pAdapter = pAdapterInfo;
 
 		while (pAdapter) {
-			Com_Printf("Found Interface: ");
+
+			Com_Printf(S_COLOR_YELLOW"Found Interface: ");
 			Com_Printf("" S_COLOR_GREEN "%s\n", pAdapter->Description);
-			Com_Printf("GUID: " S_COLOR_GREEN "%s\n", pAdapter->AdapterName);
-			Com_Printf("MAC:  ");
+			Com_Printf(S_COLOR_YELLOW"GUID: " S_COLOR_GREEN "%s\n", pAdapter->AdapterName);
+			Com_Printf(S_COLOR_YELLOW"MAC:  ");
 			for (i = 0; i < pAdapter->AddressLength; i++) {
 				if (i == (pAdapter->AddressLength - 1))
 					Com_Printf("" S_COLOR_GREEN "%.2X\n", (int)pAdapter->Address[i]);
@@ -741,7 +742,7 @@ void NET_GetAdapterInfo() {
 					Com_Printf("" S_COLOR_GREEN "%.2X-", (int)pAdapter->Address[i]);
 			}
 
-			Com_Printf("Type: ");
+			Com_Printf(S_COLOR_YELLOW"Type: ");
 			switch (pAdapter->Type) {
 			case MIB_IF_TYPE_OTHER:
 				Com_Printf(S_COLOR_GREEN"Other\n");
@@ -771,14 +772,20 @@ void NET_GetAdapterInfo() {
 				Com_Printf(S_COLOR_MAGENTA"Unknown type %ld\n", pAdapter->Type);
 				break;
 			}
+			
+			if (strcmp(pAdapter->IpAddressList.IpAddress.String, "0.0.0.0") == 0) {
+				Com_Printf(S_COLOR_MAGENTA"Disconnected.\n\n");
+				pAdapter = pAdapter->Next;
+				continue;
+			}
 
-			Com_Printf("IP Address:  " S_COLOR_GREEN "%s\n", pAdapter->IpAddressList.IpAddress.String);
-			Com_Printf("IP Mask:     " S_COLOR_GREEN "%s\n", pAdapter->IpAddressList.IpMask.String);
-			Com_Printf("Gateway:     " S_COLOR_GREEN "%s\n", pAdapter->GatewayList.IpAddress.String);
+			Com_Printf(S_COLOR_YELLOW"IP Address:  " S_COLOR_GREEN "%s\n", pAdapter->IpAddressList.IpAddress.String);
+			Com_Printf(S_COLOR_YELLOW"IP Mask:     " S_COLOR_GREEN "%s\n", pAdapter->IpAddressList.IpMask.String);
+			Com_Printf(S_COLOR_YELLOW"Gateway:     " S_COLOR_GREEN "%s\n", pAdapter->GatewayList.IpAddress.String);
 
 			if (pAdapter->DhcpEnabled) {
-				Com_Printf("DHCP Server: " S_COLOR_GREEN "%s\n", pAdapter->DhcpServer.IpAddress.String);
-				Com_Printf("Lease Obtained: ");
+				Com_Printf(S_COLOR_YELLOW"DHCP Server: " S_COLOR_GREEN "%s\n", pAdapter->DhcpServer.IpAddress.String);
+				Com_Printf(S_COLOR_YELLOW"Lease Obtained: ");
 				/* Display local time */
 				err = _localtime64_s(&newTime, (__time64_t*)&pAdapter->LeaseObtained);
 				if (err)
@@ -793,7 +800,7 @@ void NET_GetAdapterInfo() {
 						Com_Printf(S_COLOR_GREEN"%s", buffer);
 				}
 
-				Com_Printf("Lease Expires:  ");
+				Com_Printf(S_COLOR_YELLOW"Lease Expires:  ");
 				err = _localtime64_s(&newTime, (__time64_t*)&pAdapter->LeaseExpires);
 				if (err)
 					printf(S_COLOR_MAGENTA"Invalid Argument to _localtime64_s\n");
@@ -808,7 +815,7 @@ void NET_GetAdapterInfo() {
 				}
 			}
 			else
-				Com_Printf("DHCP Server: " S_COLOR_MAGENTA "not found\n");
+				Com_Printf(S_COLOR_YELLOW"DHCP Server: " S_COLOR_MAGENTA "not found\n");
 
 			numInterfaces++;
 			if (numInterfaces >= MAX_NETWORK_INTERFACES)
